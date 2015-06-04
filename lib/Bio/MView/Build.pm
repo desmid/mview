@@ -19,7 +19,7 @@ my %Template =
      'status'      => undef,   #parse status (undef=stop; otherwise=go)
      'align'       => undef,   #current alignment
      'index2row'   => undef,   #list of aligned rows, from zero
-     'uid2row'     => undef,   #hash of aligned rows, by Row->uid
+     'uid2row'     => undef,   #hash of aligned rows, by Build::Row->uid
      'ref_row'     => undef,   #reference row ref
      'topn'        => undef,   #show at most top N items
      'show'        => undef,   #actual number of rows to show
@@ -29,7 +29,7 @@ my %Template =
      'mode'        => undef,   #display format mode
      'ref_id'      => undef,   #reference id for %identity
 
-     'disclist'    => undef,   #discard rows by {num,id,regex}
+     'skiplist'    => undef,   #discard rows by {num,id,regex}
      'keeplist'    => undef,   #keep rows by {num,id,regex}
      'nopslist'    => undef,   #no-process rows by {num,id,regex}
 
@@ -50,7 +50,7 @@ my %Known_Parameter =
      'pcid'       => [ '\S+',      'aligned' ],
      'mode'       => [ '\S+',      'new'     ],
      'ref_id'     => [ '\S+',      0         ],
-     'disclist'   => [ [],         []        ],
+     'skiplist'   => [ [],         []        ],
      'keeplist'   => [ [],         []        ],
      'nopslist'   => [ [],         []        ],
      'range'      => [ [],         []        ],
@@ -287,8 +287,8 @@ sub get_row_id {
     my ($self, $id) = @_;
     if (defined $id) {
 	my @id = $self->map_id($id);
-	return undef    unless @id;
-	return $id[0]->uid    unless wantarray;
+	return undef        unless @id;
+	return $id[0]->uid  unless wantarray;
 	return map { $_->uid } @id;
     }
     return undef;
@@ -298,12 +298,15 @@ sub get_row {
     my ($self, $id) = @_;
     if (defined $id) {
 	my @id = $self->map_id($id);
-	return undef    unless @id;
-	return $id[0]   unless wantarray;
+	return undef   unless @id;
+	return $id[0]  unless wantarray;
 	return @id;
     }
     return undef;
 }
+
+sub uid2row   { $_[0]->{uid2row}->{$_[1]} }
+sub index2row { $_[0]->{index2row}->[$_[1]] }
 
 #construct a header string describing this alignment
 sub header {
@@ -350,8 +353,7 @@ sub schedule {
     $_[0]->{'status'};
 }
 
-#return the next alignment, or undef if no more work, or zero if the 
-#alignment is empty.
+#return the next alignment, undef if no more work, or 0 if empty alignment
 sub next {
     my $self = shift;
 
@@ -362,15 +364,15 @@ sub next {
     $self->{'index2row'} = $self->parse;
     #Universal::vmstat("Build->next(parse) done");
 
-    #finished?  note: "$self->{'align'}->free" is not needed
+    #finished? note: "$self->{'align'}->free" is not needed
     return undef  unless defined $self->{'index2row'};
 
-#   my $i; for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
-#	warn "[$i]  ", $self->{'index2row'}->[$i]->num, " ",
-#	$self->{'index2row'}->[$i]->cid, "\n";
-#   }
+    #my $i; for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
+    #    warn "[$i]  ", $self->index2row($i)->num, " ",
+    #	      $self->index2row($i)->cid, "\n";
+    #}
 
-    #maybe more data but this alignment empty? (disc/keep+subclass filtered)
+    #this alignment empty?
     return 0  unless @{$self->{'index2row'}};
 
     $self->{'align'} = $self->build_alignment;
@@ -378,6 +380,7 @@ sub next {
 
     #maybe more data but this alignment empty? (identity filtered)
     return 0  unless defined $self->{'align'};
+    return 0  unless $self->{'align'}->visible_ids > 0;
 
     return $self->{'align'};
 }
@@ -397,7 +400,6 @@ SWITCH: {
 	    $ali = $self->build_new_alignment($ali);
 	    last;
 	}
-    
 	last    if $self->{'mode'} eq 'none';  #for testing
 	last    if $self->{'mode'} eq 'plain';
 	last    if $self->{'mode'} eq 'pearson';
@@ -431,9 +433,9 @@ sub build_indices {
 	$self->{'ref_row'} = $id[0];
     }
 
-    #make all disclist rows invisible; this has to be done because some
+    #make all skiplist rows invisible; this has to be done because some
     #may not really have been discarded at all, eg., reference row.
-    foreach $i (@{$self->{'disclist'}}) {
+    foreach $i (@{$self->{'skiplist'}}) {
 	@id = $self->map_id($i);
 	foreach $r (@id) {
 	    $self->{'hide_uid'}->{$r->uid} = 1;           #invisible
@@ -622,9 +624,7 @@ sub strip_query_gaps {
 sub discard_empty_ranges {
     my ($self, $hit, $i) = @_;
     for ($i=1; $i<@$hit; $i++) {
-
 #	warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
-
 	if (@{$hit->[$i]->{'frag'}} < 1) {
 	    splice(@$hit, $i--, 1);
 	}
@@ -639,8 +639,8 @@ sub plain {
     my $s = '';
     foreach my $aln (@_) {
 	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln  |$r|\n";
-	    $s .= $self->{'uid2row'}->{$r}->plain;
+	    #warn "$aln [$r]\n";
+	    $s .= $self->uid2row($r)->plain;
 	}
     }
     $s;
@@ -652,8 +652,8 @@ sub pearson {
     my $s = '';
     foreach my $aln (@_) {
 	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln  |$r|\n";
-	    $s .= $self->{'uid2row'}->{$r}->pearson;
+	    #warn "$aln [$r]\n";
+	    $s .= $self->uid2row($r)->pearson;
 	}
     }
     $s;
@@ -665,8 +665,8 @@ sub pir {
     my $s = '';
     foreach my $aln (@_) {
 	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln  |$r|\n";
-	    $s .= $self->{'uid2row'}->{$r}->pir($moltype);
+	    #warn "$aln [$r]\n";
+	    $s .= $self->uid2row($r)->pir($moltype);
 	}
     }
     $s;
@@ -675,12 +675,12 @@ sub pir {
 #return alignment in RDB table format
 sub rdb {
     my $self = shift;
-    my $s = $self->{'index2row'}->[0]->rdb('attr') . "\n";
-    $s .= $self->{'index2row'}->[0]->rdb('form') . "\n";
+    my $s = $self->index2row(0)->rdb('attr') . "\n";
+    $s .= $self->index2row(0)->rdb('form') . "\n";
     foreach my $aln (@_) {
 	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln  |$r|\n";
-	    $s .= $self->{'uid2row'}->{$r}->rdb('data') . "\n";
+	    #warn "$aln [$r]\n";
+	    $s .= $self->uid2row($r)->rdb('data') . "\n";
 	}
     }
     $s;
@@ -689,7 +689,7 @@ sub rdb {
 #return alignment in MSF format
 sub msf {
     my $CHECKSUM = '--------------------------------------&---*---.-----------------@ABCDEFGHIJKLMNOPQRSTUVWXYZ------ABCDEFGHIJKLMNOPQRSTUVWXYZ---~---------------------------------------------------------------------------------------------------------------------------------';
-    my $MAXSEQ = 50;
+    my ($MAXSEQ, $GAP) = (50, '.');
     
     my $checksum = sub {
 	my $s = shift;
@@ -706,7 +706,7 @@ sub msf {
     my ($self, $moltype) = (shift, shift);
     my $s = '';
     my $now = `date '+%B %d, %Y %H:%M'`;
-    $now =~ s/\s0(\d{1})/ $1/; chomp $now;  #disable padding %-d may not work
+    $now =~ s/\s0(\d{1})/ $1/; chomp $now;  #padding %-d may not work
 
     foreach my $aln (@_) {
 	if ($moltype eq 'aa') {
@@ -718,23 +718,23 @@ sub msf {
 	$s .= sprintf("   MSF: %5d  Type: %s  %s  Check: %4d  ..\n\n", 
 		      $aln->length, ($moltype eq 'aa' ? 'P' : 'N'), $now, 0);
 
-	my $w = 0; foreach my $r ($aln->visible_ids) {
-	    $w = length($self->{'uid2row'}->{$r}->cid) if 
-		length($self->{'uid2row'}->{$r}->cid) > $w;		
+	my $w = 0;
+	foreach my $r ($aln->visible_ids) {
+	    $w = length($self->uid2row($r)->cid)
+		if length($self->uid2row($r)->cid) > $w;
 	}
 	    
 	foreach my $r ($aln->visible_ids) {
 	    $s .=
 		sprintf(" Name: %-${w}s Len: %5d  Check: %4d  Weight:  %4.2f\n",
-			$self->{'uid2row'}->{$r}->cid, $aln->length, 
-			&$checksum(\$self->{'uid2row'}->{$r}->seq), 1.0);
+			$self->uid2row($r)->cid, $aln->length, 
+			&$checksum(\$self->uid2row($r)->seq), 1.0);
 	}
 	$s .= "\n//\n\n";
 
-	my %seq = (); foreach my $r ($aln->visible_ids) {
-	    $self->{'uid2row'}->{$r}->set_pad('.');
-	    $self->{'uid2row'}->{$r}->set_gap('.');
-	    $seq{$r} = $aln->item($r)->string;
+	my %seq = ();
+	foreach my $r ($aln->visible_ids) {
+	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
 	}
 	
     LOOP:
@@ -756,7 +756,7 @@ sub msf {
 		    $s .= sprintf("%-${w}s $insert\n", '');
 		    $ruler = 0;
 		}
-		$s .= sprintf("%-${w}s ", $self->{'uid2row'}->{$r}->cid);
+		$s .= sprintf("%-${w}s ", $self->uid2row($r)->cid);
 		for (my $lo=0; $lo<length($tmp); $lo+=10) {
 		    $s .= substr($tmp, $lo, 10);
 		    $s .= ' '    if $lo < 40;
@@ -789,39 +789,40 @@ sub clustal {
     foreach my $aln (@_) {
 	$s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";
 
-	my $w = $MINNAME; foreach my $r ($aln->visible_ids) {
-	    $w = length($self->{'uid2row'}->{$r}->cid)+1 if
-		length($self->{'uid2row'}->{$r}->cid) >= $w;		
-	}
+	my $w = $MINNAME;
+	my @ids = $aln->visible_ids;
+	my %seq = ();
+	my %len = ();
 
-	my %seq = (); my %len = (); foreach my $r ($aln->visible_ids) {
-	    #warn $r, $self->{'uid2row'}->{$r}, "\n";
-	    $self->{'uid2row'}->{$r}->set_pad($GAP);
-	    $self->{'uid2row'}->{$r}->set_gap($GAP);
-	    $seq{$r} = $aln->item($r)->string;
+	foreach my $r (@ids) {
+	    #warn $r, $self->uid2row($r), "\n";
+	    $w = length($self->uid2row($r)->cid)+1 if
+		length($self->uid2row($r)->cid) >= $w;
+	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
 	    $len{$r} = 0;
 	}
-	
+
       LOOP:
 	for (my $from = 0; ;$from+=$MAXSEQ) {
 	    foreach my $r ($aln->visible_ids) {
 		last LOOP  if $from >= length($seq{$r});
 		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
-		$s .= sprintf("%-${w}s", $self->{'uid2row'}->{$r}->cid);
+		$s .= sprintf("%-${w}s", $self->uid2row($r)->cid);
 		$s .= $tmp;
 		if ($ruler) {
 		    my $syms = &$symcount(\$tmp, $GAP);
 		    my $hi = $len{$r} + $syms;
 		    $s .= sprintf(" %-d", $hi)  if $syms > 0;
 		    $len{$r} = $hi;
-		}
-		$s .= "\n";
-	    }
+                }
+                $s .= "\n";
+            }
+
 	    if ($conservation) {
 		$s .= sprintf("%-${w}s", '');
-		$s .= ${$self->{align}->conservation(\%seq, $from,
-						     $from+$MAXSEQ-1,
-						     $GAP, $moltype)};
+		$s .= ${$self->{align}->conservation(\@ids,
+						     $from+1, $from + $MAXSEQ,
+						     $moltype)};
 	    }
 	    $s .= "\n\n";
 	}

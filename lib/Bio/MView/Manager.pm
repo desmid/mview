@@ -11,6 +11,7 @@ use strict;
 
 my %Template =
     (
+     'acount'        => undef,
      'file'          => undef,
      'format'        => undef,
      'stream'        => undef,
@@ -37,7 +38,7 @@ my %Template_Build_Param =
      'mode'          => undef,
      'ref_id'        => undef,
      'keeplist'      => undef,
-     'disclist'      => undef,
+     'skiplist'      => undef,
      'nopslist'      => undef,
      'range'         => undef,
      'gap'           => undef,
@@ -100,9 +101,17 @@ sub new {
     my $type = shift;
     my $self = { %Template };
     bless $self, $type;
+    $self->{'prog'}    = shift;  #program name
+    $self->{'acount'}  = 0;      #alignment count 
     $self->{'display'} = [];
     $self->set_parameters(@_);
     $self;
+}
+
+sub alignment_count { $_[0]->{'acount'} }
+
+sub report {
+    my $self = shift; warn $self->{prog}, ": ", @_;
 }
 
 #Called with the desired format to be parsed: either a string 'X' naming a 
@@ -144,8 +153,13 @@ sub parse {
 
         while (defined ($aln = $bld->next)) {
 
-            next  unless $aln;    #null alignment
-	    
+	    if ($aln < 1) {  #null alignment
+		$self->report("empty alignment\n");
+		next;
+	    }
+
+	    $self->{'acount'}++;
+
 	    if ($self->{'bp'}->{'mode'} eq 'plain') {
 		print $bld->plain($aln);
 		next;

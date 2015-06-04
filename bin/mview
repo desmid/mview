@@ -127,11 +127,11 @@ unless (@ARGV or $opt->{'noparse'}) {
     push @ARGV, $SCRATCH;
 }
 
-mview($opt, $par, $stm, @ARGV);
+my $acount = mview($opt, $par, $stm, @ARGV);
 
 #trailing copyright?
 print $stm &copyright($opt)
-    if $opt->{'html'} != $HTML_DATA and $opt->{'out'} =~ /^new/;
+    if $acount and $opt->{'html'} != $HTML_DATA and $opt->{'out'} =~ /^new/;
 
 &html_foot($opt, $par, $stm);
 
@@ -147,7 +147,7 @@ sub mview {
 
     #Universal::vmstat("Manager constructor");
 
-    $mgr = new Bio::MView::Manager(%$par);
+    $mgr = new Bio::MView::Manager($PROG, %$par);
 
     foreach $file (@_) {
 	unless (-e $file) {
@@ -181,13 +181,14 @@ sub mview {
     #Universal::vmstat("Manager constructor done");
     
     #colormap/groupmap listing request: no alignment
-    return  if $par->{'noparse'};
+    return 0  if $par->{'noparse'};
 
     #save printing until end?
     if ($par->{'register'} and $opt->{'out'} eq 'new') {
 	$mgr->print;
 	#Universal::vmstat("print done (mview)");
     }
+    return $mgr->alignment_count;
 }
 
 sub cleanup { unlink "$SCRATCH"    if -f "$SCRATCH" }
@@ -981,7 +982,7 @@ param:    keeplist
 OPTION:   disc
 usage:    "Discard rows 1..N or row identifiers"
 type:     @s
-param:    disclist
+param:    skiplist
 
 OPTION:   nops
 usage:    "Display rows 1..N or row identifiers unprocessed"

@@ -55,8 +55,8 @@ sub use_row {
 	}
     }
 
-    #second, check disclist and reference row
-    foreach $pat (@{$self->{'disclist'}}, $self->{'ref_id'}) {
+    #second, check skiplist and reference row
+    foreach $pat (@{$self->{'skiplist'}}, $self->{'ref_id'}) {
 
 	#Search subclass only
 	return 0  if $pat eq '0'     and $num == 0;

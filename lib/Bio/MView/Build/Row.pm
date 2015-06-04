@@ -230,7 +230,7 @@ sub pearson {
 }
 
 sub pir {
-    my ($self, $moltype, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
+    my ($self, $moltype, $pad, $gap) = (@_, 'aa', $DEF_PAD, $DEF_GAP);
     my $MAXSEQ = 60;
 
     my $head = sub {
@@ -254,7 +254,7 @@ sub pir {
 
     my $sequence = sub {
 	my ($self, $pad, $gap) = @_;
-	my $seq = $self->seq($pad, $gap, $DEF_PAD, $DEF_GAP);
+	my $seq = $self->seq($pad, $gap);
 	my $s = '';
 	for (my $i=0; $i<length($seq); $i+=$MAXSEQ) {
 	    $s .= "\n" . substr($seq, $i, $MAXSEQ);

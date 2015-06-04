@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2006 Nigel P. Brown
+# Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: Any.pm,v 1.11 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -77,9 +77,11 @@ sub new {
     $self->{'r_case'}  	= [];
 
     if (defined $self->{'string'}) {
+	my $seqlen = $self->{'string'}->length;
+
 	#are 'parent' and 'string' the same length?
-	if ($self->{'string'}->length != $self->{'length'}) {
-	    die "$type new() parent/sequence length mismatch\n";
+	if ($seqlen != $self->{'length'}) {
+	    die "$type new() parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
 	}
 
 	# no idea what this is/was for... 1/10/98

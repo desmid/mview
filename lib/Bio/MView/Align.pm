@@ -22,7 +22,7 @@ my %Template =
     (
      'length'     => 0,     #alignment width
      'id2index'   => undef, #hash of identifiers giving row numbers
-     'index2row'  => undef, #ordered list by row number of aligned objects
+     'index2row'  => undef, #list of aligned rows, from zero
      'parent'     => undef, #identifier of parent sequence
      'cursor'     => -1,    #index2row iterator
      'ref_id'     => undef, #identifier of reference row
@@ -240,46 +240,66 @@ sub cat {
 
 sub length { $_[0]->{'length'} }
 
+#NIGE: change data structures to remove this nonsense
+sub id2row { $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}] }
+
+sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
+sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
+
 #return list of identifiers
 sub ids {
-    my @id = ();
-    foreach (@{$_[0]->{'index2row'}}) {
-	push @id, $_->id    if defined $_;
+    my @tmp = ();
+    foreach my $r (@{$_[0]->{'index2row'}}) {
+	next  unless defined $r;
+	push @tmp, $r->id;
     }
-    @id;
+    @tmp;
 }
 
 #return list of visible rows as internal ids
 sub visible_ids {
-    my @id = ();
+    my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r and !exists $_[0]->{'hidehash'}->{$r->id};
-	push @id, $r->id;
+	next  unless defined $r;
+	next  if $_[0]->is_hidden($r->id);
+	push @tmp, $r->id;
     }
-    @id;
+    @tmp;
 }
 
-#return list of visible rows as indices
+#return list of visible rows as row indices
 sub visible_indices {
-    my @index = ();
+    my @tmp = ();
     for (my $i=0; $i<@{$_[0]->{'index2row'}}; $i++) {
 	my $r = $_[0]->{'index2row'}->[$i];
-	next  unless defined $r and !exists $_[0]->{'hidehash'}->{$r->id};
-	push @index, $i;
+	next  unless defined $r;
+	next  if $_[0]->is_hidden($r->id);
+	push @tmp, $i;
     }
-    @index;
+    @tmp;
+}
+
+#return list of visible and not nops rows as internal ids;
+#these are rows that will be displayed AND have consensus calculations done
+sub visible_and_calculation_ids {
+    my @tmp = ();
+    foreach my $r (@{$_[0]->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $_[0]->is_hidden($r->id);
+	next  if $_[0]->is_nop($r->id);
+	push @tmp, $r->id;
+    }
+    @tmp;
 }
 
 #return number of stored rows
 sub rows { scalar map { $_->id if defined $_ } @{$_[0]->{'index2row'}} };
 
-#return row object indexed by identifier
+#return row object indexed by identifier, or 0
 sub item {
     my ($self, $id) = @_;
-    return 0    unless defined $id;
-    if (exists $self->{'id2index'}->{$id}) {
-	return $self->{'index2row'}->[$self->{'id2index'}->{$id}];
-    }
+    return 0  unless defined $id;
+    return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
     0;
 }
 
@@ -873,7 +893,7 @@ sub init_display { ( $_[0]->{'parent'}->{'string'} ) }
 #will occur, eg., consensus calculations.
 sub append_display {
     my ($self, $dis, $gc_flag) = (@_, 1);
-    #warn "append_display($dis, $gc)\n";
+    #warn "append_display($dis, $gc_flag)\n";
     for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
 	if (defined $self->{'index2row'}->[$i]) {
 	    if (!exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id}) {
@@ -1010,25 +1030,14 @@ sub build_header {
 sub build_conservation_row {
     my ($self, $moltype) = @_;
 
-    my $GAP = '-'; my %seq = ();#NIGE
-
-    #iterate over rows
-    for (my $r=0; $r<@{$self->{'index2row'}}; $r++) {
-	my $row = $self->{'index2row'}->[$r];
-	#warn $r, $row;
-	next unless defined $row;
-	next if exists $self->{'nopshash'}->{$row->id};
-	next if exists $self->{'hidehash'}->{$row->id};
-	next if $row->{'type'} ne 'sequence';
-	$seq{$r} = $row->string;
-	#warn "[$seq{$r}]\n";
-    }
+    #extract sequence rows
+    my @ids = $self->visible_ids;
 
     my $from = $self->{'parent'}->{'from'};
     my $to   = $from + $self->{'length'} -1;
     #warn "fm/to: ($from, $to)\n";
 
-    my $string = $self->conservation(\%seq, $from-1, $to-1, $GAP, $moltype);
+    my $string = $self->conservation(\@ids, $from, $to, $moltype);
 
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
@@ -1116,12 +1125,16 @@ sub conservation {
     my $CONS_WEAK   = [ qw(CSA ATV SAG STNK STPA SGND SNDEQK NDEQHK
                            NEQHRK FVLIM HFY) ];
 
-    my ($self, $seq, $lo, $hi, $gap, $moltype) = @_;
-    return ''  unless keys %$seq; #empty alignment
-    my $refseq = $seq->{ (keys %$seq)[0] }; #any
-    my $depth = scalar keys %$seq;
+    #(from,to) must be 1-based along alignment
+    my ($self, $ids, $from, $to, $moltype) = @_;
+
+    return ''  unless @$ids; #empty alignment
+
+    my @tmp = $self->visible_and_calculation_ids;
+    my $refseq = $self->id2row($tmp[0])->seqobj;
+    my $depth = scalar @tmp;
     my $s = '';
-    #print "conservation: $lo, $hi\n";
+    #warn "conservation: from=$from, to=$to, depth=$depth\n";
 
     my $initcons = sub {
 	my $values = shift;
@@ -1155,30 +1168,42 @@ sub conservation {
 	print "\n\n";
     };
 
-    for (my $j=$lo; $j<=$hi; $j++) {
-	last  if $j >= length($refseq);
-	my $same = 0;
-	my $strong = &$initcons($CONS_STRONG);
-	my $weak   = &$initcons($CONS_WEAK);
-	my $refchar = substr($refseq, $j, 1);
-	foreach my $r (keys %$seq) {
-	    my $thischar = uc substr($seq->{$r}, $j, 1);
+    #iterate over alignment columns
+    for (my $j=$from; $j<=$to; $j++) {
+
+	last  if $j > $refseq->length;
+
+	my $strong  = &$initcons($CONS_STRONG);
+	my $weak    = &$initcons($CONS_WEAK);
+	my $refchar = $refseq->raw($j);
+	my $same    = 0;
+
+	#iterate over sequence list
+	for (my $i=0; $i<@$ids; $i++) {
+	    my $thischar = uc $self->id2row($ids->[$i])->seqobj->raw($j);
+	    #warn "[$i][$j] $refchar, $thischar, $ids->[$i]\n";
+	    next  if $self->is_nop($ids->[$i]);
 	    $same++   if $thischar eq $refchar;
 	    &$addcons($strong, $thischar);
 	    &$addcons($weak, $thischar);
 	}
 	#&$printcons($j, $strong, 'strong');
 	#&$printcons($j, $weak, 'weak');
-	if ($same == $depth and substr($refseq, $j, 1) ne $gap) {
-	    $s .= '*';
-	    next;
-	}
-	if ($moltype eq 'aa') {
-	    $s .= ':', next  if &$testcons($strong, $depth);
-	    $s .= '.', next  if &$testcons($weak, $depth);
+
+	#warn "$same, $depth, [$self->{ref_id}], $refchar, ", $refseq->is_char($refchar), "\n";
+	if ($depth > 0) {
+	    if ($same == $depth and $refseq->is_char($refchar)) {
+		$s .= '*';
+		next;
+	    }
+	    if ($moltype eq 'aa') {
+		$s .= ':', next  if &$testcons($strong, $depth);
+		$s .= '.', next  if &$testcons($weak, $depth);
+	    }
 	}
 	$s .= ' ';
     }
+    #warn "[$s]\n";
     \$s;
 }
 

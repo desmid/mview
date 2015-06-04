@@ -68,6 +68,7 @@ sub print {
 }
 
 sub id     { $_[0]->{'id'} }
+sub seqobj { $_[0]->{'string'} }
 sub string { $_[0]->{'string'}->string }
 sub array  { split //, $_[0]->{'string'}->string }
 sub from   { $_[0]->{'from'} }
@@ -171,7 +172,7 @@ sub color_special {
 	next    if $self->{'string'}->is_space($c);
 
 	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($c)) {
+	if ($self->{'string'}->is_non_char($c)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -230,8 +231,8 @@ sub color_by_find_block {
 	#white space: no color
 	next    if $self->{'string'}->is_space($c);
         
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($c)) {
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -286,8 +287,8 @@ sub color_by_type {
 	#white space: no color
 	next    if $self->{'string'}->is_space($c);
 
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($c)) {
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -342,8 +343,8 @@ sub color_by_identity {
 	#white space: no color
 	next    if $self->{'string'}->is_space($c1);
 					 
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($c1)) {
+	#gap of frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c1)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -402,34 +403,31 @@ sub set_identity {
 #blast, but different for multiple alignments like clustal.
 sub compute_identity_to {
     #warn "Bio::MView::Align::Sequence::compute_identity_to(@_)\n";
-    my $self = shift;
-    my $othr = shift;
-    my $mode = shift;
-    my ($end, $i, $c1, $c2, $sum, $len, $gap);
-
-    return unless $othr;
+    my ($self, $othr, $mode) = @_;
+    return 0  unless defined $othr;
 
     die "${self}::compute_identity_to() length mismatch\n"
 	unless $self->length == $othr->length;
     
-    $end = $self->length +1;
-    $sum = $len = 0;
+    my ($sum, $len) = (0, 0);
+    my $end = $self->length +1;
 
-    for ($i=1, $gap=0; $i<$end; $i++, $gap=0) {
+    for (my $i=1; $i<$end; $i++) {
+	my $cnt = 0;
+	
+	my $c1 = $self->{'string'}->raw($i);
+	my $c2 = $othr->{'string'}->raw($i);
 
-	$c1 = $self->{'string'}->raw($i); $c2 = $othr->{'string'}->raw($i);
-	
-	$gap++  if $self->{'string'}->is_non_sequence($c1);
-	$gap++  if $self->{'string'}->is_non_sequence($c2);
-	
-	next    if $gap > 1;
-	
-	#zero or at most one gap:
+	#at least one must be a sequence character
+	$cnt++  if $self->{'string'}->is_char($c1);
+	$cnt++  if $self->{'string'}->is_char($c2);
+	next  if $cnt < 1;
 
-	#ignore leader/trailer gaps
-	$len++  unless $self->{'string'}->is_padding($c1);
+	#ignore terminal gaps in the *first* sequence
+	$len++  unless $self->{'string'}->is_terminal_gap($c1);
 
 	$sum++  if $c1 eq $c2;
+	#warn "[$i] $c1 $c2 : $cnt => $sum / $len\n";
     }
     
     #normalise identities
@@ -448,59 +446,6 @@ sub compute_identity_to {
 
     return ($sum = 100 * ($sum + 0.0) / $norm)    if $norm > 0;
     return 0;
-}
-
-#compute percent identity to input reference object over length of aligned
-#region of reference (same as blast). The latter is actually calculated by
-#looking at the length of self, minus any terminal gaps.
-sub find_identical_to {
-    my $self = shift;
-    my $othr = shift;
-    my ($end, $i, $c1, $c2, $sum, $len, $gap, $s, $new);
-
-    return unless $othr;
-
-    die "${self}::find_identical_to() length mismatch\n"
-	unless $self->length == $othr->length;
-    
-    $end = $self->length +1;
-    $sum = $len = 0;
-    $s   = '';
-
-    for ($i=1, $gap=0; $i<$end; $i++, $gap=0) {
-
-	$c1 = $self->{'string'}->raw($i); $c2 = $othr->{'string'}->raw($i);
-
-	$gap++  if $self->{'string'}->is_non_sequence($c1);
-	$gap++  if $self->{'string'}->is_non_sequence($c1);
-
-	if ($gap > 1) {
-	    $s .= $Bio::MView::Sequence::Text_Spc;
-	    next;
-	}
-
-	#zero or at most one gap:
-
-	#ignore leader/trailer gaps
-	$len++  unless $self->{'string'}->is_padding($c1);
-
-	if ($c1 ne $c2) {
-	    $s .= $Bio::MView::Sequence::Text_Spc;
-	    next;
-	}
-
-	$s .= $c1;
-	$sum++;
-    }
-
-    $sum = 100 * ($sum + 0.0) / $len    if $len > 0;
-   
-    #encode the new "sequence"
-    $new = new Bio::MView::Sequence;
-    $new->append([\$s, $self->{'from'}, $self->{'from'}+$end-2]);
-
-    #return a new identity Row therefrom
-    Bio::MView::Align::Identity->new($self->id, $othr->id, $new, $sum);
 }
 
 

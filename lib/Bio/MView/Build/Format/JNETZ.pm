@@ -126,7 +126,7 @@ sub color_row {
 	next    if $self->{'string'}->is_space($c);
 
 	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($c)) {
+	if ($self->{'string'}->is_non_char($c)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}

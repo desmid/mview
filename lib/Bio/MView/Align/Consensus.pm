@@ -599,7 +599,7 @@ sub color_by_type {
 	next    if $self->{'string'}->is_space($cg);
 
 	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($cg)) {
+	if ($self->{'string'}->is_non_char($cg)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -656,7 +656,7 @@ sub color_by_identity {
 	next    if $self->{'string'}->is_space($cg);
 					 
 	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($cg)) {
+	if ($self->{'string'}->is_non_char($cg)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -729,7 +729,7 @@ sub color_by_consensus_sequence {
 	next    if $self->{'string'}->is_space($cs);
 					 
 	#gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($cs)) {
+	if ($self->{'string'}->is_non_char($cs)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
@@ -805,11 +805,11 @@ sub color_by_consensus_group {
 
 	#warn "[$i]= $cg <=> $cs\n";
 	
-	#no sequence symbol: white space: no colour
+	#no sequence symbol: whitespace: no colour
 	next    if $self->{'string'}->is_space($cs);
 
-	#sequence gap: gapcolour
-	if ($self->{'string'}->is_non_sequence($cs)) {
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($cs)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
