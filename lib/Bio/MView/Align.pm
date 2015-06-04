@@ -66,13 +66,13 @@ my %Known_Parameter =
      'find'       => [ '\S*',     '' ],
     );
 
-my @Known_Molecule_Type =
+my %Known_Molecule_Type =
     (
      #name
-     'aa' ,
-     'na' ,
-     'dna',
-     'rna',
+     'aa' => 1,
+     'na' => 1,
+     'dna'=> 1,
+     'rna'=> 1,
     );
 
 my %Known_Alignment_Color_Schemes =
@@ -542,11 +542,12 @@ sub print_css1_colormaps {
 
 sub check_molecule_type {
     if (defined $_[0]) {
-	my @tmp = grep lc $_[0], @Known_Molecule_Type;
-	return lc $_[0]  if @tmp;
+	if (exists $Known_Molecule_Type{lc $_[0]}) {
+	    return lc $_[0];
+	}
 	return undef;
     }
-    return map { lc $_ } @Known_Molecule_Type;
+    return map { lc $_ } sort keys %Known_Molecule_Type;
 }
 
 sub check_alignment_color_scheme {

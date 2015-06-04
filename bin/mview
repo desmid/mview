@@ -443,11 +443,13 @@ sub copyright {
 __DATA__
 
 text:     "usage: __PROG [options] [file...]\n\n
-Some of these options take multiple arguments which must be supplied\n
-as a comma separated list. Integral subranges therein are allowed, eg.,\n
-'1,2,5..10,20'. The list must be quoted if it contains whitespace or a\n
-wildcard that might be expanded by the shell. Optional parameter values are\n
-given between braces {}; defaults are given in square brackets [].\n"
+Option names and parameter values can generally be abbreviated. Alternative\n
+parameter values are listed in braces {}, followed by the default value in\n
+square brackets [].\n\n
+Some options take multiple arguments which must be supplied as a comma\n
+separated list, like '1,8,9,10'. Subranges are allowed, so you could also\n
+write that as '1,8:10' or even '1,8..10'. Any argument must be quoted if it\n
+contains whitespace or a wildcard that might be expanded by the shell\n"
 
 
 ###########################################################################
@@ -527,6 +529,12 @@ action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-alncolor/-
 
 OPTION:   dna
 action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-moltype dna'") if defined __OV; }
+
+OPTION:   keep
+action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-show'") if defined __OV; }
+
+OPTION:   disc
+action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-hide'") if defined __OV; }
 
 
 ###########################################################################
@@ -623,7 +631,7 @@ convert:  sub { __ARGS;
 text:     "Molecule type:"
 
 OPTION:   moltype
-usage:    "Molecule type __CHOOSE(Bio::MView::Manager::check_molecule_type)"
+usage:    "Affects coloring and format converions __CHOOSE(Bio::MView::Manager::check_molecule_type)"
 type:     s
 default:  aa
 param:    moltype
@@ -641,70 +649,16 @@ convert:  sub { __ARGS;
 	      	       Bio::MView::Manager::check_molecule_type(__PV)) {
 	      	   __WARN("unknown molecule type '-__ON=__OV'.");
 	      	   __WARN("known types are: ", join(",",
-	      	   Bio::MView::Manager::check_molecule_type), "\n");
+	      	     Bio::MView::Manager::check_molecule_type), "\n");
 	      }
+	      (__PARAM{'def_aln_colormap'},
+	       __PARAM{'def_con_colormap'}) =
+	    	   Bio::MView::Manager::get_default_colormaps(__PV);
+	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
+	    	 Bio::MView::Manager::get_default_groupmap(__OV);
+              __PARAM{'moltype'} = __PV;
               __PV;
           }
-
-## OPTION:   aa
-## usage:    "Use protein colormaps and/or consensus groups"
-## default:  1
-## action:   sub { __ARGS;
-## #CORE::warn("Called: aa ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-##             if (__OV) {
-## 	      __OV = Bio::MView::Manager::check_molecule_type('aa');
-## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-##               __PARAM{'moltype'} = __OV;
-##             }
-##           }
-## 
-## OPTION:   na
-## usage:    "Use nucleotide colormaps and/or consensus groups"
-## default:  0
-## action:   sub { __ARGS;
-## #CORE::warn("Called: na ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-##             if (__OV) {
-## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
-## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-##               __PARAM{'moltype'} = __OV;
-##             }
-##           }
-## 
-## OPTION:   dna
-## usage:    "Use nucleotide colormaps and/or consensus groups"
-## default:  0
-## action:   sub { __ARGS;
-## #CORE::warn("Called: dna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-##             if (__OV) {
-## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
-## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-##               __PARAM{'moltype'} = __OV;
-##             }
-##           }
-## 
-## OPTION:   rna
-## usage:    "Use nucleotide colormaps and/or consensus groups"
-## default:  0
-## action:   sub { __ARGS;
-## #CORE::warn("Called: option: rna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-##             if (__OV) {
-## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
-## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-##               __PARAM{'moltype'} = __OV;
-##             }
-##           }
 
 
 ###########################################################################
@@ -995,19 +949,19 @@ convert:  sub { __ARGS;
 		__OV;
 	  }
 
-OPTION:   ref
+OPTION:   reference
 usage:    "Use row N or row identifier as %identity reference"
 type:     s
 default:  query
 param:    ref_id
 
-OPTION:   keep
+OPTION:   show
 usage:    "Keep rows 1..N or row identifiers"
 type:     @s
 param:    keeplist
 
-OPTION:   disc
-usage:    "Discard rows 1..N or row identifiers"
+OPTION:   hide
+usage:    "Drop rows 1..N or row identifiers"
 type:     @s
 param:    skiplist
 
@@ -1278,11 +1232,14 @@ convert:  sub { __ARGS;
 		    push @tmp, '+';
 		} elsif ($_ eq 'm' or $_ eq 'M') {
 		    push @tmp, '-';
+		} elsif ($_ eq 'both') {
+		    @tmp = ('*');
+		    last;
 		} elsif ($_ eq '*') {
 		    @tmp = ('*');
 		    last;
 		} else {
-                  __WARN("bad value for '-__ON=$_' choose from '{p,m,*}'");
+                  __WARN("bad value for '-__ON=$_' choose from '{p,m,both,*}'");
                 }
               }
               \@tmp;
@@ -1326,7 +1283,7 @@ convert:  sub { __ARGS;
 
 #generic
 OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,*}"
+usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  *
 
@@ -1356,7 +1313,7 @@ default:  unlimited
 
 #generic
 OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,*}"
+usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  *
 
@@ -1385,14 +1342,20 @@ type:     s
 default:  unlimited
 
 OPTION:   cycle
-usage:    "Process the N'th cycle of a multipass search {1..N,last}"
+usage:    "Process the N'th cycle of a multipass search {1..N,first,last,all}"
 type:     @s
 default:  last
 param:    
 convert:  sub { __ARGS;
-		 if (__OV eq 'last') {
+		 if (__OV eq 'first') {
+		     #show first cycle
+		     return [1];
+		 } elsif (__OV eq 'last') {
 		     #show last cycle
 		     return [0];
+		 } elsif (__OV eq 'all') {
+		     #show all cycles
+		     return [];
 		 } elsif (__OV eq '*') {
 		     #show all cycles
 		     return [];
@@ -1420,7 +1383,7 @@ convert:  sub { __ARGS;
 
 #generic
 OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,*}"
+usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  *
 
@@ -1443,7 +1406,7 @@ param:
 text:     "UCSC MAF:"
 
 OPTION:   block
-usage:    "Report only these blocks {1..N,first,*}"
+usage:    "Report only these blocks {1..N,first,all,*}"
 type:     @s
 default:  first
 param:    
@@ -1451,13 +1414,15 @@ convert:  sub { __ARGS;
 		 if (__OV eq 'first') {
 		     #show first block
 		     return [0];
+		 } elsif (__OV eq 'all') {
+		     #show all blocks
+		     return [];
 		 } elsif (__OV eq '*') {
 		     #show all blocks
 		     return [];
 		 } else {
 		     return __TEST('@i', __ON, __OV);
 		 }
-		__WARN("bad setting '-__ON=__OV', want range {1..N,first,*}");
 	     }
 
 
@@ -1466,24 +1431,11 @@ convert:  sub { __ARGS;
 
 text:     "MULTAL/MULTAS:"
 
+#share
 OPTION:   block
-usage:    "Report only these blocks {1..N,first,*}"
+usage:    "Report only these blocks {1..N,first,all,*}"
 type:     @s
 default:  first
-param:    
-convert:  sub { __ARGS;
-		 if (__OV eq 'first') {
-		     #show first block
-		     return [0];
-		 } elsif (__OV eq '*') {
-		     #show all blocks
-		     return [];
-		 } else {
-		     return __TEST('@i', __ON, __OV);
-		 }
-		__WARN("bad setting '-__ON=__OV', want range {1..N,first,*}");
-	     }
-
 
 ###########################################################################
 [HELP]

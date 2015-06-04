@@ -315,8 +315,8 @@ sub expand_integer_list {
     my @tmp = ();
     local $_;
     foreach (split /\s*,\s*/, $v) {
-        #range M\.\.N
-        if (/^($RX_Sint)(?:\.\.)($RX_Sint)$/) {
+        #range M\.\.N or M:N
+        if (/^($RX_Sint)(?:\.\.|:)($RX_Sint)$/) {
             if ($2 < $1) {
 		if ($sortP) {
 		    $self->warn("bad integer list range value '$o=$_'");
@@ -330,7 +330,7 @@ sub expand_integer_list {
             next;
         }
         #non-range
-        if (/^($RX_Sint)$/ and ! /\.\./) {
+        if (/^($RX_Sint)$/ and ! /\.\./ and ! /:/) {
             push @tmp, $1;
             next;
         }
@@ -348,7 +348,7 @@ sub expand_float_list {
     local $_;
     foreach (split /\s*,\s*/, $v) {
         #non-range
-        if (/^($RX_Sreal)$/ and ! /\.\./) {
+        if (/^($RX_Sreal)$/ and ! /\.\./ and ! /:/) {
             push @tmp, $1;
             next;
         }
@@ -365,8 +365,8 @@ sub expand_list {
     my @tmp = ();
     local $_;
     foreach (split /\s*,\s*/, $v) {
-        #integer range M\.\.N
-        if (/^($RX_Sint)(?:\.\.)($RX_Sint)$/) {
+        #integer range M\.\.N or M:N
+        if (/^($RX_Sint)(?:\.\.|:)($RX_Sint)$/) {
             if ($2 < $1) {
 		if ($sortP) {
 		    $self->warn("bad integer list range value '$o=$_'");
