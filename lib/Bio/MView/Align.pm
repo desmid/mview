@@ -66,13 +66,13 @@ my %Known_Parameter =
      'find'       => [ '\S*',     '' ],
     );
 
-my %Known_Molecule_Type =
+my @Known_Molecule_Type =
     (
      #name
-     'aa'          => 1,  #protein
-     'na'          => 1,  #nucleotide
-     'dna'         => 1,  #DNA
-     'rna'         => 1,  #RNA
+     'aa' ,
+     'na' ,
+     'dna',
+     'rna',
     );
 
 my %Known_Alignment_Color_Schemes =
@@ -233,7 +233,7 @@ sub id2row {
 sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
 sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
 
-#return list of identifiers
+#return list of all rows as inernal ids
 sub all_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
@@ -256,7 +256,7 @@ sub visible_ids {
 
 #return list of visible and not nops rows as internal ids;
 #these are rows that will be displayed AND have consensus calculations done
-sub visible_and_calculation_ids {
+sub visible_and_scoreable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
@@ -542,12 +542,11 @@ sub print_css1_colormaps {
 
 sub check_molecule_type {
     if (defined $_[0]) {
-	if (exists $Known_Molecule_Type{lc $_[0]}) {
-	    return lc $_[0];
-	}
+	my @tmp = grep lc $_[0], @Known_Molecule_Type;
+	return lc $_[0]  if @tmp;
 	return undef;
     }
-    return map { lc $_ } sort keys %Known_Molecule_Type;
+    return map { lc $_ } @Known_Molecule_Type;
 }
 
 sub check_alignment_color_scheme {
@@ -1088,7 +1087,7 @@ sub conservation {
 
     return ''  unless @$ids; #empty alignment
 
-    my @tmp = $self->visible_and_calculation_ids;
+    my @tmp = $self->visible_and_scoreable_ids;
     my $refseq = $self->id2row($tmp[0])->seqobj;
     my $depth = scalar @tmp;
     my $s = '';

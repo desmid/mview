@@ -525,6 +525,9 @@ action:   sub { __ARGS; __WARN("obsolete hidden option '-__ON' replaced by '-ver
 OPTION:   contrast
 action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-alncolor/-symcolor/-gapcolor'.") if defined __OV; }
 
+OPTION:   dna
+action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-moltype dna'") if defined __OV; }
+
 
 ###########################################################################
 [FORMATS]
@@ -619,65 +622,89 @@ convert:  sub { __ARGS;
 
 text:     "Molecule type:"
 
-OPTION:   aa
-usage:    "Use protein colormaps and/or consensus groups"
-default:  1
-action:   sub { __ARGS;
-#CORE::warn("Called: aa ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-            if (__OV) {
-	      __OV = Bio::MView::Manager::check_molecule_type('aa');
-	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-              __PARAM{'moltype'} = __OV;
-            }
+OPTION:   moltype
+usage:    "Molecule type __CHOOSE(Bio::MView::Manager::check_molecule_type)"
+type:     s
+default:  aa
+param:    moltype
+convert:  sub { __ARGS;
+              if (__OV =~ /^aa/i) {
+	      	   __PV = 'aa';
+	      } elsif (__OV =~ /^na/i) {
+	      	   __PV = 'na';
+	      } elsif (__OV =~ /^dna/i) {
+	      	   __PV = 'dna';
+	      } elsif (__OV =~ /^rna/i) {
+	      	   __PV = 'rna';
+              }
+              unless (defined __PV and defined
+	      	       Bio::MView::Manager::check_molecule_type(__PV)) {
+	      	   __WARN("unknown molecule type '-__ON=__OV'.");
+	      	   __WARN("known types are: ", join(",",
+	      	   Bio::MView::Manager::check_molecule_type), "\n");
+	      }
+              __PV;
           }
 
-OPTION:   na
-usage:    "Use nucleotide colormaps and/or consensus groups"
-default:  0
-action:   sub { __ARGS;
-#CORE::warn("Called: na ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-            if (__OV) {
-	      __OV = Bio::MView::Manager::check_molecule_type('na');
-	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-              __PARAM{'moltype'} = __OV;
-            }
-          }
-
-OPTION:   dna
-usage:    "Use nucleotide colormaps and/or consensus groups"
-default:  0
-action:   sub { __ARGS;
-#CORE::warn("Called: dna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-            if (__OV) {
-	      __OV = Bio::MView::Manager::check_molecule_type('na');
-	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-              __PARAM{'moltype'} = __OV;
-            }
-          }
-
-OPTION:   rna
-usage:    "Use nucleotide colormaps and/or consensus groups"
-default:  0
-action:   sub { __ARGS;
-#CORE::warn("Called: option: rna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-            if (__OV) {
-	      __OV = Bio::MView::Manager::check_molecule_type('na');
-	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-	    	 Bio::MView::Manager::get_default_colormaps(__OV);
-	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-              __PARAM{'moltype'} = __OV;
-            }
-          }
+## OPTION:   aa
+## usage:    "Use protein colormaps and/or consensus groups"
+## default:  1
+## action:   sub { __ARGS;
+## #CORE::warn("Called: aa ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
+##             if (__OV) {
+## 	      __OV = Bio::MView::Manager::check_molecule_type('aa');
+## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
+## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
+## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
+## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
+##               __PARAM{'moltype'} = __OV;
+##             }
+##           }
+## 
+## OPTION:   na
+## usage:    "Use nucleotide colormaps and/or consensus groups"
+## default:  0
+## action:   sub { __ARGS;
+## #CORE::warn("Called: na ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
+##             if (__OV) {
+## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
+## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
+## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
+## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
+## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
+##               __PARAM{'moltype'} = __OV;
+##             }
+##           }
+## 
+## OPTION:   dna
+## usage:    "Use nucleotide colormaps and/or consensus groups"
+## default:  0
+## action:   sub { __ARGS;
+## #CORE::warn("Called: dna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
+##             if (__OV) {
+## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
+## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
+## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
+## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
+## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
+##               __PARAM{'moltype'} = __OV;
+##             }
+##           }
+## 
+## OPTION:   rna
+## usage:    "Use nucleotide colormaps and/or consensus groups"
+## default:  0
+## action:   sub { __ARGS;
+## #CORE::warn("Called: option: rna ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
+##             if (__OV) {
+## 	      __OV = Bio::MView::Manager::check_molecule_type('na');
+## 	      (__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
+## 	    	 Bio::MView::Manager::get_default_colormaps(__OV);
+## 	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
+## 	    	 Bio::MView::Manager::get_default_groupmap(__OV);
+##               __PARAM{'moltype'} = __OV;
+##             }
+##           }
 
 
 ###########################################################################
@@ -922,7 +949,7 @@ convert:  sub { __ARGS;
 	  }
 
 OPTION:   range
-usage:    "Display column range M..N as numbered by ruler"
+usage:    "Display column range M:N as numbered by ruler"
 type:     s
 default:  all
 param:
@@ -937,7 +964,7 @@ convert:  sub { __ARGS;
 		    __TEST('i', __ON, $tmp[1]);
 		    #ignore range order, but check for negative values
 		    if ($tmp[0] < 1 or $tmp[1] < 1) {
-			__WARN("bad range setting '-__ON=__OV', want M..N.");
+			__WARN("bad range setting '-__ON=__OV', want M:N.");
 		    }
 		}
             }
