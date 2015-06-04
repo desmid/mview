@@ -391,13 +391,13 @@ sub build_alignment {
     $self->build_indices;
     $self->build_rows;
 
-    my $ali = $self->build_base_alignment;
+    my $aln = $self->build_base_alignment;
 
-    return undef  unless $ali->rows;
+    return undef  unless $aln->all_ids > 0;
 
 SWITCH: {
 	if ($self->{'mode'} eq 'new') {
-	    $ali = $self->build_new_alignment($ali);
+	    $aln = $self->build_new_alignment($aln);
 	    last;
 	}
 	last    if $self->{'mode'} eq 'none';  #for testing
@@ -411,7 +411,7 @@ SWITCH: {
 	die "${self}::alignment() unknown mode '$self->{'mode'}'\n";
     }
 
-    $ali;
+    $aln;
 }
 
 sub build_indices {
@@ -508,7 +508,7 @@ sub set_range {
 
 sub build_base_alignment {
     my $self = shift;
-    my ($i, $row, $ali, @list) = ();
+    my ($i, $row, $aln, @list) = ();
 	
     for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
 	$row = $self->{'index2row'}->[$i];
@@ -521,65 +521,66 @@ sub build_base_alignment {
 	push @list, $row;
     }
 
-    $ali = new Bio::MView::Align(\@list);
-    $ali->set_parameters('nopshash' => $self->{'nops_uid'},
+    $aln = new Bio::MView::Align(\@list);
+    $aln->set_parameters('nopshash' => $self->{'nops_uid'},
 			 'hidehash' => $self->{'hide_uid'});
 
     #filter alignment based on pairwise %identity, if requested
     if ($self->{'minident'} > 0 or $self->{'maxident'} < 100) {
-	$ali = $ali->prune_all_identities($self->{'pcid'},
+	$aln = $aln->prune_all_identities($self->{'pcid'},
 					  $self->{'minident'},
 					  $self->{'maxident'},
 					  $self->{'show'},
 					  keys %{$self->{'keep_uid'}});
     }
     
-    $ali;
+    $aln;
 }
 
 sub build_new_alignment {
-    my ($self, $ali) = @_;
+    my ($self, $aln) = @_;
     my ($i, $mrow, $arow);
 
-    $ali->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
+    $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
 	if defined $self->{'ref_row'};
 
     for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
 
 	$mrow = $self->{'index2row'}->[$i];
 
-	if ($arow = $ali->item($mrow->uid)) {
+	next  if exists $self->{'hide_uid'}->{$mrow->uid};
 
-	    next  if exists $self->{'hide_uid'}->{$mrow->uid};
+	$arow = $aln->item($mrow->uid);
 
-	    if (exists $self->{'nops_uid'}->{$mrow->uid} or
-		(defined $mrow->{'type'} and $mrow->{'type'} eq 'special')) {
-		$arow->set_display('label0' => '',
-				   'label1' => $mrow->cid,
-				   'label2' => $mrow->text,
-				   'label3' => '',
-				   'label4' => '',
-				   'label5' => $mrow->posn1,
-				   'label6' => $mrow->posn2,
-				   'url'    => $mrow->url,
-				   );
-	    } else {
-		#don't change label4 (percent identity) here as this was
-		#already computed by $ali->set_identity() above.
-		$arow->set_display('label0' => $mrow->num,
-				   'label1' => $mrow->cid,
-				   'label2' => $mrow->text,
-				   'label3' => $mrow->data,
-				   #'label4' => '',###
-				   'label5' => $mrow->posn1,
-				   'label6' => $mrow->posn2,
-				   'url'    => $mrow->url,
-				   );
-	    }
+	next  unless defined $arow;
+
+	if (exists $self->{'nops_uid'}->{$mrow->uid} or
+	    (defined $mrow->{'type'} and $mrow->{'type'} eq 'special')) {
+	    $arow->set_display('label0' => '',
+			       'label1' => $mrow->cid,
+			       'label2' => $mrow->text,
+			       'label3' => '',
+			       'label4' => '',
+			       'label5' => $mrow->posn1,
+			       'label6' => $mrow->posn2,
+			       'url'    => $mrow->url,
+		);
+	} else {
+	    #don't change label4 (percent identity) here as this was
+	    #already computed by $aln->set_identity() above.
+	    $arow->set_display('label0' => $mrow->num,
+			       'label1' => $mrow->cid,
+			       'label2' => $mrow->text,
+			       'label3' => $mrow->data,
+			       #'label4' => '',###
+			       'label5' => $mrow->posn1,
+			       'label6' => $mrow->posn2,
+			       'url'    => $mrow->url,
+		);
 	}
     }
 
-    $ali;
+    $aln;
 }
 
 #remove query and hit columns at gaps in the query sequence and downcase

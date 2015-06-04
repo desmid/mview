@@ -427,7 +427,7 @@ sub tally {
     } else {
 	#by rows containing sequence in this column
 	$depth = 0;
-	map { $depth++ if Bio::MView::Sequence::is_sequence(0, $_) } @$col;
+	map { $depth++ if Bio::MView::Sequence::is_char(0, $_) } @$col;
     }
     #warn "($group, [@$col], $gaps, $depth)\n";
 
@@ -440,7 +440,7 @@ sub tally {
     #tally class scores by column symbol (except gaps), which is upcased
     foreach $class (keys %$group) {
 	foreach $sym (@$col) {
-	    next    unless Bio::MView::Sequence::is_sequence(0, $sym) or $gaps;
+	    next    unless Bio::MView::Sequence::is_char(0, $sym) or $gaps;
 	    $score->{$class}++    if exists $group->{$class}->[1]->{uc $sym};
 	}
 	$score->{$class} = 100.0 * $score->{$class} / $depth;

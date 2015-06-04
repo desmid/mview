@@ -152,8 +152,8 @@ sub print {
     my $self = shift;
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-    foreach my $i (@{$self->{'index2row'}}) {
-	$i->print if defined $i;
+    foreach my $r (@{$self->{'index2row'}}) {
+	$r->print  if defined $r;
     }
     warn "\n";
     $self;
@@ -162,18 +162,17 @@ sub print {
 sub initialise_parameters {
     my $self = shift;
     my ($p) = (@_, \%Known_Parameter);
-    local $_;
-    foreach (keys %$p) {
-	#warn "initialise_parameters() $_\n";
-	if (ref $p->{$_}->[0] eq 'ARRAY') {
-	    $self->{$_} = [];
+    foreach my $k (keys %$p) {
+	#warn "initialise_parameters() $k\n";
+	if (ref $p->{$k}->[0] eq 'ARRAY') {
+	    $self->{$k} = [];
 	    next;
 	}
-	if (ref $p->{$_}->[0] eq 'HASH') {
-	    $self->{$_} = {};
+	if (ref $p->{$k}->[0] eq 'HASH') {
+	    $self->{$k} = {};
 	    next;
 	}
-	$self->{$_} = $p->{$_}->[1];
+	$self->{$k} = $p->{$k}->[1];
     }
 
     $self->{'nopshash'} = {};
@@ -224,30 +223,18 @@ sub set_parameters {
     $self;
 }
 
-#concatenate Align object Rows into a new Align object: can be used to copy
-sub cat {
-    my $self = $_[0];
-    my $i;
-    my @obj = ();
-    foreach (@_) {
-	for ($i=0; $i<@{$_->{'index2row'}}; $i++) {
-	    next unless defined $_->{'index2row'}->[$i];
-	    push @obj, $_->{'index2row'}->[$i];
-	}
-    }
-    new Bio::MView::Align(\@obj, $self->{'parent'});
-}
-
 sub length { $_[0]->{'length'} }
 
-#NIGE: change data structures to remove this nonsense
-sub id2row { $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}] }
+sub id2row {
+    return undef  unless defined $_[0]->{id2index}->{$_[1]};
+    $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}];
+}
 
 sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
 sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
 
 #return list of identifiers
-sub ids {
+sub all_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
@@ -267,18 +254,6 @@ sub visible_ids {
     @tmp;
 }
 
-#return list of visible rows as row indices
-sub visible_indices {
-    my @tmp = ();
-    for (my $i=0; $i<@{$_[0]->{'index2row'}}; $i++) {
-	my $r = $_[0]->{'index2row'}->[$i];
-	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->id);
-	push @tmp, $i;
-    }
-    @tmp;
-}
-
 #return list of visible and not nops rows as internal ids;
 #these are rows that will be displayed AND have consensus calculations done
 sub visible_and_calculation_ids {
@@ -292,24 +267,21 @@ sub visible_and_calculation_ids {
     @tmp;
 }
 
-#return number of stored rows
-sub rows { scalar map { $_->id if defined $_ } @{$_[0]->{'index2row'}} };
-
-#return row object indexed by identifier, or 0
+#return row object indexed by identifier, or undef
 sub item {
     my ($self, $id) = @_;
-    return 0  unless defined $id;
+    return undef  unless defined $id;
     return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
-    0;
+    undef;
 }
 
 #delete row(s) by identifier
 sub delete {
     my $self = shift;
-    local $_;
-    foreach (@_) {
-	$self->{'index2row'}->[$self->{'id2index'}->{$_}] = undef;
-	$self->{'id2index'}->{$_} = undef;
+    foreach my $id (@_) {
+	next  unless exists $self->{'id2index'}->{$id};
+	$self->id2row($id) = undef;
+	$self->{'id2index'}->{$id} = undef;
     }
     $self;
 }
@@ -629,31 +601,23 @@ sub get_default_find_colormap {
 #propagate display parameters to row objects
 sub set_display {
     my $self = shift;
-    local $_;
-    foreach (@{$self->{'index2row'}}) {
-	if (defined $_) {
-	    $_->set_display(@_);
-	}
+    foreach my $r (@{$self->{'index2row'}}) {
+	$r->set_display(@_)  if defined $r;
     }
 }
 
 #ignore id's in remaining arglist
 sub set_identity {
+    my ($self, $ref, $mode) = @_;
     #warn "Bio::MView::Align::set_identity(@_)\n";
-    my $self = shift;
-    my $ref  = shift;
-    my $mode = shift;
-    my $nops = shift;
 
-    return unless defined $self->{'id2index'}->{$ref};
-    return unless defined $self->{'index2row'}->[$self->{'id2index'}->{$ref}];
+    $ref = $self->id2row($ref);
+    return  unless defined $ref;
 
-    $ref = $self->{'index2row'}->[$self->{'id2index'}->{$ref}];
-
-    foreach (@{$self->{'index2row'}}) {
-	if (defined $_ and ! exists $nops->{$_->id}) {
-	    $_->set_identity($ref, $mode);
-	}
+    foreach my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	$r->set_identity($ref, $mode);
     }
 }
 
@@ -761,19 +725,14 @@ sub set_color_scheme {
 sub color_special {
     my $self = shift;
 
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	next if $self->{'index2row'}->[$i]->{'type'} ne 'special';
-	$self->{'index2row'}->[$i]->color_special(@_);
-	$self->{'index2row'}->[$i]->set_display('label0'=>'',
-						'label2'=>'',
-						'label3'=>'',
-						'label4'=>'',
-						'label5'=>'',
-						'label6'=>'',
-						);
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	next  if $r->{'type'} ne 'special';
+	$r->color_special(@_);
+	$r->set_display('label0'=>'', 'label2'=>'', 'label3'=>'', #not 1
+			'label4'=>'', 'label5'=>'', 'label6'=>'');
     }
     $self;
 }
@@ -791,11 +750,11 @@ sub color_by_find_block {
     push @_, 'mapsize'  => $mapsize;
     push @_, 'patterns' => [@patterns];
 
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	$self->{'index2row'}->[$i]->color_by_find_block(@_);
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_find_block(@_);
     }
     $self;
 }
@@ -804,11 +763,11 @@ sub color_by_find_block {
 sub color_by_type {
     my $self = shift;
     
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	$self->{'index2row'}->[$i]->color_by_type(@_);
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_type(@_);
     }
     $self;
 }
@@ -816,13 +775,15 @@ sub color_by_type {
 #propagate colour scheme to row objects
 sub color_by_identity {
     my ($self, $id) = (shift, shift);
-    my $ref = $self->item($id);
 
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	$self->{'index2row'}->[$i]->color_by_identity($ref, @_);
+    my $ref = $self->item($id);
+    return $self  unless defined $ref;
+
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_identity($ref, @_);
     }
     $self;
 }
@@ -838,17 +799,19 @@ sub color_by_consensus_sequence {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $con = new Bio::MView::Align::Consensus($self->{'tally'},
+    my $from = $self->{'parent'}->{'from'};
+    my $to   = $from + $self->length -1;
+
+    my $con = new Bio::MView::Align::Consensus($from, $to,
+					       $self->{'tally'},
 					       $self->{'group'},
 					       $self->{'threshold'}->[0],
-					       $self->{'ignore'},
-					       $self->{'parent'}->{'from'});
-    
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	$con->color_by_consensus_sequence($self->{'index2row'}->[$i], @_);
+					       $self->{'ignore'});
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$con->color_by_consensus_sequence($r, @_);
     }
     $self;
 }
@@ -865,17 +828,19 @@ sub color_by_consensus_group {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $con = new Bio::MView::Align::Consensus($self->{'tally'},
+    my $from = $self->{'parent'}->{'from'};
+    my $to   = $from + $self->length -1;
+
+    my $con = new Bio::MView::Align::Consensus($from, $to,
+					       $self->{'tally'},
 					       $self->{'group'},
 					       $self->{'threshold'}->[0],
-					       $self->{'ignore'},
-					       $self->{'parent'}->{'from'});
-    
-    for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
-	$con->color_by_consensus_group($self->{'index2row'}->[$i], @_);
+					       $self->{'ignore'});
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$con->color_by_consensus_group($r, @_);
     }
     $self;
 }
@@ -887,22 +852,24 @@ sub init_display { ( $_[0]->{'parent'}->{'string'} ) }
 #memory usage instead of accumulating a potentially long list before passing
 #to Display::append(), and to permit incremental garbage collection of each
 #Align::Row object once it has been appended.
-
 #Garbage collection is enabled by default, unless the optional argument
 #$gc_flag is false. This is essential when further processing of Row objects
 #will occur, eg., consensus calculations.
 sub append_display {
     my ($self, $dis, $gc_flag) = (@_, 1);
     #warn "append_display($dis, $gc_flag)\n";
+
     for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	if (defined $self->{'index2row'}->[$i]) {
-	    if (!exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id}) {
-		#append the row data structure to the Display object
-		$dis->append($self->{'index2row'}->[$i]->get_display);
-	    }
-	    #optional garbage collection
-	    $self->do_gc($i)  if $gc_flag;
-	}
+	my $r = $self->{'index2row'}->[$i];
+
+	next  unless defined $r;
+	next  if $self->is_hidden($r->id); #also let nops through
+
+	#append the row data structure to the Display object
+	$dis->append($r->get_display);
+
+	#optional garbage collection
+	$self->do_gc($i)  if $gc_flag;
     }
     $self;
 }
@@ -925,7 +892,7 @@ sub do_gc {
 #sequence length is used to normalise: 'reference', 'aligned', 'hit'.
 sub prune_all_identities {
     my ($self, $mode, $min, $max, $topn) = (shift, shift, shift, shift, shift);
-    my (@obj, %keep, $ref, $i, $row);
+    my (@obj, %keep, $ref, $row);
 
     @obj = ();
     $min = 0    if $min < 0;
@@ -936,9 +903,9 @@ sub prune_all_identities {
     #return $self  if $min > $max;  #silly combination
 
     #ensure no replicates in keep list
-    foreach $i (@_) {
-	$ref = $self->{'index2row'}->[$self->{'id2index'}->{$i}];
-	$keep{$ref} = $ref    if defined $ref;
+    foreach my $i (@_) {
+	$ref = $self->id2row($i);
+	$keep{$ref} = $ref  if defined $ref;
     }
 
     #prime keep list
@@ -946,32 +913,29 @@ sub prune_all_identities {
 
     #compare all rows not on keep list against latter and add thereto if
     #sufficiently dissimilar
-    for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
-	
-	next unless defined $self->{'index2row'}->[$i];
+    foreach my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
 
 	#enforce limit on number of rows
-	last    if $topn > 0 and @obj == $topn;
+	last  if $topn > 0 and @obj == $topn;
 
-	if (exists $keep{$self->{'index2row'}->[$i]}) {
-	    push @obj, $self->{'index2row'}->[$i];
+	if (exists $keep{$r}) {
+	    push @obj, $r;
 	    next;
 	}
 
-	$row = $self->{'index2row'}->[$i];
-	
 	foreach $ref (@obj) {
-	    my $pcid = $row->compute_identity_to($ref, $mode);
+	    my $pcid = $r->compute_identity_to($ref, $mode);
 	    #store object if %identity satisfies cutoff for all kept hits
 	    if ($pcid < $min or $pcid > $max) {
-		$row = 0;
+		$r = 0;
 		last;
 	    }
 	}
 	
-	if ($row) {
-	    #print STDERR "passed ", $row->id, "\n";
-	    push @obj, $row;
+	if ($r) {
+	    #warn "passed ", $r->id, "\n";
+	    push @obj, $r;
 	}
 
 	#warn join(" ", map { $_->id } @obj), "\n";
@@ -982,29 +946,27 @@ sub prune_all_identities {
 
 #generate a new alignment from an existing one with extra information
 #showing %identities and identical symbols with respect to some supplied
-#identifier. only keep lines  with %identity to reference <= $limit.
+#identifier. only keep lines with %identity to reference <= $limit.
 sub prune_identities_gt {
     my ($self, $id, $limit, $mode) = @_;
-    my ($ref, $i, @obj, $row, $val);
+    my ($ref, @obj, $row, $val);
     
     $ref = $self->item($id);
+    return  $self unless defined $ref;
 
     @obj = ();
 
-    for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
-
-	next unless defined $self->{'index2row'}->[$i];
-
-	$row = $self->{'index2row'}->[$i];
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
 
 	#store object if %identity satisfies cutoff OR if the object was
 	#the reference object!
 	if (($val = $row->compute_identity_to($ref, $mode)) <= $limit or
-	     $row->id eq $id) {
-
-	    $row->set_display('label4'=>sprintf("%.1f%%", $val));
-	
-	    push @obj, $row;
+	    $r->id eq $id) {
+	    
+	    $r->set_display('label4'=>sprintf("%.1f%%", $val));
+	    
+	    push @obj, $r;
 	}
     }
 
@@ -1085,7 +1047,6 @@ sub build_consensus_rows {
 
 sub compute_tallies {
     my ($self, $group) = @_;
-    my ($row, $col, $r, $c);
 
     $group = $Bio::MView::Align::Consensus::Default_Group
 	unless defined $group;
@@ -1093,21 +1054,18 @@ sub compute_tallies {
     $self->{'tally'} = [];
 
     #iterate over columns
-    for ($c=1; $c <= $self->{'length'}; $c++) {
+    for (my $c=1; $c <= $self->{'length'}; $c++) {
 
-	$col = [];
+	my $col = [];
 
 	#iterate over rows
-	for ($r=0; $r<@{$self->{'index2row'}}; $r++) {
+	for my $r (@{$self->{'index2row'}}) {
+	    next unless defined $r;
+	    next if $self->is_nop($r->id);
+	    next if $self->is_hidden($r->id);
+	    next if $r->{'type'} ne 'sequence';
 
-	    $row = $self->{'index2row'}->[$r];
-	    
-	    next unless defined $row;
-	    next if exists $self->{'nopshash'}->{$row->id};
-	    next if exists $self->{'hidehash'}->{$row->id};
-	    next if $row->{'type'} ne 'sequence';
-
-	    push @$col, $row->{'string'}->raw($c);
+	    push @$col, $r->{'string'}->raw($c);
 	}
 
 	#warn "compute_tallies: @$col\n";

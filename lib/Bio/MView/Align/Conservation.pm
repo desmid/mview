@@ -25,7 +25,7 @@ sub new {
 
     my $self = { %Bio::MView::Align::Sequence::Template };
 
-    $self->{'id'}   = "consensus/clustal";
+    $self->{'id'}   = "clustal";
     $self->{'type'} = 'conservation';
     $self->{'from'} = $from;
     $self->{'to'}   = $to;

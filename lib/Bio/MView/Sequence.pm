@@ -370,7 +370,11 @@ sub ungapped_string {
     $s =~ s/$_[0]->{text_gap}//og;
     $s =~ s/$_[0]->{text_spc}//og;
     $s =~ s/$_[0]->{text_fs1}//og;
-    $s =~ s/$_[0]->{text_fs2}//og;
+    if ($_[0]->{text_fs2} eq $Text_Fs2) {  #backslash
+	$s =~ s/$_[0]->{text_fs2}$_[0]->{text_fs2}//og;
+    } else {
+	$s =~ s/$_[0]->{text_fs2}//og;
+    }
     $s;
 }
 

@@ -199,7 +199,7 @@ sub color_by_find_block {
     my $self = shift;
     my %par = @_;
 
-    return unless $self->{'type'} eq 'sequence';
+    return  unless $self->{'type'} eq 'sequence';
 
     $par{'css1'}     = 0
 	unless defined $par{'css1'};
@@ -263,7 +263,7 @@ sub color_by_type {
     my $self = shift;
     my %par = @_;
 
-    return unless $self->{'type'} eq 'sequence';
+    return  unless $self->{'type'} eq 'sequence';
 
     $par{'css1'}     = 0
 	unless defined $par{'css1'};
@@ -315,8 +315,8 @@ sub color_by_identity {
     my ($self, $othr) = (shift, shift);
     my %par = @_;
 
-    return unless $self->{'type'} eq 'sequence';
-    return unless $othr;
+    return  unless $self->{'type'} eq 'sequence';
+    return  unless defined $othr;
 
     die "${self}::color_by_identity() length mismatch\n"
 	unless $self->length == $othr->length;
@@ -389,9 +389,7 @@ sub color_by_identity {
 
 sub set_identity {
     #warn "Bio::MView::Align::Sequence::set_identity(@_)\n";
-    my $self = shift;
-    my $ref = shift;
-    my $mode = shift;
+    my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
     $self->set_display('label4'=>sprintf("%.1f%%", $val));
 }
