@@ -179,7 +179,7 @@ sub mview {
 	print $stm "</PRE>\n"   if $opt->{'pre'};
     }
     #Universal::vmstat("Manager constructor done");
-    
+
     #colormap/groupmap listing request: no alignment
     return 0  if $par->{'noparse'};
 
@@ -259,14 +259,13 @@ sub html_head {
 
 	#want STYLE?
 	if ($o->{'html'} & $HTML_CSS) {
-	    
 	    #link styles
 	    print $stm "<STYLE TYPE=\"text/css\">\n<!--\n";
 	    print $stm "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
 	    print $stm "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
 	    print $stm "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
 	    print $stm "-->\n</STYLE>\n";
-	    
+
 	    #alignment styles
 	    if ($o->{'css'} =~ /^(?:file|http):/i) {
 		#link to style sheet
@@ -503,9 +502,9 @@ action:   sub { __ARGS;
 #set the default colormaps and groupmaps (assume protein)
 OPTION:   aa
 action:   sub { __ARGS;
-#CORE::warn("Silent: aa ", __OV,",", __PV,",", __PARAM{'moltype'}, "\n");
-		(__PARAM{'def_aln_colormap'}, __PARAM{'def_con_colormap'}) =
-		  Bio::MView::Manager::get_default_colormaps('aa');
+		(__PARAM{'def_aln_colormap'},
+                 __PARAM{'def_con_colormap'}) =
+		   Bio::MView::Manager::get_default_colormaps('aa');
 		__PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
 		  Bio::MView::Manager::get_default_groupmap('aa');
                 __PARAM{'moltype'} = 'aa';
@@ -518,15 +517,6 @@ type:     i
 default:  0
 
 #obsolete options: report fact to user
-OPTION:   body
-action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-html', see '-help'.") if defined __OV; }
-
-OPTION:   quiet
-action:   sub { __ARGS; __WARN("obsolete hidden option '-__ON' replaced by '-verbose'.") if defined __OV; }
-
-OPTION:   contrast
-action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-alncolor/-symcolor/-gapcolor'.") if defined __OV; }
-
 OPTION:   dna
 action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-moltype dna'") if defined __OV; }
 
@@ -543,7 +533,7 @@ action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-hide'") if 
 text:     "Input/output formats:"
 
 OPTION:   in
-usage:    "Input format __CHOOSE(main::check_format)"
+usage:    "Input __CHOOSE(main::check_format)"
 type:     s
 action:   sub { __ARGS;
 		return __OPTION{__ON} = main::check_format(__OV, 'par')
@@ -552,7 +542,7 @@ action:   sub { __ARGS;
 	  }
 
 OPTION:   out
-usage:    "Output format __CHOOSE(Bio::MView::Manager::check_display_mode)"
+usage:    "Output __CHOOSE(Bio::MView::Manager::check_display_mode)"
 type:     s
 default:  new
 param:    mode
@@ -578,7 +568,7 @@ convert:  sub { __ARGS;
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
 		    __WARN("unknown output format '-__ON=__OV'.");
-		}   
+		}
 		__PV;
 	  }
 
@@ -601,7 +591,7 @@ default:  on
 param:
 
 OPTION:   conservation
-usage:    "Show clustal consensus line"
+usage:    "Show clustal conservation line"
 type:     b
 default:  off
 param:
@@ -612,11 +602,30 @@ type:     b
 default:  off
 param:
 
+OPTION:   width
+usage:    "Paginate alignment in blocks of N columns {N,flat}"
+type:     s
+default:  flat
+param:
+convert:  sub { __ARGS;
+            if (__OV eq 'flat') {
+              return 0;
+	    } else {
+              return __TEST('i', __ON, __OV);
+	    }
+	  }
+
+
+###########################################################################
+[IDENTITY]
+
+text: "Percent identity calculations"
+
 OPTION:   pcid
 usage:    "Compute percent identities with respect to __CHOOSE(Bio::MView::Manager::check_identity_mode)"
 type:     s
 default:  'aligned'
-param:    
+param:
 convert:  sub { __ARGS;
 		return 'reference' if __OV =~ /^r/;
 		return 'aligned'   if __OV =~ /^a/;
@@ -626,6 +635,92 @@ convert:  sub { __ARGS;
 		Bio::MView::Manager::check_identity_mode), "\n");
 	      }
 
+OPTION:   reference
+usage:    "Use row N or row identifier as %identity reference"
+type:     s
+default:  query
+param:    ref_id
+
+
+###########################################################################
+[FILTER]
+
+text:     "General row/column filters:"
+
+OPTION:   top
+usage:    "Report top N hits"
+type:     s
+default:  all
+param:    topn
+convert:  sub { __ARGS;
+            return 0    if __OV eq 'all';
+	    return __TEST('i', __ON, __OV);
+	  }
+
+OPTION:   maxident
+usage:    "Only report sequences with percent identity <= N"
+type:     f
+default:  100
+param:
+convert:  sub { __ARGS;
+		if (__OV < 0 or __OV > 100) {
+		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
+		}
+		__OV;
+	  }
+
+OPTION:   minident
+usage:    "Only report sequences with percent identity >= N"
+type:     f
+default:  0
+param:
+convert:  sub { __ARGS;
+		if (__OV < 0 or __OV > 100) {
+		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
+		}
+		__OV;
+	  }
+
+OPTION:   show
+usage:    "Keep rows 1..N or identifiers"
+type:     @s
+param:    keeplist
+
+OPTION:   hide
+usage:    "Hide rows 1..N or identifiers"
+type:     @s
+param:    skiplist
+
+OPTION:   nops
+usage:    "No operation: exclude rows 1..N or identifiers from calculatons"
+type:     @s
+param:    nopslist
+
+OPTION:   range
+usage:    "Display column range M:N as numbered by ruler"
+type:     s
+default:  all
+param:
+convert:  sub { __ARGS;
+            my @tmp = ();
+            if (__OV ne 'all') {
+		@tmp = split(/:/, __OV);
+		if (@tmp != 2) {
+		    __WARN("bad range setting '-__ON=__OV', want M:N.");
+		} else {
+		    __TEST('i', __ON, $tmp[0]);
+		    __TEST('i', __ON, $tmp[1]);
+		    #ignore range order, but check for negative values
+		    if ($tmp[0] < 1 or $tmp[1] < 1) {
+			__WARN("bad range setting '-__ON=__OV', want M:N.");
+		    }
+		}
+            }
+	    return [ @tmp ];
+	  }
+
+
+###########################################################################
 [MOLTYPE]
 
 text:     "Molecule type:"
@@ -664,7 +759,7 @@ convert:  sub { __ARGS;
 ###########################################################################
 [ALN]
 
-text:     "Alignment options:"
+text:     "Alignment coloring:"
 
 OPTION:   coloring
 usage:    "Basic style of coloring __CHOOSE(Bio::MView::Manager::check_alignment_color_scheme)"
@@ -763,7 +858,7 @@ convert:  sub { __ARGS;
 ###########################################################################
 [CON]
 
-text:     "Consensus options:"
+text:     "Consensus coloring:"
 
 OPTION:   con_coloring
 usage:    "Basic style of coloring __CHOOSE(Bio::MView::Manager::check_consensus_color_scheme)"
@@ -866,7 +961,7 @@ convert:  sub { __ARGS;
 ###########################################################################
 [HYBRID]
 
-text:     "Hybrid alignment and consensus options:"
+text:     "Hybrid alignment and consensus:"
 
 OPTION:   con_gaps
 usage:    "Count gaps during consensus computations if set to 'on'"
@@ -888,153 +983,56 @@ usage:    "Load more groupmaps from file"
 
 
 ###########################################################################
-[FILTER]
-
-text:     "General row/column filters:"
-
-OPTION:   top
-usage:    "Report top N hits"
-type:     s
-default:  all
-param:    topn
-convert:  sub { __ARGS;
-            return 0    if __OV eq 'all';
-	    return __TEST('i', __ON, __OV);
-	  }
-
-OPTION:   range
-usage:    "Display column range M:N as numbered by ruler"
-type:     s
-default:  all
-param:
-convert:  sub { __ARGS;
-            my @tmp = ();
-            if (__OV ne 'all') {
-		@tmp = split(/:/, __OV);
-		if (@tmp != 2) {
-		    __WARN("bad range setting '-__ON=__OV', want M:N.");
-		} else {
-		    __TEST('i', __ON, $tmp[0]);
-		    __TEST('i', __ON, $tmp[1]);
-		    #ignore range order, but check for negative values
-		    if ($tmp[0] < 1 or $tmp[1] < 1) {
-			__WARN("bad range setting '-__ON=__OV', want M:N.");
-		    }
-		}
-            }
-	    return [ @tmp ];
-	  }
-
-OPTION:   maxident
-usage:    "Only report sequences with percent identity <= N"
-type:     f
-default:  100
-param:
-convert:  sub { __ARGS; 
-		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
-		}
-		__OV;
-	  }
-
-OPTION:   minident
-usage:    "Only report sequences with percent identity >= N"
-type:     f
-default:  0
-param:
-convert:  sub { __ARGS; 
-		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
-		}
-		__OV;
-	  }
-
-OPTION:   reference
-usage:    "Use row N or row identifier as %identity reference"
-type:     s
-default:  query
-param:    ref_id
-
-OPTION:   show
-usage:    "Keep rows 1..N or row identifiers"
-type:     @s
-param:    keeplist
-
-OPTION:   hide
-usage:    "Drop rows 1..N or row identifiers"
-type:     @s
-param:    skiplist
-
-OPTION:   nops
-usage:    "Display rows 1..N or row identifiers unprocessed"
-type:     @s
-param:    nopslist
-
-
-###########################################################################
 [GENERALFORMAT]
 
-text:     "General formatting options:"
-
-OPTION:   width
-usage:    "Paginate in N columns of alignment"
-type:     s
-default:  flat
-param:    
-convert:  sub { __ARGS;
-            if (__OV eq 'flat') {
-              return 0;
-	    } else {
-              return __TEST('i', __ON, __OV);
-	    }
-	  }
+text:     "Miscellaneous formatting:"
 
 OPTION:   gap
 usage:    "Use this gap character"
 type:     s
 default:  -
-param:    
+param:
 
 OPTION:   label0
 usage:    "Switch off label {0= row number}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label1
 usage:    "Switch off label {1= identifier}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label2
 usage:    "Switch off label {2= description}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label3
 usage:    "Switch off label {3= scores}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label4
 usage:    "Switch off label {4= percent identity}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label5
 usage:    "Switch off label {5= first sequence positions: query}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label6
 usage:    "Switch off label {6= second sequence positions: hit}"
 default:  0
-param:    
+param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   register
@@ -1046,7 +1044,7 @@ param:
 ###########################################################################
 [HTML]
 
-text:     "HTML markup options:"
+text:     "HTML markup:"
 
 OPTION:   html
 usage:    "Controls amount of HTML markup {head,body,data,full,off}"
@@ -1143,7 +1141,7 @@ convert:  sub { __ARGS;
 		#supplied style sheet URL
 		return 1    if __OV =~ /^(?:file|http):/i;
 		if (__OV ne 'on' and __OV ne 'off' and __OV ne '0' and __OV ne '1') {
-		    __WARN("bad value for '__ON=__OV' want {on,off,URL} or {0,1,URL}");
+		    __WARN("bad value for '-__ON=__OV' want {on,off,URL} or {0,1,URL}");
 		}
 		return 1    if __OV eq 'on' or __OV eq '1';
 		return 0;
@@ -1189,7 +1187,7 @@ action:   sub { __ARGS;
 OPTION:   hsp
 type:     s
 default:  ranked
-param:    
+param:
 convert:  sub { __ARGS;
 		return 'all'      if __OV =~ /^a/;
 		return 'discrete' if __OV =~ /^d/;
@@ -1202,7 +1200,7 @@ convert:  sub { __ARGS;
 OPTION:   maxeval
 type:     s
 default:  unlimited
-param:    
+param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
@@ -1213,7 +1211,7 @@ convert:  sub { __ARGS;
 OPTION:   minbits
 type:     s
 default:  unlimited
-param:    
+param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('i', __ON, __OV);
@@ -1223,27 +1221,24 @@ convert:  sub { __ARGS;
 
 OPTION:   strand
 type:     @s
-default:  *
+default:  both
 param:
 convert:  sub { __ARGS;
-              local $_; my @tmp=();
-              foreach (@{__PV}) {
-                if      ($_ eq 'p' or $_ eq 'P') {
-		    push @tmp, '+';
-		} elsif ($_ eq 'm' or $_ eq 'M') {
-		    push @tmp, '-';
-		} elsif ($_ eq 'both') {
-		    @tmp = ('*');
-		    last;
-		} elsif ($_ eq '*') {
-		    @tmp = ('*');
-		    last;
-		} else {
-                  __WARN("bad value for '-__ON=$_' choose from '{p,m,both,*}'");
-                }
-              }
-              \@tmp;
-          }
+		local $_;
+		foreach (@{__PV}) {
+		    if (lc $_ eq 'p') {
+			return ['+'];
+		    } elsif (lc $_ eq 'm') {
+			return ['-'];
+		    } elsif (lc $_ eq 'both') {
+			return [];
+		    } elsif ($_ eq '*') {
+			return [];
+		    } else {
+			__WARN("bad value for '-__ON=$_' choose from '{p,m,both,*}'");
+		    }
+		}
+            }
 
 
 ###########################################################################
@@ -1261,7 +1256,7 @@ OPTION:   maxpval
 usage:    "Ignore hits with p-value greater than N"
 type:     s
 default:  unlimited
-param:    
+param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
@@ -1273,7 +1268,7 @@ OPTION:   minscore
 usage:    "Ignore hits with score less than N"
 type:     s
 default:  unlimited
-param:    
+param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
@@ -1285,7 +1280,7 @@ convert:  sub { __ARGS;
 OPTION:   strand
 usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
-default:  *
+default:  both
 
 
 ###########################################################################
@@ -1315,7 +1310,7 @@ default:  unlimited
 OPTION:   strand
 usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
-default:  *
+default:  both
 
 
 ###########################################################################
@@ -1342,26 +1337,31 @@ type:     s
 default:  unlimited
 
 OPTION:   cycle
-usage:    "Process the N'th cycle of a multipass search {1..N,first,last,all}"
+usage:    "Process the N'th cycle of a multipass search {1..N,first,last,all,*}"
 type:     @s
 default:  last
-param:    
+param:
 convert:  sub { __ARGS;
-		 if (__OV eq 'first') {
-		     #show first cycle
-		     return [1];
-		 } elsif (__OV eq 'last') {
-		     #show last cycle
-		     return [0];
-		 } elsif (__OV eq 'all') {
-		     #show all cycles
-		     return [];
-		 } elsif (__OV eq '*') {
-		     #show all cycles
-		     return [];
-		 }
-		 return __PV;
-	     }
+		local $_; my @tmp=();
+		foreach (@{__PV}) {
+		    if ($_ eq 'first') {
+			push @tmp, 1;
+		    } elsif ($_ eq 'last') {
+			push @tmp, 0;
+		    } elsif ($_ eq 'all') {
+			@tmp = ();
+			last;
+		    } elsif ($_ eq '*') {
+			@tmp = ();
+			last;
+		    } elsif (/^\d+$/) {
+			push @tmp, $_;
+		    } else {
+			__WARN("bad value for '-__ON=$_' choose from '{1..N,first,last,all,*}'");
+		    }
+		}
+                return [ @tmp ];
+            }
 
 
 ###########################################################################
@@ -1373,7 +1373,7 @@ OPTION:   minopt
 usage:    "Ignore hits with opt score less than N"
 type:     s
 default:  unlimited
-param:    
+param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
@@ -1385,7 +1385,7 @@ convert:  sub { __ARGS;
 OPTION:   strand
 usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
-default:  *
+default:  both
 
 
 ###########################################################################
@@ -1397,7 +1397,7 @@ OPTION:   chain
 usage:    "Report only these chainnames/numbers {A,B,...,*}"
 type:     @s
 default:  *
-param:    
+param:
 
 
 ###########################################################################
@@ -1406,24 +1406,31 @@ param:
 text:     "UCSC MAF:"
 
 OPTION:   block
-usage:    "Report only these blocks {1..N,first,all,*}"
+usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
 default:  first
-param:    
+param:
 convert:  sub { __ARGS;
-		 if (__OV eq 'first') {
-		     #show first block
-		     return [0];
-		 } elsif (__OV eq 'all') {
-		     #show all blocks
-		     return [];
-		 } elsif (__OV eq '*') {
-		     #show all blocks
-		     return [];
-		 } else {
-		     return __TEST('@i', __ON, __OV);
-		 }
-	     }
+		local $_; my @tmp=();
+		foreach (@{__PV}) {
+		    if ($_ eq 'first') {
+			push @tmp, 1;
+		    } elsif ($_ eq 'last') {
+			push @tmp, 0;
+		    } elsif ($_ eq 'all') {
+			@tmp = ();
+			last;
+		    } elsif ($_ eq '*') {
+			@tmp = ();
+			last;
+		    } elsif (/^\d+$/) {
+			push @tmp, $_;
+		    } else {
+			__WARN("bad value for '-__ON=$_' choose from '{1..N,first,last,all,*}'");
+		    }
+		}
+                return [ @tmp ];
+            }
 
 
 ###########################################################################
@@ -1433,7 +1440,7 @@ text:     "MULTAL/MULTAS:"
 
 #share
 OPTION:   block
-usage:    "Report only these blocks {1..N,first,all,*}"
+usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
 default:  first
 

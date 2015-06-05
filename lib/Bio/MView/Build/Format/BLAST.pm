@@ -107,7 +107,7 @@ sub initialise {
     $self->{'cycle_ptr'}   = undef;    #current cycle parse object ref
 
     #BLASTN strand orientations
-    $self->{'strand_list'} = [ qw(+ -) ];    #strand orientations
+    $self->{'strand_list'} = [ qw(+ -) ];  #strand orientations
     $self->{'do_strand'}   = undef;    #list of required strand
     $self->{'strand_idx'}  = undef;    #current index into 'do_strand'
 
@@ -127,18 +127,12 @@ sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
 
 sub reset_cycle {
     my $self = shift;
-
     #initialise scheduler loops and loop counters
-    if (@{$self->{'cycle'}} < 1) {
-	#empty list  - do all cycles
-	$self->{'do_cycle'} = [ 1..$self->{'entry'}->count(qw(SEARCH)) ];
-    } elsif ($self->{'cycle'}->[0] != 0) {
-	#explicit cycle range
-	$self->{'do_cycle'} = [ @{$self->{'cycle'}} ];
-    } else {
-	#default to last cycle
-	$self->{'do_cycle'} = [ $self->{'entry'}->count(qw(SEARCH)) ];
-    }
+    #warn "cycle: [@{$self->{'cycle'}}]\n";
+
+    my $last = $self->{'entry'}->count(qw(SEARCH));
+
+    $self->{'do_cycle'} = $self->reset_schedule([1..$last], $self->{'cycle'});
 
     if (defined $self->{'cycle_ptr'}) {
 	#flag previous cycle parse for garbage collection
@@ -149,15 +143,9 @@ sub reset_cycle {
 
 sub reset_strand {
     my $self = shift;
-
-    #initialise scheduler loops and loop counters
-    if (@{$self->{'strand'}} < 1 or $self->{'strand'}->[0] eq '*') {
-	#empty list  - do all strand
-	$self->{'do_strand'} = [ @{$self->{'strand_list'}} ];
-    } else {
-	#explicit strand range
-	$self->{'do_strand'} = [ @{$self->{'strand'}} ];
-    }
+    #warn "strand: [@{$self->{'strand'}}]\n";
+    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
+						 $self->{'strand'});
 }
 
 ##sub reset_frame {

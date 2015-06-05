@@ -314,7 +314,10 @@ sub expand_integer_list {
     return []    unless defined $v;
     my @tmp = ();
     local $_;
-    foreach (split /\s*,\s*/, $v) {
+    #warn "expand_integer_list($o, [$v])\n";
+    foreach (split /[,\s]+/, $v) {
+	next  unless length($_);
+	#warn ">>>[$_]";
         #range M\.\.N or M:N
         if (/^($RX_Sint)(?:\.\.|:)($RX_Sint)$/) {
             if ($2 < $1) {
@@ -337,6 +340,7 @@ sub expand_integer_list {
         $self->warn("bad integer list value '$o=$_'");
         return [];
     }
+    #warn "expand_integer_list(@tmp)\n";
     return [ sort @tmp ]    if $sortP;
     return [ @tmp ];
 }
@@ -346,7 +350,10 @@ sub expand_float_list {
     return []    unless defined $v;
     my @tmp = ();
     local $_;
-    foreach (split /\s*,\s*/, $v) {
+    #warn "expand_float_list($o, [$v])\n";
+    foreach (split /[,\s]+/, $v) {
+	next  unless length($_);
+	#warn ">>>[$_]";
         #non-range
         if (/^($RX_Sreal)$/ and ! /\.\./ and ! /:/) {
             push @tmp, $1;
@@ -355,6 +362,7 @@ sub expand_float_list {
         $self->warn("bad float list value '$o=$_'");
         return [];
     }
+    #warn "expand_float_list(@tmp)\n";
     return [ sort @tmp ]    if $sortP;
     return [ @tmp ];
 }
@@ -364,7 +372,10 @@ sub expand_list {
     return []    unless defined $v;
     my @tmp = ();
     local $_;
-    foreach (split /\s*,\s*/, $v) {
+    #warn "expand_list($o, [$v])\n";
+    foreach (split /[,\s]+/, $v) {
+	next  unless length($_);
+	#warn ">>>[$_]";
         #integer range M\.\.N or M:N
         if (/^($RX_Sint)(?:\.\.|:)($RX_Sint)$/) {
             if ($2 < $1) {
@@ -720,8 +731,7 @@ sub getoptions {
 	    push @tmp, $_;
 	}
     }
-    CORE::die "$self->{'prog'}: aborting because of command line errors.\n" 
-	if $error;
+    CORE::die "$self->{'prog'}: aborting.\n"  if $error;
     @ARGV = @tmp;
     #warn "remaining2 ARGV: @ARGV\n";
     $self;

@@ -264,7 +264,7 @@ sub map_id {
 	}
 
 	#wildcard
-	if ($ref =~ /^\*$/) {
+	if ($ref =~ /^\*$/ or $ref =~ /^all$/i) {
 	    push @rowref, $self->{'index2row'}->[$i];
 	    next;
 	}
@@ -351,6 +351,32 @@ sub schedule {
 	return 1;
     }
     $_[0]->{'status'};
+}
+
+#caller gets a sorted unique list of items from $range if present in
+#$request. The special value 0 in $request means the 'last' item in $range.
+#Used to convert lists of blast/fasta cycles, strands, frames into an
+#ordered list of known tasks.
+sub reset_schedule {
+    my ($self, $range, $request) = @_;
+    return  unless @$range;
+    #warn "reset_schedule entry: [@$range] [@$request]\n";
+
+    #empty request: schedule all
+    return [ @$range ]  unless @$request;
+
+    #make a dict of requested items for uniqueness
+    my @items = (); my %tmp = ();
+    map { $tmp{$_}++ } @$request;
+    $tmp{$range->[-1]}++  if exists $tmp{0}; #0 means the 'last'
+
+    #extact legitimate items in correct order
+    foreach my $i (@$range) {
+	push @items, $i  if exists $tmp{$i};
+    }
+    #warn "reset_schedule exit: [@items]\n";
+
+    return \@items;
 }
 
 #return the next alignment, undef if no more work, or 0 if empty alignment

@@ -154,7 +154,7 @@ sub parse {
         while (defined ($aln = $bld->next)) {
 
 	    if ($aln < 1) {  #null alignment
-		$self->report("empty alignment\n");
+		#$self->report("empty alignment\n");
 		next;
 	    }
 

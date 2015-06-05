@@ -53,20 +53,14 @@ sub block   { $_[0]->{'do_block'}->[$_[0]->{'block_idx'}-1] }
 
 sub reset_block {
     my $self = shift;
-
     #initialise scheduler loops and loop counters
-    if (! defined $self->{'do_block'}) {
-	if (@{$self->{'block'}} < 1) {
-	    #empty list  - do all blocks
-	    $self->{'do_block'} = [ 1..$self->{'entry'}->count(qw(BLOCK)) ];
-	} elsif ($self->{'block'}->[0] != 0) {
-	    #explicit block range
-	    $self->{'do_block'} = [ @{$self->{'block'}} ];
-	} else {
-	    #default to first block
-	    $self->{'do_block'} = [ 1 ];
-	}
-    } else {
+    #warn "blocks/1: [@{$self->{'block'}}]\n";
+
+    my $last = $self->{'entry'}->count(qw(BLOCK));
+
+    $self->{'do_block'} = $self->reset_schedule([1..$last], $self->{'block'});
+
+    if (defined $self->{'block_ptr'}) {
 	#flag previous block parse for garbage collection
 	$self->{'block_ptr'}->free;
 	$self->{'block_ptr'} = undef;

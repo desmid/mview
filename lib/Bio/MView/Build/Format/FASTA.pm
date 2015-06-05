@@ -98,15 +98,9 @@ sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
 
 sub reset_strand {
     my $self = shift;
-
-    #initialise scheduler loops and loop counters
-    if (@{$self->{'strand'}} < 1 or $self->{'strand'}->[0] eq '*') {
-	#empty list  - do all strand
-	$self->{'do_strand'} = [ @{$self->{'strand_list'}} ];
-    } else {
-	#explicit strand range
-	$self->{'do_strand'} = [ @{$self->{'strand'}} ];
-    }
+    #warn "strand: [@{$self->{'strand'}}]\n";
+    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
+						 $self->{'strand'});
 }
 
 ##sub reset_frame {
