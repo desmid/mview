@@ -4,7 +4,6 @@
 ######################################################################
 package Bio::MView::Align;
 
-use Bio::MView::Sequence;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
