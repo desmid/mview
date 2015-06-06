@@ -770,21 +770,20 @@ sub msf {
 	    foreach my $r ($aln->visible_ids) {
 		last LOOP    if $from >= length($seq{$r});
 		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
+		my $tmplen = length($tmp);
 		if ($ruler) {
-		    my $lo = $from+1; my $hi = $from+length($tmp);
-		    $ruler = length($tmp)-length("$lo")-length("$hi");
-		    if ($ruler < 1) {
-			$ruler = 1;
-		    }
-		    my $insert = int(length($tmp) / 10);
-		    $insert -= 1    if length($tmp) % 10 == 0;
+		    my $lo = $from + 1; my $hi = $from + $tmplen;
+		    $ruler = $tmplen - length("$lo") - length("$hi");
+		    $ruler = 1  if $ruler < 1;
+		    my $insert = int($tmplen / 10);
+		    $insert -= 1  if $tmplen % 10 == 0;
 		    $insert += $ruler;
 		    $insert = sprintf("%d%s%d", $lo, ' ' x $insert, $hi);
 		    $s .= sprintf("%-${w}s $insert\n", '');
 		    $ruler = 0;
 		}
 		$s .= sprintf("%-${w}s ", $self->uid2row($r)->cid);
-		for (my $lo=0; $lo<length($tmp); $lo+=10) {
+		for (my $lo=0; $lo<$tmplen; $lo+=10) {
 		    $s .= substr($tmp, $lo, 10);
 		    $s .= ' '    if $lo < 40;
 		}
@@ -799,6 +798,7 @@ sub msf {
 #return alignment in CLUSTAL/aln format
 sub clustal {
     my ($MAXSEQ, $MINNAME, $GAP) = (60, 16, '-');
+    my ($RULER, $CONSERVATION) = (1, 1);
 
     my $symcount = sub {
 	my ($s, $gap, $c) = (@_, 0);
@@ -810,7 +810,6 @@ sub clustal {
     };
 
     my ($self, $moltype) = (shift, shift);
-    my ($ruler, $conservation) = (1, 1);
     my $s = '';
 
     foreach my $aln (@_) {
@@ -836,7 +835,7 @@ sub clustal {
 		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
 		$s .= sprintf("%-${w}s", $self->uid2row($r)->cid);
 		$s .= $tmp;
-		if ($ruler) {
+		if ($RULER) {
 		    my $syms = &$symcount(\$tmp, $GAP);
 		    my $hi = $len{$r} + $syms;
 		    $s .= sprintf(" %-d", $hi)  if $syms > 0;
@@ -845,7 +844,7 @@ sub clustal {
                 $s .= "\n";
             }
 
-	    if ($conservation) {
+	    if ($CONSERVATION) {
 		$s .= sprintf("%-${w}s", '');
 		$s .= ${$self->{align}->conservation(\@ids,
 						     $from+1, $from + $MAXSEQ,

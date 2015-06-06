@@ -174,6 +174,7 @@ sub range_minus {
 
 sub assemble {
     my ($self, $lo, $hi, $gap, $reverse) = (@_, 0);
+
     $self->sort;                                   #fragment order
     $self->{'seq'}->reverse    if $reverse;        #before calling append() !
     $self->{'seq'}->append(@{$self->{'frag'}});    #assemble fragments
@@ -219,8 +220,9 @@ sub pearson {
     my $sequence = sub {
 	my ($self, $pad, $gap) = @_;
 	my $seq = $self->seq($pad, $gap);
+	my $len = length($seq);
 	my $s = '';
-	for (my $i=0; $i<length($seq); $i+=$MAXSEQ) {
+	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
 	    $s .= substr($seq, $i, $MAXSEQ) . "\n";
 	}
 	$s;
@@ -255,8 +257,9 @@ sub pir {
     my $sequence = sub {
 	my ($self, $pad, $gap) = @_;
 	my $seq = $self->seq($pad, $gap);
+	my $len = length($seq);
 	my $s = '';
-	for (my $i=0; $i<length($seq); $i+=$MAXSEQ) {
+	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
 	    $s .= "\n" . substr($seq, $i, $MAXSEQ);
 	}
 	$s .= "\n"    if length($s) % ($MAXSEQ+1) < 1 and $s ne '';
