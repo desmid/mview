@@ -48,7 +48,7 @@ sub new {
 
     if ($passthru) {
 	#keep quiet about unknown options: may be
-	#recognised by another intance
+	#recognised by another instance
 	Getopt::Long::config(qw(pass_through));
     } else {
 	#complain about unknown options
@@ -725,7 +725,7 @@ sub getoptions {
     #warn "remaining1 ARGV: @ARGV\n";
     foreach (@ARGV) {
 	if (/^--?\S/) {
-	    CORE::warn "$self->{'prog'}: unknown or misused option '$_'\n";
+	    CORE::warn "$self->{'prog'}: unknown or badly formed option '$_'\n";
 	    $error++;
 	} else {
 	    push @tmp, $_;
