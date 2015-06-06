@@ -378,7 +378,7 @@ sub check_format {
         return 'FASTA'    if $_ =~ /ssearch/i;
         return 'FASTA'    if $_ =~ /uvfast/i;
         return 'FASTA'    if $_ =~ /tfast/i;
-        return 'FASTA'    if $_ =~ /fast[fms]/i;
+        return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
 	return FASTA(@_)  if $_ =~ /fasta/i;
     }
 
