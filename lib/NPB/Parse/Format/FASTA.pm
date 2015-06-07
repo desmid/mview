@@ -675,12 +675,13 @@ sub new {
 
 	if ($line =~ /^\s+(?:\d+)?/) {
 	    #warn "QUERY RULER\n";
+	    $tmp[0] = $line;                #query ruler
 	    $tmp[1] = $text->next_line(1);  #query sequence
 	    $tmp[2] = $text->next_line(1);  #match pattern
 	    $tmp[2] = ' ' x length $tmp[1]  unless $tmp[2];
 	    $tmp[3] = $text->next_line(1);  #sbjct sequence
 	    $tmp[3] = ' ' x length $tmp[1]  unless $tmp[3];
-	    $text->next_line(1);            #sbjct ruler
+	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
 	    if ($first_pass) {
 		#determine depth of sequence labels at left: take the
@@ -700,19 +701,21 @@ sub new {
 
 	} elsif (index($line, $querykey) == 0) {
 	    #warn "QUERY (####)\n";
+	    $tmp[0] = '';                   #query ruler (none)
 	    $tmp[1] = $line;                #query sequence
 	    $tmp[2] = $text->next_line(1);  #match pattern
 	    $tmp[2] = ' ' x length $tmp[1]  unless $tmp[2];
 	    $tmp[3] = $text->next_line(1);  #sbjct sequence
 	    $tmp[3] = ' ' x length $tmp[1]  unless $tmp[3];
-	    $text->next_line(1);            #sbjct ruler
+	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
 	} elsif (index($line, $sbjctkey) == 0) {
 	    #warn "SBJCT (####)\n";
+	    $tmp[0] = '';                   #query ruler (none)
 	    $tmp[3] = $line;                #sbjct sequence
 	    $tmp[1] = ' ' x length $tmp[3]; #query sequence
 	    $tmp[2] = ' ' x length $tmp[3]; #match pattern
-	    $text->next_line(1);            #sbjct ruler
+	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
 	} else {
 	    $self->die("unexpected line: [$line]\n");
@@ -722,10 +725,12 @@ sub new {
 	$tmp[1] = substr($tmp[1], $depth);
 	$tmp[2] = substr($tmp[2], $depth);
 	$tmp[3] = substr($tmp[3], $depth);
-    
-	#warn "#1##$tmp[1]\n";
-	#warn "#2##$tmp[2]\n";
-	#warn "#3##$tmp[3]\n";
+
+	warn "#0##$tmp[0]\n";
+	warn "#1##$tmp[1]\n";
+	warn "#2##$tmp[2]\n";
+	warn "#3##$tmp[3]\n";
+	warn "#4##$tmp[4]\n";
 
 	#pad query/match/sbjct lines
 	my $len = max(length($tmp[1]), length($tmp[3]));
@@ -846,7 +851,7 @@ sub get_query_range {
 
     my $orient = $start > $stop ? '-' : '+';  #what the range says
 
-    ($start, $stop) = $self->get_start_stop($leader, $trailer, $string,
+    ($start, $stop) = $self->get_start_stop('qry', $leader, $trailer, $string,
 					    $orient, $start, $stop,
 					    $self->query_base());
 
@@ -863,7 +868,7 @@ sub get_sbjct_range {
 
     my $orient = $start > $stop ? '-' : '+';  #what the range says
 
-    ($start, $stop) = $self->get_start_stop($leader, $trailer, $string,
+    ($start, $stop) = $self->get_start_stop('hit', $leader, $trailer, $string,
 					    $orient, $start, $stop,
 					    $self->sbjct_base());
 
@@ -893,7 +898,7 @@ sub sbjct_orientation_conflict {
 }
 
 sub get_start_stop {
-    my ($self, $leader, $trailer, $string, $orient, $start, $stop, $base) = @_;
+    my ($self, $tgt, $leader, $trailer, $string, $orient, $start, $stop, $base) = @_;
 
     #count leading sequence before alignment
     my $x = substr($string, 0, $leader);
@@ -906,18 +911,57 @@ sub get_start_stop {
     $y = length($y);
 
     #extend string by these amounts, scaled by $base (1=protein or 3=DNA)
-    #warn "query(i): $orient, $start, $stop, $x, $y, $base\n";
+    #warn "$tgt(i): $orient,$base start/stop: $start,$stop, pfx/sfx: $x,$y\n";
     if ($orient eq '+') {
-	$start -= $x * $base;
-	$stop  += $y * $base;
+	#NIGE
+	if ($base == 1) {
+	    $start -= $x;
+	    $stop  += $y;
+	} else {
+	    $start -= $x * $base;
+	    $stop  += $y * $base;
+	}
     } else {
-	$start += $x * $base;
-	$stop  -= $y * $base;
+	#NIGE
+	if ($base == 1) {
+	    $start += $x;
+	    $stop  -= $y;
+	} else {
+	    $start += $x * $base;
+	    $stop  -= $y * $base;
+	}
     }
-    #warn "query(o): $orient, $start, $stop, $orient\n";
+    #warn "$tgt(o): $orient,$base start/stop: $start,$stop\n\n";
 
     return ($start, $stop);
 }
+
+# sub get_start_stop {
+#     my ($self, $tgt, $leader, $trailer, $string, $orient, $start, $stop, $base) = @_;
+
+#     #count leading sequence before alignment
+#     my $x = substr($string, 0, $leader);
+#     $x =~ tr/- //d;
+#     $x = length($x);
+
+#     #count trailing sequence after alignment
+#     my $y = substr($string, -$trailer, $trailer);
+#     $y =~ tr/- //d;
+#     $y = length($y);
+
+#     #extend string by these amounts, scaled by $base (1=protein or 3=DNA)
+#     warn "$tgt(i): $orient,$base start/stop: $start,$stop, pfx/sfx: $x,$y\n";
+#     if ($orient eq '+') {
+# 	$start -= $x * $base;
+# 	$stop  += $y * $base;
+#     } else {
+# 	$start += $x * $base;
+# 	$stop  -= $y * $base;
+#     }
+#     warn "$tgt(o): $orient,$base start/stop: $start,$stop\n\n";
+
+#     return ($start, $stop);
+# }
 
 sub print {
     my ($self, $indent) = (@_, 0);

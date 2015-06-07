@@ -27,7 +27,7 @@ my $Mark_Fs2 = "\005";    #encoded frameshift
 
 $REPORT_CLASH = 0;  #set to 1 to enable reporting of clashing symbols
 $OVERWRITE = 0;     #set to 1 to enable clash overwrite by newest symbol
-$HARDFASTA = 0;    #relax length rules for UV. FASTA input
+$HARDFASTA = 0;     #relax length rules for UV. FASTA input
 
 #All range numbers count from 1, set to 0 when undefined.
 #
