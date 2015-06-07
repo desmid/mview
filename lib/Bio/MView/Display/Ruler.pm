@@ -111,6 +111,7 @@ sub next {
     $col = $length    if $col > $length;                #consume smaller amount
     $start = $self->{'stop'} - $self->{'cursor'} +1;    #current real position
 
+    #NIGE
     #warn "($self->{'cursor'}, $col, $length, ($self->{'start'},$self->{'stop'}))\n";
 
     for ($i = 0; $i < $col; $i++) {

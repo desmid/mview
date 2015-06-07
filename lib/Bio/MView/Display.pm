@@ -80,7 +80,7 @@ sub new {
     $self->{'length'}    = $sequence->length;
     $self->{'start'}     = $sequence->lo;
     $self->{'stop'}      = $sequence->hi;
-    $self->{'posnwidth'} = length(max($sequence->to, $sequence->from));
+    $self->{'posnwidth'} = length(max($self->{'start'}, $self->{'stop'}));
     $self->{'object'}    = [];
 
     bless $self, $type;

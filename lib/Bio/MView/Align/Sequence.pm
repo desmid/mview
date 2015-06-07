@@ -67,13 +67,13 @@ sub print {
     $self;
 }
 
-sub id     { $_[0]->{'id'} }
-sub seqobj { $_[0]->{'string'} }
-sub string { $_[0]->{'string'}->string }
-sub array  { split //, $_[0]->{'string'}->string }
-sub from   { $_[0]->{'from'} }
-sub length { $_[0]->{'string'}->length }
-sub ungapped_length { $_[0]->{'string'}->ungapped_length }
+sub id       { $_[0]->{'id'} }
+sub seqobj   { $_[0]->{'string'} }
+sub string   { $_[0]->{'string'}->string }
+sub sequence { $_[0]->{'string'}->sequence }
+sub from     { $_[0]->{'from'} }
+sub length   { $_[0]->{'string'}->length }
+sub seqlen   { $_[0]->{'string'}->seqlen }
 
 sub reset_display {
     $_[0]->{'display'} =
@@ -431,13 +431,13 @@ sub compute_identity_to {
     #normalise identities
     my $norm = 0;
     if ($mode eq 'reference') {
-	$norm = $othr->ungapped_length;
+	$norm = $othr->seqlen;
 	#warn "ref norm= $norm\n";
     } elsif ($mode eq 'aligned') {
 	$norm = $len;
 	#warn "aln norm= $norm\n";
     } elsif ($mode eq 'hit') {
-	$norm = $self->ungapped_length;
+	$norm = $self->seqlen;
 	#warn "hit norm= $norm\n";
     }
     #warn "identity $self->{'id'} = $sum/$norm\n";

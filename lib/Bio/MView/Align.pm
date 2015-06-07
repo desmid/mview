@@ -113,8 +113,7 @@ sub new {
     for ($i=0; $i<@$obj; $i++) {
 
 	if (defined $obj->[$i]) {
-
-	    #warn "[$i] ",  $obj->[$i]->id, " ", $obj->[$i]->string, "\n";
+	    #warn "[$i] ",  $obj->[$i]->id, " ", $obj->[$i]->string, "\n"; #NIGE
 
 	    $self{'id2index'}->{$obj->[$i]->id} = $i;
 	    $self{'index2row'}->[$i] = $obj->[$i];
@@ -122,9 +121,9 @@ sub new {
 	    $self{'length'} = $obj->[$i]->length    if $self{'length'} < 1;
 	    
 	    if ($obj->[$i]->length != $self{'length'}) {
+		#warn "[@{[$obj->[$i]->string]}]\n"; #NIGE
 		die "${type}::new() incompatible alignment lengths, row $i, expect $self{'length'}, got @{[$obj->[$i]->length]}\n";
 	    }
-
 	}
     }
 
