@@ -75,7 +75,7 @@ sub test__create_empty {
 	'lo'       => 0,     'hi'          => 0,
 	'reflo'    => 0,     'refhi'       => 0,
 	'leader'   => 0,     'trailer'     => 0,
-	'string'   => '',    'length'      => 'FIXME',
+	'string'   => '',    'length'      => 0,
 	'trulen'   => 0,     'lablen'      => 0,
 	'sequence' => '',    'seqlen'      => 0,
 	'reverse'  => undef, 'fs' => 0,
@@ -110,7 +110,7 @@ sub test__forward_insert {
 	'lo'       => 0,    	'hi'             => 0,
 	'reflo'    => 0,    	'refhi'          => 0,
 	'leader'   => 0,    	'trailer'        => 0,
-	'string'   => '',    	'length'         => 'FIXME',
+	'string'   => '',    	'length'         => 0,
 	'trulen'   => 0,        'lablen'         => 0,
 	'sequence' => '',    	'seqlen'         => 0,
 	'reverse'  => 0,    	'fs' => 0,
@@ -124,7 +124,7 @@ sub test__forward_insert {
         'lo'       => 20,   	'hi'             => 20,
         'reflo'    => 20,   	'refhi'          => 20,
         'leader'   => 0,    	'trailer'        => 0,
-        'string'   => 'B',  	'length'         => 'FIXME',
+        'string'   => 'B',  	'length'         => 1,
 	'trulen'   => 1,        'lablen'         => 1,
         'sequence' => 'B',  	'seqlen'         => 1,
         'reverse'  => 0,    	'fs' => 0,
@@ -139,7 +139,7 @@ sub test__forward_insert {
         'lo'       => 19,       'hi'             => 20,
         'reflo'    => 19,       'refhi'          => 20,
         'leader'   => 0,        'trailer'        => 0,
-        'string'   => 'AB',     'length'         => 'FIXME',
+        'string'   => 'AB',     'length'         => 2,
 	'trulen'   => 2,        'lablen'         => 2,
         'sequence' => 'AB',     'seqlen'         => 2,
         'reverse'  => 0,        'fs' => 0,
@@ -151,7 +151,7 @@ sub test__forward_insert {
         'lo'       => 19,       'hi'             => 21,
         'reflo'    => 19,       'refhi'          => 21,
         'leader'   => 0,        'trailer'        => 0,
-        'string'   => 'ABC',    'length'         => 'FIXME',
+        'string'   => 'ABC',    'length'         => 3,
 	'trulen'   => 3,        'lablen'         => 3,
         'sequence' => 'ABC',    'seqlen'         => 3,
         'reverse'  => 0,        'fs' => 0,
@@ -163,7 +163,7 @@ sub test__forward_insert {
         'lo'       => 17,       'hi'             => 21,
         'reflo'    => 17,       'refhi'          => 21,
         'leader'   => 0,        'trailer'        => 0,
-        'string'   => 'X-ABC',  'length'         => 'FIXME',
+        'string'   => 'X-ABC',  'length'         => 5,
 	'trulen'   => 5,        'lablen'         => 5,
         'sequence' => 'XABC',   'seqlen'         => 4,
         'reverse'  => 0,        'fs' => 0,
@@ -175,7 +175,7 @@ sub test__forward_insert {
         'lo'       => 17,        'hi'             => 23,
         'reflo'    => 17,        'refhi'          => 23,
         'leader'   => 0,         'trailer'        => 0,
-        'string'   => 'X-ABC-Y', 'length'         =>'FIXME',
+        'string'   => 'X-ABC-Y', 'length'         => 7,
 	'trulen'   => 7,         'lablen'         => 7,
         'sequence' => 'XABCY',   'seqlen'         => 5,
         'reverse'  => 0,         'fs' => 0,
@@ -195,7 +195,7 @@ sub test__special_characters {
 	'lo'       => 20,       'hi'             => 23,
 	'reflo'    => 21,       'refhi'          => 21,
 	'leader'   => 1,        'trailer'        => 2,
-	'string'   => '~P~~',   'length'         => 'FIXME',
+	'string'   => '~P~~',   'length'         => 4,
 	'trulen'   => 4,        'lablen'         => 4,
 	'sequence' => 'P',      'seqlen'         => 1,
 	'reverse'  => 0,        'fs' => 0,
@@ -210,7 +210,7 @@ sub test__special_characters {
 	'lo'       => 20,       'hi'             => 22,
 	'reflo'    => 20,       'refhi'          => 22,
 	'leader'   => 0,        'trailer'        => 0,
-	'string'   => 'A?B',    'length'         => 'FIXME',
+	'string'   => 'A?B',    'length'         => 3,
 	'trulen'   => 3,        'lablen'         => 3,
 	'sequence' => 'AB',     'seqlen'         => 2,
 	'reverse'  => 0,        'fs' => 0,
@@ -225,7 +225,7 @@ sub test__special_characters {
 	'lo'       => 20,       'hi'             => 24,
 	'reflo'    => 20,       'refhi'          => 24,
 	'leader'   => 0,        'trailer'        => 0,
-	'string'   => ' A B ',  'length'         => 'FIXME',
+	'string'   => ' A B ',  'length'         => 5,
 	'trulen'   => 5,        'lablen'         => 5,
 	'sequence' => 'AB',     'seqlen'         => 2,
 	'reverse'  => 0,        'fs' => 0,
@@ -239,7 +239,7 @@ sub test__special_characters {
         'lo'       => 20,        'hi'             => 27,
         'reflo'    => 20,        'refhi'          => 27,
         'leader'   => 0,         'trailer'        => 0,
-        'string'   => 'PES/GRP', 'length'         =>'FIXME',
+        'string'   => 'PES/GRP', 'length'         => 'FIXME',
 	'trulen'   => 7,         'lablen'         => 8, #WHY
         'sequence' => 'PESGRP',  'seqlen'         => 6,
         'reverse'  => 0,         'fs' => 1,
@@ -353,9 +353,6 @@ sub test__toy_cases {
     };
     $S->append($f); test_state($S, $h);
     #end
-
-
-
 }
 
 
@@ -364,8 +361,6 @@ sub test__toy_cases {
 __DATA__;
 
 #TODO
-
-test leading/trailing
 
 test raw, col  (easy - use the tests I just did on X-ABC-Y)
 
@@ -390,7 +385,7 @@ test labels:
     labels1  for the reference sequence
     labels2  for the dependent sequence
 
-test special characters insertion/removal, especially framehifts
+test special characters insertion/removal, especially frameshifts
 
 test is_X predicates
 
