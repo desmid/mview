@@ -249,14 +249,11 @@ use vars qw(@ISA);
 sub sbjct_base { return 3 }
 
 #summary frame|rev-comp field refers to the sbjct
-sub query_orientation_conflict {
-    my ($self, $summary, $orient) = @_;
-    return 0;
-}
-sub sbjct_orientation_conflict {
-    my ($self, $summary, $orient) = @_;
-    return 1  if $orient ne $summary->{'orient'};
-    return 0;
+sub query_orient_conflict { 0 }
+
+sub sbjct_orient_conflict {
+    my ($self, $summary_orient, $orient) = @_;
+    return $summary_orient ne $orient;
 }
 
 

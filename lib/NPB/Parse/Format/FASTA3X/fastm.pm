@@ -134,13 +134,19 @@ use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA3X::MATCH::ALN);
 
-#well, although this a S-W alignment, the sequence range numbers look more
+#Although this a S-W alignment, the sequence range numbers look more
 #like those of a global/global alignment: query sequence range is complete;
 #sbjct depends on it
-sub get_align_padding {
-    my ($self, $query, $align) = @_;
-    my ($leader, $trailer) = (0, 0);
-    return ($leader, $trailer);
+sub get_start_stop {
+    my ($self, $tgt, $info, $base) = @_;
+
+    my ($orient, $start_info, $stop_info, $fs1, $fs2) = @$info;
+
+    my ($r1) = @{$start_info};
+    my ($r2) = @{$stop_info};
+
+    warn "$tgt(o): $orient,$base start/stop: $r1,$r2\n\n" if $NPB::Parse::Format::FASTA::DEBUG;
+    return ($orient, $r1, $r2);
 }
 
 

@@ -210,16 +210,6 @@ use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA3X::MATCH::ALN);
 
-#global/local alignment: query sequence range is complete; sbjct depends on it
-sub get_align_padding {
-    my ($self, $query, $align) = @_;
-    
-    $query =~ /^(\s*)/; my $leader  = length($1);
-    $query =~ /(\s*)$/; my $trailer = length($1);
-    
-    return ($leader, $trailer);
-}
-
 
 ###########################################################################
 1;

@@ -28,6 +28,8 @@ package NPB::Parse::Format::FASTA;
 use vars qw(@ISA $GCG_JUNK);
 use strict;
 
+our $DEBUG = 1;
+
 @ISA = qw(NPB::Parse::Record);
 
 BEGIN { $GCG_JUNK = '(?:^\.\.|^\\\\)' }
@@ -648,6 +650,138 @@ use vars qw(@ISA);
 @ISA = qw(NPB::Parse::Record);
 
 sub new {
+    my $keys_and_depth = sub {
+	my ($query, $sbjct) = @_;
+	#determine depth of sequence labels at left: take the
+	#shorter since either sequence may begin with a gap
+	$$query =~ /^(\s*\S+\s*)/o; my $x = length $1;
+	$$sbjct =~ /^(\s*\S+\s*)/o; my $y = length $1;
+	my $depth = min($x, $y);
+	#warn "depth: $depth\n";
+	#recover sequence row names
+	my $qkey = substr($$query, 0, $depth);
+	my $skey = substr($$sbjct, 0, $depth);
+	return ($qkey, $skey, $depth);
+    };
+
+    my $append_ruler = sub {
+	my ($ruler, $piece, $depth) = @_;
+	if ($$ruler eq '') {
+	    $$ruler .= $$piece;
+	    return $$ruler;
+	}
+	my ($num, $junk, $rlen) = (0, $depth, length($$ruler));
+	my $s = substr($$piece, 0, $depth);
+	if ($s =~ /(\d+)/o) {
+	    $num  = length $1;
+	    $junk -= $num;
+	}
+	$ruler = substr($$ruler, 0, $rlen-$num) . substr($$piece, $junk);
+	#warn "ruler: $num/$junk/$depth/$rlen [$ruler]\n";
+	$ruler;
+    };
+
+    my $summary_info = sub {
+	my ($self, $parent) = @_;
+	#Look in the parent MATCH record's already parsed SUM record, which
+	#contains accurate alignment ranges (but these only cover the
+        #aligned regions; terminal overhanging sequences are not counted!
+	my ($q1, $q2, $s1, $s2);
+	my $sum = $parent->{'record_by_posn'}->[0]->[3];
+	#warn "$sum->{'ranges'}\n";
+	if ($sum->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
+	    ($q1, $q2, $s1, $s2) = ($1, $2, $3, $4);
+	} else {
+	    $self->die("unparsed range: '$sum->{'ranges'}'");
+	}
+	#The programs SSEARCH 35.04, GGSEARCH 36.3.3 had an apparent bug
+        #concerning the range labelling of the reverse complement of the
+        #query, with the start/stop labels inverted in the score summary and
+        #wrong in some cases in the alignment rulers. Test for this:
+	my $orient  = $q2 < $q1 ? '-' : '+';
+	my $rev = 0;
+	if ($self->query_orient_conflict($sum->{'orient'}, $orient) and
+	    $q2-$q1>0) {
+	    warn "WARNING: query orientation conflict for '$sum->{id}': summary says '$sum->{orient}', but range is '$q1:$q2': reversing this\n" if $DEBUG;
+	    my $tmp = $q1; $q1 = $q2; $q2 = $tmp; #swap
+	    $rev = 1;
+	}
+	warn ">>> $sum->{'id'}\n"  if $DEBUG;
+	warn "ranges: [$q1, $q2], [$s1, $s2]\n\n" if $DEBUG;
+	[ [$q1, $q2, $rev], [$s1, $s2, 0] ];
+    };
+
+    my $start_info = sub {
+	my ($self, $name, $ruler, $align, $depth, $rstart) = @_;
+	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
+	#warn "start [$$ruler]\n";
+	#warn "start [$$align]\n";
+	if ($$align =~ /(^[-\s]*)\S/) {
+	    $si = length($1);
+	} else {
+	    $self->die("no sequence:", $name);
+	}
+	if ($$ruler =~ /^(\s*(\d+))/) {
+	    ($ni, $num) = (length($1) - $depth -1, $2);
+	} else {
+	    ($ni, $num, $usedr) = ($si, $rstart, 1);
+	}
+	#count non-sequence in the fragment between seqstart and label
+	my $gc = 0;
+	if ($si < $ni) {  #seqstart ... label
+	    my $s = substr($$align, $si, $ni-$si);
+	    $s =~ tr /[a-zA-Z*]//d; #drop sequence symbols
+	    $gc = length $s;  #remaining junk
+	}
+	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r1: $rstart  a: $ai  b: $si  x: $ni  X: $num  gc: $gc  usedr: $usedr]\n\n" if $DEBUG;
+	[$rstart, $ai, $si, $ni, $num, $gc, $usedr];
+    };
+
+    my $stop_info = sub {
+	my ($self, $name, $ruler, $align, $depth, $rend) = @_;
+	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
+	#warn "stop  [$$ruler]\n";
+	#warn "stop  [$$align]\n";
+	if ($$align =~ /\S([-\s]*)$/) {
+	    $ai = length($$align) -1;
+	    $si = $ai - length($1);
+	} else {
+	    $self->die("no sequence:", $name);
+	}
+	if ($$ruler =~ /(\d+)(\s*)$/) {
+	    $ni = length($$ruler) - length($2) - 1 - $depth;
+	    $num = $1;
+	} else {
+	    ($ni, $num, $usedr) = ($si, $rend, 1);
+	}
+	#count non-sequence in the fragment between label and seqend
+	my $gc = 0;
+	if ($ni < $si) {  #label ... seqend
+	    my $s = substr($$align, $ni, $si-$ni);
+	    $s =~ tr /[a-zA-Z*]//d; #drop sequence symbols
+	    $gc = length $s;  #remaining junk
+	}
+	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r2: $rend  d: $ai c: $si  y: $ni  Y: $num  gc: $gc  usedr: $usedr]\n\n" if $DEBUG;
+	[$rend, $ai, $si, $ni, $num, $gc, $usedr];
+    };
+
+    my $align_info = sub {
+	my ($self, $sum, $name, $ruler, $align, $depth) = @_;
+	my $r1  = $sum->[0];  #summary from
+	my $r2  = $sum->[1];  #summary to
+	my $rev = $sum->[2];  #summary to
+	my $o  = $r2 < $r1 ? '-' : '+';
+	my $start = &$start_info($self, $name, $ruler, $align, $depth, $r1);
+	my $stop  = &$stop_info($self, $name, $ruler, $align, $depth, $r2);
+	#count frameshifts lying between the extreme ruler numbers
+	my ($n1, $n2) = ($start->[2], $stop->[2]);
+	my $s = substr($$align, $n1, $n2-$n1+1);
+	my $fs1 = $s =~ tr/[\/]//;
+	my $fs2 = $s =~ tr/[\\]//;
+	warn "frame: [$o, $fs1, $fs2]\n\n"  if $DEBUG;
+	[ $o, $start, $stop, $fs1, $fs2, $rev ];
+    };
+
     my $type = shift;
     if (@_ < 2) {
 	#at least two args, ($offset, $bytes are optional).
@@ -659,12 +793,11 @@ sub new {
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    my ($query, $align, $sbjct) = ('', '', '');
-    my ($first_pass, $depth) = (1, 0);
-    my ($querykey, $sbjctkey);
-    my $summary = $parent->{'record_by_posn'}->[0]->[3];
+    #NIGE
+    my ($qrule, $query, $align, $sbjct, $srule) = ('', '', '', '', '');
+    my ($first_pass, $depth, $qkey, $skey) = (1, 0, '', '');
 
-    #remaining records
+    #read records
     while (defined ($line = $text->next_line(1))) {
 	my @tmp = ();
 
@@ -678,99 +811,73 @@ sub new {
 	    $tmp[0] = $line;                #query ruler
 	    $tmp[1] = $text->next_line(1);  #query sequence
 	    $tmp[2] = $text->next_line(1);  #match pattern
-	    $tmp[2] = ' ' x length $tmp[1]  unless $tmp[2];
 	    $tmp[3] = $text->next_line(1);  #sbjct sequence
-	    $tmp[3] = ' ' x length $tmp[1]  unless $tmp[3];
 	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
 	    if ($first_pass) {
-		#determine depth of sequence labels at left: take the
-		#shorter since either sequence may begin with a gap
-		$tmp[1] =~ /^(\s*\S+\s*)/; my $x = length $1;
-		$tmp[3] =~ /^(\s*\S+\s*)/; my $y = length $1;
-		$depth = min($x, $y);
-		#warn "depth: $depth\n";
-		
-		#recover sequence row names
-		$querykey = substr($tmp[1], 0, $depth);
-		$sbjctkey = substr($tmp[3], 0, $depth);
-		
-		#warn "ENTRY [$querykey], [$sbjctkey]\n";
+		($qkey, $skey, $depth) = &$keys_and_depth(\$tmp[1], \$tmp[3]);
+		#warn "ENTRY [$qkey], [$skey]\n";
 		$first_pass = 0;
 	    }
 
-	} elsif (index($line, $querykey) == 0) {
+	} elsif (index($line, $qkey) == 0) {
 	    #warn "QUERY (####)\n";
-	    $tmp[0] = '';                   #query ruler (none)
 	    $tmp[1] = $line;                #query sequence
 	    $tmp[2] = $text->next_line(1);  #match pattern
-	    $tmp[2] = ' ' x length $tmp[1]  unless $tmp[2];
 	    $tmp[3] = $text->next_line(1);  #sbjct sequence
-	    $tmp[3] = ' ' x length $tmp[1]  unless $tmp[3];
 	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
-	} elsif (index($line, $sbjctkey) == 0) {
+	} elsif (index($line, $skey) == 0) {
 	    #warn "SBJCT (####)\n";
-	    $tmp[0] = '';                   #query ruler (none)
 	    $tmp[3] = $line;                #sbjct sequence
-	    $tmp[1] = ' ' x length $tmp[3]; #query sequence
-	    $tmp[2] = ' ' x length $tmp[3]; #match pattern
 	    $tmp[4] = $text->next_line(1);  #sbjct ruler
 
 	} else {
 	    $self->die("unexpected line: [$line]\n");
 	}
+	map { $tmp[$_] = '' unless defined $tmp[$_] } 0..@tmp-1;
+
+	#warn "#0# [$tmp[0]]\n";
+	#warn "#1# [$tmp[1]]\n";
+	#warn "#2# [$tmp[2]]\n";
+	#warn "#3# [$tmp[3]]\n";
+	#warn "#4# [$tmp[4]]\n";
+
+	#pad query/match/sbjct lines
+	my $len = max(length($tmp[1]), length($tmp[3]));
+	$tmp[0] .= ' ' x ($len-length $tmp[0]);
+	$tmp[1] .= ' ' x ($len-length $tmp[1]);
+	$tmp[2] .= ' ' x ($len-length $tmp[2]);
+	$tmp[3] .= ' ' x ($len-length $tmp[3]);
+	$tmp[4] .= ' ' x ($len-length $tmp[4]);
 
 	#strip leading name from alignment rows
 	$tmp[1] = substr($tmp[1], $depth);
 	$tmp[2] = substr($tmp[2], $depth);
 	$tmp[3] = substr($tmp[3], $depth);
 
-	warn "#0##$tmp[0]\n";
-	warn "#1##$tmp[1]\n";
-	warn "#2##$tmp[2]\n";
-	warn "#3##$tmp[3]\n";
-	warn "#4##$tmp[4]\n";
+	#grow the ruler
+	$qrule = &$append_ruler(\$qrule, \$tmp[0], $depth);
+	$srule = &$append_ruler(\$srule, \$tmp[4], $depth);
 
-	#pad query/match/sbjct lines
-	my $len = max(length($tmp[1]), length($tmp[3]));
-	$tmp[1] .= ' ' x ($len-length $tmp[1])  if length $tmp[1] < $len;
-	$tmp[2] .= ' ' x ($len-length $tmp[2])  if length $tmp[2] < $len;
-	$tmp[3] .= ' ' x ($len-length $tmp[3])  if length $tmp[3] < $len;
-
+	#grow the alignment
 	$query .= $tmp[1];
 	$align .= $tmp[2];
 	$sbjct .= $tmp[3];
     }
-    
-    #compute the depth of padding either side of the matched region
-    my ($align_leader, $align_trailer) =
-	$self->get_align_padding($query, $align);
 
-    #warn "align_leader, align_trailer = $align_leader, $align_trailer\n";
-    #warn "$query\n$align\n$sbjct\n";
-    #warn $text->inspect_stream;
+    #query/sbjct start/stop positions from parent summary
+    my $sum = &$summary_info($self, $parent);
 
-    my ($query_orient, $query_start, $query_stop) = ('+',0,0);
-    my ($sbjct_orient, $sbjct_start, $sbjct_stop) = ('-',0,0);
+    #query/sbjct start/stop positions and numbering from ruler
+    my $qinfo = &$align_info($self, $sum->[0], $qkey, \$qrule, \$query, $depth);
+    my $sinfo = &$align_info($self, $sum->[1], $skey, \$srule, \$sbjct, $depth);
 
-    #look in the parent MATCH record's already parsed SUM record, which
-    #contains supposedly accurate alignment ranges
-    if ($summary->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
-	($query_start, $query_stop, $sbjct_start, $sbjct_stop) =
-	    ($1, $2, $3, $4);
-    } else {
-	$self->die("unparsed range: '$summary->{'ranges'}'");
-    }
+    my ($query_orient, $query_start, $query_stop) =
+	$self->get_start_stop('qry', $qinfo, $self->query_base);
 
-    ($query_orient, $query_start, $query_stop) =
-	$self->get_query_range($summary, $align_leader, $align_trailer,
-			       $query, $query_start, $query_stop);
-
-
-    ($sbjct_orient, $sbjct_start, $sbjct_stop) =
-	$self->get_sbjct_range($summary, $align_leader, $align_trailer,
-			       $sbjct, $sbjct_start, $sbjct_stop);
+    my ($sbjct_orient, $sbjct_start, $sbjct_stop) =
+	$self->get_start_stop('hit', $sinfo, $self->sbjct_base);
 
     my $x;
     
@@ -835,133 +942,98 @@ sub new {
 sub query_base { return 1 }
 sub sbjct_base { return 1 }
 
-#local/local alignment: sequence ranges extend beyond matched region
-sub get_align_padding {
-    my ($self, $query, $align) = @_;
-
-    #compute the depths of the first and last match symbols in the align line
-    $align =~ /^(\s*)/; my $leader  = length($1);
-    $align =~ /(\s*)$/; my $trailer = length($1);
-
-    return ($leader, $trailer);
-}
-
-sub get_query_range {
-    my ($self, $summary, $leader, $trailer, $string, $start, $stop) = @_;
-
-    my $orient = $start > $stop ? '-' : '+';  #what the range says
-
-    ($start, $stop) = $self->get_start_stop('qry', $leader, $trailer, $string,
-					    $orient, $start, $stop,
-					    $self->query_base());
-
-    if ($self->query_orientation_conflict($summary, $orient)) {
-	#warn "WARNING: query orientation conflict for '$summary->{id}': summary says '$summary->{orient}', but range is '$start - $stop': minus strand alignments may be wrong.\n";
-	return ($summary->{'orient'}, $stop, $start);  #reverse range
-    }
-
-    return ($orient, $start, $stop);
-}
-
-sub get_sbjct_range {
-    my ($self, $summary, $leader, $trailer, $string, $start, $stop) = @_;
-
-    my $orient = $start > $stop ? '-' : '+';  #what the range says
-
-    ($start, $stop) = $self->get_start_stop('hit', $leader, $trailer, $string,
-					    $orient, $start, $stop,
-					    $self->sbjct_base());
-
-    if ($self->sbjct_orientation_conflict($summary, $orient)) {
-	#warn "WARNING: sbjct orientation conflict for '$summary->{id}': summary says '$summary->{orient}', but range is '$start - $stop': some alignments may be wrong.\n";
-	return ($summary->{'orient'}, $stop, $start);  #reverse range
-    }
-
-    return ($orient, $start, $stop);
-}
-
-#The fasta program SSEARCH 35.04, GGSEARCH 36.3.3 had an apparent bug
-#concerning the range labelling of the reverse complement of the query, with
-#the start/stop labels inverted in the score summary and wrong in some cases
-#in the alignment rulers. Test for this:
-
 #override in children: summary frame|rev-comp field refers to the query not
 #the sbjct
-sub query_orientation_conflict {
-    my ($self, $summary, $orient) = @_;
-    return 1  if $orient ne $summary->{'orient'};
-    return 0;
+sub query_orient_conflict {
+    my ($self, $summary_orient, $orient) = @_;
+    return $summary_orient ne $orient;
 }
-sub sbjct_orientation_conflict {
+sub sbjct_orient_conflict {
     my ($self, $summary, $orient) = @_;
     return 0;
 }
 
+#subclasses override this if they need to do less work
 sub get_start_stop {
-    my ($self, $tgt, $leader, $trailer, $string, $orient, $start, $stop, $base) = @_;
+    my ($self, $tgt, $info, $base) = @_;
 
-    #count leading sequence before alignment
-    my $x = substr($string, 0, $leader);
-    $x =~ tr/- //d;
-    $x = length($x);
+    my ($orient, $start_info, $stop_info, $fs1, $fs2, $rev) = @$info;
 
-    #count trailing sequence after alignment
-    my $y = substr($string, -$trailer, $trailer);
-    $y =~ tr/- //d;
-    $y = length($y);
+    #              7            20
+    #  ---------QWERTY  //  UIOPASDF----------
+    #  a        b  x    //       y c         d
 
-    #extend string by these amounts, scaled by $base (1=protein or 3=DNA)
-    #warn "$tgt(i): $orient,$base start/stop: $start,$stop, pfx/sfx: $x,$y\n";
-    if ($orient eq '+') {
-	#NIGE
-	if ($base == 1) {
-	    $start -= $x;
-	    $stop  += $y;
-	} else {
-	    $start -= $x * $base;
-	    $stop  += $y * $base;
-	}
-    } else {
-	#NIGE
-	if ($base == 1) {
-	    $start += $x;
-	    $stop  -= $y;
-	} else {
-	    $start += $x * $base;
-	    $stop  -= $y * $base;
-	}
+    # a:     alignment start: should be 0
+    # b:     sequence  start: >= 0
+    # c:     sequence  stop:  >= b
+    # d:     alignment stop:  should be length(sequence)-1
+    # x:     numbering start: >= 0  (could be < b?)
+    # y:     numbering stop:  >= c
+    # nx:    number start
+    # ny:    number stop
+    # gc1/2: count of non-sequence characters before/after the number
+    # r1/2:  summary range start/stop number
+
+    my ($r1, $a, $b, $x, $nx, $gc1, $usedr1) = @{$start_info};
+    my ($r2, $d, $c, $y, $ny, $gc2, $usedr2) = @{$stop_info};
+
+    my $delta1 = abs($x - $b) - $gc1;
+    my $delta2 = abs($y - $c) - $gc2;
+    my $fs = $fs1 - $fs2;  #magic: net count of frameshifts '/' versus '\'
+    
+    if ($x < $b) {
+	$delta1 = -$delta1;
     }
-    #warn "$tgt(o): $orient,$base start/stop: $start,$stop\n\n";
+    if ($y > $c) {
+	$delta2 = -$delta2;
+    }
 
-    return ($start, $stop);
+    my ($start, $stop) = (0, 0);
+    
+    #extrapolate endpoints from the ruler numbers by the above deltas:
+    #- scale by $base (1=protein or 3=DNA)
+    #- account for the rest of the codon at the end (+/- 2) if in base 3
+    #- shift according to the alignment summary range values
+    #- discount frameshifts (gives agreement with the summary range)
+    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  fs= $fs\n" if $DEBUG;
+    if ($orient eq '+') {
+     	#NIGE
+     	if ($base == 1) {
+     	    $start = $nx - $delta1;
+	    $stop  = $ny + $delta2;
+     	} else {
+     	    $start = $nx - $base * $delta1;
+	    $stop  = $ny + $base * $delta2 - $fs;
+	    $stop += 2  unless $usedr2;
+	    my $shift = $r1 - $start;
+	    warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
+	    $start -= $shift;
+	    $stop  -= $shift;
+     	}
+    } else {
+     	#NIGE
+     	if ($base == 1) {
+     	    $start = $nx + $delta1;
+	    $stop  = $ny - $delta2;
+     	} else {
+     	    $start = $nx + $base * $delta1;
+	    $stop  = $ny - $base * $delta2 + $fs;
+	    $stop -= 2  unless $usedr2;
+	    my $shift = $r1 - $start;  #shift
+	    warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
+	    $start += $shift;
+	    $stop  += $shift;
+     	}
+    }
+    warn "$tgt(o): $orient,$base start/stop: $start,$stop\n" if $DEBUG;
+    if ($rev) {
+	my $tmp = $start; $start = $stop; $stop = $tmp;
+	warn "$tgt(o): $orient,$base start/stop: $start,$stop [r]\n" if $DEBUG;
+    }
+    warn "\n" if $DEBUG;
+
+    return ($orient, $start, $stop);
 }
-
-# sub get_start_stop {
-#     my ($self, $tgt, $leader, $trailer, $string, $orient, $start, $stop, $base) = @_;
-
-#     #count leading sequence before alignment
-#     my $x = substr($string, 0, $leader);
-#     $x =~ tr/- //d;
-#     $x = length($x);
-
-#     #count trailing sequence after alignment
-#     my $y = substr($string, -$trailer, $trailer);
-#     $y =~ tr/- //d;
-#     $y = length($y);
-
-#     #extend string by these amounts, scaled by $base (1=protein or 3=DNA)
-#     warn "$tgt(i): $orient,$base start/stop: $start,$stop, pfx/sfx: $x,$y\n";
-#     if ($orient eq '+') {
-# 	$start -= $x * $base;
-# 	$stop  += $y * $base;
-#     } else {
-# 	$start += $x * $base;
-# 	$stop  -= $y * $base;
-#     }
-#     warn "$tgt(o): $orient,$base start/stop: $start,$stop\n\n";
-
-#     return ($start, $stop);
-# }
 
 sub print {
     my ($self, $indent) = (@_, 0);
