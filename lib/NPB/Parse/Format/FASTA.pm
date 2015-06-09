@@ -28,7 +28,7 @@ package NPB::Parse::Format::FASTA;
 use vars qw(@ISA $GCG_JUNK);
 use strict;
 
-our $DEBUG = 1;
+our $DEBUG = 0;
 
 @ISA = qw(NPB::Parse::Record);
 
@@ -703,7 +703,6 @@ sub new {
 	if ($self->query_orient_conflict($sum->{'orient'}, $orient) and
 	    $q2-$q1>0) {
 	    warn "WARNING: query orientation conflict for '$sum->{id}': summary says '$sum->{orient}', but range is '$q1:$q2': reversing this\n" if $DEBUG;
-	    my $tmp = $q1; $q1 = $q2; $q2 = $tmp; #swap
 	    $rev = 1;
 	}
 	warn ">>> $sum->{'id'}\n"  if $DEBUG;
@@ -793,7 +792,6 @@ sub new {
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    #NIGE
     my ($qrule, $query, $align, $sbjct, $srule) = ('', '', '', '', '');
     my ($first_pass, $depth, $qkey, $skey) = (1, 0, '', '');
 
@@ -990,6 +988,10 @@ sub get_start_stop {
 
     my ($start, $stop) = (0, 0);
     
+    #if ($rev) {
+#	$orient = $orient eq '+' ? '-' : '+';
+#    }
+
     #extrapolate endpoints from the ruler numbers by the above deltas:
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
@@ -997,7 +999,6 @@ sub get_start_stop {
     #- discount frameshifts (gives agreement with the summary range)
     warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  fs= $fs\n" if $DEBUG;
     if ($orient eq '+') {
-     	#NIGE
      	if ($base == 1) {
      	    $start = $nx - $delta1;
 	    $stop  = $ny + $delta2;
@@ -1011,7 +1012,6 @@ sub get_start_stop {
 	    $stop  -= $shift;
      	}
     } else {
-     	#NIGE
      	if ($base == 1) {
      	    $start = $nx + $delta1;
 	    $stop  = $ny - $delta2;
@@ -1027,6 +1027,7 @@ sub get_start_stop {
     }
     warn "$tgt(o): $orient,$base start/stop: $start,$stop\n" if $DEBUG;
     if ($rev) {
+	$orient = $orient eq '+' ? '-' : '+';
 	my $tmp = $start; $start = $stop; $stop = $tmp;
 	warn "$tgt(o): $orient,$base start/stop: $start,$stop [r]\n" if $DEBUG;
     }
