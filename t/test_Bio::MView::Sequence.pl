@@ -13,8 +13,8 @@ sub main {
 
     test__create_empty();
     test__forward_insert();
+    test__reverse_insert();
     test__special_characters();
-
     test__toy_cases();
 
     done_testing;
@@ -179,6 +179,90 @@ sub test__forward_insert {
 	'trulen'   => 7,         'lablen'         => 7,
         'sequence' => 'XABCY',   'seqlen'         => 5,
         'reverse'  => 0,         'fs' => 0,
+    };
+    $S->append($f); test_state($S, $h);
+    #end
+}
+
+sub test__reverse_insert {
+    print "\ntest__reverse_insert: B AB ABC X-ABC X-ABC-Y\n";
+    my ($S, $s, $f, $h);
+
+    print "\ntest__reverse_insert / insert empty\n";
+    $S = new Bio::MView::Reverse_Sequence();
+    $h = {
+        'lo'       => 0,        'hi'             => 0,
+        'reflo'    => 0,        'refhi'          => 0,
+        'leader'   => 0,        'trailer'        => 0,
+        'string'   => '',       'length'         => 0,
+        'trulen'   => 0,        'lablen'         => 0,
+        'sequence' => '',       'seqlen'         => 0,
+        'reverse'  => 1,        'fs' => 0,
+    };
+    ok($S->append(), "append(empty)"); test_state($S, $h);
+    #end
+
+    print "\ntest__reverse_insert / insert character at [20]\n";
+    $S = new Bio::MView::Reverse_Sequence();
+    $s = 'B'; $f = [\$s, 20, 20]; $h = {
+        'lo'       => 20,       'hi'             => 20,
+        'reflo'    => 20,       'refhi'          => 20,
+        'leader'   => 0,        'trailer'        => 0,
+        'string'   => 'B',      'length'         => 1,
+        'trulen'   => 1,        'lablen'         => 1,
+        'sequence' => 'B',      'seqlen'         => 1,
+        'reverse'  => 1,        'fs' => 0,
+    };
+    $S->append($f); test_state($S, $h);
+
+    print "\ntest__reverse_insert / overwrite character at [20]\n";
+    $S->append($f); test_state($S, $h);
+
+    print "\ntest__reverse_insert / prepend character at [19]\n";
+    $s = 'A'; $f = [\$s, 19, 19]; $h = {
+        'lo'       => 19,       'hi'             => 20,
+        'reflo'    => 20,       'refhi'          => 19,
+        'leader'   => 0,        'trailer'        => 0,
+        'string'   => 'BA',     'length'         => 2,
+        'trulen'   => 2,        'lablen'         => 2,
+        'sequence' => 'BA',     'seqlen'         => 2,
+        'reverse'  => 1,        'fs' => 0,
+    };
+    $S->append($f); test_state($S, $h);
+
+    print "\ntest__reverse_insert / append character at [21]\n";
+    $s = 'C'; $f = [\$s, 21, 21]; $h = {
+        'lo'       => 19,       'hi'             => 21,
+        'reflo'    => 21,       'refhi'          => 19,
+        'leader'   => 0,        'trailer'        => 0,
+        'string'   => 'CBA',    'length'         => 3,
+        'trulen'   => 3,        'lablen'         => 3,
+        'sequence' => 'CBA',    'seqlen'         => 3,
+        'reverse'  => 1,        'fs' => 0,
+    };
+    $S->append($f); test_state($S, $h);
+
+    print "\ntest__reverse_insert / prepend character at [17] with a gap\n";
+    $s = 'X'; $f = [\$s, 17, 17]; $h = {
+        'lo'       => 17,       'hi'             => 21,
+        'reflo'    => 21,       'refhi'          => 17,
+        'leader'   => 0,        'trailer'        => 0,
+        'string'   => 'CBA-X',  'length'         => 5,
+        'trulen'   => 5,        'lablen'         => 5,
+        'sequence' => 'CBAX',   'seqlen'         => 4,
+        'reverse'  => 1,        'fs' => 0,
+    };
+    $S->append($f); test_state($S, $h);
+
+    print "\ntest__reverse_insert / apppend character at [23] with a gap\n";
+    $s = 'Y'; $f = [\$s, 23, 23]; $h = {
+        'lo'       => 17,        'hi'             => 23,
+        'reflo'    => 23,        'refhi'          => 17,
+        'leader'   => 0,         'trailer'        => 0,
+        'string'   => 'Y-CBA-X', 'length'         => 7,
+        'trulen'   => 7,         'lablen'         => 7,
+        'sequence' => 'YCBAX',   'seqlen'         => 5,
+        'reverse'  => 1,         'fs' => 0,
     };
     $S->append($f); test_state($S, $h);
     #end

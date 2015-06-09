@@ -694,10 +694,10 @@ sub new {
 	} else {
 	    $self->die("unparsed range: '$sum->{'ranges'}'");
 	}
-	#The programs SSEARCH 35.04, GGSEARCH 36.3.3 had an apparent bug
-        #concerning the range labelling of the reverse complement of the
-        #query, with the start/stop labels inverted in the score summary and
-        #wrong in some cases in the alignment rulers. Test for this:
+	#The programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
+	#behaviour: a query marked as reverse complement in the summary,
+	#would neverthless have positive sequence ranges in the summary and
+	#a positive ruler. Test for this and set a flag.
 	my $orient  = $q2 < $q1 ? '-' : '+';
 	my $rev = 0;
 	if ($self->query_orient_conflict($sum->{'orient'}, $orient) and
@@ -988,10 +988,6 @@ sub get_start_stop {
 
     my ($start, $stop) = (0, 0);
     
-    #if ($rev) {
-#	$orient = $orient eq '+' ? '-' : '+';
-#    }
-
     #extrapolate endpoints from the ruler numbers by the above deltas:
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
@@ -1026,6 +1022,10 @@ sub get_start_stop {
      	}
     }
     warn "$tgt(o): $orient,$base start/stop: $start,$stop\n" if $DEBUG;
+    #The programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
+    #behaviour: a query marked as reverse complement in the summary,
+    #would neverthless have positive sequence ranges in the summary and
+    #a positive ruler. This flag was set previously and now we undo it:
     if ($rev) {
 	$orient = $orient eq '+' ? '-' : '+';
 	my $tmp = $start; $start = $stop; $stop = $tmp;

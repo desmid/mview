@@ -1,13 +1,16 @@
-Version 1.58  2015-06-01
+Version 1.58  2015-06-09
   Added CLUSTAL/aln output mode.
   Added new '-conservation' option to produce CLUSTAL-style '*:.' line for
     any alignment.
-  Added molecule type options (-aa, -na, -rna; -dna already exists).
+  Added new molecule type option: -moltype aa | na | dna | rna.
+  Removed old '-dna' option'
   Tidied output conversion formatters: now use molecule type.
   Extended MAF parser and added column header text to Ruler, currently
     used by MAF output.
   Extended bin/mview check_format() to better guess input format from filename.
   Fixed bug in Sequence.pm to handle '~' gap characters in MSF format.
+  Extended FASTA3X parser to handle translated nucleotide sequence numbering
+    more accurately. 
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on
