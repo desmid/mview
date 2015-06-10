@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2011 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: FASTA.pm,v 1.16 2013/09/09 21:31:04 npb Exp $
 
 ###########################################################################
@@ -191,30 +191,38 @@ sub use_frag {
 #remove leading/trailing space from the query.
 sub strip_query_gaps {
     my ($self, $query, $sbjct, $leader, $trailer) = @_;
-    my $i;
 
+    #return $self;   #NIGE
+
+    my $stripper = sub {
+        my ($query, $sbjct, $char) = @_;
+        #strip query gaps marked as '-'
+        while ( (my $i = index($$query, $char)) >= 0 ) {
+
+            #downcase preceding symbol in hit
+            if (defined substr($$query, $i-1, 1)) {
+                substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
+            }
+
+            #consume more of same in query and hit
+            while (substr($$query, $i, 1) eq $char) {
+                substr($$query, $i, 1) = '';
+                substr($$sbjct, $i, 1) = '';
+            }
+
+            #downcase succeding symbol in hit
+            if (defined substr($$query, $i, 1)) {
+                substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
+            }
+        }
+    };
+    
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
 
-    #strip query gaps marked as '-'
-    while ( ($i = index($$query, '-')) >= 0 ) {
-	
-	#downcase preceding symbol in hit
-	if (defined substr($$query, $i-1, 1)) {
-	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
-	}
-	
-	#consume gap symbols in query and hit
-	while (substr($$query, $i, 1) eq '-') {
-	    substr($$query, $i, 1) = "";
-	    substr($$sbjct, $i, 1) = "";
-	}
-	
-	#downcase succeding symbol in hit
-	if (defined substr($$query, $i, 1)) {
-	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
-	}
-    }
+    &$stripper($query, $sbjct, '-');
+    &$stripper($query, $sbjct, '/');
+    &$stripper($query, $sbjct, '\\');
 
     #strip query terminal white space
     $trailer = length($$query) - $leader - $trailer;

@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 2013 Nigel P. Brown
+# Copyright (C) 2013-2015 Nigel P. Brown
 # $Id: ggsearch.pm,v 1.1 2013/09/09 21:31:05 npb Exp $
 
 ###########################################################################

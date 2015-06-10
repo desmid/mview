@@ -560,6 +560,11 @@ sub build_base_alignment {
 					  keys %{$self->{'keep_uid'}});
     }
     
+    # foreach my $r ($aln->all_ids) {
+    #     $aln->id2row($r)->seqobj->print;
+    # }
+    # warn "LEN: ", $aln->length;
+
     $aln;
 }
 
