@@ -242,7 +242,6 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     NPB::Parse::Record::print $self, $indent;
-    local $_;
     printf "$x%20s -> %s\n", 'score', $self->{'score'};
     printf "$x%20s -> %s\n", 'pass',  $self->{'pass'};
     foreach my $row (@{$self->{'row'}}) {

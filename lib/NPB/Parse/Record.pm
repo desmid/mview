@@ -11,7 +11,7 @@ use strict;
 
 @ISA = qw(NPB::Parse::Message);
 
-my $ignore_attributes = "text|offset|bytes|parent|record_by_posn|record_by_type|indices|relative_key|absolute_key";
+my $ignore_attributes = "text|offset|bytes|index|parent|record_by_posn|record_by_type|indices|relative_key|absolute_key";
 
 $PackDelim = "\0";
 $KeyDelim  = "::";
@@ -247,21 +247,21 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my ($tmp, $r, $i, $rec) = ('');
     my $x = ' ' x $indent;
-    printf "%sKey:   %s   Indices: [%s]\n", $x,
+    printf "%sClass:  %s\n", $x, $self;
+    printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
+        $self->{'parent'} : 'undef';
+    printf "%sKey:    %s   Indices: [%s]\n", $x,
         $self->relative_key, join(',', $self->get_indices);
-    #printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
-    #    $self->{'parent'} : 'undef';
-    printf "%sClass: %s\n", $x, $self;
 
     #print records in order of appearance in parent Record
-    printf "%sSubrecords by posn:\n", $x;
+    printf "%s  Subrecords by posn:\n", $x;
     $self->print_records_by_posn($indent);
 
 #    #print records in order of type
-#    printf "%sSubrecords by type:\n", $x;
+#    printf "%s  Subrecords by type:\n", $x;
 #    $self->print_records_by_type($indent);
 
-    printf "%sMiscellaneous:\n", $x;
+    printf "%s  Miscellaneous:\n", $x;
     printf "$x%20s -> %d\n",   'index', $self->{'index'};
     printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
     if (defined $self->{'text'}) {
@@ -270,13 +270,13 @@ sub print {
         ($tmp) = split("\n", $tmp);
     }
     printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
+    printf "%s  Data:\n", $x;
 }
 
 sub print_records_by_posn {
     my ($self, $indent) = (@_, 0);
-    my $x = ' ' x $indent;
+    my $x = ' ' x ($indent+2);
     my ($rec, %count);
-
     foreach $rec (@{$self->{'record_by_posn'}}) {
 	if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
 	    printf "$x%20s -> [%s]\n",
@@ -290,9 +290,8 @@ sub print_records_by_posn {
 
 sub print_records_by_type {
     my ($self, $indent) = (@_, 0);
-    my $x = ' ' x $indent;
+    my $x = ' ' x ($indent+2);
     my ($key, $rec, $i);
-
     foreach $key (sort keys %{$self->{'record_by_type'}}) {
 	if (@{$self->{'record_by_type'}->{$key}} > 1) {
 	    for ($i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {

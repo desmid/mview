@@ -501,8 +501,7 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     NPB::Parse::Record::print $self, $indent;
-    foreach my $field (sort keys %$self) {
-        next if $field eq 'parent'; #NIGE
+    foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -523,7 +522,6 @@ sub print {
     NPB::Parse::Record::print $self, $indent;
     foreach my $hit (@{$self->{'hit'}}) {
 	foreach my $field (sort keys %$hit) {
-            next if $field eq 'parent'; #NIGE
 	    printf "$x%20s -> %s\n", $field, $hit->{$field};
 	}
     }
@@ -560,8 +558,7 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     NPB::Parse::Record::print $self, $indent;
-    foreach my $field (sort keys %$self) {
-        next if $field eq 'parent'; #NIGE
+    foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -613,8 +610,7 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     NPB::Parse::Record::print $self, $indent;
-    foreach my $field (sort keys %$self) {
-        next if $field eq 'parent'; #NIGE
+    foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -633,8 +629,7 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     NPB::Parse::Record::print $self, $indent;
-    foreach my $field (sort keys %$self) {
-        next if $field eq 'parent'; #NIGE
+    foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
