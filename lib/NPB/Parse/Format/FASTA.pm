@@ -17,11 +17,6 @@
 #   SUM          the summary lines for each hit: name, description, scores
 #   ALN          the aligned fragments
 #
-#
-# Acknowledgements.
-#
-# Christophe Leroy, 22/8/97 for original fasta1 version.
-#
 ###########################################################################
 package NPB::Parse::Format::FASTA;
 

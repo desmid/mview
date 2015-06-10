@@ -6,6 +6,10 @@
 #
 # Handles: fasta  1.x
 #
+# Acknowledgements.
+#
+# Christophe Leroy, 22/8/97 for original fasta1 parser.
+#
 ###########################################################################
 package NPB::Parse::Format::FASTA1;
 
