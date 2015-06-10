@@ -466,8 +466,8 @@ sub parse_frame {
     return 'f'  if $s eq 'f';
     return 'r'  if $s eq 'r';
     return 'r'  if $s eq 'rev-comp';
-    return $s   if $s =~ /^[123]$/;   #seen in: tfasta_3.4t23.
-    return $s   if $s =~ /^[456]$/;   #seen in: tfasta_3.4t23.
+    return $s   if $s =~ /^[123]$/;   #seen in: tfasta_3.4t23
+    return $s   if $s =~ /^[456]$/;   #seen in: tfasta_3.4t23
     return 'F'  if $s eq 'F';         #seen in: tfastx2.0u
     return 'R'  if $s eq 'R';         #seen in: tfastx2.0u
     return $s; #silently accept whatever was given
@@ -479,8 +479,8 @@ sub parse_orient {
     return '+'  if $s eq 'f';
     return '-'  if $s eq 'r';
     return '-'  if $s eq 'rev-comp';
-    return '+'  if $s =~ /^[123]$/;   #seen in: tfasta_3.4t23.
-    return '-'  if $s =~ /^[456]$/;   #seen in: tfasta_3.4t23.
+    return '+'  if $s =~ /^[123]$/;   #seen in: tfasta_3.4t23
+    return '-'  if $s =~ /^[456]$/;   #seen in: tfasta_3.4t23
     return '+'  if $s eq 'F';         #seen in: tfastx2.0u
     return '-'  if $s eq 'R';         #seen in: tfastx2.0u
     warn "WARNING: parse_orient: unrecognised value '$s'\n";
@@ -500,9 +500,9 @@ sub new { die "$_[0]::new() virtual function called\n" }
 sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $field;
     NPB::Parse::Record::print $self, $indent;
-    foreach $field (sort keys %$self) {
+    foreach my $field (sort keys %$self) {
+        next if $field eq 'parent'; #NIGE
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -520,10 +520,10 @@ sub new { die "$_[0]::new() virtual function called\n" }
 sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my ($hit, $field);
     NPB::Parse::Record::print $self, $indent;
-    foreach $hit (@{$self->{'hit'}}) {
-	foreach $field (sort keys %$hit) {
+    foreach my $hit (@{$self->{'hit'}}) {
+	foreach my $field (sort keys %$hit) {
+            next if $field eq 'parent'; #NIGE
 	    printf "$x%20s -> %s\n", $field, $hit->{$field};
 	}
     }
@@ -559,9 +559,9 @@ sub new {
 sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $field;
     NPB::Parse::Record::print $self, $indent;
-    foreach $field (sort keys %$self) {
+    foreach my $field (sort keys %$self) {
+        next if $field eq 'parent'; #NIGE
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -612,9 +612,9 @@ sub new {
 sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $field;
     NPB::Parse::Record::print $self, $indent;
-    foreach $field (sort keys %$self) {
+    foreach my $field (sort keys %$self) {
+        next if $field eq 'parent'; #NIGE
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -632,9 +632,9 @@ sub new { die "$_[0]::new() virtual function called\n" }
 sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $field;
     NPB::Parse::Record::print $self, $indent;
-    foreach $field (sort keys %$self) {
+    foreach my $field (sort keys %$self) {
+        next if $field eq 'parent'; #NIGE
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
@@ -648,6 +648,14 @@ use NPB::Parse::Math;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Record);
+
+sub get_header {
+    $_[0]->{'parent'}->{'parent'}->{'record_by_type'}->{'HEADER'}->[0][3];
+}
+
+sub get_summary {
+    $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[0][3];
+}
 
 sub new {
     my $keys_and_depth = sub {
@@ -682,32 +690,19 @@ sub new {
     };
 
     my $summary_info = sub {
-	my ($self, $parent) = @_;
-	#Look in the parent MATCH record's already parsed SUM record, which
-	#contains accurate alignment ranges (but these only cover the
-        #aligned regions; terminal overhanging sequences are not counted!
-	my ($q1, $q2, $s1, $s2);
-	my $sum = $parent->{'record_by_posn'}->[0]->[3];
-	#warn "$sum->{'ranges'}\n";
-	if ($sum->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
+	my ($self) = @_;
+	#look in the parent MATCH record's already parsed SUM record
+        my $sum = $self->get_summary;
+	#get any alignment ranges (but these only cover the aligned
+        #regions; terminal overhanging sequences are not counted!
+	my ($q1, $q2, $s1, $s2) = (0, 0, 0, 0);
+	if (exists $sum->{'ranges'} and
+            $sum->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
 	    ($q1, $q2, $s1, $s2) = ($1, $2, $3, $4);
-	} else {
-	    $self->die("unparsed range: '$sum->{'ranges'}'");
 	}
-	#The programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
-	#behaviour: a query marked as reverse complement in the summary,
-	#would neverthless have positive sequence ranges in the summary and
-	#a positive ruler. Test for this and set a flag.
-	my $orient  = $q2 < $q1 ? '-' : '+';
-	my $rev = 0;
-	if ($self->query_orient_conflict($sum->{'orient'}, $orient) and
-	    $q2-$q1>0) {
-	    warn "WARNING: query orientation conflict for '$sum->{id}': summary says '$sum->{orient}', but range is '$q1:$q2': reversing this\n" if $DEBUG;
-	    $rev = 1;
-	}
-	warn ">>> $sum->{'id'}\n"  if $DEBUG;
-	warn "ranges: [$q1, $q2], [$s1, $s2]\n\n" if $DEBUG;
-	[ [$q1, $q2, $rev], [$s1, $s2, 0] ];
+	warn "\n>>> $sum->{'id'}\n"  if $DEBUG;
+	warn "ranges: [$q1, $q2], [$s1, $s2]\n\n"  if $DEBUG;
+	[ [$q1, $q2], [$s1, $s2] ];
     };
 
     my $start_info = sub {
@@ -725,14 +720,13 @@ sub new {
 	} else {
 	    ($ni, $num, $usedr) = ($si, $rstart, 1);
 	}
-	#count non-sequence in the fragment between seqstart and label
+	#count gaps in the fragment between seqstart and label
 	my $gc = 0;
 	if ($si < $ni) {  #seqstart ... label
 	    my $s = substr($$align, $si, $ni-$si);
-	    $s =~ tr /[a-zA-Z*]//d; #drop sequence symbols
-	    $gc = length $s;  #remaining junk
+            $gc = $s =~ tr/-\/\\//;
 	}
-	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r1: $rstart  a: $ai  b: $si  x: $ni  X: $num  gc: $gc  usedr: $usedr]\n\n" if $DEBUG;
+	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r1: $rstart  a: $ai  b: $si  x: $ni  X: $num  gc: $gc  usedr: $usedr]\n\n"  if $DEBUG;
 	[$rstart, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
@@ -757,10 +751,9 @@ sub new {
 	my $gc = 0;
 	if ($ni < $si) {  #label ... seqend
 	    my $s = substr($$align, $ni, $si-$ni);
-	    $s =~ tr /[a-zA-Z*]//d; #drop sequence symbols
-	    $gc = length $s;  #remaining junk
+            $gc = $s =~ tr/-\/\\//;
 	}
-	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r2: $rend  d: $ai c: $si  y: $ni  Y: $num  gc: $gc  usedr: $usedr]\n\n" if $DEBUG;
+	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r2: $rend  d: $ai c: $si  y: $ni  Y: $num  gc: $gc  usedr: $usedr]\n\n"  if $DEBUG;
 	[$rend, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
@@ -768,17 +761,18 @@ sub new {
 	my ($self, $sum, $name, $ruler, $align, $depth) = @_;
 	my $r1  = $sum->[0];  #summary from
 	my $r2  = $sum->[1];  #summary to
-	my $rev = $sum->[2];  #summary to
-	my $o  = $r2 < $r1 ? '-' : '+';
 	my $start = &$start_info($self, $name, $ruler, $align, $depth, $r1);
 	my $stop  = &$stop_info($self, $name, $ruler, $align, $depth, $r2);
 	#count frameshifts lying between the extreme ruler numbers
-	my ($n1, $n2) = ($start->[2], $stop->[2]);
-	my $s = substr($$align, $n1, $n2-$n1+1);
+	#my ($n1, $n2) = ($start->[2], $stop->[2]);
+	#my $s = substr($$align, $n1, $n2-$n1+1);
+	#count frameshifts of types '/' and '\'
+	my $s = $$align;
 	my $fs1 = $s =~ tr/[\/]//;
 	my $fs2 = $s =~ tr/[\\]//;
-	warn "frame: [$o, $fs1, $fs2]\n\n"  if $DEBUG;
-	[ $o, $start, $stop, $fs1, $fs2, $rev ];
+	warn "frameshifts: [$fs1, $fs2]\n\n"  if $DEBUG;
+	# [ $ro, $start, $stop, $fs1, $fs2 ];
+	[ $start, $stop, $fs1, $fs2 ];
     };
 
     my $type = shift;
@@ -865,17 +859,37 @@ sub new {
     }
 
     #query/sbjct start/stop positions from parent summary
-    my $sum = &$summary_info($self, $parent);
+    my $sum = &$summary_info($self);
 
     #query/sbjct start/stop positions and numbering from ruler
     my $qinfo = &$align_info($self, $sum->[0], $qkey, \$qrule, \$query, $depth);
     my $sinfo = &$align_info($self, $sum->[1], $skey, \$srule, \$sbjct, $depth);
 
-    my ($query_orient, $query_start, $query_stop) =
-	$self->get_start_stop('qry', $qinfo, $self->query_base);
+    my ($query_orient_label, $query_orient, $query_start, $query_stop);
+    my ($sbjct_orient_label, $sbjct_orient, $sbjct_start, $sbjct_stop) =
 
-    my ($sbjct_orient, $sbjct_start, $sbjct_stop) =
-	$self->get_start_stop('hit', $sinfo, $self->sbjct_base);
+    #query/sbjct orientations
+    ($query_orient_label, $query_orient) = $self->get_query_orient($qinfo);
+    ($sbjct_orient_label, $sbjct_orient) = $self->get_sbjct_orient($sinfo);
+    
+    #query/sbjct recomputed start/stop
+    my ($qstart, $qstop) =
+	$self->get_start_stop('qry', $query_orient, $qinfo, $self->query_base);
+    
+    my ($sstart, $sstop) =
+        $self->get_start_stop('hit', $sbjct_orient, $sinfo, $self->sbjct_base);
+
+    #complete hack until MView code handles reversals
+    my $temporary = sub {
+        my ($so, $ro, $start, $stop) = @_;
+        return ($so, $stop, $start)  if $so ne $ro;  #reverse
+        return ($ro, $start, $stop);
+    };
+    ($query_orient, $query_start, $query_stop) =
+        &$temporary($query_orient_label, $query_orient, $qstart, $qstop);
+    ($sbjct_orient, $sbjct_start, $sbjct_stop) =
+        &$temporary($sbjct_orient_label, $sbjct_orient, $sstart, $sstop);
+    warn "($query_orient, $query_start, $query_stop)\n\n"  if $DEBUG;
 
     my $x;
     
@@ -928,34 +942,73 @@ sub new {
     $self;
 }
 
-#Generic functions to fix start/stop positions suitable for any fasta member
-#that uses untranslated sequences where the stated sequence ranges use the
-#same numbering system as the displayed sequences. Must be overridden as
-#needed:
-#
-# fasta       dna x dna  or  pro x pro  (ok)
-# fasta[xy]   dna x pro                 (override query)
-# tfast[axy]  pro x dna                 (override sbjct)
+#NIGE
+# #the programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
+# #behaviour: a query marked as reverse complement in the summary,
+# #would neverthless have positive sequence ranges in the summary and
+# #a positive ruler. Test for this and set a flag.
+#     
+#summary orientation may refer to query or to subjct and may differ
+#from sequence numbering, depending on program and version!
+sub get_query_orient {
+    my ($self, $info) = @_;
+    #ruler orientation
+    my $r1 = $info->[0][0]; my $r2 = $info->[1][0];
+    my $n1 = $info->[0][4]; my $n2 = $info->[1][4];
+    #summary orientation: child can override method
+    my $so = $self->query_orient;
+    my $ro;
+    if ($r1 != $r2) {
+        $ro = $r2 < $r1 ? '-' : '+';
+    } elsif ($n1 != $n2) {
+        $ro = $n2 < $n1 ? '-' : '+';
+    } else {
+        $ro = $so;
+    }
+    if ($so ne $ro) {
+        my $id = $self->get_summary->{'id'};
+        warn "WARNING: query orientation conflict for '$id': summary says '$so', but range is '$ro'\n"  if $DEBUG;
+    }
+    ($so, $ro);
+}
 
+sub get_sbjct_orient {
+    my ($self, $info) = @_;
+    #ruler orientation
+    my $r1 = $info->[0][0]; my $r2 = $info->[1][0];
+    my $n1 = $info->[0][4]; my $n2 = $info->[1][4];
+    #summary orientation: child can override method
+    my $so = $self->sbjct_orient;
+    my $ro;
+    if ($r1 != $r2) {
+        $ro = $r2 < $r1 ? '-' : '+';
+    } elsif ($n1 != $n2) {
+        $ro = $n2 < $n1 ? '-' : '+';
+    } else {
+        $ro = $so;
+    }
+    if ($so ne $ro) {
+        my $id = $self->get_summary->{'id'};
+        warn "WARNING: sbjct orientation conflict for '$id': summary says '$so', but range is '$ro'\n"  if $DEBUG;
+    }
+    ($so, $ro);
+}
+
+##Generic functions to determine orientations: Override as needed.
+sub query_orient { '+' }
+sub sbjct_orient { '+' }
+
+#Generic functions to fix start/stop positions. Override as needed.
 sub query_base { return 1 }
 sub sbjct_base { return 1 }
 
-#override in children: summary frame|rev-comp field refers to the query not
-#the sbjct
-sub query_orient_conflict {
-    my ($self, $summary_orient, $orient) = @_;
-    return $summary_orient ne $orient;
-}
-sub sbjct_orient_conflict {
-    my ($self, $summary, $orient) = @_;
-    return 0;
-}
-
 #subclasses override this if they need to do less work
 sub get_start_stop {
-    my ($self, $tgt, $info, $base) = @_;
+    my ($self, $tgt, $orient, $info, $base) = @_;
 
-    my ($orient, $start_info, $stop_info, $fs1, $fs2, $rev) = @$info;
+    my ($start_info, $stop_info, $fs1, $fs2) = @$info;
+
+    warn ">>>>>> $tgt, $orient\n"  if $DEBUG;
 
     #              7            20
     #  ---------QWERTY  //  UIOPASDF----------
@@ -986,14 +1039,14 @@ sub get_start_stop {
 	$delta2 = -$delta2;
     }
 
-    my ($start, $stop) = (0, 0);
+    my ($start, $stop, $shift) = (0, 0, 0);
     
     #extrapolate endpoints from the ruler numbers by the above deltas:
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
     #- shift according to the alignment summary range values
     #- discount frameshifts (gives agreement with the summary range)
-    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  fs= $fs\n" if $DEBUG;
+    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  fs= $fs  usedr= $usedr2\n"  if $DEBUG;
     if ($orient eq '+') {
      	if ($base == 1) {
      	    $start = $nx - $delta1;
@@ -1002,10 +1055,12 @@ sub get_start_stop {
      	    $start = $nx - $base * $delta1;
 	    $stop  = $ny + $base * $delta2 - $fs;
 	    $stop += 2  unless $usedr2;
-	    my $shift = $r1 - $start;
-	    warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
-	    $start -= $shift;
-	    $stop  -= $shift;
+            if ($r1 != 0) {
+                $shift = $r1 - $start;
+                $start -= $shift;
+                $stop  -= $shift;
+            }
+            warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
      	}
     } else {
      	if ($base == 1) {
@@ -1015,25 +1070,18 @@ sub get_start_stop {
      	    $start = $nx + $base * $delta1;
 	    $stop  = $ny - $base * $delta2 + $fs;
 	    $stop -= 2  unless $usedr2;
-	    my $shift = $r1 - $start;  #shift
-	    warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
-	    $start += $shift;
-	    $stop  += $shift;
-     	}
+            if ($r1 != 0) {
+                $shift = $r1 - $start;
+                $start += $shift;
+                $stop  += $shift;
+            }
+            warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
+        }
     }
-    warn "$tgt(o): $orient,$base start/stop: $start,$stop\n" if $DEBUG;
-    #The programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
-    #behaviour: a query marked as reverse complement in the summary,
-    #would neverthless have positive sequence ranges in the summary and
-    #a positive ruler. This flag was set previously and now we undo it:
-    if ($rev) {
-	$orient = $orient eq '+' ? '-' : '+';
-	my $tmp = $start; $start = $stop; $stop = $tmp;
-	warn "$tgt(o): $orient,$base start/stop: $start,$stop [r]\n" if $DEBUG;
-    }
-    warn "\n" if $DEBUG;
+    warn "$tgt(o): $orient,$base start/stop: $start,$stop\n"  if $DEBUG;
+    warn "\n"  if $DEBUG;
 
-    return ($orient, $start, $stop);
+    return ($start, $stop);
 }
 
 sub print {

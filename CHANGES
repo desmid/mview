@@ -1,4 +1,4 @@
-Version 1.58  2015-06-09
+Version 1.58  2015-06-10
   Added CLUSTAL/aln output mode.
   Added new '-conservation' option to produce CLUSTAL-style '*:.' line for
     any alignment.
@@ -9,8 +9,8 @@ Version 1.58  2015-06-09
     used by MAF output.
   Extended bin/mview check_format() to better guess input format from filename.
   Fixed bug in Sequence.pm to handle '~' gap characters in MSF format.
-  Extended FASTA3X parser to handle translated nucleotide sequence numbering
-    more accurately. 
+  Extended UV FASTA parser to handle translated nucleotide sequence numbering
+    more accurately; affects FASTA36 and older FASTA3 series.
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on

@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2013 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: tfasta.pm,v 1.15 2013/09/09 21:31:05 npb Exp $
 
 ###########################################################################
@@ -342,7 +342,21 @@ use vars qw(@ISA);
 
 # tfast[axy]  pro x dna
 #
-sub sbjct_base { return 3 }
+# program		sbjct_base	range in summary?
+# tfastx  3.0t82	1		no
+# tfastxy 3.1t07	1		no
+# tfasta  3.4t23	3		yes
+# tfastx  3.4t23	3		yes
+# tfasty  3.4t23	3		yes
+
+sub query_orient { '+' }
+sub sbjct_orient { $_[0]->get_summary->{'orient'} }
+
+sub query_base { return 1 }
+sub sbjct_base {
+    return 1  if ($_[0]->get_header->{'version'} cmp "3.4") < 0;
+    return 3;
+}
 
 
 ###########################################################################

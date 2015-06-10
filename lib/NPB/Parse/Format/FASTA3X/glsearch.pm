@@ -210,6 +210,9 @@ use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA3X::MATCH::ALN);
 
+sub query_orient { $_[0]->get_summary->{'orient'} }
+sub sbjct_orient { '+' }
+
 
 ###########################################################################
 1;

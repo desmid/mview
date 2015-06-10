@@ -246,15 +246,11 @@ use vars qw(@ISA);
 
 # tfast[axy]  pro x dna
 
+sub query_orient { '+' }
+sub sbjct_orient { $_[0]->get_summary->{'orient'} }
+
+sub query_base { return 1 }
 sub sbjct_base { return 3 }
-
-#summary frame|rev-comp field refers to the sbjct
-sub query_orient_conflict { 0 }
-
-sub sbjct_orient_conflict {
-    my ($self, $summary_orient, $orient) = @_;
-    return $summary_orient ne $orient;
-}
 
 
 ###########################################################################

@@ -138,15 +138,15 @@ use vars qw(@ISA);
 #like those of a global/global alignment: query sequence range is complete;
 #sbjct depends on it
 sub get_start_stop {
-    my ($self, $tgt, $info, $base) = @_;
+    my ($self, $tgt, $orient, $info, $base) = @_;
 
-    my ($orient, $start_info, $stop_info, $fs1, $fs2) = @$info;
+    my ($start_info, $stop_info, $fs1, $fs2) = @$info;
 
     my ($r1) = @{$start_info};
     my ($r2) = @{$stop_info};
 
     warn "$tgt(o): $orient,$base start/stop: $r1,$r2\n\n" if $NPB::Parse::Format::FASTA::DEBUG;
-    return ($orient, $r1, $r2);
+    return ($r1, $r2);
 }
 
 

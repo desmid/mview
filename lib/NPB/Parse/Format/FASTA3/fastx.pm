@@ -65,7 +65,11 @@ use vars qw(@ISA);
 
 # fast[xy]  dna x pro
 
+sub query_orient { $_[0]->get_summary->{'orient'} }
+sub sbjct_orient { '+' }
+
 sub query_base { return 3 }
+sub sbjct_base { return 1 }
 
 
 ###########################################################################

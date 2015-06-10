@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2013 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: FASTA2.pm,v 1.18 2013/09/09 21:31:04 npb Exp $
 
 ###########################################################################
@@ -130,6 +130,12 @@ sub new {
 	    next;
 	}
 
+	if ($line =~ /^\s*v((\d+(?:\.\d+)?)\s*\S+.*)/) {
+	    $self->{'full_version'} = $1;
+	    $self->{'version'}      = $2;
+	    next;
+	}
+
 	if ($line =~ /^\s*>?(\S+).*\:\s+(\d+)\s+(?:aa|nt)/) {
 	    if ($self->{'queryfile'} eq '') {
 		$self->{'queryfile'} = $1;
@@ -152,14 +158,13 @@ sub new {
 	} 
 
 	#ignore any other text
-
     }
 
     if (! defined $self->{'full_version'} ) {
 	#can't determine version: hardwire one!
 	$self->{'full_version'} = 'looks like FASTA 2';
-	$self->{'version'}      = '2';
-    }
+	$self->{'version'}      = '2.1';
+        $self->warn("unknown FASTA version - using $self->{'version'}");    }
 
     $self;
 }

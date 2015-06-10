@@ -5,23 +5,22 @@
 ###########################################################################
 package NPB::Parse::Record;
 
-use vars qw(@ISA $PackDelim $KeysDelim);
+use vars qw(@ISA $PackDelim $KeyDelim);
 use NPB::Parse::Message;
 use strict;
 
 @ISA = qw(NPB::Parse::Message);
 
-my $ignore_attributes = "text|offset|bytes|record_by_posn|record_by_type|indices|relative_key|absolute_key";
+my $ignore_attributes = "text|offset|bytes|parent|record_by_posn|record_by_type|indices|relative_key|absolute_key";
 
 $PackDelim = "\0";
-$KeysDelim  = "::";
+$KeyDelim  = "::";
 
-# Warning! the {'record_by_*'} fields seem to require explicit dereferencing
-# otherwise perl won't garbaged collect them until after the program exits, 
-# even though they aren't circular. 
-# Therefore, the top-level Record of a Record tree should call the free()
-# method when the caller has finished with it a record, to allow normal
-# garbage collection at run-time.
+#Warning! the 'record_by_*' and 'parent' fields require explicit
+#dereferencing otherwise perl won't garbage collect them until after the
+#program exits.  Therefore, the top-level Record of a Record tree should
+#call the free() method when the caller has finished with it a record, to
+#allow normal garbage collection at run-time.
 sub new {
     shift;                 #discard system supplied type
     my ($type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
@@ -29,27 +28,29 @@ sub new {
     my $self = {};
     bless $self, $type;    #use type specified by caller
 
+    #warn "NEW $self (@_)\n";
     #warn $text->substr(), "\n";
 
     $self->{'text'}           = $text;
     $self->{'offset'}         = $offset;    #my string offset
     $self->{'bytes'}          = $bytes;     #my string length
-    $self->{'record_by_posn'} = [];         #list of records
-    $self->{'record_by_type'} = {};         #hash of record types
+    $self->{'parent'}         = $parent;    #parent record (to be free'd)
+    $self->{'record_by_posn'} = [];         #list of records(to be free'd)
+    $self->{'record_by_type'} = {};         #hash of record types (to be free'd)
     $self->{'indices'}        = [];         #additional keys for indexing
-    
+
     #subrecord counter
     $self->{'index'}         = $self->get_record_number($parent);
 
     #relative key for reporting
-    $self->{'relative_key'}  = $self->get_type . $KeysDelim . $self->{'index'};
+    $self->{'relative_key'}  = $self->get_type . $KeyDelim . $self->{'index'};
 
     #absolute hierarchical key for indexing/reporting
     $self->{'absolute_key'}  = '';
-    $self->{'absolute_key'}  = $parent->{'absolute_key'}. $KeysDelim
+    $self->{'absolute_key'}  = $parent->{'absolute_key'}. $KeyDelim
 	if defined $parent;
     $self->{'absolute_key'} .= $self->{'relative_key'};
-    
+
     $self;
 }
 
@@ -60,7 +61,7 @@ sub new {
 #broken by resetting the 'parent' field. Likewise, set the shared 'text'
 #field to undefined. Without this, the Record hierarchy is never garbaged until
 #after the program exits! The caller can supply a list of subrecord types, in
-#which case only those will be marked for destruction, not the parent itslf.
+#which case only those will be marked for destruction, not this Record.
 sub free {
     my $self = shift;
     my ($type, $rec);
@@ -73,8 +74,9 @@ sub free {
 	    if (exists $self->{'record_by_type'}->{$type}) {
 		foreach $rec (@{$self->{'record_by_type'}->{$type}}) {
 		    if (@$rec > 3) {
-			$rec->[3]->free;    #recursively free subrecords
-			splice @$rec, 3;    #remove parse object
+			$rec->[3]->free;          #recurse
+                        my $o = splice @$rec, 3;  #excise+remove parse object
+                        undef $o;
 		    }
 		}
 	    }
@@ -86,12 +88,14 @@ sub free {
     foreach $rec (@{$self->{'record_by_posn'}}) {
 	if (@$rec > 3) {
 	    #warn "  ", join(", ", @$rec), "\n";
-	    $rec->[3]->free;                #recursively free subrecords
-	    splice @$rec, 3;                #remove parse object
+	    $rec->[3]->free;          #recurse
+	    my $o = splice @$rec, 3;  #excise+remove parse object
+            undef $o;
 	}
     }
     
-    #free subrecords
+    #free our records
+    $self->{'parent'} = undef;
     $self->{'record_by_type'} = undef;
     $self->{'record_by_posn'} = undef;
     $self->{'text'} = undef;
@@ -243,10 +247,10 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my ($tmp, $r, $i, $rec) = ('');
     my $x = ' ' x $indent;
-
     printf "%sKey:   %s   Indices: [%s]\n", $x,
-    $self->relative_key, join(',', $self->get_indices);
-
+        $self->relative_key, join(',', $self->get_indices);
+    #printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
+    #    $self->{'parent'} : 'undef';
     printf "%sClass: %s\n", $x, $self;
 
     #print records in order of appearance in parent Record
@@ -274,7 +278,6 @@ sub print_records_by_posn {
     my ($rec, %count);
 
     foreach $rec (@{$self->{'record_by_posn'}}) {
-
 	if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
 	    printf "$x%20s -> [%s]\n",
 	    $rec->[0] . '/' . ++$count{$rec->[0]}, join(", ", @$rec);

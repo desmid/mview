@@ -214,7 +214,8 @@ sub new {
     if (! defined $self->{'full_version'} ) {
 	#can't determine version: hardwire one!
 	$self->{'full_version'} = 'looks like FASTA 3';
-	$self->{'version'}      = '3';
+	$self->{'version'}      = '3.4';
+        $self->warn("unknown FASTA series 3 version - using $self->{'version'}");
     }
 
     $self;
@@ -226,15 +227,7 @@ package NPB::Parse::Format::FASTA3::MATCH::ALN;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::FASTA1::MATCH::ALN);
-
-## The FASTA 3.x series gradually switched over to supplying the numeric
-## sequence ranges for the alignment in the alignment summary section,
-## allowing simpler parsing of this information. However, the application of
-## this seems to have been inconsistently applied in the different programs,
-## so the old FASTA 1 and 2 series parser that extracts these positions from
-## the alignment rulers was used instead of the newer FASTA 3X parser. Since
-## the FASTA 3.x series is now obsolete, this is moot.
+@ISA = qw(NPB::Parse::Format::FASTA::MATCH::ALN);
 
 
 ###########################################################################
