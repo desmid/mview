@@ -91,9 +91,9 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    $self->SUPER::print_data($indent);
     printf "$x%20s -> %s\n",  'query_orient', $self->{'query_orient'};
     printf "$x%20s -> %s\n",  'sbjct_orient', $self->{'sbjct_orient'};
-    $self->SUPER::print($indent);
 }
 
 

@@ -580,14 +580,14 @@ sub parse_alignment {
 	$self->warn("unequal Query/Align/Sbjct lengths:\n$query\n$align\n$sbjct\n");
     }
 
-    $self->{'query'} 	   = $query;
-    $self->{'align'} 	   = $align;
-    $self->{'sbjct'} 	   = $sbjct;
+    $self->{'query'} 	    = $query;
+    $self->{'align'} 	    = $align;
+    $self->{'sbjct'} 	    = $sbjct;
 
-    $self->{'query_start'} = $query_start;
-    $self->{'query_stop'}  = $query_stop;
-    $self->{'sbjct_start'} = $sbjct_start;
-    $self->{'sbjct_stop'}  = $sbjct_stop;
+    $self->{'query_start'}  = $query_start;
+    $self->{'query_stop'}   = $query_stop;
+    $self->{'sbjct_start'}  = $sbjct_start;
+    $self->{'sbjct_stop'}   = $sbjct_stop;
     
     $self;
 }
@@ -595,13 +595,13 @@ sub parse_alignment {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'query',       $self->{'query'};
-    printf "$x%20s -> '%s'\n", 'align',       $self->{'align'};
-    printf "$x%20s -> '%s'\n", 'sbjct',       $self->{'sbjct'};
-    printf "$x%20s -> %s\n",   'query_start', $self->{'query_start'};
-    printf "$x%20s -> %s\n",   'query_stop',  $self->{'query_stop'};
-    printf "$x%20s -> %s\n",   'sbjct_start', $self->{'sbjct_start'};
-    printf "$x%20s -> %s\n",   'sbjct_stop',  $self->{'sbjct_stop'};
+    printf "$x%20s -> '%s'\n", 'query',        $self->{'query'};
+    printf "$x%20s -> '%s'\n", 'align',        $self->{'align'};
+    printf "$x%20s -> '%s'\n", 'sbjct',        $self->{'sbjct'};
+    printf "$x%20s -> %s\n",   'query_start',  $self->{'query_start'};
+    printf "$x%20s -> %s\n",   'query_stop',   $self->{'query_stop'};
+    printf "$x%20s -> %s\n",   'sbjct_start',  $self->{'sbjct_start'};
+    printf "$x%20s -> %s\n",   'sbjct_stop',   $self->{'sbjct_stop'};
 }
 
 

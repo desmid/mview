@@ -440,6 +440,7 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    $self->SUPER::print_data($indent);
     printf "$x%20s -> %s\n", 'bits',         $self->{'bits'};
     printf "$x%20s -> %s\n", 'score',        $self->{'score'};
     printf "$x%20s -> %s\n", 'n',            $self->{'n'};
@@ -450,7 +451,6 @@ sub print_data {
     printf "$x%20s -> %s\n", 'pos_percent',  $self->{'pos_percent'};
     printf "$x%20s -> %s\n", 'gap_fraction', $self->{'gap_fraction'};
     printf "$x%20s -> %s\n", 'gap_percent',  $self->{'gap_percent'};
-    $self->SUPER::print($indent);
 }
 
 
