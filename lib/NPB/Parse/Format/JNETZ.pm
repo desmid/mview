@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1999-2006 Nigel P. Brown
+# Copyright (C) 1999-2015 Nigel P. Brown
 # $Id: JNETZ.pm,v 1.8 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -144,15 +144,13 @@ sub new {
     $self;#->examine;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n",   'query', scalar $self->get_query;
     printf "$x%20s -> %s\n",   'final', scalar $self->get_final;
     printf "$x%20s -> %s\n",   'conf',  scalar $self->get_conf;
     printf "$x%20s -> %s\n",   'align', scalar $self->get_align;
-    $self;
 }
 
 sub get_query {

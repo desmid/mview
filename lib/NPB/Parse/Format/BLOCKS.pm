@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1999-2006 Nigel P. Brown
+# Copyright (C) 1999-2015 Nigel P. Brown
 # $Id: BLOCKS.pm,v 1.6 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -214,18 +214,16 @@ sub new {
     $self;#->examine;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n", 'id',        $self->{'id'};
-    printf "$x%20s -> %s\n", 'ac',        $self->{'ac'};
-    printf "$x%20s -> %s\n", 'de',        $self->{'de'};
-    printf "$x%20s -> %s\n", 'bl',        $self->{'bl'};
-    my $i; for ($i=0; $i < @{$self->{'block'}}; $i++) {
+    printf "$x%20s -> %s\n", 'id', $self->{'id'};
+    printf "$x%20s -> %s\n", 'ac', $self->{'ac'};
+    printf "$x%20s -> %s\n", 'de', $self->{'de'};
+    printf "$x%20s -> %s\n", 'bl', $self->{'bl'};
+    for (my $i=0; $i < @{$self->{'block'}}; $i++) {
 	print "$x$i => [@{$self->{'block'}->[$i]}]\n";
     }
-    $self;
 }
 
 

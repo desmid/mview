@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: MULTAS.pm,v 1.9 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -166,11 +166,10 @@ sub new {
     $self;#->examine;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %d\n",   'number',     $self->{'number'};
+    printf "$x%20s -> %d\n", 'number', $self->{'number'};
 }
 
 
@@ -239,14 +238,12 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my ($hit, $field);
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %d\n", 'count',        $self->{'count'};
-    foreach $hit (@{$self->{'hit'}}) {
-	foreach $field (sort keys %$hit) {
+    printf "$x%20s -> %d\n", 'count', $self->{'count'};
+    foreach my $hit (@{$self->{'hit'}}) {
+	foreach my $field (sort keys %$hit) {
 	    printf "$x%20s -> '%s'\n", $field,  $hit->{$field};
 	}
     }
@@ -301,14 +298,12 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my ($align, $i);
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %d\n",    'count',  $self->{'count'};
-    printf "$x%20s -> %d\n",    'length', $self->{'length'};
-    for ($i=0; $i<@{$self->{'seq'}}; $i++) {
+    printf "$x%20s -> %d\n", 'count',  $self->{'count'};
+    printf "$x%20s -> %d\n", 'length', $self->{'length'};
+    for (my $i=0; $i<@{$self->{'seq'}}; $i++) {
 	printf("$x%20s[%d] -> '%s'\n", 'seq', $i+1, $self->{'seq'}->[$i]);
     }
 }

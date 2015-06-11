@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1997-2009 Nigel P. Brown
+# Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: HSSP.pm,v 1.25 2009/10/23 22:22:05 npb Exp $
 
 ###########################################################################
@@ -358,10 +358,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> '%s'\n", 'version',        $self->{'version'};
     printf "$x%20s -> '%s'\n", 'full_version',   $self->{'full_version'};
     printf "$x%20s -> %s\n",   'pdbid',          $self->{'pdbid'};
@@ -498,11 +497,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    my $i; for ($i=0; $i<@{$self->{'ranking'}}; $i++) {
+    for (my $i=0; $i<@{$self->{'ranking'}}; $i++) {
 	printf "$x%20s -> %s\n", 'nr',      $self->{'ranking'}->[$i]->{'nr'};
 	printf "$x%20s -> %s\n", 'id',      $self->{'ranking'}->[$i]->{'id'};
 	printf "$x%20s -> %s\n", '%ide',    $self->{'ranking'}->[$i]->{'%ide'};
@@ -781,15 +779,13 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    my ($i, $j);
     printf "$x%20s -> '%s'\n", 'query',  $self->get_query;
     printf "$x%20s -> '%s'\n", 'dssp',   $self->get_dssp();
     #structure data [position]
-    foreach $i ($self->get_record) {
+    foreach my $i ($self->get_record) {
 	printf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
 	printf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
 	printf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
@@ -801,9 +797,9 @@ sub print {
 	printf "$x  %20s -> %s\n",   'var',        $i->{'var'};
     }
     #alignments[chain][rank]
-    foreach $j ($self->get_chains) {
+    foreach my $j ($self->get_chains) {
 	printf "$x%20s -> '%s'\n", "chain[$j]",  $self->get_query($j);
-	for ($i=1; $i<@{$self->{'alignment'}}; $i++) {
+	for (my $i=1; $i<@{$self->{'alignment'}}; $i++) {
 	    printf "$x%20s -> '%s'\n", "alignment[$j][$i]", $self->get_sequence($i, $j);
 	}
     }

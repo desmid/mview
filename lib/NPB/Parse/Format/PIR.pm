@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: PIR.pm,v 1.7 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -136,14 +136,13 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'prefix',    $self->{'prefix'};
-    printf "$x%20s -> %s\n",   'id',        $self->{'id'};
-    printf "$x%20s -> '%s'\n", 'desc',      $self->{'desc'};
-    printf "$x%20s -> %s\n",   'seq',       $self->{'seq'};
+    printf "$x%20s -> %s\n",   'prefix', $self->{'prefix'};
+    printf "$x%20s -> %s\n",   'id',     $self->{'id'};
+    printf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
+    printf "$x%20s -> %s\n",   'seq',    $self->{'seq'};
 }
 
 

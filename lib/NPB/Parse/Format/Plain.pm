@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: Plain.pm,v 1.9 2005/12/12 20:42:48 brown Exp $
 
 ######################################################################
@@ -152,13 +152,11 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    local $_;
-    foreach (@{$self->{'id'}}) {
-	printf "$x%20s -> %-15s %s\n", 'seq', $_, $self->{'seq'}->{$_};
+    foreach my $i (@{$self->{'id'}}) {
+	printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
     printf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
 }

@@ -271,7 +271,10 @@ sub print {
     }
     printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
     printf "%s  Data:\n", $x;
+    $self->print_data($indent);
 }
+
+sub print_data {}  #override to add fields in children
 
 sub print_records_by_posn {
     my ($self, $indent) = (@_, 0);

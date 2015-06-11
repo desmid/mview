@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2006 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: EMBL.pm,v 1.51 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -253,10 +253,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n", 'id',        $self->{'id'};
     printf "$x%20s -> %s\n", 'dataclass', $self->{'dataclass'};
     printf "$x%20s -> %s\n", 'molecule',  $self->{'molecule'};
@@ -301,10 +300,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n",   'ac',         $self->{'ac'};
     printf "$x%20s -> [%s]\n", 'accessions', join(',', @{$self->{'accessions'}});
 }
@@ -348,11 +346,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'ni',         $self->{'ni'};
+    printf "$x%20s -> %s\n", 'ni', $self->{'ni'};
 }
 
 
@@ -394,11 +391,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> \"%s\"\n",   'description',   $self->{'description'};
+    printf "$x%20s -> \"%s\"\n", 'description', $self->{'description'};
 }
 
 
@@ -557,17 +553,16 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> \"%s\"\n",   'sequence',   $self->{'sequence'};
-    printf "$x%20s -> %d\n",       'length',  $self->{'length'};
-    printf "$x%20s -> %d\n",       'A',       $self->{'A'};
-    printf "$x%20s -> %d\n",       'C',       $self->{'C'};
-    printf "$x%20s -> %d\n",       'G',       $self->{'G'};
-    printf "$x%20s -> %d\n",       'T',       $self->{'T'};
-    printf "$x%20s -> %d\n",       'other',   $self->{'other'};
+    printf "$x%20s -> \"%s\"\n",  'sequence', $self->{'sequence'};
+    printf "$x%20s -> %d\n",      'length',   $self->{'length'};
+    printf "$x%20s -> %d\n",      'A',        $self->{'A'};
+    printf "$x%20s -> %d\n",      'C',        $self->{'C'};
+    printf "$x%20s -> %d\n",      'G',        $self->{'G'};
+    printf "$x%20s -> %d\n",      'T',        $self->{'T'};
+    printf "$x%20s -> %d\n",      'other',    $self->{'other'};
 }
 
 

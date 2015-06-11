@@ -131,13 +131,12 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'id',        $self->{'id'};
-    printf "$x%20s -> '%s'\n", 'desc',      $self->{'desc'};
-    printf "$x%20s -> %s\n",   'seq',       $self->{'seq'};
+    printf "$x%20s -> %s\n",   'id',   $self->{'id'};
+    printf "$x%20s -> '%s'\n", 'desc', $self->{'desc'};
+    printf "$x%20s -> %s\n",   'seq',  $self->{'seq'};
 }
 
 

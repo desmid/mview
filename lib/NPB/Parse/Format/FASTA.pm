@@ -492,10 +492,9 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
@@ -511,10 +510,9 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     foreach my $hit (@{$self->{'hit'}}) {
 	foreach my $field (sort keys %$hit) {
 	    printf "$x%20s -> %s\n", $field, $hit->{$field};
@@ -549,10 +547,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
@@ -601,10 +598,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
@@ -620,10 +616,9 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     foreach my $field (sort $self->list_attrs) {
 	printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
@@ -1074,10 +1069,9 @@ sub get_start_stop {
     return ($start, $stop);
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> '%s'\n", 'query',          $self->{'query'};
     printf "$x%20s -> '%s'\n", 'align',          $self->{'align'};
     printf "$x%20s -> '%s'\n", 'sbjct',          $self->{'sbjct'};

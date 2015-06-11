@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2013 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: BLAST.pm,v 1.20 2013/09/09 21:31:04 npb Exp $
 
 ###########################################################################
@@ -270,14 +270,13 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n", 'version',        $self->{'version'};
-    printf "$x%20s -> %s\n", 'full_version',   $self->{'full_version'};
-    printf "$x%20s -> %s\n", 'query',          $self->{'query'};
-    printf "$x%20s -> %s\n", 'summary',        $self->{'summary'};
+    printf "$x%20s -> %s\n", 'version',      $self->{'version'};
+    printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
+    printf "$x%20s -> %s\n", 'query',        $self->{'query'};
+    printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
 }
 
 
@@ -290,14 +289,12 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my ($hit, $field);
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> '%s'\n", 'header',        $self->{'header'};
-    foreach $hit (@{$self->{'hit'}}) {
-	foreach $field (sort keys %$hit) {
+    printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
+    foreach my $hit (@{$self->{'hit'}}) {
+	foreach my $field (sort keys %$hit) {
 	    printf "$x%20s -> %s\n", $field,  $hit->{$field};
 	}
     }
@@ -349,12 +346,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $i;
-    NPB::Parse::Record::print $self, $indent;
-    foreach $i (sort keys %{$self->{'orient'}}) {
+    foreach my $i (sort keys %{$self->{'orient'}}) {
 	printf("$x%20s -> %s\n",
 	       "orient $i", scalar @{$self->{'orient'}->{$i}});
     }
@@ -404,13 +399,12 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'id',         $self->{'id'};
-    printf "$x%20s -> '%s'\n", 'desc',       $self->{'desc'};
-    printf "$x%20s -> %s\n",   'length',     $self->{'length'};
+    printf "$x%20s -> %s\n",   'id',     $self->{'id'};
+    printf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
+    printf "$x%20s -> %s\n",   'length', $self->{'length'};
 }
 
 
@@ -598,16 +592,16 @@ sub parse_alignment {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'query',          $self->{'query'};
-    printf "$x%20s -> '%s'\n", 'align',          $self->{'align'};
-    printf "$x%20s -> '%s'\n", 'sbjct',          $self->{'sbjct'};
-    printf "$x%20s -> %s\n",   'query_start',    $self->{'query_start'};
-    printf "$x%20s -> %s\n",   'query_stop',     $self->{'query_stop'};
-    printf "$x%20s -> %s\n",   'sbjct_start',    $self->{'sbjct_start'};
-    printf "$x%20s -> %s\n",   'sbjct_stop' ,    $self->{'sbjct_stop'};
+    printf "$x%20s -> '%s'\n", 'query',       $self->{'query'};
+    printf "$x%20s -> '%s'\n", 'align',       $self->{'align'};
+    printf "$x%20s -> '%s'\n", 'sbjct',       $self->{'sbjct'};
+    printf "$x%20s -> %s\n",   'query_start', $self->{'query_start'};
+    printf "$x%20s -> %s\n",   'query_stop',  $self->{'query_stop'};
+    printf "$x%20s -> %s\n",   'sbjct_start', $self->{'sbjct_start'};
+    printf "$x%20s -> %s\n",   'sbjct_stop',  $self->{'sbjct_stop'};
 }
 
 
@@ -637,11 +631,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> '%s'\n",   'warning', $self->{'warning'};
+    printf "$x%20s -> '%s'\n", 'warning', $self->{'warning'};
 }
 
 
@@ -671,11 +664,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> '%s'\n",   'histogram', $self->{'histogram'};
+    printf "$x%20s -> '%s'\n", 'histogram', $self->{'histogram'};
 }
 
 
@@ -705,11 +697,10 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> '%s'\n",   'parameters', $self->{'parameters'};
+    printf "$x%20s -> '%s'\n", 'parameters', $self->{'parameters'};
 }
 
 

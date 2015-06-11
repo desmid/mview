@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2006 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: FT.pm,v 1.35 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -171,17 +171,16 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'location',  $self->{'location'};
-    printf "$x%20s -> %s\n",   'qualifiers',$self->{'qualifiers'};
-    printf "$x%20s -> [%s]\n", 'p_location',join(",",@{$self->{'p_location'}});
-    printf "$x%20s:\n",     'p_qualifiers';
-    my $key; foreach $key (sort keys %{$self->{'p_qualifiers'}}) {
+    printf "$x%20s -> %s\n",   'location',   $self->{'location'};
+    printf "$x%20s -> %s\n",   'qualifiers', $self->{'qualifiers'};
+    printf "$x%20s -> [%s]\n", 'p_location', join(",",@{$self->{'p_location'}});
+    printf "$x%20s:\n", 'p_qualifiers';
+    foreach my $i (sort keys %{$self->{'p_qualifiers'}}) {
 	printf("$x$x%20s -> [%s]\n",
-	       $key, join(',', @{$self->{'p_qualifiers'}->{$key}}));
+               $i, join(',', @{$self->{'p_qualifiers'}->{$i}}));
     }
 }
 

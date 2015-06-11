@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2006 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: Genbank.pm,v 1.48 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -213,10 +213,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n", 'id',       $self->{'id'};
     printf "$x%20s -> %s\n", 'length',   $self->{'length'};
     printf "$x%20s -> %s\n", 'units',    $self->{'units'};
@@ -262,10 +261,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n",   'ac',         $self->{'ac'};
     printf "$x%20s -> [%s]\n", 'accessions', join(',', @{$self->{'accessions'}});
 }

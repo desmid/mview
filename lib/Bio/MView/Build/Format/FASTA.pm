@@ -186,21 +186,24 @@ sub use_frag {
     return 1;
 }
 
-#remove query and hit columns at gaps in the query sequence and downcase
-#the bounding hit symbols in the hit sequence thus affected. additionally,
-#remove leading/trailing space from the query.
+#remove query and hit columns at gaps and frameshifts in the query sequence;
+#downcase the bounding hit symbols in the hit sequence thus affected and,
+#for frameshifts, downcase the bounding symbols in the query too. remove
+#leading/trailing space from the query.
 sub strip_query_gaps {
     my ($self, $query, $sbjct, $leader, $trailer) = @_;
 
     #return $self;   #NIGE
 
-    my $stripper = sub {
-        my ($query, $sbjct, $char) = @_;
+    my $gapper = sub {
+        my ($query, $sbjct, $char, $doquery) = @_;
         #strip query gaps marked as '-'
         while ( (my $i = index($$query, $char)) >= 0 ) {
 
             #downcase preceding symbol in hit
             if (defined substr($$query, $i-1, 1)) {
+                substr($$query, $i-1, 1) = lc substr($$query, $i-1, 1)
+                    if $doquery;
                 substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
             }
 
@@ -212,6 +215,8 @@ sub strip_query_gaps {
 
             #downcase succeding symbol in hit
             if (defined substr($$query, $i, 1)) {
+                substr($$query, $i, 1) = lc substr($$query, $i, 1)
+                    if $doquery;
                 substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
             }
         }
@@ -220,9 +225,9 @@ sub strip_query_gaps {
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
 
-    &$stripper($query, $sbjct, '-');
-    &$stripper($query, $sbjct, '/');
-    &$stripper($query, $sbjct, '\\');
+    &$gapper($query, $sbjct, '-',  0);  #mark gaps in sbjct only
+    &$gapper($query, $sbjct, '/',  1);  #mark frameshifts in both
+    &$gapper($query, $sbjct, '\\', 1);  #mark frameshifts in both
 
     #strip query terminal white space
     $trailer = length($$query) - $leader - $trailer;

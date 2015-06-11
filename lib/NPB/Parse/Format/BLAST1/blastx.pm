@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2011 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: blastx.pm,v 1.12 2013/09/09 21:31:05 npb Exp $
 
 ###########################################################################
@@ -218,20 +218,19 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'score',          $self->{'score'};
-    printf "$x%20s -> %s\n",   'bits',           $self->{'bits'};
-    printf "$x%20s -> %s\n",   'expect',         $self->{'expect'};
-    printf "$x%20s -> %s\n",   'p',              $self->{'p'};
-    printf "$x%20s -> %s\n",   'n',              $self->{'n'};
-    printf "$x%20s -> %s\n",   'id_fraction',    $self->{'id_fraction'};
-    printf "$x%20s -> %s\n",   'id_percent',     $self->{'id_percent'};
-    printf "$x%20s -> %s\n",   'pos_fraction',   $self->{'pos_fraction'};
-    printf "$x%20s -> %s\n",   'pos_percent',    $self->{'pos_percent'};
-    printf "$x%20s -> %s\n",   'query_frame',    $self->{'query_frame'};
+    printf "$x%20s -> %s\n",  'score',        $self->{'score'};
+    printf "$x%20s -> %s\n",  'bits',         $self->{'bits'};
+    printf "$x%20s -> %s\n",  'expect',       $self->{'expect'};
+    printf "$x%20s -> %s\n",  'p',            $self->{'p'};
+    printf "$x%20s -> %s\n",  'n',            $self->{'n'};
+    printf "$x%20s -> %s\n",  'id_fraction',  $self->{'id_fraction'};
+    printf "$x%20s -> %s\n",  'id_percent',   $self->{'id_percent'};
+    printf "$x%20s -> %s\n",  'pos_fraction', $self->{'pos_fraction'};
+    printf "$x%20s -> %s\n",  'pos_percent',  $self->{'pos_percent'};
+    printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'};
     $self->SUPER::print($indent);
 }
 

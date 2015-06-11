@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: SIM.pm,v 1.2 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -199,23 +199,21 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'program', $self->{'program'};
-    printf "$x%20s -> %s\n",   'version', $self->{'version'};
-    printf "$x%20s -> %s\n",   'id1',     $self->{'id1'};
-    printf "$x%20s -> %s\n",   'desc1',   $self->{'desc1'};
-    printf "$x%20s -> %s\n",   'length1', $self->{'length1'};
-    printf "$x%20s -> %s\n",   'id2',     $self->{'id2'};
-    printf "$x%20s -> %s\n",   'desc2',   $self->{'desc2'};
-    printf "$x%20s -> %s\n",   'length2', $self->{'length2'};
-
-    printf "$x%20s -> %s\n",   'match',         $self->{'match'};
-    printf "$x%20s -> %s\n",   'mismatch',      $self->{'mismatch'};
-    printf "$x%20s -> %s\n",   'gap opening',   $self->{'gapopen'};
-    printf "$x%20s -> %s\n",   'gap extension', $self->{'gapextend'};
+    printf "$x%20s -> %s\n",  'program',       $self->{'program'};
+    printf "$x%20s -> %s\n",  'version',       $self->{'version'};
+    printf "$x%20s -> %s\n",  'id1',           $self->{'id1'};
+    printf "$x%20s -> %s\n",  'desc1',         $self->{'desc1'};
+    printf "$x%20s -> %s\n",  'length1',       $self->{'length1'};
+    printf "$x%20s -> %s\n",  'id2',           $self->{'id2'};
+    printf "$x%20s -> %s\n",  'desc2',         $self->{'desc2'};
+    printf "$x%20s -> %s\n",  'length2',       $self->{'length2'};
+    printf "$x%20s -> %s\n",  'match',         $self->{'match'};
+    printf "$x%20s -> %s\n",  'mismatch',      $self->{'mismatch'};
+    printf "$x%20s -> %s\n",  'gap opening',   $self->{'gapopen'};
+    printf "$x%20s -> %s\n",  'gap extension', $self->{'gapextend'};
 }
 
 
@@ -320,12 +318,11 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'identity', $self->{'identity'};
-    printf "$x%20s -> %s\n",   'score',    $self->{'score'};
+    printf "$x%20s -> %s\n",  'identity', $self->{'identity'};
+    printf "$x%20s -> %s\n",  'score',    $self->{'score'};
 }
 
 ###########################################################################
@@ -473,17 +470,16 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> '%s'\n", 'query',          $self->{'query'};
-    printf "$x%20s -> '%s'\n", 'align',          $self->{'align'};
-    printf "$x%20s -> '%s'\n", 'sbjct',          $self->{'sbjct'};
-    printf "$x%20s -> %s\n",   'query_start',    $self->{'query_start'};
-    printf "$x%20s -> %s\n",   'query_stop',     $self->{'query_stop'};
-    printf "$x%20s -> %s\n",   'sbjct_start',    $self->{'sbjct_start'};
-    printf "$x%20s -> %s\n",   'sbjct_stop' ,    $self->{'sbjct_stop'};
+    printf "$x%20s -> '%s'\n",  'query',       $self->{'query'};
+    printf "$x%20s -> '%s'\n",  'align',       $self->{'align'};
+    printf "$x%20s -> '%s'\n",  'sbjct',       $self->{'sbjct'};
+    printf "$x%20s -> %s\n",    'query_start', $self->{'query_start'};
+    printf "$x%20s -> %s\n",    'query_stop',  $self->{'query_stop'};
+    printf "$x%20s -> %s\n",    'sbjct_start', $self->{'sbjct_start'};
+    printf "$x%20s -> %s\n",    'sbjct_stop' , $self->{'sbjct_stop'};
 }
 
 ###########################################################################

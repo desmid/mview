@@ -9,8 +9,9 @@ Version 1.58  2015-06-10
     used by MAF output.
   Extended bin/mview check_format() to better guess input format from filename.
   Fixed bug in Sequence.pm to handle '~' gap characters in MSF format.
-  Extended UV FASTA parser to handle translated nucleotide sequence numbering
-    more accurately; affects FASTA36 and older FASTA3 series.
+  Fixed two bugs in handling of UV FASTA translated nucleotide sequence
+    numbering; affects FASTA36 and older FASTA3 series; frameshift symbols
+    elided from query sequence.
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on

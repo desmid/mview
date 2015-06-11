@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1999-2006 Nigel P. Brown
+# Copyright (C) 1999-2015 Nigel P. Brown
 # $Id: MIPS.pm,v 1.8 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -144,12 +144,11 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    printf "$x%20s -> %s\n",   'ac',     $self->{'ac'};
-    printf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
+    printf "$x%20s -> %s\n",   'ac',   $self->{'ac'};
+    printf "$x%20s -> '%s'\n", 'desc', $self->{'desc'};
 }
 
 
@@ -193,15 +192,13 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    local $_;
-    NPB::Parse::Record::print $self, $indent;
-    foreach (@{$self->{'order'}}) {
+    foreach my $i (@{$self->{'order'}}) {
 	printf "$x%20s -> %-15s %s=%s\n", 
-	'seq',    $_,
-	'desc',   $self->{'seq'}->{$_};
+	'seq',  $i,
+	'desc', $self->{'seq'}->{$i};
     }
 }
 
@@ -254,13 +251,11 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    local $_;
-    foreach (sort keys %{$self->{'seq'}}) {
-	printf "$x%20s -> %-15s =  %s\n", 'seq', $_, $self->{'seq'}->{$_};
+    foreach my $i (sort keys %{$self->{'seq'}}) {
+	printf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
 }
 

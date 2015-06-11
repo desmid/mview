@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2006 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: tblastx.pm,v 1.9 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -100,14 +100,14 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'query_orient',   $self->{'query_orient'};
-    printf "$x%20s -> %s\n",   'sbjct_orient',   $self->{'sbjct_orient'};
-    printf "$x%20s -> %s\n",   'query_frame',    $self->{'query_frame'} if
+    printf "$x%20s -> %s\n",  'query_orient', $self->{'query_orient'};
+    printf "$x%20s -> %s\n",  'sbjct_orient', $self->{'sbjct_orient'};
+    printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'} if
 	exists $self->{'query_frame'};
-    printf "$x%20s -> %s\n",   'sbjct_frame',    $self->{'sbjct_frame'} if
+    printf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'} if
 	exists $self->{'sbjct_frame'};
     $self->SUPER::print($indent);
 }

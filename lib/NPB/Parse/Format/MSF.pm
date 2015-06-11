@@ -158,10 +158,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> '%s'\n", 'file',   $self->{'file'};
     printf "$x%20s -> %s\n",   'msf',    $self->{'msf'};
     printf "$x%20s -> %s\n",   'type',   $self->{'type'};
@@ -232,17 +231,15 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    local $_;
-    NPB::Parse::Record::print $self, $indent;
-    foreach (@{$self->{'order'}}) {
+    foreach my $i (@{$self->{'order'}}) {
 	printf "$x%20s -> %-15s %s=%5s %s=%5s %s=%5s\n", 
-	'seq',    $_,
-	'length', $self->{'seq'}->{$_}->{'length'},
-	'check',  $self->{'seq'}->{$_}->{'check'},
-	'weight', $self->{'seq'}->{$_}->{'weight'};
+	'seq',    $i,
+	'length', $self->{'seq'}->{$i}->{'length'},
+	'check',  $self->{'seq'}->{$i}->{'check'},
+	'weight', $self->{'seq'}->{$i}->{'weight'};
     }
 }
 
@@ -311,13 +308,11 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
-    local $_;
-    foreach (sort keys %{$self->{'seq'}}) {
-	printf "$x%20s -> %-15s =  %s\n", 'seq', $_, $self->{'seq'}->{$_};
+    foreach my $i (sort keys %{$self->{'seq'}}) {
+	printf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
 }
 

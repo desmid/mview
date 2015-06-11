@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1998-2013 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: lalign.pm,v 1.4 2013/09/09 21:31:05 npb Exp $
 
 ###########################################################################
@@ -168,10 +168,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n",   'program', $self->{'program'};
     printf "$x%20s -> %s\n",   'version', $self->{'version'};
     printf "$x%20s -> %s\n",   'moltype', $self->{'moltype'};
@@ -273,10 +272,9 @@ sub new {
     $self;
 }
 
-sub print {
+sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    NPB::Parse::Record::print $self, $indent;
     printf "$x%20s -> %s\n",   'identity', $self->{'identity'};
     printf "$x%20s -> %s\n",   'score',    $self->{'score'};
 }
