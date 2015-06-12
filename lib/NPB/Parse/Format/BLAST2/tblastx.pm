@@ -66,19 +66,6 @@ sub new {
     my $self = new NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
     bless $self, $type;
 
-    #use sequence numbering to get orientations; ignore
-    #explicit orientations or frames in BLAST[NX] 2.0.9
-    if ($self->{'query_start'} > $self->{'query_stop'}) {
-	$self->{'query_orient'} = '-';
-    } else {
-	$self->{'query_orient'} = '+';
-    }
-    if ($self->{'sbjct_start'} > $self->{'sbjct_stop'}) {
-	$self->{'sbjct_orient'} = '-';
-    } else {
-	$self->{'sbjct_orient'} = '+';
-    }
-
     #record paired orientations in MATCH list
     push @{$parent->{'orient'}->{
 				 $self->{'query_orient'} .
@@ -104,8 +91,6 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     $self->SUPER::print_data($indent);
-    printf "$x%20s -> %s\n",  'query_orient', $self->{'query_orient'};
-    printf "$x%20s -> %s\n",  'sbjct_orient', $self->{'sbjct_orient'};
     printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'} if
 	exists $self->{'query_frame'};
     printf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'} if

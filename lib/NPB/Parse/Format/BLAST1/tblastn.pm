@@ -124,7 +124,7 @@ sub new {
 	 $self->{'sbjct_frame'},
 	) = ($1, $2, $3, $4, $5 . $6);
 	
-	#record query orientation in MATCH list
+	#record sbjct orientation in MATCH list
 	push @{$parent->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
 	
     } else {

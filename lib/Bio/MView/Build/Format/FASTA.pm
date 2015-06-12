@@ -200,7 +200,7 @@ sub strip_query_gaps {
         #strip query gaps marked as '-'
         while ( (my $i = index($$query, $char)) >= 0 ) {
 
-            #downcase preceding symbol in hit
+            #downcase preceding symbol
             if (defined substr($$query, $i-1, 1)) {
                 substr($$query, $i-1, 1) = lc substr($$query, $i-1, 1)
                     if $doquery;
@@ -213,7 +213,7 @@ sub strip_query_gaps {
                 substr($$sbjct, $i, 1) = '';
             }
 
-            #downcase succeding symbol in hit
+            #downcase succeding symbol
             if (defined substr($$query, $i, 1)) {
                 substr($$query, $i, 1) = lc substr($$query, $i, 1)
                     if $doquery;
