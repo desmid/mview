@@ -122,11 +122,6 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST2);
 
-sub range {
-    my $self = shift;
-    $self->SUPER::range($self->{'query_orient'});
-}
-
 sub assemble { my $self = shift; $self->assemble_blastn(@_) }
 
 
@@ -140,7 +135,8 @@ use vars qw(@ISA);
 #start' = int((start+2)/3); stop' = int(stop/3)
 sub range {
     my $self = shift;
-    my ($lo, $hi) = $self->SUPER::range($self->{'query_orient'});
+    my ($lo, $hi) = $self->SUPER::range;
+    #Bio::MView::Build::Row::BLAST::untranslate_range($lo, $hi);
     (int(($lo+2)/3), int($hi/3));
 }
 
@@ -167,7 +163,8 @@ use vars qw(@ISA);
 #start' = int((start+2)/3); stop' = int(stop/3)
 sub range {
     my $self = shift;
-    my ($lo, $hi) = $self->SUPER::range($self->{'query_orient'});
+    my ($lo, $hi) = $self->SUPER::range;
+    #Bio::MView::Build::Row::BLAST::untranslate_range($lo, $hi);
     (int(($lo+2)/3), int($hi/3));
 }
 

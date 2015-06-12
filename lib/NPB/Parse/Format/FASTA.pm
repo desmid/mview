@@ -850,31 +850,17 @@ sub new {
     my $qinfo = &$align_info($self, $sum->[0], $qkey, \$qrule, \$query, $depth);
     my $sinfo = &$align_info($self, $sum->[1], $skey, \$srule, \$sbjct, $depth);
 
-    my ($query_orient_label, $query_orient, $query_start, $query_stop);
-    my ($sbjct_orient_label, $sbjct_orient, $sbjct_start, $sbjct_stop);
-
     #query/sbjct orientations
-    ($query_orient_label, $query_orient) = $self->get_query_orient($qinfo);
-    ($sbjct_orient_label, $sbjct_orient) = $self->get_sbjct_orient($sinfo);
+    my ($query_orient, $qorient) = $self->get_query_orient($qinfo);
+    my ($sbjct_orient, $sorient) = $self->get_sbjct_orient($sinfo);
     
     #query/sbjct recomputed start/stop
-    my ($qstart, $qstop) =
-	$self->get_start_stop('qry', $query_orient, $qinfo, $self->query_base);
-    
-    my ($sstart, $sstop) =
-        $self->get_start_stop('hit', $sbjct_orient, $sinfo, $self->sbjct_base);
+    my ($query_start, $query_stop) =
+	$self->get_start_stop('qry', $qorient, $qinfo, $self->query_base);
+    my ($sbjct_start, $sbjct_stop) =
+        $self->get_start_stop('hit', $sorient, $sinfo, $self->sbjct_base);
 
-    #NIGE complete hack until MView code handles reversals
-    my $temporary = sub {
-        my ($so, $ro, $start, $stop) = @_;
-        return ($so, $stop, $start)  if $so ne $ro;  #reverse
-        return ($ro, $start, $stop);
-    };
-    ($query_orient, $query_start, $query_stop) =
-        &$temporary($query_orient_label, $query_orient, $qstart, $qstop);
-    ($sbjct_orient, $sbjct_start, $sbjct_stop) =
-        &$temporary($sbjct_orient_label, $sbjct_orient, $sstart, $sstop);
-    warn "($query_orient, $query_start, $query_stop)\n\n"  if $DEBUG;
+    warn "Final: [$query_orient $query_start,$query_stop] [$sbjct_orient $sbjct_start $sbjct_stop]\n\n"  if $DEBUG;
 
     my $x;
     
@@ -927,34 +913,28 @@ sub new {
     $self;
 }
 
-#NIGE
-# #the programs SSEARCH 35.04, GGSEARCH 36.3.3 had a strange
-# #behaviour: a query marked as reverse complement in the summary,
-# #would neverthless have positive sequence ranges in the summary and
-# #a positive ruler. Test for this and set a flag.
-#     
-#summary orientation may refer to query or to subjct and may differ
-#from sequence numbering, depending on program and version!
+#summary orientation may refer to query or to subjct and may differ from
+#sequence numbering, depending on program and version. so get both.
 sub get_query_orient {
     my ($self, $info) = @_;
     #ruler orientation
     my $r1 = $info->[0][0]; my $r2 = $info->[1][0];
     my $n1 = $info->[0][4]; my $n2 = $info->[1][4];
-    #summary orientation: child can override method
-    my $so = $self->query_orient;
+    #label orientation: child can override method
+    my $lo = $self->query_orient;
     my $ro;
     if ($r1 != $r2) {
         $ro = $r2 < $r1 ? '-' : '+';
     } elsif ($n1 != $n2) {
         $ro = $n2 < $n1 ? '-' : '+';
     } else {
-        $ro = $so;
+        $ro = $lo;
     }
-    if ($so ne $ro) {
+    if ($lo ne $ro) {
         my $id = $self->get_summary->{'id'};
-        warn "WARNING: query orientation conflict for '$id': summary says '$so', but range is '$ro'\n"  if $DEBUG;
+        warn "WARNING: query orientation conflict for '$id': summary says '$lo', but range is '$ro'\n"  if $DEBUG;
     }
-    ($so, $ro);
+    ($lo, $ro);
 }
 
 sub get_sbjct_orient {
@@ -962,21 +942,21 @@ sub get_sbjct_orient {
     #ruler orientation
     my $r1 = $info->[0][0]; my $r2 = $info->[1][0];
     my $n1 = $info->[0][4]; my $n2 = $info->[1][4];
-    #summary orientation: child can override method
-    my $so = $self->sbjct_orient;
+    #label orientation: child can override method
+    my $lo = $self->sbjct_orient;
     my $ro;
     if ($r1 != $r2) {
         $ro = $r2 < $r1 ? '-' : '+';
     } elsif ($n1 != $n2) {
         $ro = $n2 < $n1 ? '-' : '+';
     } else {
-        $ro = $so;
+        $ro = $lo;
     }
-    if ($so ne $ro) {
+    if ($lo ne $ro) {
         my $id = $self->get_summary->{'id'};
-        warn "WARNING: sbjct orientation conflict for '$id': summary says '$so', but range is '$ro'\n"  if $DEBUG;
+        warn "WARNING: sbjct orientation conflict for '$id': summary says '$lo', but range is '$ro'\n"  if $DEBUG;
     }
-    ($so, $ro);
+    ($lo, $ro);
 }
 
 ##Generic functions to determine orientations: Override as needed.

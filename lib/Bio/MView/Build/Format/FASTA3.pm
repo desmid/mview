@@ -82,11 +82,6 @@ sub rdb_info {
     return ('2S', '2S')  if $mode eq 'form';
 }
 
-sub range {
-    my $self = shift;
-    $self->SUPER::range($self->{'query_orient'});
-}
-
 sub assemble { my $self = shift; $self->assemble_fasta(@_) }
 
 
@@ -97,12 +92,11 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA3::fasta);
 
-#start' = int((start+2)/3); stop' = int(stop/3)
+#start' = int((start+2)/3); stop' = int((stop+2)/3)
 sub range {
     my $self = shift;
-    my ($lo, $hi) = $self->SUPER::range($self->{'query_orient'});
-    #(int(($lo+2)/3), int($hi+2/3));
-    Bio::MView::Build::Row::FASTA::untranslate_from_to($lo, $hi);
+    my ($lo, $hi) = $self->SUPER::range;
+    Bio::MView::Build::Row::FASTA::untranslate_range($lo, $hi);
 }
 
 sub assemble { my $self = shift; $self->assemble_fastx(@_) }

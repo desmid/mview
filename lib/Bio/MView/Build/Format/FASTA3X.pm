@@ -88,53 +88,6 @@ use vars qw(@ISA);
 
 
 ###########################################################################
-package Bio::MView::Build::Row::FASTA3X::ssearch;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Row::FASTA);
-
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $score, $bits, $e, $query_orient, $sbjct_orient)
-	= @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'score'} 	    = $score;
-    $self->{'bits'}    	    = $bits;
-    $self->{'e'}       	    = $e;
-    $self->{'query_orient'} = $query_orient;
-    $self->{'sbjct_orient'} = $sbjct_orient;
-    bless $self, $type;
-}
-
-sub data  {
-    return sprintf("%5s %7s %9s %2s %2s",
-		   'S-W', 'bits', 'E-value', 'qy', 'ht')
-	unless $_[0]->num;
-    return sprintf("%5s %7s %9s %2s %2s",
-		   $_[0]->{'score'}, $_[0]->{'bits'}, $_[0]->{'e'},
-		   $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'score'}, $self->{'bits'}, $self->{'e'},
-	    $self->{'query_orient'}, $self->{'sbjct_orient'})
-	if $mode eq 'data';
-    return ('S-W', 'bits', 'E-value', 'query_orient', 'sbjct_orient')
-	if $mode eq 'attr';
-    return ('5N', '7N', '9N', '2S', '2S')  if $mode eq 'form';
-}
-
-sub range {
-    my $self = shift;
-    $self->SUPER::range($self->{'query_orient'});
-}
-
-sub assemble { my $self = shift; $self->assemble_fasta(@_) }
-
-
-###########################################################################
 package Bio::MView::Build::Row::FASTA3X::fastm;
 
 use vars qw(@ISA);
@@ -178,9 +131,46 @@ sub rdb_info {
     return ('5N', '5N', '7N', '9N', '3N', '3N', '2S', '2S')  if $mode eq 'form';
 }
 
-sub range {
-    my $self = shift;
-    $self->SUPER::range($self->{'query_orient'});
+sub assemble { my $self = shift; $self->assemble_fasta(@_) }
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTA3X::ssearch;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA);
+
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $score, $bits, $e, $query_orient, $sbjct_orient)
+	= @_;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc);
+    $self->{'score'} 	    = $score;
+    $self->{'bits'}    	    = $bits;
+    $self->{'e'}       	    = $e;
+    $self->{'query_orient'} = $query_orient;
+    $self->{'sbjct_orient'} = $sbjct_orient;
+    bless $self, $type;
+}
+
+sub data  {
+    return sprintf("%5s %7s %9s %2s %2s",
+		   'S-W', 'bits', 'E-value', 'qy', 'ht')
+	unless $_[0]->num;
+    return sprintf("%5s %7s %9s %2s %2s",
+		   $_[0]->{'score'}, $_[0]->{'bits'}, $_[0]->{'e'},
+		   $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'});
+}
+
+sub rdb_info {
+    my ($self, $mode) = @_;
+    return ($self->{'score'}, $self->{'bits'}, $self->{'e'},
+	    $self->{'query_orient'}, $self->{'sbjct_orient'})
+	if $mode eq 'data';
+    return ('S-W', 'bits', 'E-value', 'query_orient', 'sbjct_orient')
+	if $mode eq 'attr';
+    return ('5N', '7N', '9N', '2S', '2S')  if $mode eq 'form';
 }
 
 sub assemble { my $self = shift; $self->assemble_fasta(@_) }

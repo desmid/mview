@@ -57,11 +57,6 @@ sub rdb_info {
     return ('2S', '2S')  if $mode eq 'form';
 }
 
-sub range {
-    my $self = shift;
-    $self->SUPER::range($self->{'query_orient'});
-}
-
 sub assemble { my $self = shift; $self->assemble_fasta(@_) }
 
 
@@ -91,6 +86,9 @@ sub rdb_info {
     return ('query_orient', 'sbjct_orient')  if $mode eq 'attr';
     return ('2S', '2S')  if $mode eq 'form';
 }
+
+
+sub assemble { my $self = shift; $self->assemble_tfasta(@_) }
 
 
 ###########################################################################

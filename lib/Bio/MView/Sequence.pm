@@ -165,7 +165,7 @@ sub sequence {
     $s;
 }
 
-# sub length { #NIGE
+# sub length {
 #     my $self = shift;
 #     my $claim = $self->lablen;
 #     my $true = $self->trulen;
@@ -245,6 +245,7 @@ sub is_reversed {0}
 
 sub reverse {
     no strict qw(subs);
+    #warn "##################### SEQUENCE REVERSE ###################\n";
     bless $_[0], Bio::MView::Reverse_Sequence;
 }
 

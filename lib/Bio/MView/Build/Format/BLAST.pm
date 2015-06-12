@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2006 Nigel P. Brown
+# Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: BLAST.pm,v 1.11 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
@@ -17,6 +17,8 @@ use Bio::MView::Build::Search;
 use strict;
 
 @ISA = qw(Bio::MView::Build::Search);
+
+my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
 
 #return the name of the underlying NPB::Parse::Stream parser
 sub parser { 'BLAST' }
@@ -307,7 +309,7 @@ sub build_rows {
     #warn "range ($lo, $hi)\n";
        
     #query row contains missing query sequence, rather than gaps
-    $self->{'index2row'}->[0]->assemble($lo, $hi, 'X');
+    $self->{'index2row'}->[0]->assemble($lo, $hi, $MISSING_QUERY_CHAR);
 
     #assemble sparse sequence strings for all rows
     for ($i=1; $i < @{$self->{'index2row'}}; $i++) {
@@ -339,6 +341,12 @@ sub posn2 {
     return '';
 }
 
+#convert nucleotide positions to a putative corresponding amino acid scale
+# sub untranslate_range {
+#     my ($fm, $to) = @_;
+#     return (int(($fm+2)/3), int(($to+2)/3));
+# }
+
 #fragment sort(worst to best): 1) increasing score, 2) increasing length
 sub sort {
     $_[0]->{'frag'} =
@@ -354,7 +362,6 @@ sub sort {
 
 sub assemble_blastp {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     protein
     #database:  protein
@@ -368,12 +375,10 @@ sub assemble_blastp {
     #  (1) assemble frags
    
     $self->SUPER::assemble(@_);
-    $self;
 }
 
 sub assemble_blastn {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     dna
     #database:  dna
@@ -392,19 +397,11 @@ sub assemble_blastn {
     #if query +
     #  (1) assemble frags
     
-    if ($self->{'query_orient'} =~ /^\-/) {
-	#stage (1,2,3,4)
-	$self->SUPER::assemble(@_, 1);
-    } else {
-	#stage (1)
-	$self->SUPER::assemble(@_);
-    }
-    $self;
+    $self->SUPER::assemble(@_);
 }
 
 sub assemble_blastx {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     dna
     #database:  protein
@@ -425,31 +422,40 @@ sub assemble_blastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
+    #start' = int((start+2)/3); stop' = int((stop+2)/3)
+
     if ($self->{'query_orient'} =~ /^\-/) {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
-	    #start' = int((start+2)/3); stop' = int(stop/3)
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
+	    # my $fm = \$self->{'frag'}->[$i]->[1];
+	    # my $to = \$self->{'frag'}->[$i]->[2];
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+            # ($$fm, $$to) = untranslate_range($$fm, $$to);
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+
 	    $self->{'frag'}->[$i]->[2] = int(($self->{'frag'}->[$i]->[2]+2)/3);
 	    $self->{'frag'}->[$i]->[1] = int($self->{'frag'}->[$i]->[1]/3);
 	}
-	#stage (2,3,4,5)
-	$self->SUPER::assemble(@_, 1);
     } else {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
-	    #start' = int((start+2)/3); stop' = int(stop/3)
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
+	    # my $fm = \$self->{'frag'}->[$i]->[1];
+	    # my $to = \$self->{'frag'}->[$i]->[2];
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+
 	    $self->{'frag'}->[$i]->[1] = int(($self->{'frag'}->[$i]->[1]+2)/3);
 	    $self->{'frag'}->[$i]->[2] = int($self->{'frag'}->[$i]->[2]/3);
 	}
-	#stage (2)
-	$self->SUPER::assemble(@_);
     }
-    $self;
+    $self->SUPER::assemble(@_);
 }
 
 sub assemble_tblastn {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     protein
     #database:  dna
@@ -463,12 +469,10 @@ sub assemble_tblastn {
     #  (1) assemble frags
     
     $self->SUPER::assemble(@_);
-    $self;
 }
 
 sub assemble_tblastx {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     dna
     #database:  dna
@@ -489,26 +493,34 @@ sub assemble_tblastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
+    #start' = int((start+2)/3); stop' = int((stop+2)/3)
+
     if ($self->{'query_orient'} =~ /^\-/) {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
-	    #start' = int((start+2)/3); stop' = int(stop/3)
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
+	    # my $fm = \$self->{'frag'}->[$i]->[1];
+	    # my $to = \$self->{'frag'}->[$i]->[2];
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+
 	    $self->{'frag'}->[$i]->[2] = int(($self->{'frag'}->[$i]->[2]+2)/3);
 	    $self->{'frag'}->[$i]->[1] = int($self->{'frag'}->[$i]->[1]/3);
 	}
-	#stage (2,3,4,5)
-	$self->SUPER::assemble(@_, 1);
     } else {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
-	    #start' = int((start+2)/3); stop' = int(stop/3)
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
+	    # my $fm = \$self->{'frag'}->[$i]->[1];
+	    # my $to = \$self->{'frag'}->[$i]->[2];
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
+	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
+
 	    $self->{'frag'}->[$i]->[1] = int(($self->{'frag'}->[$i]->[1]+2)/3);
 	    $self->{'frag'}->[$i]->[2] = int($self->{'frag'}->[$i]->[2]/3);
 	}
-	#stage (2)
-	$self->SUPER::assemble(@_);
     }
-    $self;
+    $self->SUPER::assemble(@_);
 }
 
 

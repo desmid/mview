@@ -193,8 +193,6 @@ sub use_frag {
 sub strip_query_gaps {
     my ($self, $query, $sbjct, $leader, $trailer) = @_;
 
-    #return $self;   #NIGE
-
     my $gapper = sub {
         my ($query, $sbjct, $char, $doquery) = @_;
         #strip query gaps marked as '-'
@@ -268,24 +266,23 @@ sub posn2 {
     return '';
 }
 
-#Convert nucleotide positions to a putative corresponding amino acid scale.
-sub untranslate_from_to {
+#convert nucleotide positions to a putative corresponding amino acid scale
+sub untranslate_range {
     my ($fm, $to) = @_;
-    return ( int(($fm+2)/3), int(($to+2)/3) );
+    return (int(($fm+2)/3), int(($to+2)/3));
 }
 
 #based on assemble_blastn() fragment processing
 sub assemble_fasta {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     protein|dna
     #database:  protein|dna
     #alignment: protein|dna x protein|dna
     #query numbered in protein|dna units
     #sbjct numbered in protein|dna units
-    #query orientation: +-
-    #sbjct orientation: +-
+    #query orientation: +/-
+    #sbjct orientation: +/-
 
     #processing steps:
     #if query -
@@ -296,19 +293,11 @@ sub assemble_fasta {
     #if query +
     #  (1) assemble frags
 
-    if ($self->{'query_orient'} =~ /^\-/) {
-        #stage (1,2,3,4)
-        $self->SUPER::assemble(@_, 1);
-    } else {
-        #stage (1)
-        $self->SUPER::assemble(@_);
-    }
-    $self;
+    $self->SUPER::assemble(@_);
 }
 
 sub assemble_fastx {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     dna
     #database:  protein
@@ -329,39 +318,32 @@ sub assemble_fastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
-    #warn "ASSEM [@{[ @{$self->{'frag'}->[$i]} ]}]\n";
-
-    #start' = int((start+2)/3); stop' = int(stop/3)
+    #start' = int((start+2)/3); stop' = int((stop+2)/3)
 
     if ($self->{'query_orient'} =~ /^\-/) {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
 	    my $fm = \$self->{'frag'}->[$i]->[1];
 	    my $to = \$self->{'frag'}->[$i]->[2];
 	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    ($$fm, $$to) = untranslate_from_to($$fm, $$to);
+	    ($$fm, $$to) = untranslate_range($$fm, $$to);
 	    #warn "$self->{'query_orient'} $$fm, $$to\n";
 	}
-	#stage (2,3,4,5)
-	$self->SUPER::assemble(@_, 1);
     } else {
 	#stage (1)
-	for ($i=0; $i < @{$self->{'frag'}}; $i++) {
+	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
 	    my $fm = \$self->{'frag'}->[$i]->[1];
 	    my $to = \$self->{'frag'}->[$i]->[2];
 	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    ($$fm, $$to) = untranslate_from_to($$fm, $$to);
+	    ($$fm, $$to) = untranslate_range($$fm, $$to);
 	    #warn "$self->{'query_orient'} $$fm, $$to\n";
 	}
-	#stage (2)
-	$self->SUPER::assemble(@_);
     }
-    $self;
+    $self->SUPER::assemble(@_);
 }
 
 sub assemble_tfasta {
     my $self = shift;
-    my ($i, $tmp);
 
     #query:     protein
     #database:  dna
@@ -375,7 +357,6 @@ sub assemble_tfasta {
     #  (1) assemble frags
     
     $self->SUPER::assemble(@_);
-    $self;
 }
 
 sub new {

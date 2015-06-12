@@ -133,52 +133,33 @@ sub count_frag { scalar @{$_[0]->{'frag'}} }
 
 #compute the maximal positional range of a row
 sub range {
-    my ($self, $orient) = (@_, '+');
-    return $self->range_plus    if $orient =~ /^\+/;
-    return $self->range_minus;
-}
-
-#compute the maximal positional range of a forward row (numbered forwards)
-sub range_plus {
     my $self = shift;
-    my ($lo, $hi, $frag);
-
-    return (0, 0)    unless @{$self->{'frag'}};
-
-    $lo = $hi = $self->{'frag'}->[0]->[1];
-
-    foreach $frag (@{$self->{'frag'}}) {
-	$lo = ($frag->[1] < $lo ? $frag->[1] : $lo);
-	$hi = ($frag->[2] > $hi ? $frag->[2] : $hi);
+    my ($lo, $hi) = ($self->{'frag'}->[0][1], $self->{'frag'}->[0][2]);
+    foreach my $frag (@{$self->{'frag'}}) {
+        #warn "range: $frag->[1], $frag->[2]\n";
+        $lo = $frag->[1]  if $frag->[1] < $lo;
+        $lo = $frag->[2]  if $frag->[2] < $lo;
+	$hi = $frag->[1]  if $frag->[1] > $hi;
+	$hi = $frag->[2]  if $frag->[2] > $hi;
     }
-    #warn "range_plus ($lo, $hi)\n";
+    #warn "range: ($lo, $hi)\n";
     ($lo, $hi);
 }
 
-#compute the maximal positional range of a reversed row (numbered backwards)
-sub range_minus {
-    my $self = shift;
-    my ($lo, $hi, $frag);
-
-    return (0, 0)    unless @{$self->{'frag'}};
-
-    $lo = $hi = $self->{'frag'}->[0]->[1];
-
-    foreach $frag (@{$self->{'frag'}}) {
-	$lo = ($frag->[2] < $lo ? $frag->[2] : $lo);
-	$hi = ($frag->[1] > $hi ? $frag->[1] : $hi);
-    }
-    #warn "range_minus ($lo, $hi)\n";
-    ($lo, $hi);
-}
-
+#assemble a row from sequence fragments
 sub assemble {
-    my ($self, $lo, $hi, $gap, $reverse) = (@_, 0);
-
-    $self->sort;                                   #fragment order
-    $self->{'seq'}->reverse    if $reverse;        #before calling append() !
-    $self->{'seq'}->append(@{$self->{'frag'}});    #assemble fragments
-    $self->{'seq'}->set_range($lo, $hi);           #set sequence range
+    my ($self, $lo, $hi, $gap) = @_;
+    my $reverse = 0;
+    #get direction from first fragment range longer than 1
+    foreach my $frag (@{$self->{'frag'}}) {
+        $reverse = 0, last  if $frag->[1] < $frag->[2];
+        $reverse = 1, last  if $frag->[1] > $frag->[2];
+    }
+    #warn "Row::assemble: [@_] $reverse\n";
+    $self->sort;                                 #fragment order
+    $self->{'seq'}->reverse  if $reverse;        #before calling append()
+    $self->{'seq'}->append(@{$self->{'frag'}});  #assemble fragments
+    $self->{'seq'}->set_range($lo, $hi);         #set sequence range
     $self->{'seq'}->set_pad($gap);
     $self->{'seq'}->set_gap($gap);
     $self;
