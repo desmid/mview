@@ -18,9 +18,9 @@ $KeyDelim  = "::";
 
 #Warning! the 'record_by_*' and 'parent' fields require explicit
 #dereferencing otherwise perl won't garbage collect them until after the
-#program exits.  Therefore, the top-level Record of a Record tree should
-#call the free() method when the caller has finished with it a record, to
-#allow normal garbage collection at run-time.
+#program exits. Therefore, the top-level Record of a Record tree should call
+#the free() method when the caller has finished with it a record, to allow
+#normal garbage collection at run-time.
 sub new {
     shift;                 #discard system supplied type
     my ($type, $parent, $text, $offset, $bytes) = (@_, -1, -1);

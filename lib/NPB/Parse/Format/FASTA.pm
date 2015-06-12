@@ -851,7 +851,7 @@ sub new {
     my $sinfo = &$align_info($self, $sum->[1], $skey, \$srule, \$sbjct, $depth);
 
     my ($query_orient_label, $query_orient, $query_start, $query_stop);
-    my ($sbjct_orient_label, $sbjct_orient, $sbjct_start, $sbjct_stop) =
+    my ($sbjct_orient_label, $sbjct_orient, $sbjct_start, $sbjct_stop);
 
     #query/sbjct orientations
     ($query_orient_label, $query_orient) = $self->get_query_orient($qinfo);
@@ -864,7 +864,7 @@ sub new {
     my ($sstart, $sstop) =
         $self->get_start_stop('hit', $sbjct_orient, $sinfo, $self->sbjct_base);
 
-    #complete hack until MView code handles reversals
+    #NIGE complete hack until MView code handles reversals
     my $temporary = sub {
         my ($so, $ro, $start, $stop) = @_;
         return ($so, $stop, $start)  if $so ne $ro;  #reverse
