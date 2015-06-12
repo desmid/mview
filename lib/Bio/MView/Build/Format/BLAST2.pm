@@ -393,6 +393,8 @@ sub parse_hits_ranked {
 		 $aln->{'bits'},
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -754,9 +756,9 @@ sub parse_hits_ranked {
 		 $aln->{'bits'},
 		);
 	}
-
 	#override row data
 	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1064,6 +1066,8 @@ sub parse_hits_ranked {
 		 $aln->{'query_orient'},    #unused
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1351,8 +1355,8 @@ sub parse_hits_ranked {
 	#ignore hit?
 	next  unless exists $idx->{$sum->{'id'}};
 
-	#we don't know which hit orientation was chosen for the ranking
-	#since TBLASTN neglects to tell us: gather all fragments before choosing.
+	#we don't know which hit orientation was chosen for the ranking since
+        #TBLASTN neglects to tell us: gather all fragments before choosing.
 	@tmp = (); foreach $aln ($match->parse(qw(ALN))) {
 	    push @tmp, $aln;
 	}
@@ -1419,9 +1423,9 @@ sub parse_hits_ranked {
 		 $aln->{'sbjct_orient'},    #unused
 		);
 	}
-
 	#override row data (hit + orientation)
 	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1791,9 +1795,9 @@ sub parse_hits_ranked {
 		 $aln->{'sbjct_orient'},    #unused
 		);
 	}
-
 	#override row data (hit + orientation)
 	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }

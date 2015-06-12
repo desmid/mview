@@ -371,6 +371,8 @@ sub parse_hits_ranked {
 		 $aln->{'score'},
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -721,9 +723,9 @@ sub parse_hits_ranked {
 		 $aln->{'score'},
 		);
 	}
-
 	#override row data
 	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1025,6 +1027,8 @@ sub parse_hits_ranked {
 		 $aln->{'query_frame'},    #unused
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1353,6 +1357,8 @@ sub parse_hits_ranked {
 		 $aln->{'sbjct_frame'},    #unused
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1694,6 +1700,8 @@ sub parse_hits_ranked {
 		 $aln->{'sbjct_frame'},    #unused
 		);
 	}
+	#override row data
+	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
