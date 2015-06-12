@@ -222,8 +222,6 @@ sub print_data {
     printf "$x%20s -> %s\n",  'id_percent',   $self->{'id_percent'};
     printf "$x%20s -> %s\n",  'pos_fraction', $self->{'pos_fraction'};
     printf "$x%20s -> %s\n",  'pos_percent',  $self->{'pos_percent'};
-    printf "$x%20s -> %s\n",  'query_orient', $self->{'query_orient'};
-    printf "$x%20s -> %s\n",  'sbjct_orient', $self->{'sbjct_orient'};
 }
 
 

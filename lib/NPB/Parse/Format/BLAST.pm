@@ -583,12 +583,17 @@ sub parse_alignment {
     $self->{'query'} 	    = $query;
     $self->{'align'} 	    = $align;
     $self->{'sbjct'} 	    = $sbjct;
-
     $self->{'query_start'}  = $query_start;
     $self->{'query_stop'}   = $query_stop;
     $self->{'sbjct_start'}  = $sbjct_start;
     $self->{'sbjct_stop'}   = $sbjct_stop;
     
+    #use sequence numbering to get orientations
+    $self->{'query_orient'} =
+        $self->{'query_start'} > $self->{'query_stop'} ? '-' : '+';
+    $self->{'sbjct_orient'} =
+        $self->{'sbjct_start'} > $self->{'sbjct_stop'} ? '-' : '+';
+
     $self;
 }
 
@@ -598,8 +603,10 @@ sub print_data {
     printf "$x%20s -> '%s'\n", 'query',        $self->{'query'};
     printf "$x%20s -> '%s'\n", 'align',        $self->{'align'};
     printf "$x%20s -> '%s'\n", 'sbjct',        $self->{'sbjct'};
+    printf "$x%20s -> %s\n",   'query_orient', $self->{'query_orient'};
     printf "$x%20s -> %s\n",   'query_start',  $self->{'query_start'};
     printf "$x%20s -> %s\n",   'query_stop',   $self->{'query_stop'};
+    printf "$x%20s -> %s\n",   'sbjct_orient', $self->{'sbjct_orient'};
     printf "$x%20s -> %s\n",   'sbjct_start',  $self->{'sbjct_start'};
     printf "$x%20s -> %s\n",   'sbjct_stop',   $self->{'sbjct_stop'};
 }
