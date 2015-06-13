@@ -1,17 +1,18 @@
-Version 1.58  2015-06-10
+Version 1.58  2015-06-14
   Added CLUSTAL/aln output mode.
   Added new '-conservation' option to produce CLUSTAL-style '*:.' line for
     any alignment.
   Added new molecule type option: -moltype aa | na | dna | rna.
-  Removed old '-dna' option'
+  Removed old '-dna' option'.
   Tidied output conversion formatters: now use molecule type.
   Extended MAF parser and added column header text to Ruler, currently
     used by MAF output.
   Extended bin/mview check_format() to better guess input format from filename.
-  Fixed bug in Sequence.pm to handle '~' gap characters in MSF format.
-  Fixed two bugs in handling of UV FASTA translated nucleotide sequence
-    numbering; affects FASTA36 and older FASTA3 series; frameshift symbols
-    elided from query sequence.
+  Added '~' gap characters in Sequence.pm.
+  Frameshift symbols '/' and '\' now elided and treated like gaps for
+    sequences in UV FASTA; affects fastx, fasty, tfastx, tfasty, tfastxy.
+  Fixed bugs in UV FASTA translated nucleotide sequence numbering; affects
+    fastx, fasty, tfastx, tfasty, tfastxy.
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on

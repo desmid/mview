@@ -211,7 +211,7 @@ sub strip_query_gaps {
                 substr($$sbjct, $i, 1) = '';
             }
 
-            #downcase succeding symbol
+            #downcase succeeding symbol
             if (defined substr($$query, $i, 1)) {
                 substr($$query, $i, 1) = lc substr($$query, $i, 1)
                     if $doquery;

@@ -640,7 +640,7 @@ sub strip_query_gaps {
 	    substr($$sbjct, $i, 1) = "";
 	}
 	
-	#downcase succeding symbol in hit
+	#downcase succeeding symbol in hit
 	if (defined substr($$query, $i, 1)) {
 	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
 	}
