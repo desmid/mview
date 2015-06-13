@@ -266,10 +266,14 @@ sub posn2 {
     return '';
 }
 
-#convert nucleotide positions to a putative corresponding amino acid scale
-sub untranslate_range {
-    my ($fm, $to) = @_;
-    return (int(($fm+2)/3), int(($to+2)/3));
+#convert nucleotide positions to a relative amino acid scale
+sub translate_range {
+    my ($self, $fm, $to) = @_;
+    #non-modulo 3 length? add one more amino acid column at the high end
+    my $d = ((abs($to-$fm)+1) % 3) > 0;
+    return (int(($fm+2)/3), int($to/3)+$d)   if $fm < $to;  #orientation +
+    return (int($fm/3)+$d,  int(($to+2)/3))  if $fm > $to;  #orientation -
+    die "translate_range: from == to  $fm, $to";
 }
 
 #based on assemble_blastn() fragment processing
@@ -318,26 +322,9 @@ sub assemble_fastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
-    #start' = int((start+2)/3); stop' = int((stop+2)/3)
-
-    if ($self->{'query_orient'} =~ /^\-/) {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    my $fm = \$self->{'frag'}->[$i]->[1];
-	    my $to = \$self->{'frag'}->[$i]->[2];
-	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	}
-    } else {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    my $fm = \$self->{'frag'}->[$i]->[1];
-	    my $to = \$self->{'frag'}->[$i]->[2];
-	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    #warn "$self->{'query_orient'} $$fm, $$to\n";
-	}
+    foreach my $frag (@{$self->{'frag'}}) {
+        ($frag->[1], $frag->[2]) =
+            $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
 }

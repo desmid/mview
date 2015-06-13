@@ -341,11 +341,13 @@ sub posn2 {
     return '';
 }
 
-#convert nucleotide positions to a putative corresponding amino acid scale
-# sub untranslate_range {
-#     my ($fm, $to) = @_;
-#     return (int(($fm+2)/3), int(($to+2)/3));
-# }
+#convert nucleotide positions to a relative amino acid scale
+sub translate_range {
+    my ($self, $fm, $to) = @_;
+    return (int(($fm+2)/3), int($to/3))   if $fm < $to;  #orientation +
+    return (int($fm/3),  int(($to+2)/3))  if $fm > $to;  #orientation -
+    die "translate_range: from == to  $fm, $to";
+}
 
 #fragment sort(worst to best): 1) increasing score, 2) increasing length
 sub sort {
@@ -422,34 +424,9 @@ sub assemble_blastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
-    #start' = int((start+2)/3); stop' = int((stop+2)/3)
-
-    if ($self->{'query_orient'} =~ /^\-/) {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    # my $fm = \$self->{'frag'}->[$i]->[1];
-	    # my $to = \$self->{'frag'}->[$i]->[2];
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-            # ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-
-	    $self->{'frag'}->[$i]->[2] = int(($self->{'frag'}->[$i]->[2]+2)/3);
-	    $self->{'frag'}->[$i]->[1] = int($self->{'frag'}->[$i]->[1]/3);
-	}
-    } else {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    # my $fm = \$self->{'frag'}->[$i]->[1];
-	    # my $to = \$self->{'frag'}->[$i]->[2];
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-
-	    $self->{'frag'}->[$i]->[1] = int(($self->{'frag'}->[$i]->[1]+2)/3);
-	    $self->{'frag'}->[$i]->[2] = int($self->{'frag'}->[$i]->[2]/3);
-	}
+    foreach my $frag (@{$self->{'frag'}}) {
+        ($frag->[1], $frag->[2]) =
+            $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
 }
@@ -493,32 +470,9 @@ sub assemble_tblastx {
     #  (1) convert to protein units
     #  (2) assemble frags
     
-    #start' = int((start+2)/3); stop' = int((stop+2)/3)
-
-    if ($self->{'query_orient'} =~ /^\-/) {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    # my $fm = \$self->{'frag'}->[$i]->[1];
-	    # my $to = \$self->{'frag'}->[$i]->[2];
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-
-	    $self->{'frag'}->[$i]->[2] = int(($self->{'frag'}->[$i]->[2]+2)/3);
-	    $self->{'frag'}->[$i]->[1] = int($self->{'frag'}->[$i]->[1]/3);
-	}
-    } else {
-	#stage (1)
-	for (my $i=0; $i < @{$self->{'frag'}}; $i++) {
-	    # my $fm = \$self->{'frag'}->[$i]->[1];
-	    # my $to = \$self->{'frag'}->[$i]->[2];
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-	    # ($$fm, $$to) = untranslate_range($$fm, $$to);
-	    # #warn "$self->{'query_orient'} $$fm, $$to\n";
-
-	    $self->{'frag'}->[$i]->[1] = int(($self->{'frag'}->[$i]->[1]+2)/3);
-	    $self->{'frag'}->[$i]->[2] = int($self->{'frag'}->[$i]->[2]/3);
-	}
+    foreach my $frag (@{$self->{'frag'}}) {
+        ($frag->[1], $frag->[2]) =
+            $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
 }

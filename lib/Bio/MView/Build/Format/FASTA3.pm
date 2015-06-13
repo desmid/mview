@@ -92,11 +92,10 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA3::fasta);
 
-#start' = int((start+2)/3); stop' = int((stop+2)/3)
 sub range {
     my $self = shift;
     my ($lo, $hi) = $self->SUPER::range;
-    Bio::MView::Build::Row::FASTA::untranslate_range($lo, $hi);
+    $self->translate_range($lo, $hi);
 }
 
 sub assemble { my $self = shift; $self->assemble_fastx(@_) }

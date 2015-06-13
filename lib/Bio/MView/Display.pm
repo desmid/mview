@@ -79,7 +79,12 @@ sub new {
     $self->{'string'}    = $sequence;
     $self->{'length'}    = $sequence->length;
     $self->{'start'}     = $sequence->lo;
-    $self->{'stop'}      = $sequence->hi;
+    #$self->{'stop'}      = $sequence->hi;
+    $self->{'stop'}      = $self->{'start'} + $self->{'length'} - 1;
+
+    #my $tmp = abs($self->{'stop'}-$self->{'start'})+1;
+    #warn "$self->{'start'} $self->{'stop'} :  $self->{length}  $tmp";
+
     $self->{'posnwidth'} = length(max($self->{'start'}, $self->{'stop'}));
     $self->{'object'}    = [];
 

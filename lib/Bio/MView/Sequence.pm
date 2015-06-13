@@ -169,9 +169,8 @@ sub sequence {
 #     my $self = shift;
 #     my $claim = $self->lablen;
 #     my $true = $self->trulen;
-#     warn "$self: length: claim: $claim  true: $true\n";
+#     warn "$self: length: true: $true  claim: $claim\n";
 #     warn "T= [@{[$self->string]}]\n";
-#     warn "S= [@{[$self->sequence]}]\n";
 #     $claim;
 # }
 
