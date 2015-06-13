@@ -711,7 +711,6 @@ sub new {
 	    my $s = substr($$align, $si, $ni-$si);
             $gc = $s =~ tr/-\/\\//;
 	}
-	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r1: $rstart  a: $ai  b: $si  x: $ni  X: $num  gc: $gc  usedr: $usedr]\n\n"  if $DEBUG;
 	[$rstart, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
@@ -738,7 +737,6 @@ sub new {
 	    my $s = substr($$align, $ni, $si-$ni);
             $gc = $s =~ tr/-\/\\//;
 	}
-	warn "[$$ruler]\n[@{['.'x$depth]}$$align]\nindex: [r2: $rend  d: $ai c: $si  y: $ni  Y: $num  gc: $gc  usedr: $usedr]\n\n"  if $DEBUG;
 	[$rend, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
@@ -753,11 +751,15 @@ sub new {
 	#my $s = substr($$align, $n1, $n2-$n1+1);
 	#count frameshifts of types '/' and '\'
 	my $s = $$align;
-	my $fs1 = $s =~ tr/[\/]//;
-	my $fs2 = $s =~ tr/[\\]//;
-	warn "frameshifts: [$fs1, $fs2]\n\n"  if $DEBUG;
-	# [ $ro, $start, $stop, $fs1, $fs2 ];
-	[ $start, $stop, $fs1, $fs2 ];
+	my $fsf = $s =~ tr/[\/]//;
+	my $fsb = $s =~ tr/[\\]//;
+        if ($DEBUG) {
+            warn "[$$ruler]\n[@{['.'x$depth]}$$align]\n";
+            warn sprintf("start:  [r1:%4d  a:%4d  b:%4d  x:%4d  X:%4d  gc: %d  usedr: %d]\n", @$start);
+            warn sprintf("stop:   [r2:%4d  a:%4d  b:%4d  x:%4d  Y:%4d  gc: %d  usedr: %d]\n", @$stop);
+            warn "fshift: [/ $fsf, \\ $fsb]\n\n";
+        }
+	[ $start, $stop, $fsf, $fsb ];
     };
 
     my $type = shift;
@@ -971,7 +973,7 @@ sub sbjct_base { return 1 }
 sub get_start_stop {
     my ($self, $tgt, $orient, $info, $base) = @_;
 
-    my ($start_info, $stop_info, $fs1, $fs2) = @$info;
+    my ($start_info, $stop_info, $fsf, $fsb) = @$info;
 
     warn ">>>>>> $tgt, $orient\n"  if $DEBUG;
 
@@ -995,7 +997,7 @@ sub get_start_stop {
 
     my $delta1 = abs($x - $b) - $gc1;
     my $delta2 = abs($y - $c) - $gc2;
-    my $fs = $fs1 - $fs2;  #magic: net count of frameshifts '/' versus '\'
+    my $fs = $fsf - $fsb;  #magic: net count of frameshifts '/' versus '\'
     
     if ($x < $b) {
 	$delta1 = -$delta1;
