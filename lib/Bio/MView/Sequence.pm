@@ -145,7 +145,7 @@ sub encode {
     $self;
 }
 
-sub string  {
+sub string {
     my $s = $_[0]->_substr($_[0]->{'lo'}, $_[0]->{'hi'});
     $s =~ s/$Mark_Pad/$_[0]->{'text_pad'}/g;
     $s =~ s/$Mark_Gap/$_[0]->{'text_gap'}/g;
@@ -175,8 +175,8 @@ sub sequence {
 # }
 
 #return actual string length; includes special characters
-sub length { $_[0]->lablen }
-#sub length { $_[0]->trulen }
+sub length { $_[0]->trulen }
+#sub length { $_[0]->lablen }
 
 #return pure sequence string length; excludes special characters
 sub seqlen { CORE::length $_[0]->sequence }

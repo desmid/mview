@@ -269,10 +269,8 @@ sub posn2 {
 #convert nucleotide positions to a relative amino acid scale
 sub translate_range {
     my ($self, $fm, $to) = @_;
-    #non-modulo 3 length? add one more amino acid column at the high end
-    my $d = ((abs($to-$fm)+1) % 3) > 0;
-    return (int(($fm+2)/3), int($to/3)+$d)   if $fm < $to;  #orientation +
-    return (int($fm/3)+$d,  int(($to+2)/3))  if $fm > $to;  #orientation -
+    return (int(($fm+2)/3), int($to/3))   if $fm < $to;  #orientation +
+    return (int($fm/3),  int(($to+2)/3))  if $fm > $to;  #orientation -
     die "translate_range: from == to  $fm, $to";
 }
 

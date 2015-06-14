@@ -691,70 +691,110 @@ sub new {
     };
 
     my $start_info = sub {
-	my ($self, $name, $ruler, $align, $depth, $rstart) = @_;
+	my ($self, $name, $ruler, $string, $depth, $rstart) = @_;
 	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
-	#warn "start [$$ruler]\n";
-	#warn "start [$$align]\n";
-	if ($$align =~ /(^[-\s]*)\S/) {
+
+        #find the index of the start of sequence
+	if ($$string =~ /(^[-\s]*)\S/o) {
 	    $si = length($1);
 	} else {
 	    $self->die("no sequence:", $name);
 	}
-	if ($$ruler =~ /^(\s*(\d+))/) {
-	    ($ni, $num) = (length($1) - $depth -1, $2);
-	} else {
-	    ($ni, $num, $usedr) = ($si, $rstart, 1);
-	}
+
+        #find the index of the first ruler number not over a gap (it happens)
+        my $rcopy = $$ruler;
+        my $pos = -$depth - 1;
+        while ($rcopy ne '') {
+            if ($rcopy =~ /(\s*(\d+))/o) {
+                $pos += length $1;
+                my $tmp = $2;
+                my $ch = substr($$string, $pos, 1);
+                #warn "look: [$rcopy]  $pos  [$ch]  $tmp\n";
+                $rcopy = $'; #'emacs;
+                if ($ch !~ /[-\/\\]/o) {
+                    ($ni, $num) = ($pos, $tmp);
+                    #warn "exit: [$rcopy]  $pos  [$ch]  $tmp\n";
+                    last;
+                }
+                next;
+            }
+            last;
+        }
+        #give up and take any range numbers
+        if ($ni == 0 and $num == 0) {
+            ($ni, $num, $usedr) = ($si, $rstart, 1);
+        }
+
 	#count gaps in the fragment between seqstart and label
 	my $gc = 0;
 	if ($si < $ni) {  #seqstart ... label
-	    my $s = substr($$align, $si, $ni-$si);
+	    my $s = substr($$string, $si, $ni-$si);
             $gc = $s =~ tr/-\/\\//;
 	}
 	[$rstart, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
     my $stop_info = sub {
-	my ($self, $name, $ruler, $align, $depth, $rend) = @_;
+	my ($self, $name, $ruler, $string, $depth, $rend) = @_;
 	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
-	#warn "stop  [$$ruler]\n";
-	#warn "stop  [$$align]\n";
-	if ($$align =~ /\S([-\s]*)$/) {
-	    $ai = length($$align) -1;
+
+        #find the index of the end of sequence
+	if ($$string =~ /\S([-\s]*)$/o) {
+	    $ai = length($$string) -1;
 	    $si = $ai - length($1);
 	} else {
 	    $self->die("no sequence:", $name);
 	}
-	if ($$ruler =~ /(\d+)(\s*)$/) {
-	    $ni = length($$ruler) - length($2) - 1 - $depth;
-	    $num = $1;
-	} else {
-	    ($ni, $num, $usedr) = ($si, $rend, 1);
-	}
+
+        #find the index of the last ruler number not over a gap (it happens)
+        my $rcopy = $$ruler;
+        my $pos = length($rcopy) - $depth - 1;
+        while ($rcopy ne '') {
+            if ($rcopy =~ /(\d+)(\s*)$/o) {
+                $pos -= length $2;
+                my $tmp = $1;
+                my $ch = substr($$string, $pos, 1);
+                #warn "look: [$rcopy]  $pos  [$ch]  $tmp\n";
+                $rcopy = $`;
+                if ($ch !~ /[-\/\\]/o) {
+                    ($ni, $num) = ($pos, $tmp);
+                    #warn "exit: [$rcopy]  $pos  [$ch]  $tmp\n";
+                    last;
+                }
+                $pos -= length $tmp;
+                next;
+            }
+            last;
+        }
+        #give up and take any range numbers
+        if ($ni == 0 and $num == 0) {
+            ($ni, $num, $usedr) = ($si, $rend, 1);
+        }
+
 	#count non-sequence in the fragment between label and seqend
 	my $gc = 0;
 	if ($ni < $si) {  #label ... seqend
-	    my $s = substr($$align, $ni, $si-$ni);
+	    my $s = substr($$string, $ni, $si-$ni);
             $gc = $s =~ tr/-\/\\//;
 	}
 	[$rend, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
     my $align_info = sub {
-	my ($self, $sum, $name, $ruler, $align, $depth) = @_;
+	my ($self, $sum, $name, $ruler, $string, $depth) = @_;
 	my $r1  = $sum->[0];  #summary from
 	my $r2  = $sum->[1];  #summary to
-	my $start = &$start_info($self, $name, $ruler, $align, $depth, $r1);
-	my $stop  = &$stop_info($self, $name, $ruler, $align, $depth, $r2);
+	my $start = &$start_info($self, $name, $ruler, $string, $depth, $r1);
+	my $stop  = &$stop_info($self, $name, $ruler, $string, $depth, $r2);
 	#count frameshifts lying between the extreme ruler numbers
 	#my ($n1, $n2) = ($start->[2], $stop->[2]);
-	#my $s = substr($$align, $n1, $n2-$n1+1);
+	#my $s = substr($$string, $n1, $n2-$n1+1);
 	#count frameshifts of types '/' and '\'
-	my $s = $$align;
+	my $s = $$string;
 	my $fsf = $s =~ tr/[\/]//;
 	my $fsb = $s =~ tr/[\\]//;
         if ($DEBUG) {
-            warn "[$$ruler]\n[@{['.'x$depth]}$$align]\n";
+            warn "[$$ruler]\n[@{['.'x$depth]}$$string]\n";
             warn sprintf("start:  [r1:%4d  a:%4d  b:%4d  x:%4d  X:%4d  gc: %d  usedr: %d]\n", @$start);
             warn sprintf("stop:   [r2:%4d  a:%4d  b:%4d  x:%4d  Y:%4d  gc: %d  usedr: %d]\n", @$stop);
             warn "fshift: [/ $fsf, \\ $fsb]\n\n";
@@ -1020,7 +1060,7 @@ sub get_start_stop {
 	    $stop  = $ny + $delta2;
      	} else {
      	    $start = $nx - $base * $delta1;
-	    $stop  = $ny + $base * $delta2 - $fs;
+	    $stop  = $ny + $base * $delta2;
 	    $stop += 2  unless $usedr2;
             if ($r1 != 0) {
                 $shift = $r1 - $start;
@@ -1035,7 +1075,7 @@ sub get_start_stop {
 	    $stop  = $ny - $delta2;
      	} else {
      	    $start = $nx + $base * $delta1;
-	    $stop  = $ny - $base * $delta2 + $fs;
+	    $stop  = $ny - $base * $delta2;
 	    $stop -= 2  unless $usedr2;
             if ($r1 != 0) {
                 $shift = $r1 - $start;
