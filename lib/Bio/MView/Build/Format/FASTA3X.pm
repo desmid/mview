@@ -449,6 +449,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::FASTA); #note
 
+my $FASTS_SPACER = '\001' x 5;
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -660,11 +662,13 @@ sub parse_body {
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 
+            my $qlen = length $aln->{'query'};
+
 	    $hit[0]->add_frag
 		(
 		 $aln->{'query'},
 		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
+                 $aln->{'query_start'} + $qlen,
 		 $aln->{'query_start'},
 		 $aln->{'query_stop'},
 		 0,
@@ -675,7 +679,7 @@ sub parse_body {
 		(
 		 $aln->{'sbjct'},
 		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
+                 $aln->{'query_start'} + $qlen,
 		 $aln->{'query_start'},
 		 $aln->{'query_stop'},
 		 $aln->{'sbjct_start'},
@@ -700,6 +704,59 @@ sub parse_body {
     }
 
     return \@hit;
+}
+
+#overrides FASTA
+sub strip_query_gaps {
+    my ($self, $query, $sbjct, $leader, $trailer) = @_;
+
+    my $gapper = sub {
+        my ($query, $sbjct, $char) = @_;
+
+        while ( (my $i = index($$query, $char)) >= 0 ) {
+
+            my $pos = $i;
+
+            #downcase preceding symbol
+            if (defined substr($$query, $i-1, 1)) {
+                substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
+            }
+
+            #consume more of same in query and hit
+            while (substr($$query, $i, 1) eq $char) {
+                substr($$query, $i, 1) = '';
+                substr($$sbjct, $i, 1) = '';
+            }
+
+            #downcase succeeding symbol
+            if (defined substr($$query, $i, 1)) {
+                substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
+            }
+
+            #insert fixed spacer
+            substr($$query, $pos, 0) = $FASTS_SPACER;
+            substr($$sbjct, $pos, 0) = $FASTS_SPACER;
+        }
+    };
+    
+    &$gapper($query, $sbjct, '-');  #mark gaps in sbjct only
+
+    #strip query terminal white space
+    $trailer = length($$query) - $leader - $trailer;
+    $$query  = substr($$query, $leader, $trailer);
+    $$sbjct  = substr($$sbjct, $leader, $trailer);
+	
+    #replace sbjct leading/trailing white space with gaps
+    $$sbjct =~ s/\s/-/g;
+
+    #replace spacer with '-'
+    $$query =~ s/\\001/-/g;
+    $$sbjct =~ s/\\001/-/g;
+
+    #warn "sqg(out q)=[$$query]\n";
+    #warn "sqg(out h)=[$$sbjct]\n";
+
+    $self;
 }
 
 

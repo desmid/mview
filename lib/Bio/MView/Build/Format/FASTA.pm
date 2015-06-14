@@ -139,7 +139,7 @@ sub strip_query_gaps {
 
     my $gapper = sub {
         my ($query, $sbjct, $char, $doquery) = @_;
-        #strip query gaps marked as '-'
+
         while ( (my $i = index($$query, $char)) >= 0 ) {
 
             #downcase preceding symbol
