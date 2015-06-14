@@ -32,8 +32,6 @@ my %Known_Parameter =
 
      #GCG FASTA (version 2)
      'strand'     => [ [],         	   undef   ],
-	
-##   'frames'     => [ [],                 undef   ],
     );
 
 sub initialise_parameters {
@@ -41,7 +39,6 @@ sub initialise_parameters {
     $self->SUPER::initialise_parameters;
     $self->SUPER::initialise_parameters(\%Known_Parameter);
     $self->reset_strand;
-##  $self->reset_frame;
 }
 
 sub set_parameters {
@@ -49,7 +46,6 @@ sub set_parameters {
     $self->SUPER::set_parameters(@_);
     $self->SUPER::set_parameters(\%Known_Parameter, @_);
     $self->reset_strand;
-##  $self->reset_frame;
 }
 
 sub new {
@@ -63,7 +59,7 @@ sub new {
     $type = "Bio::MView::Build::Format::FASTA$v";
     ($file = $type) =~ s/::/\//g;
     require "$file.pm";
-    
+
     $type .= "::$p";
     bless $self, $type;
 
@@ -77,52 +73,23 @@ sub initialise {
     my $self = shift;
     #may define strand orientation and reading frame filters later
 
-    #GCG FASTA strand orientation
+    #FASTA strand orientation
     $self->{'strand_list'} = [ qw(+ -) ];    #strand orientations
     $self->{'do_strand'}   = undef;          #list of required strand
     $self->{'strand_idx'}  = undef;          #current index into 'do_strand'
 
-##  #FASTA reading frame
-##  $self->{'frame_list'}  = [ qw(f r) ];    #reading frames
-##  $self->{'do_frames'}   = undef;          #list of required frames
-##  $self->{'frame_idx'}   = undef;          #current index into 'do_frames'
-##  $self->{'frame_mode'}  = undef;          #output format?
-
-    $self->initialise_parameters;      #other parameters done last
-   
+    $self->initialise_parameters;            #other parameters done last
     $self;
 }
 
 sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-##sub frame   { $_[0]->{'do_frames'}->[$_[0]->{'frame_idx'}-1] }
 
 sub reset_strand {
     my $self = shift;
-    #warn "strand: [@{$self->{'strand'}}]\n";
+    #warn "reset_strand: [@{$self->{'strand'}}]\n";
     $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
 						 $self->{'strand'});
 }
-
-##sub reset_frame {
-##    my $self = shift;
-##
-##    #initialise scheduler loops and loop counters
-##    if (! defined $self->{'do_frames'}) {
-##	if (@{$self->{'frames'}} and $self->{'frames'}->[0] eq '*') {
-##	    #do all frames, broken out by frame
-##	    $self->{'do_frames'}  = [ @{$self->{'frame_list'}} ];
-##	    $self->{'frame_mode'} = 'split';
-##	} elsif (@{$self->{'frames'}}) {
-##	    #explicit frame range
-##	    $self->{'do_frames'}  = [ @{$self->{'frames'}} ];
-##	    $self->{'frame_mode'} = 'split';
-##	} else {
-##	    #default: empty list  - do all frames in one pass
-##	    $self->{'do_frames'}  = [ @{$self->{'frame_list'}} ];
-##	    $self->{'frame_mode'} = 'flat';
-##	}
-##    }
-##}
 
 sub next_strand {
     my $self = shift;
@@ -138,29 +105,6 @@ sub next_strand {
     #finished loop
     $self->{'strand_idx'} = undef;
 }
-
-##sub next_frame {
-##    my $self = shift;
-##
-##    #first pass?
-##    $self->{'frame_idx'} = 0    unless defined $self->{'frame_idx'};
-##    
-##    #normal pass: post-increment frame counter
-##    if ($self->{'frame_idx'} < @{$self->{'do_frames'}}) {
-##	return $self->{'do_frames'}->[$self->{'frame_idx'}++];
-##    }
-##
-##    #finished loop
-##    $self->{'frame_idx'} = undef;
-##}
-##
-##sub schedule_by_frame {
-##    my ($self, $next) = shift;
-##    if (defined ($next = $self->next_frame)) {
-##	return $next;
-##    }
-##    return undef;           #tell parser
-##}
 
 sub schedule_by_strand {
     my ($self, $next) = shift;

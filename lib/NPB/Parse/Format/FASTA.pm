@@ -1037,7 +1037,6 @@ sub get_start_stop {
 
     my $delta1 = abs($x - $b) - $gc1;
     my $delta2 = abs($y - $c) - $gc2;
-    my $fs = $fsf - $fsb;  #magic: net count of frameshifts '/' versus '\'
     
     if ($x < $b) {
 	$delta1 = -$delta1;
@@ -1052,8 +1051,7 @@ sub get_start_stop {
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
     #- shift according to the alignment summary range values
-    #- discount frameshifts (gives agreement with the summary range)
-    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  fs= $fs  usedr= $usedr2\n"  if $DEBUG;
+    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  usedr= $usedr2\n"  if $DEBUG;
     if ($orient eq '+') {
      	if ($base == 1) {
      	    $start = $nx - $delta1;
