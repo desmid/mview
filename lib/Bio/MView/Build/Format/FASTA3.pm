@@ -187,9 +187,6 @@ sub parse_body {
     #all strands done?
     return  unless defined $self->schedule_by_strand;
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
-
     if ($match->{'query'} ne '') {
 	$query = $match->{'query'};
     } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {

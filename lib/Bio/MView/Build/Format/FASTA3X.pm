@@ -487,9 +487,6 @@ sub parse_body {
     #the actual Row subclass to build
     my $class = "Bio::MView::Build::Row::FASTA3X::$hint";
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
-
     #all strands done?
     return  unless defined $self->schedule_by_strand;
 
