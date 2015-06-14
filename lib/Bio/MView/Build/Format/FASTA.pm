@@ -266,14 +266,6 @@ sub posn2 {
     return '';
 }
 
-#convert nucleotide positions to a relative amino acid scale
-sub translate_range {
-    my ($self, $fm, $to) = @_;
-    return (int(($fm+2)/3), int($to/3))   if $fm < $to;  #orientation +
-    return (int($fm/3),  int(($to+2)/3))  if $fm > $to;  #orientation -
-    die "translate_range: from == to  $fm, $to";
-}
-
 #based on assemble_blastn() fragment processing
 sub assemble_fasta {
     my $self = shift;

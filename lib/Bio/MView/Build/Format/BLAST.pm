@@ -341,14 +341,6 @@ sub posn2 {
     return '';
 }
 
-#convert nucleotide positions to a relative amino acid scale
-sub translate_range {
-    my ($self, $fm, $to) = @_;
-    return (int(($fm+2)/3), int($to/3))   if $fm < $to;  #orientation +
-    return (int($fm/3),  int(($to+2)/3))  if $fm > $to;  #orientation -
-    die "translate_range: from == to  $fm, $to";
-}
-
 #fragment sort(worst to best): 1) increasing score, 2) increasing length
 sub sort {
     $_[0]->{'frag'} =

@@ -84,6 +84,14 @@ sub text {
 sub posn1 { '' }
 sub posn2 { '' }
 
+#convert nucleotide positions to a relative amino acid scale
+sub translate_range {
+    my ($self, $fm, $to) = @_;
+    return (int(($fm+2)/3), int($to/3))   if $fm < $to;  #orientation +
+    return (int($fm/3),  int(($to+2)/3))  if $fm > $to;  #orientation -
+    die "translate_range: from == to  $fm, $to";
+}
+
 sub uniqid { "$_[1]\034/$_[2]" }
 
 sub print {
