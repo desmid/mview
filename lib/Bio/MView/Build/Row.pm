@@ -199,10 +199,10 @@ sub pearson {
     my $desc = sub {
 	my $self = shift;
 	my ($s, $d) = ('');
-	$d = $self->desc;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->data;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn1; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn2; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $self->desc;  $s .= " $d"  if $d ne '';
+	$d = $self->data;  $s .= " $d"  if $d ne '';
+	$d = $self->posn1; $s .= " $d"  if $d ne '';
+	$d = $self->posn2; $s .= " $d"  if $d ne '';
 	$s . "\n";
     };
 
