@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: tfasta.pm,v 1.15 2013/09/09 21:31:05 npb Exp $
+# $Id: tfasta.pm,v 1.16 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::FASTA3::tfasta;

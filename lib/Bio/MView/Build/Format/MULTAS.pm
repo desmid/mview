@@ -1,5 +1,5 @@
 # Copyright (C) 1998-2006 Nigel P. Brown
-# $Id: MULTAS.pm,v 1.11 2005/12/12 20:42:48 brown Exp $
+# $Id: MULTAS.pm,v 1.12 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::MULTAS;

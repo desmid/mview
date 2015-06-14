@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1999-2015 Nigel P. Brown
-# $Id: MIPS.pm,v 1.8 2005/12/12 20:42:48 brown Exp $
+# $Id: MIPS.pm,v 1.9 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::MIPS;

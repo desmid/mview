@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1998-2015 Nigel P. Brown
-# $Id: SIM.pm,v 1.2 2005/12/12 20:42:48 brown Exp $
+# $Id: SIM.pm,v 1.3 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 # Huang Algorithms SIM

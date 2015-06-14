@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 2013-2015 Nigel P. Brown
-# $Id: ggsearch.pm,v 1.1 2013/09/09 21:31:05 npb Exp $
+# $Id: ggsearch.pm,v 1.2 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::ggsearch;

@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Universal.pm,v 1.26 2008/05/20 15:31:46 npb Exp $
+# $Id: Universal.pm,v 1.27 2015/06/14 17:09:03 npb Exp $
 
 ######################################################################
 package Universal;

@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: mview,v 1.76 2015/05/21 20:41:27 npb Exp $
+# $Id: mview,v 1.77 2015/06/14 17:09:03 npb Exp $
 
 my $VERSION  = '1.58';
 my $PATCH    = '';

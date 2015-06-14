@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 2013-2015 Nigel P. Brown
-# $Id: fastm.pm,v 1.2 2013/10/20 22:01:51 npb Exp $
+# $Id: fastm.pm,v 1.3 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::fastm;

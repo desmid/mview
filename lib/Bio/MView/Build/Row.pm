@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Row.pm,v 1.15 2015/01/24 21:22:42 npb Exp $
+# $Id: Row.pm,v 1.16 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Row;

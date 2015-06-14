@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: FT.pm,v 1.35 2005/12/12 20:42:48 brown Exp $
+# $Id: FT.pm,v 1.36 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::FT;

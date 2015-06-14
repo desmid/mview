@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2006 Nigel P. Brown
-# $Id: Row.pm,v 1.23 2005/12/12 20:42:48 brown Exp $
+# $Id: Row.pm,v 1.24 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Align::Row;

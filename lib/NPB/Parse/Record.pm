@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Record.pm,v 1.56 2015/01/24 21:22:42 npb Exp $
+# $Id: Record.pm,v 1.57 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Record;

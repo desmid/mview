@@ -1,5 +1,5 @@
 # Copyright (C) 2015 Nigel P. Brown
-# $Id$
+# $Id: Conservation.pm,v 1.1 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Align::Conservation;

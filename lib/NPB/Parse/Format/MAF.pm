@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 2013-2015 Nigel P. Brown
-# $Id: MAF.pm,v 1.1 2013/12/01 18:56:16 npb Exp $
+# $Id: MAF.pm,v 1.2 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::MAF;
