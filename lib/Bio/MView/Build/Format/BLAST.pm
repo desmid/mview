@@ -44,7 +44,6 @@ sub parser { 'BLAST' }
      'strand'     => [ [],         	   undef    ],
 	
      #BLASTX/TBLASTX (version 1)
-##   'frame'      => [ [],         	   undef    ],
     );
 
 sub initialise_parameters {
@@ -53,7 +52,6 @@ sub initialise_parameters {
     $self->SUPER::initialise_parameters(\%Known_Parameter);
     $self->reset_cycle;
     $self->reset_strand;
-##  $self->reset_frame;
 }
 
 sub set_parameters {
@@ -62,7 +60,6 @@ sub set_parameters {
     $self->SUPER::set_parameters(\%Known_Parameter, @_);
     $self->reset_cycle;
     $self->reset_strand;
-##  $self->reset_frame;
 }
 
 sub subheader {
@@ -113,11 +110,6 @@ sub initialise {
     $self->{'do_strand'}   = undef;    #list of required strand
     $self->{'strand_idx'}  = undef;    #current index into 'do_strand'
 
-##  #BLASTX reading frame
-##  $self->{'frame_list'}  = [ qw(+1 +2 +3 -1 -2 -3) ];    #reading frames
-##  $self->{'do_frame'}    = undef;    #list of required frames
-##  $self->{'frame_idx'}   = undef;    #current index into 'do_frame'
-
     $self->initialise_parameters;      #other parameters done last
 
     $self;
@@ -125,7 +117,6 @@ sub initialise {
 
 sub cycle    { $_[0]->{'do_cycle'}->[$_[0]->{'cycle_idx'}-1] }
 sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-##sub frame    { $_[0]->{'do_frame'}->[$_[0]->{'frame_idx'}-1] }
 
 sub reset_cycle {
     my $self = shift;
@@ -149,19 +140,6 @@ sub reset_strand {
     $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
 						 $self->{'strand'});
 }
-
-##sub reset_frame {
-##    my $self = shift;
-##
-##    #initialise scheduler loops and loop counters
-##    if (@{$self->{'frame'}} < 1 or $self->{'frame'}->[0] eq '*') {
-##	  #empty list  - do all frames
-##	  $self->{'do_frame'} = [ @{$self->{'frame_list'}} ];
-##    } else {
-##	  #explicit frame range
-##	  $self->{'do_frame'} = [ @{$self->{'frame'}} ];
-##    }
-##}
 
 sub next_cycle {
     my $self = shift;
@@ -193,21 +171,6 @@ sub next_strand {
     $self->{'strand_idx'} = undef;
 }
 
-##sub next_frame {
-##    my $self = shift;
-##
-##    #first pass?
-##    $self->{'frame_idx'} = 0    unless defined $self->{'frame_idx'};
-##    
-##    #normal pass: post-increment frame counter
-##    if ($self->{'frame_idx'} < @{$self->{'do_frame'}}) {
-##	return $self->{'do_frame'}->[$self->{'frame_idx'}++];
-##    }
-##
-##    #finished loop
-##    $self->{'frame_idx'} = undef;
-##}
-
 sub schedule_by_cycle {
     my ($self, $next) = shift;
     if (defined ($next = $self->next_cycle)) {
@@ -223,14 +186,6 @@ sub schedule_by_strand {
     }
     return undef;           #tell parser
 }
-
-##sub schedule_by_frame {
-##    my ($self, $next) = shift;
-##    if (defined ($next = $self->next_frame)) {
-##	return $next;
-##    }
-##    return undef;           #tell parser
-##}
 
 sub schedule_by_cycle_and_strand {
     my ($self, $next) = (@_, 1);
@@ -264,39 +219,6 @@ sub schedule_by_cycle_and_strand {
     #all cycles finished
     return undef;           	#tell parser    
 }
-
-##sub schedule_by_cycle_and_frame {
-##    my ($self, $next) = (@_, 1);
-##
-##    if (defined $self->{'cycle_idx'}) {
-##	#keep current cycle
-##	if (! defined $self->{'frame_idx'}) {
-##	    #frames finished: goto next cycle
-##	    $next = $self->next_cycle;
-##	}
-##    } else {
-##	#goto first cycle
-##	$next = $self->next_cycle;
-##    }
-##    
-##    #test the cycle
-##    if (defined $next) {
-##	#current/new cycle: goto next/first frame
-##	$next = $self->next_frame;
-##    } else {
-##	#all cycles finished
-##	return undef;           #tell parser    
-##    }
-##
-##    #test the frame
-##    if (defined $next) {
-##	#ready to parse
-##	return $next;
-##    }
-##
-##    #all cycles finished
-##    return undef;           	#tell parser    
-##}
 
 #override base class method to process query row differently
 sub build_rows {
