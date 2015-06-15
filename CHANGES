@@ -7,13 +7,14 @@ Version 1.58  2015-06-14
   Tidied output conversion formatters: now use molecule type.
   Extended MAF parser and added column header text to Ruler, currently
     used by MAF output.
-  Extended bin/mview check_format() to better guess input format from filename.
+  Extended bin/mview check_format() to better guess input format from
+    filename.
   Fixed bug in Sequence.pm to recognise '~' gap characters; affects MSF.
   Fixed bug in UV FASTA handling of peptide tuple matches: each query tuple
     now processed and output separately; affects FASTS.
-  Fixed bugs in UV FASTA translated nucleotide sequence numbering; frameshift
-    symbols '/' and '\' now elided and treated like gaps; affects FASTX,
-    FASTY, TFASTX, TFASTY, TFASTXY.
+  Fixed bugs in UV FASTA translated nucleotide sequence numbering;
+    frameshift symbols '/' and '\' now elided and treated like gaps;
+    affects FASTX, FASTY, TFASTX, TFASTY, TFASTXY.
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on
