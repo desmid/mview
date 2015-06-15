@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2006 Nigel P. Brown
+# Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: Search.pm,v 1.10 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
@@ -87,6 +87,20 @@ sub map_id {
     my ($self, $ref) = @_;
     $ref = 0  if $ref =~ /query/i;
     $self->SUPER::map_id($ref);
+}
+
+#given a ref to a list of parse() hits, remove any lacking positional data;
+#finally remove the query itself if that's all that's left
+sub discard_empty_ranges {
+    my ($self, $hit) = @_;
+    for (my $i=1; $i<@$hit; $i++) {
+        #warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
+	if (@{$hit->[$i]->{'frag'}} < 1) {
+	    splice(@$hit, $i--, 1);
+	}
+    }
+    pop @$hit  unless @$hit > 1;
+    $self;
 }
 
 

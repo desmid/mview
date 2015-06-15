@@ -651,20 +651,6 @@ sub strip_query_gaps {
     $self;
 }
 
-#given a ref to a list of parse() hits, remove any that have no positional
-#data, finally removing the query itself if that's all that's left.
-sub discard_empty_ranges {
-    my ($self, $hit, $i) = @_;
-    for ($i=1; $i<@$hit; $i++) {
-#	warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
-	if (@{$hit->[$i]->{'frag'}} < 1) {
-	    splice(@$hit, $i--, 1);
-	}
-    }
-    pop @$hit    unless @$hit > 1;
-    $self;
-}
-
 #return alignment in 'plain' format
 sub plain {
     my $self = shift;
