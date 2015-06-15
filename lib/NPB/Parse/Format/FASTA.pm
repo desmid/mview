@@ -904,41 +904,21 @@ sub new {
 
     warn "Final: [$query_orient $query_start,$query_stop] [$sbjct_orient $sbjct_start $sbjct_stop]\n\n"  if $DEBUG;
 
-    my $x;
-    
-    #query length
-    $x = $query;
-    $x =~ tr/- //d;
-    my $query_length = length($x);
-
-    #sbjct length
-    $x = $sbjct;
-    $x =~ tr/- //d;
-    my $sbjct_length = length($x);
-
     #query_leader
-    $query =~ /^(\s*)/;
-    my $query_leader = length $1;
+    $query =~ /^(\s*)/; my $query_leader  = length $1;
 
     #query_trailer
-    $query =~ /(\s*)$/;
-    my $query_trailer = length $1;
+    $query =~ /(\s*)$/; my $query_trailer = length $1;
     
     #sbjct_leader
-    $sbjct =~ /^(\s*)/;
-    my $sbjct_leader = length $1;
+    $sbjct =~ /^(\s*)/; my $sbjct_leader  = length $1;
 
     #sbjct_trailer
-    $sbjct =~ /(\s*)$/;
-    my $sbjct_trailer = length $1;
+    $sbjct =~ /(\s*)$/; my $sbjct_trailer = length $1;
     
     $self->{'query'} = $query;
     $self->{'align'} = $align;
     $self->{'sbjct'} = $sbjct;
-
-    #warn "QUERY ($query_start, $query_stop, $query_length, $query_leader)\n";
-    #warn "SBJCT ($sbjct_start, $sbjct_stop, $sbjct_length, $sbjct_leader)\n";
-    #warn "EXIT  ($query_orient, $query_start, $query_stop) ($sbjct_orient, $sbjct_start, $sbjct_stop)\n";
 
     $self->{'query_orient'}  = $query_orient;
     $self->{'query_start'}   = $query_start;
