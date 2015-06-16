@@ -29,7 +29,7 @@ MAKEFLAGS = --no-print-directory
 
 PROJECT   = MView
 OLD_ROOT  = $(HOME)
-NEW_ROOT  = $(HOME)/MView/dist
+NEW_ROOT  = $(HOME)/dist
 
 OLD_LIBS  = $(OLD_ROOT)/$(PROJECT)/lib
 NEW_LIBS  = $(NEW_ROOT)/$(PROJECT)/lib
@@ -49,7 +49,7 @@ SPHINX_BUILD_HTML = Sphinx/doc/build/html
 #SRCS    = list of source files at this level
 #HTML    = list of html files at this level
 
-DEST     = $(NEW_ROOT)/$(TREE)
+DEST     = $(NEW_ROOT)/$(PROJECT)/$(TREE)
 
 #permissions for the source material
 SRCS_DIR_PERM = 0755

@@ -1,5 +1,7 @@
-TREE = lib/NPB
-DIRS = Parse
+export HOME = /home/brown/HOME/work/VERSION
+
+TREE = 
+DIRS = bin lib
 FILE = 
 EXES = 
 SRCS = 

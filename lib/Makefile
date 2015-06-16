@@ -1,8 +1,8 @@
-TREE = MView/lib
+TREE = lib
 DIRS = Bio NPB
 FILE =
 EXES = 
 SRCS = Getopt.pm Universal.pm
 HTML = 
 
-include $(HOME)/MView/etc/MAKEFILE.templ
+include $(HOME)/etc/MAKEFILE.templ

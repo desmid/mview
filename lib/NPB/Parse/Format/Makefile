@@ -1,4 +1,4 @@
-TREE = MView/lib/NPB/Parse/Format
+TREE = lib/NPB/Parse/Format
 DIRS = BLAST1 BLAST2 FASTA1 FASTA2 FASTA3 FASTA3X GCG_FASTA2
 FILE =
 EXES =
@@ -26,4 +26,4 @@ SRCS = BLAST.pm		\
 
 HTML = 
 
-include $(HOME)/MView/etc/MAKEFILE.templ
+include $(HOME)/etc/MAKEFILE.templ

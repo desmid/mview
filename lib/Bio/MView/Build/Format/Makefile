@@ -1,4 +1,4 @@
-TREE = MView/lib/Bio/MView/Build/Format
+TREE = lib/Bio/MView/Build/Format
 DIRS = 
 FILE = 
 EXES = 
@@ -23,4 +23,4 @@ SRCS = BLAST.pm		\
 
 HTML = 
 
-include $(HOME)/MView/etc/MAKEFILE.templ
+include $(HOME)/etc/MAKEFILE.templ
