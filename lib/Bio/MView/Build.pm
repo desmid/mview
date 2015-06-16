@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Build.pm,v 1.22 2015/06/14 17:09:03 npb Exp $
+# $Id: Build.pm,v 1.23 2015/06/16 16:29:31 npb Exp $
 
 ######################################################################
 package Bio::MView::Build;

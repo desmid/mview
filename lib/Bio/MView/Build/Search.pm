@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Search.pm,v 1.10 2015/06/14 17:09:04 npb Exp $
+# $Id: Search.pm,v 1.11 2015/06/16 16:29:31 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Search;
