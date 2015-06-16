@@ -13,7 +13,7 @@ Version 1.58  2015-06-14
     filename.
   Fixed bug in Sequence.pm to recognise '~' gap characters; affects MSF.
   Fixed bug in UV FASTA handling of peptide tuple matches: each query tuple
-    now processed and output separately; affects FASTS.
+    now processed and output separately; affects FASTM, FASTF, FASTS.
   Fixed bugs in UV FASTA translated nucleotide sequence numbering;
     frameshift symbols '/' and '\' now elided and treated like gaps;
     affects FASTX, FASTY, TFASTX, TFASTY, TFASTXY.
