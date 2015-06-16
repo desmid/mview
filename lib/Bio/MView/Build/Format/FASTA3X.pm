@@ -275,181 +275,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::FASTA); #note
 
-sub subheader {
-    my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s    if $quiet;
-    $s  = $self->SUPER::subheader($quiet);
-    $s .= "Query orientation: " . $self->strand . "\n";
-    $s;
-}
-
-sub parse {
-    my $self = shift;
-    return $self->parse_body('fastm', @_);
-}
-
-sub parse_body {
-    my ($self, $hint) = (shift, shift);
-    my ($match, $sum, $aln, $query, $key);
-    my ($rank, $use, %hit, @hit) = (0);
-
-    #the actual Row subclass to build
-    my $class = "Bio::MView::Build::Row::FASTA3X::$hint";
-
-    #all strands done?
-    return  unless defined $self->schedule_by_strand;
-
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
-
-    if ($match->{'query'} ne '') {
-	$query = $match->{'query'};
-    } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
-	$query = $1;
-    } else {
-	$query = 'Query';
-    }
-
-    #fasta run with no hits
-    my $rankparse = $self->{'entry'}->parse(qw(RANK));
-    return []  unless defined $rankparse;
-
-    push @hit, new $class(
-	'',
-	$query,
-	'',
-	'',
-	'',
-	'',
-	'',
-	'',
-	'',
-	$self->strand,
-	'',
-	);
-
-    #extract cumulative scores and identifiers from the ranking
-    foreach $match (@{ $rankparse->{'hit'} }) {
-
-	$rank++;
-
-	#check row wanted, by num OR identifier OR row count limit OR initn OR
-	#initn in fastm rankings.
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'initn'})
-		 ) < 0;
-	next  unless $use;
-
-	#warn "KEEP: ($rank,$match->{'id'})\n";
-
-	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'};
-
-	#warn "ADD: [$key]\n";
-
-	push @hit, new $class(
-	    $rank,
-	    $match->{'id'},
-	    $match->{'desc'},
-	    $match->{'initn'},
-	    $match->{'init1'},
-	    $match->{'bits'},
-	    $match->{'expect'},
-	    $match->{'sn'},
-	    $match->{'sl'},
-	    $self->strand,
-	    '',
-	    );
-	$hit{$key} = $#hit;
-    }
-
-    #pull out each hit
-    foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
-
-	#first the summary
-	$sum = $match->parse(qw(SUM));
-
-	#only read hits already seen in ranking
-	while (1) {
-	    #FASTM3X reports three s-w scores, any might match:
-	    $key = $sum->{'id'} . $sum->{'opt'} . $sum->{'expect'};
-	    last  if exists $hit{$key};
-	    $key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'};
-	    last  if exists $hit{$key};
-	    $key = $sum->{'id'} . $sum->{'init1'} . $sum->{'expect'};
-	    last  if exists $hit{$key};
-	    $key = '';
-	    last;
-	}
-	next  unless exists $hit{$key};
-	#warn "SEE: [$key]\n";
-
-	#override the row description
-	if ($sum->{'desc'}) {
-	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
-	}
-
-	#then the individual matched fragments
-	foreach $aln ($match->parse(qw(ALN))) {
-
-	    #ignore other query strand orientation
-            next  unless $aln->{'query_orient'} eq $self->strand;
-
-	    $aln = $match->parse(qw(ALN));
-
-	    #$aln->print;
-
-	    #for FASTA gapped alignments
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
-				    $aln->{'query_leader'},
-                                    $aln->{'query_trailer'});
-
-	    $hit[0]->add_frag
-		(
-		 $aln->{'query'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 0,
-		 0,
-		);
-
-	    $hit[$hit{$key}]->add_frag
-		(
-		 $aln->{'sbjct'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'sbjct_start'},
-		 $aln->{'sbjct_stop'},
-		);
-
-	    #override row data
-	    $hit[$hit{$key}]->{'sbjct_orient'} = $aln->{'sbjct_orient'};
-	}
-    }
-
-    $self->discard_empty_ranges(\@hit);
-
-    #free objects
-    $self->{'entry'}->free(qw(HEADER RANK MATCH));
-
-    #map { $_->print; print "\n" } @hit;
-
-    return \@hit;
-}
-
-
-###########################################################################
-package Bio::MView::Build::Format::FASTA3X::fasts;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Format::FASTA); #note
-
-my $FASTS_SPACER = '\001' x 5;
+my $FASTMFS_SPACER = '\001' x 5;
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
@@ -612,7 +438,7 @@ sub parse_body {
 
 	#only read hits already seen in ranking
 	while (1) {
-	    #FASTM3X reports three s-w scores, any might match:
+	    #FASTA3X reports three s-w scores, any might match:
 	    $key = $sum->{'id'} . $sum->{'opt'} . $sum->{'expect'};
 	    last  if exists $hit{$key};
 	    $key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'};
@@ -734,8 +560,8 @@ sub strip_query_gaps {
             }
 
             #insert fixed spacer
-            substr($$query, $pos, 0) = $FASTS_SPACER;
-            substr($$sbjct, $pos, 0) = $FASTS_SPACER;
+            substr($$query, $pos, 0) = $FASTMFS_SPACER;
+            substr($$sbjct, $pos, 0) = $FASTMFS_SPACER;
         }
     };
     
@@ -762,6 +588,14 @@ sub strip_query_gaps {
 
 ###########################################################################
 package Bio::MView::Build::Format::FASTA3X::fastf;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA3X::fastm); #note
+
+
+###########################################################################
+package Bio::MView::Build::Format::FASTA3X::fasts;
 
 use vars qw(@ISA);
 
