@@ -438,7 +438,7 @@ sub parse_body {
 
 	#only read hits already seen in ranking
 	while (1) {
-	    #FASTM3X reports three s-w scores, any might match:
+	    #FASTA3X reports three s-w scores, any might match:
 	    $key = $sum->{'id'} . $sum->{'opt'} . $sum->{'expect'};
 	    last  if exists $hit{$key};
 	    $key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'};
