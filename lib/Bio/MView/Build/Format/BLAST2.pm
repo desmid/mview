@@ -471,12 +471,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
-sub scheduler { 'cycle+strand' }
+sub scheduler { 'strand' }
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
     $s;    
@@ -487,14 +487,14 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
 
-    #all cycles/strands done?
+    #all strands done?
     return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
     return  unless defined $self->{'cycle_ptr'};
-    
+
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
 
@@ -514,8 +514,8 @@ sub parse {
 	 '',                    #number of HSP used
 	 $self->strand,         #query orientation
 	 '?',                   #sbjct orientation (none)
-	 $self->cycle,          #cycle (psi-blast compatibility)
-	);
+         $self->cycle,          #cycle (psi-blast compatibility)
+        );
     
     #extract hits and identifiers from the ranking
     foreach $match (@{$ranking->{'hit'}}) {
@@ -542,7 +542,7 @@ sub parse {
 	     1,
 	     $self->strand,         #query orientation
 	     '?',                   #sbjct orientation (still unknown)
-	     $self->cycle,          #cycle (psi-blast compatibility)
+             $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 
 	$idx{$match->{'id'}} = $#hit;
@@ -556,9 +556,10 @@ sub parse {
 	$self->parse_hits_ranked(\@hit, \%idx);
     }
 
+    #remove Rows with unused subject reading frames
     $self->discard_empty_ranges(\@hit);
 
-    #free SEARCH object: vital for big psi-blast runs
+    #free objects
     $self->{'entry'}->free(qw(SEARCH));
 
     #map { $_->print } @hit;
@@ -839,7 +840,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
-sub scheduler { 'cycle+strand' }
+sub scheduler { 'strand' }
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
@@ -855,7 +856,7 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all cycles/strands done?
+    #all strands done?
     return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
@@ -1154,14 +1155,14 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
-sub scheduler { 'cycle' }
+sub scheduler { 'none' }
 
 sub parse {
     my $self = shift;
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all cycles done?
+    #all done?
     return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
@@ -1509,7 +1510,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
-sub scheduler { 'cycle+strand' }
+sub scheduler { 'strand' }
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
@@ -1525,8 +1526,8 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
 
-    #all cycles/strands done?
-    return unless defined $self->{scheduler}->next;
+    #all strands done?
+    return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 

@@ -42,11 +42,11 @@ sub use_hsp {
 #is less than 0.5.
 sub compare_p {
     shift; my ($h, $r, $dp) = (@_, 2);
-    return $h <=> $r    if $h =~ /e/i and $r =~ /e/i;
+    return $h <=> $r  if $h =~ /e/i and $r =~ /e/i;
     while ($dp--) { $h *= 10; $r *= 10 }
     my $delta = $h - $r;
-    return -1    if $delta < -0.5;
-    return  1    if $delta >  0.5;
+    return -1  if $delta < -0.5;
+    return  1  if $delta >  0.5;
     return  0;   #equal within error
 }
 
@@ -455,7 +455,7 @@ sub scheduler { 'strand' }
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
     $s;
@@ -466,7 +466,7 @@ sub parse {
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #two query strand oientations
+    #two query strand orientations
     return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
@@ -529,7 +529,7 @@ sub parse {
 	$self->parse_hits_ranked(\@hit, \%idx);
     }
 
-    #now remove the unoccupied Rows with unused subject reading frames
+    #remove Rows with unused subject reading frames
     $self->discard_empty_ranges(\@hit);
 
     #free objects
@@ -685,10 +685,10 @@ sub parse_hits_ranked {
 	foreach $aln (@tmp) {
 
 	    #ignore other subjct orientation
-	    next unless $aln->{'sbjct_orient'} eq $orient;
+	    next  unless $aln->{'sbjct_orient'} eq $orient;
 
 	    #ignore higher p-value than ranked
-	    next unless $self->compare_p($aln->{'p'},
+	    next  unless $self->compare_p($aln->{'p'},
 					 $hit->[$idx->{$sum->{'id'}}]->{'p'},
 					 2) < 1;
 
