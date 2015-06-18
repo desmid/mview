@@ -132,7 +132,7 @@ sub fileparts {
 sub tmpfile {
     my ($s) = (@_, $$);
     return "/tmp/$s"  if $^O ne 'MSWin32';
-    return "\\tmp\\$s";
+    return $s;
 }
 
 #arithmetic min() function
