@@ -45,102 +45,64 @@ sub rdb_info {
 ###########################################################################
 package Bio::MView::Build::Format::MAF;
 
-use vars qw(@ISA %Known_Parameter);
 use Bio::MView::Build::Align;
 use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'MAF' }
 
-my %Known_Parameter = 
+my %Known_Parameters = 
     (
-     #name        => [ format,               default ]
-     'block'      => [ [],                   undef   ],
+     #name        => [ format  default ]
+     'block'      => [ [],     undef   ],
     );
 
-sub initialise_parameters {
+#tell the parent
+sub known_parameters { \%Known_Parameters }
+
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-
-    $self->reset_block;
-}
-
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-
-    $self->reset_block;
-}
-
-sub new {
-    my $type = shift;
-    my $self = new Bio::MView::Build::Align(@_);
 
     #MAF ordinal block number: counted 1..N whereas the actual
     #block has its own 'number' field which is reported by subheader().
-    $self->{'do_block'}  = undef;    #required list of block numbers
-    $self->{'block_idx'} = undef;    #current index into 'do_block'
-    $self->{'block_ptr'} = undef;    #current block parse object ref
-
-    bless $self, $type;
-}
-
-sub block   { $_[0]->{'do_block'}->[$_[0]->{'block_idx'}-1] }
-
-sub reset_block {
-    my $self = shift;
-    #initialise scheduler loops and loop counters
-    #warn "blocks/1: [@{$self->{'block'}}]\n";
-
     my $last = $self->{'entry'}->count(qw(BLOCK));
 
-    $self->{'do_block'} = $self->reset_schedule([1..$last], $self->{'block'});
+    #free object
+    $self->{'entry'}->free(qw(BLOCK));
 
-    if (defined $self->{'block_ptr'}) {
-	#flag previous block parse for garbage collection
-	$self->{'block_ptr'}->free;
-	$self->{'block_ptr'} = undef;
-    }
+    $self->{scheduler} = new Bio::MView::Build::Scheduler([1..$last]);
+
+    $self->{'parsed'} = undef;  #ref to parsed block
+
+    $self;
 }
 
-sub next_block {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-
-    #first pass?
-    $self->{'block_idx'} = 0    unless defined $self->{'block_idx'};
-    
-    #normal pass: post-increment block counter
-    if ($self->{'block_idx'} < @{$self->{'do_block'}}) {
-	return $self->{'do_block'}->[$self->{'block_idx'}++];
-    }
-
-    #finished loop
-    $self->{'block_idx'} = undef;
+    #warn "reset_child [@{$self->{'block'}}]\n";
+    $self->{scheduler}->filter($self->{'block'});
+    $self;
 }
 
-sub schedule_by_block {
-    my ($self, $next) = shift;
-
-    if (defined ($next = $self->next_block)) {
-	return $next;
-    }
-    return undef;           #tell parser    
-}
+#current block being processed
+sub block { $_[0]->{scheduler}->item }
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
     return $s  if $quiet;
     $s .= "Block: " . $self->block;
-    $s .= "  score: $self->{'block_ptr'}->{'score'}"
-	if $self->{'block_ptr'}->{'score'} ne '';
-    $s .= "  pass: $self->{'block_ptr'}->{'pass'}"
-	if $self->{'block_ptr'}->{'pass'} ne '';
+    $s .= "  score: $self->{'parsed'}->{'score'}"
+	if $self->{'parsed'}->{'score'} ne '';
+    $s .= "  pass: $self->{'parsed'}->{'pass'}"
+	if $self->{'parsed'}->{'pass'} ne '';
     $s .= "\n";
 }
 
@@ -148,20 +110,22 @@ sub parse {
     my $self = shift;
     my ($rank, $use, $desc, $seq, @hit) = (0);
 
-    return  unless defined $self->schedule_by_block;
+    return  unless defined $self->{scheduler}->next;
 
-    $self->{'block_ptr'} = $self->{'entry'}->parse("BLOCK[@{[$self->block]}]");
+    $self->{'parsed'} = $self->{'entry'}->parse("BLOCK[@{[$self->block]}]");
 
     #block doesn't exist?
-    return unless defined $self->{'block_ptr'};
+    return  unless defined $self->{'parsed'};
 
-    foreach my $row (@{$self->{'block_ptr'}->{'row'}}) {
+    foreach my $row (@{$self->{'parsed'}->{'row'}}) {
 
 	$rank++;
-
+        
 	#check row wanted, by rank OR identifier OR row count limit
-	last  if ($use = $self->use_row($rank, $rank, $row->{'id'})) < 0;
-	next  unless $use;
+        $use = $self->use_row($rank, $rank, $row->{'id'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$row->{'id'})\n";
 
@@ -175,9 +139,11 @@ sub parse {
 						   $row->{'srcsize'},
 	    );
     }
-
     #map { $_->print } @hit;
-    
+
+    #free objects
+    $self->{'entry'}->free(qw(BLOCK));
+
     return \@hit;
 }
 

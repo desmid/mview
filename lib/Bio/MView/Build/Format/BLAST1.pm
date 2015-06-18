@@ -8,10 +8,10 @@
 #   blastp, blastn, blastx, tblastn, tblastx
 #
 ###########################################################################
-###########################################################################
 package Bio::MView::Build::Format::BLAST1;
 
 use Bio::MView::Build::Format::BLAST;
+
 use strict;
 use vars qw(@ISA);
 
@@ -169,13 +169,15 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST1);
 
+sub scheduler { 'none' }
+
 sub parse {
     my $self = shift;
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all frames done?
-    return     unless defined $self->schedule;
+    #one query strand orientation
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -184,7 +186,7 @@ sub parse {
     $ranking = $self->{'entry'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     #create a query row
     push @hit, new Bio::MView::Build::Row::BLAST1::blastp
@@ -206,10 +208,11 @@ sub parse {
 
 	#check row wanted, by rank OR identifier OR row count limit
 	#OR score OR p-value
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'}, $match->{'p'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'score'}, $match->{'p'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -447,6 +450,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST1);
 
+sub scheduler { 'strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -461,8 +466,8 @@ sub parse {
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all strands done?
-    return     unless defined $self->schedule_by_strand;
+    #two query strand oientations
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -471,7 +476,7 @@ sub parse {
     $ranking = $self->{'entry'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST1::blastn
 	(
@@ -492,10 +497,11 @@ sub parse {
 
 	#check row wanted, by rank OR identifier OR row count limit
 	#OR score OR p-value
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'}, $match->{'p'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'score'}, $match->{'p'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -803,10 +809,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST1);
 
+sub scheduler { 'strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
     $s;    
@@ -817,8 +825,8 @@ sub parse {
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all strands done?
-    return     unless defined $self->schedule_by_strand;
+    #two query strand orientations
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -827,7 +835,7 @@ sub parse {
     $ranking = $self->{'entry'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST1::blastx
 	(
@@ -848,10 +856,11 @@ sub parse {
 
 	#check row wanted, by rank OR identifier OR row count limit
 	#OR score OR p-value
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'}, $match->{'p'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'score'}, $match->{'p'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -1111,13 +1120,15 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST1);
 
+sub scheduler { 'none' }
+
 sub parse {
     my $self = shift;
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all frames done?
-    return     unless defined $self->schedule;
+    #one query strand orientation
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -1126,7 +1137,7 @@ sub parse {
     $ranking = $self->{'entry'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST1::tblastn
 	(
@@ -1147,10 +1158,11 @@ sub parse {
 
 	#check row wanted, by rank OR identifier OR row count limit
 	#OR score OR p-value
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'}, $match->{'p'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'score'}, $match->{'p'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -1438,10 +1450,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST1);
 
+sub scheduler { 'strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
     $s;    
@@ -1452,8 +1466,8 @@ sub parse {
     my ($match, $ranking);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all frames done?
-    return     unless defined $self->schedule_by_strand;
+    #two query strand orientations
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -1462,7 +1476,7 @@ sub parse {
     $ranking = $self->{'entry'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST1::tblastx
 	(
@@ -1483,10 +1497,11 @@ sub parse {
 
 	#check row wanted, by rank OR identifier OR row count limit
 	#OR score OR p-value
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'}, $match->{'p'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'score'}, $match->{'p'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 

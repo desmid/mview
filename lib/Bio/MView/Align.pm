@@ -8,7 +8,6 @@ use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
 use strict;
-
 use vars qw($Colormaps $Palette $Map_Text);
 
 $Colormaps   = {};          #static hash of colormaps

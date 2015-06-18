@@ -10,17 +10,11 @@
 #   fastx, fasty, tfasta, tfasty, tfastxy (not tested: may work)
 #
 ###########################################################################
-###########################################################################
-package Bio::MView::Build::Format::FASTA2;
-
 use Bio::MView::Build::Format::FASTA;
+
 use strict;
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Format::FASTA);
 
 
-###########################################################################
 ###########################################################################
 package Bio::MView::Build::Row::FASTA2;
 
@@ -123,6 +117,14 @@ use vars qw(@ISA);
 
 ###########################################################################
 ###########################################################################
+package Bio::MView::Build::Format::FASTA2;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA);
+
+
+###########################################################################
 package Bio::MView::Build::Format::FASTA2::fasta;
 
 use vars qw(@ISA);
@@ -144,7 +146,7 @@ sub parse {
     my ($rank, $use, %hit, @hit) = (0);
 
     #all strands done?
-    return     unless defined $self->schedule_by_strand;
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -177,10 +179,10 @@ sub parse {
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'opt'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'opt'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -222,9 +224,7 @@ sub parse {
 	foreach $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
-            next  unless $aln->{'query_orient'} eq $self->strand;
-
-	    $aln = $match->parse(qw(ALN));
+            next  unless $self->use_strand($aln->{'query_orient'});
 	    
 	    #$aln->print;
 	    
@@ -307,7 +307,7 @@ sub parse {
     my ($match, $sum, $aln, $query, $key);
     my ($rank, $use, %hit, @hit) = (0);
 
-    return     unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -339,10 +339,10 @@ sub parse {
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'opt'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'opt'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -383,8 +383,9 @@ sub parse {
 
 	#then the individual matched fragments
 	foreach $aln ($match->parse(qw(ALN))) {
-	    $aln = $match->parse(qw(ALN));
-	    
+
+            next  unless $self->use_strand($aln->{'query_orient'});
+
 	    #$aln->print;
 	    
 	    #for FASTA gapped alignments

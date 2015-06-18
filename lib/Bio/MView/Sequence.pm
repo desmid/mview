@@ -3,8 +3,8 @@
 
 ###########################################################################
 package Bio::MView::Sequence;
-
 use strict;
+
 use vars qw($REPORT_CLASH $OVERWRITE $HARDFASTA);
 
 my $Find_Pad = '[-._~]';  #input terminal gap characters

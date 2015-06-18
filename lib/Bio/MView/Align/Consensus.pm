@@ -7,8 +7,8 @@ package Bio::MView::Align::Consensus;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
-use strict;
 
+use strict;
 use vars qw(@ISA
 	    $Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
 	    $Default_PRO_Group $Default_DNA_Group

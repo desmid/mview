@@ -5,8 +5,9 @@
 package Bio::MView::Display::Ruler;
 
 use Bio::MView::Display::Any;
-use vars qw(@ISA);
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Display::Any);
 

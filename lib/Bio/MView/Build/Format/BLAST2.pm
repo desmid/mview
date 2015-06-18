@@ -8,10 +8,10 @@
 #   blastp, blastn, blastx, tblastn, tblastx
 #
 ###########################################################################
-###########################################################################
 package Bio::MView::Build::Format::BLAST2;
 
 use Bio::MView::Build::Format::BLAST;
+
 use strict;
 use vars qw(@ISA);
 
@@ -175,6 +175,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
+sub scheduler { 'cycle' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -189,13 +191,13 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
 
-    #all searches done?
-    return unless defined $self->schedule_by_cycle;
+    #all cycles done?
+    return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
-    return unless defined $self->{'cycle_ptr'};
+    return  unless defined $self->{'cycle_ptr'};
     
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -204,7 +206,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking; 
+    return  unless defined $ranking; 
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastp
 	(
@@ -226,10 +228,11 @@ sub parse {
 
 	#check row wanted, by num OR identifier OR row count limit
 	#OR bits OR expect
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'bits'}, $match->{'expect'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'bits'}, $match->{'expect'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -348,13 +351,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				      2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
 	    
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'bits'},
-				      2) >= 0;
+                         $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -470,6 +471,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
+sub scheduler { 'cycle+strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -484,13 +487,13 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
 
-    #all searches/orientations done?
-    return unless defined $self->schedule_by_cycle_and_strand;
+    #all cycles/strands done?
+    return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
-    return unless defined $self->{'cycle_ptr'};
+    return  unless defined $self->{'cycle_ptr'};
     
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -499,7 +502,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking; 
+    return  unless defined $ranking; 
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastn
 	(
@@ -521,10 +524,11 @@ sub parse {
 
 	#check row wanted, by num OR identifier OR row count limit
 	#OR bits OR expect
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'bits'}, $match->{'expect'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'bits'}, $match->{'expect'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -682,10 +686,8 @@ sub parse_hits_ranked {
 	#of hits in each orientation could have the same frag 'n' count.
 	#gather both, then decide which the ranking refers to.
 	@tmp = (); foreach $aln ($match->parse(qw(ALN))) {
-	    
 	    #ignore other query strand orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
-
 	    push @tmp, $aln;
 	}
 	next  unless @tmp;
@@ -837,6 +839,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
+sub scheduler { 'cycle+strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -851,13 +855,13 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all strands done?
-    return     unless defined $self->schedule_by_cycle_and_strand;
+    #all cycles/strands done?
+    return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
-    return unless defined $self->{'cycle_ptr'};
+    return  unless defined $self->{'cycle_ptr'};
     
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -866,7 +870,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking; 
+    return  unless defined $ranking; 
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastx
 	(
@@ -888,10 +892,11 @@ sub parse {
 
 	#check row wanted, by num OR identifier OR row count limit
 	#OR bits OR expect
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'bits'}, $match->{'expect'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'bits'}, $match->{'expect'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -1019,13 +1024,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				      2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
 	    
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'bits'},
-				      2) >= 0;
+			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1151,18 +1154,20 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
+sub scheduler { 'cycle' }
+
 sub parse {
     my $self = shift;
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
     
-    #all strands done?
-    return     unless defined $self->schedule_by_cycle;
+    #all cycles done?
+    return  unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
-    return unless defined $self->{'cycle_ptr'};
+    return  unless defined $self->{'cycle_ptr'};
     
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -1171,7 +1176,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking; 
+    return  unless defined $ranking; 
 
     push @hit, new Bio::MView::Build::Row::BLAST2::tblastn
 	(
@@ -1193,10 +1198,11 @@ sub parse {
 
 	#check row wanted, by num OR identifier OR row count limit
 	#OR bits OR expect
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'bits'}, $match->{'expect'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'bits'}, $match->{'expect'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -1282,7 +1288,7 @@ sub parse_hits_all {
 		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
 		$n1++;
 	    } else {
-		$score2 = $aln->{'bits'}  if $aln->{'bits'}    > $score2;
+		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
 		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
 		$n2++;
 	    }
@@ -1359,8 +1365,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same e-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_e($aln->{'expect'},
-				 $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				 2) >= 0) {
+                       $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -1376,13 +1381,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				      2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
 
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'bits'},
-				      2) >= 0;
+			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1506,10 +1509,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST2);
 
+sub scheduler { 'cycle+strand' }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
     $s;    
@@ -1520,14 +1525,14 @@ sub parse {
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
 
-    #all searches/orientations done?
-    return unless defined $self->schedule_by_cycle_and_strand;
+    #all cycles/strands done?
+    return unless defined $self->{scheduler}->next;
 
     $self->{'cycle_ptr'} = $self->{'entry'}->parse("SEARCH[@{[$self->cycle]}]");
 
     #search doesn't exist?
-    return unless defined $self->{'cycle_ptr'};
-    
+    return  unless defined $self->{'cycle_ptr'};
+
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
 
@@ -1535,7 +1540,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return unless defined $ranking;
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST2::tblastx
 	(
@@ -1557,10 +1562,11 @@ sub parse {
 
 	#check row wanted, by num OR identifier OR row count limit
 	#OR bits OR expect
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'bits'}, $match->{'expect'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'},
+                              $match->{'bits'}, $match->{'expect'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -1719,10 +1725,8 @@ sub parse_hits_ranked {
 	#we don't know which hit orientation was chosen for the ranking
 	#since TBLASTX neglects to tell us: gather all fragments before choosing.
 	@tmp = (); foreach $aln ($match->parse(qw(ALN))) {
-
 	    #ignore other query strand orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
-
 	    push @tmp, $aln;
 	}
 	next  unless @tmp;
@@ -1731,8 +1735,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same e-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_e($aln->{'expect'},
-				 $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				 2) >= 0) {
+		       $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -1748,13 +1751,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				      2) < 1;
+                         $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
 
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'bits'},
-				      2) >= 0;
+			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});

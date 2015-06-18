@@ -9,17 +9,11 @@
 #   fasta, fastx, fasty, tfasta, tfastx, tfasty, tfastxy (tested)
 #
 ###########################################################################
-###########################################################################
-package Bio::MView::Build::Format::FASTA3;
-
 use Bio::MView::Build::Format::FASTA;
 
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Format::FASTA);
+use strict;
 
 
-###########################################################################
 ###########################################################################
 package Bio::MView::Build::Row::FASTA3;
 
@@ -145,6 +139,14 @@ use vars qw(@ISA);
 
 ###########################################################################
 ###########################################################################
+package Bio::MView::Build::Format::FASTA3;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA);
+
+
+###########################################################################
 package Bio::MView::Build::Format::FASTA3::fasta;
 
 use vars qw(@ISA);
@@ -185,7 +187,7 @@ sub parse_body {
     }
 
     #all strands done?
-    return  unless defined $self->schedule_by_strand;
+    return  unless defined $self->{scheduler}->next;
 
     if ($match->{'query'} ne '') {
 	$query = $match->{'query'};
@@ -218,10 +220,10 @@ sub parse_body {
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'opt'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'opt'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -279,10 +281,8 @@ sub parse_body {
 	foreach $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
-            next  unless $aln->{'query_orient'} eq $self->strand;
+            next  unless $self->use_strand($aln->{'query_orient'});
 
-	    $aln = $match->parse(qw(ALN));
-	    
 	    #$aln->print;
 	    
 	    #for FASTA gapped alignments

@@ -7,8 +7,8 @@ package Bio::MView::Align::Conservation;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
-use strict;
 
+use strict;
 use vars qw(@ISA $Debug);
 
 @ISA = qw(Bio::MView::Align::Sequence);
