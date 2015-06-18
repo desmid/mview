@@ -7,6 +7,7 @@ package Bio::MView::Manager;
 use Bio::MView::Build;
 use Bio::MView::Display;
 use Bio::SRS 'srsLink';
+
 use strict;
 
 my %Template =
@@ -149,7 +150,7 @@ sub parse {
 
     while (defined ($bld = $self->next)) {
 
-        $bld->set_parameters(%{$self->{'bp'}});
+        $bld->initialise($self->{'bp'});
 
         while (defined ($aln = $bld->next)) {
 

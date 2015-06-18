@@ -5,6 +5,7 @@
 package Bio::MView::Build::Row;
 
 use Bio::MView::Sequence;
+
 use strict;
 
 my $DEF_IDWIDTH   = 20;  #default width to truncate 'id' field

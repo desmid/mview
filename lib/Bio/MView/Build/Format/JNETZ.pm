@@ -1,13 +1,14 @@
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: JNETZ.pm,v 1.17 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Align;
 use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
@@ -18,7 +19,7 @@ sub parse {
     my $self = shift;
     my ($rank, $use, $aln, $id, $seq, $row, @hit) = (0);
 
-    return   unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
     $aln = $self->{'entry'}->parse(qw(ALIGNMENT));
     
@@ -61,6 +62,9 @@ sub parse {
     push @hit, $row;
 
     #map { $_->print } @hit;
+
+    #free objects
+    $self->{'entry'}->free(qw(ALIGNMENT));
 
     return \@hit;
 }

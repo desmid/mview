@@ -7,8 +7,8 @@ package Bio::MView::Display::Any;
 use Bio::MView::Display;
 use Bio::MView::Display::Ruler;
 use Bio::MView::Display::Header;
-use strict;
 
+use strict;
 use vars qw(%Template);
 
 %Template =

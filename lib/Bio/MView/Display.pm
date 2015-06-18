@@ -16,8 +16,8 @@ the page.
 package Bio::MView::Display;
 
 use Bio::MView::Display::Any;
-use strict;
 
+use strict;
 use vars qw(%Template %Known_Types $Default_Stream
 	    $Default_Columns $Default_Separator $Default_Gap $Default_Pad 
 	    $Default_Overlap $Default_Overlap_Color $Default_Ruler 

@@ -10,19 +10,11 @@
 #   fastm, fastf, fasts, ggsearch, glsearch, ssearch
 #
 ###########################################################################
-###########################################################################
 use Bio::MView::Build::Format::FASTA3;
 
-
-###########################################################################
-package Bio::MView::Build::Format::FASTA3X;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Format::FASTA3);
+use strict;
 
 
-###########################################################################
 ###########################################################################
 package Bio::MView::Build::Row::FASTA3X;
 
@@ -213,6 +205,14 @@ use vars qw(@ISA);
 
 ###########################################################################
 ###########################################################################
+package Bio::MView::Build::Format::FASTA3X;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA3);
+
+
+###########################################################################
 package Bio::MView::Build::Format::FASTA3X::fasta;
 
 use vars qw(@ISA);
@@ -277,13 +277,63 @@ use vars qw(@ISA);
 
 my $FASTMFS_SPACER = '\001' x 5;
 
+#called by the constructor
+sub initialise_child {
+    my $self = shift;
+
+    #schedule by query peptide tuple
+    my $peplist = $self->parse_query_tuples;
+
+    $self->{scheduler} = new Bio::MView::Build::Scheduler($peplist);
+    $self;
+}
+
+#called on each iteration
+sub reset_child {
+    my $self = shift;
+    #warn "reset_child [all]\n";
+    $self->{scheduler}->filter;
+    $self;
+}
+
+#current peptide tuple being processed
+sub pepnum { $_[0]->{scheduler}->itemnum }
+sub peptup { $_[0]->{scheduler}->item }
+
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
     return $s    if $quiet;
     $s  = $self->SUPER::subheader($quiet);
-    $s .= "Peptide tuple: $self->{'peptup_idx'}  " . $self->peptup . "\n";
+    $s .= "Peptide tuple: @{[$self->pepnum]}  @{[$self->peptup]}\n";
     $s;
+}
+
+sub makepeptup {
+    $_[0] =~ s/^\s+//o;
+    $_[0] =~ s/\s+$//o;
+    $_[0] =~ s/[-\s]+/, /og;
+    $_[0];
+}
+
+sub parse_query_tuples {
+    my $self = shift;
+    my ($peplist, $pephash) = ([], {});
+    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+	foreach my $aln ($match->parse(qw(ALN))) {
+
+            my $peptup = makepeptup("$aln->{'query'}");
+
+            next  if exists $pephash->{$peptup};
+
+            push @$peplist, $peptup;
+            $pephash->{$peptup}++;
+            #warn "PEP: $peptup\n";
+        }
+    }
+    #must free top-level object to allow fresh parse
+    $self->{'entry'}->free(qw(MATCH));
+    $peplist;
 }
 
 sub parse {
@@ -291,79 +341,16 @@ sub parse {
     return $self->parse_body('fastm', @_);
 }
 
-sub initialise_parameters {
-    my $self = shift;
-    #warn "initialise_parameters";
-    $self->SUPER::initialise_parameters;
-    $self->reset_peptup;
-}
-
-sub set_parameters {
-    my $self = shift;
-    #warn "set_parameters";
-    $self->SUPER::set_parameters(@_);
-    $self->reset_peptup;
-}
-
-#overrides FASTA: initialise
-sub initialise {
-    my $self = shift;
-
-    #warn "initialise";
-    $self->{'peptup_list'} = undef;  #peptup tuples
-    $self->{'do_peptup'}   = undef;  #list of required peptups
-    $self->{'peptup_idx'}  = undef;  #current index into 'do_peptup'
-    $self->{'peptup'}      = [];
-
-    $self->parse(1);  #first pass: gather peptide tuples
-
-    $self->SUPER::initialise();
-    $self;
-}
-
-sub peptup   { $_[0]->{'do_peptup'}->[$_[0]->{'peptup_idx'}-1] }
-
-sub reset_peptup {
-    my $self = shift;
-    #warn "peptup: [@{$self->{'peptup'}}]\n";
-    $self->{'do_peptup'} = $self->reset_schedule($self->{'peptup_list'},
-                                                 $self->{'peptup'});
-}
-
-sub next_peptup {
-    my $self = shift;
-
-    #first pass?
-    $self->{'peptup_idx'} = 0  unless defined $self->{'peptup_idx'};
-
-    #normal pass: post-increment peptup counter
-    if ($self->{'peptup_idx'} < @{$self->{'do_peptup'}}) {
-	return $self->{'do_peptup'}->[$self->{'peptup_idx'}++];
-    }
-
-    #finished loop
-    $self->{'peptup_idx'} = undef;
-}
-
-sub schedule_by_peptup {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_peptup)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
-
 sub parse_body {
     my ($self, $hint) = (shift, shift);
-    my ($inipeptups) = (@_, 0);
     my ($match, $sum, $aln, $query, $key);
     my ($rank, $use, %hit, @hit) = (0);
 
     #the actual Row subclass to build
     my $class = "Bio::MView::Build::Row::FASTA3X::$hint";
 
-    #all peptup tuples done?
-    return  unless $inipeptups or defined $self->schedule_by_peptup;
+    #all peptide tuples done?
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -401,10 +388,10 @@ sub parse_body {
 
 	#check row wanted, by num OR identifier OR row count limit OR initn OR
 	#initn in fastm rankings.
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'initn'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'initn'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -427,8 +414,6 @@ sub parse_body {
 	    );
 	$hit{$key} = $#hit;
     }
-
-    my ($pep, $peplist) = ({}, []);
 
     #pull out each hit
     foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
@@ -456,32 +441,15 @@ sub parse_body {
 	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
 	}
 
-        my $maketup = sub {
-            $_[0] =~ s/^\s+//o;
-            $_[0] =~ s/\s+$//o;
-            $_[0] =~ s/[-\s]+/, /og;
-            $_[0];
-        };
-
 	#then the individual matched fragments
 	foreach $aln ($match->parse(qw(ALN))) {
 
-	    $aln = $match->parse(qw(ALN));
-
 	    #$aln->print;
 
-            my $peptup = &$maketup("$aln->{'query'}");
+            my $peptup = makepeptup("$aln->{'query'}");
 
-            if ($inipeptups) {
-                if (!exists $pep->{$peptup}) { #new peptide tuple
-                    #warn "PEP: $peptup\n";
-                    push @$peplist, $peptup;
-                    $pep->{$peptup}++;
-                }
-            } else {
-                #ignore other peptide tuples
-                next  unless $peptup eq $self->peptup;
-            }
+            #ignore other peptide tuples
+            next  unless $self->{scheduler}->use_item($peptup);
 
 	    #for FASTA gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
@@ -523,11 +491,6 @@ sub parse_body {
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
     #map { $_->print; print "\n" } @hit;
-
-    if ($inipeptups) {
-        #warn "[@$peplist]\n";
-        $self->{'peptup_list'} = $peplist;
-    }
 
     return \@hit;
 }
@@ -632,7 +595,7 @@ sub parse_body {
     my $class = "Bio::MView::Build::Row::FASTA3X::$hint";
 
     #all strands done?
-    return  unless defined $self->schedule_by_strand;
+    return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
@@ -668,10 +631,10 @@ sub parse_body {
 	#check row wanted, by num OR identifier OR row count limit OR score:
 	#in ssearch rankings, 'score' seems the same as 'opt in the summaries
 	#so use the same fasta use_row filter
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'score'})
-		 ) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'score'});
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$match->{'id'})\n";
 
@@ -720,9 +683,7 @@ sub parse_body {
 	foreach $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
-            next  unless $aln->{'query_orient'} eq $self->strand;
-
-	    $aln = $match->parse(qw(ALN));
+            next  unless $self->use_strand($aln->{'query_orient'});
 
 	    #$aln->print;
 

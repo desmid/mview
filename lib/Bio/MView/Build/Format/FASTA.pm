@@ -15,46 +15,36 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Search;
-use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'FASTA' }
 
-my %Known_Parameter = 
+my %Known_Parameters = 
     (
-     #name        => [ format,             default ]
-     'minopt'     => [ '\d+',              undef   ],
+     #name        => [ format  default ]
+     'minopt'     => [ '\d+',  undef   ],
 
      #GCG FASTA (version 2)
-     'strand'     => [ [],         	   undef   ],
+     'strand'     => [ [],     undef   ],
     );
 
-sub initialise_parameters {
-    my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-    $self->reset_strand;
-}
+#tell the parent
+sub known_parameters { \%Known_Parameters }
 
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-    $self->reset_strand;
-}
-
+#our own constructor since this is the entry point for different subtypes
 sub new {
-    shift;    #discard type
+    shift;  #discard our own type
     my $self = new Bio::MView::Build::Search(@_);
     my ($type, $p, $v, $file);
 
     #determine the real type from the underlying parser
-    ($p, $v) = (lc $self->{'entry'}->{'format'},$self->{'entry'}->{'version'});
+    ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
 
     $type = "Bio::MView::Build::Format::FASTA$v";
     ($file = $type) =~ s/::/\//g;
@@ -63,56 +53,34 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise;
-}
+    $self->initialise_parameters;
+    $self->initialise_child;
 
-#initialise parse iteration scheduler variable(s). just do them all at once
-#and don't bother overriding with specific methods. likewise the scheduler
-#routines can all be defined here.
-sub initialise {
-    my $self = shift;
-    #may define strand orientation and reading frame filters later
-
-    #FASTA strand orientation
-    $self->{'strand_list'} = [ qw(+ -) ];    #strand orientations
-    $self->{'do_strand'}   = undef;          #list of required strand
-    $self->{'strand_idx'}  = undef;          #current index into 'do_strand'
-
-    $self->initialise_parameters;            #other parameters done last
     $self;
 }
 
-sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-
-sub reset_strand {
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    #warn "reset_strand: [@{$self->{'strand'}}]\n";
-    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
-						 $self->{'strand'});
+    #warn "initialise_child\n";
+    #schedule by strand orientation
+    $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
+    $self;
 }
 
-sub next_strand {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-
-    #first pass?
-    $self->{'strand_idx'} = 0    unless defined $self->{'strand_idx'};
-    
-    #normal pass: post-increment strand counter
-    if ($self->{'strand_idx'} < @{$self->{'do_strand'}}) {
-	return $self->{'do_strand'}->[$self->{'strand_idx'}++];
-    }
-
-    #finished loop
-    $self->{'strand_idx'} = undef;
+    #warn "reset_child [@{$self->{'strand'}}]\n";
+    $self->{scheduler}->filter($self->{'strand'});
+    $self;
 }
 
-sub schedule_by_strand {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_strand)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
+#current strand being processed
+sub strand { $_[0]->{scheduler}->item }
+
+#compare argument with current strand
+sub use_strand { $_[0]->{scheduler}->use_item($_[1]) }
 
 #row filter
 sub use_row {
@@ -190,9 +158,10 @@ sub strip_query_gaps {
 ###########################################################################
 package Bio::MView::Build::Row::FASTA;
 
-use vars qw(@ISA);
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 

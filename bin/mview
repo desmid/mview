@@ -3,7 +3,7 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: mview,v 1.78 2015/06/16 16:29:31 npb Exp $
 
-my $VERSION  = '1.58';
+my $VERSION  = '1.59';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
@@ -1394,10 +1394,29 @@ default:  both
 text:     "HSSP/Maxhom:"
 
 OPTION:   chain
-usage:    "Report only these chainnames/numbers {A,B,...,*}"
+usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
 type:     @s
 default:  *
 param:
+convert:  sub { __ARGS;
+		local $_; my @tmp=();
+		foreach (@{__PV}) {
+		    if ($_ eq 'first') {
+			push @tmp, 1;
+		    } elsif ($_ eq 'last') {
+			push @tmp, 0;
+		    } elsif ($_ eq 'all') {
+			@tmp = ();
+			last;
+		    } elsif ($_ eq '*') {
+			@tmp = ();
+			last;
+		    } else {
+			push @tmp, $_;
+		    }
+		}
+                return [ @tmp ];
+            }
 
 
 ###########################################################################

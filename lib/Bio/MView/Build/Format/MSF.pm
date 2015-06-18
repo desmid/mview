@@ -4,9 +4,10 @@
 ###########################################################################
 package Bio::MView::Build::Row::MSF;
 
-use vars qw(@ISA);
 use Bio::MView::Build;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
@@ -34,10 +35,11 @@ sub rdb_info {
 ###########################################################################
 package Bio::MView::Build::Format::MSF;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Align;
 use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
@@ -48,15 +50,17 @@ sub parse {
     my $self = shift;
     my ($rank, $use, $id, $wgt, $seq, @hit) = (0);
 
-    return  unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
     foreach $id (@{$self->{'entry'}->parse(qw(NAME))->{'order'}}) {
 
 	$rank++;
 
 	#check row wanted, by rank OR identifier OR row count limit
-	last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-	next  unless $use;
+	$use = $self->use_row($rank, $rank, $id);
+
+	last  if $use < 0;
+	next  if $use < 1;
 
 	#warn "KEEP: ($rank,$id)\n";
 
@@ -70,8 +74,10 @@ sub parse {
 						   $wgt,
 						  );
     }
-
     #map { $_->print } @hit;
+
+    #free objects
+    $self->{'entry'}->free(qw(NAME ALIGNMENT));
 
     return \@hit;
 }

@@ -9,9 +9,10 @@ use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
 use Bio::MView::Align;
 use Bio::MView::Display;
+use Bio::MView::Build::Scheduler;
 use strict;
 
-use vars qw();
+my $DEBUG_PARAM = 0;
 
 my %Template = 
     (
@@ -41,7 +42,7 @@ my %Template =
      'gap'         => undef,   #output sequence gap character
     );
 
-my %Known_Parameter = 
+my %Known_Parameters = 
     (
      #name        => [ format,     default   ]
      'topn'       => [ '\d+',      0         ],
@@ -94,7 +95,10 @@ sub new {
     $self->{'entry'} = shift;
 
     bless $self, $type;
+
     $self->initialise_parameters;
+    $self->initialise_child;
+
     $self;
 }
 
@@ -139,38 +143,57 @@ sub check_hsp_tiling {
 
 sub initialise_parameters {
     my $self = shift;
-    my ($p) = (@_, \%Known_Parameter);
-    local $_;
-    foreach (keys %$p) {
-	#warn "initialise_parameters() $_\n";
-	if (ref $p->{$_}->[0] eq 'ARRAY') {
-	    $self->{$_} = [];
+    foreach my $p (\%Known_Parameters, $self->known_parameters) {
+        warn "initialise_parameters $p\n"  if $DEBUG_PARAM;
+        $self->_initialise_parameters($p);
+    }
+    $self;
+}
+
+sub _initialise_parameters {
+    my ($self, $p) = @_;
+
+    foreach my $k (keys %$p) {
+	warn "_initialise_parameters() $k\n"  if $DEBUG_PARAM;
+	if (ref $p->{$k}->[0] eq 'ARRAY') {
+	    $self->{$k} = [];
 	    next;
 	}
-	if (ref $p->{$_}->[0] eq 'HASH') {
-	    $self->{$_} = {};
+	if (ref $p->{$k}->[0] eq 'HASH') {
+	    $self->{$k} = {};
 	    next;
 	}
-	$self->{$_} = $p->{$_}->[1];
+	$self->{$k} = $p->{$k}->[1];
     }
 
-    #reset how many rows to display
-    $self->{'show'}     = $self->{'topn'};
+    # #reset how many rows to display #NIGE
+    # $self->{'show'} = $self->{'topn'};
 
-    #generic alignment scheduler
-    $self->{'status'}   = 1;
+    # #generic alignment scheduler #NIGE
+    # $self->{'status'} = 1;
 
     $self;
 }
 
 sub set_parameters {
     my $self = shift;
-    my $p = ref $_[0] ? shift : \%Known_Parameter;
-    my ($key, $val);
-    while ($key = shift) {
-	$val = shift;
+    foreach my $p (\%Known_Parameters, $self->known_parameters) {
+        warn "set_parameters: $p\n"  if $DEBUG_PARAM;
+        $self->_set_parameters($p, @_);
+    }
+    #how many expected rows of alignment
+    $self->{'show'} = $self->{'topn'} + $self->has_query;
+    $self;
+}
+
+sub _set_parameters {
+    my ($self, $p) = (shift, shift);
+
+    while (my $key = shift) {
+	my $val = shift;
 	if (exists $p->{$key}) {
-	    #warn "set_parameters() $key, @{[defined $val ? $val : 'undef']}\n";
+	    warn "_set_parameters() $key, @{[defined $val ? $val : 'undef']}\n"
+                if $DEBUG_PARAM;
 	    if (ref $p->{$key}->[0] eq 'ARRAY' and ref $val eq 'ARRAY') {
 		$self->{$key} = $val;
 		next;
@@ -201,6 +224,25 @@ sub set_parameters {
     $self;
 }
 
+#override if children add extra parameters
+sub known_parameters {{}}
+
+#override if children have an extra query sequence (children of Build::Search)
+sub has_query {0}
+
+#override if children need to do something special after during creation
+sub initialise_child {
+    $_[0]->{scheduler} = new Bio::MView::Build::Scheduler;
+    $_[0];
+}
+
+#override if children need to do something special before each iteration
+sub reset_child {
+    $_[0]->{scheduler}->filter;
+    $_[0];
+}
+
+#override in children
 sub use_row { die "$_[0] use_row() virtual method called\n" }
 
 #map an identifier supplied as {0..N|query|M.N} to a list of row objects in
@@ -338,6 +380,12 @@ sub header {
 	$s .= "Maximum sequences to show: $self->{'topn'}\n";
     }
     Bio::MView::Display::displaytext($s);
+}
+
+sub initialise {
+    my ($self, $params) = @_;
+    $self->set_parameters(%$params);
+    $self->reset_child;
 }
 
 sub subheader {''}

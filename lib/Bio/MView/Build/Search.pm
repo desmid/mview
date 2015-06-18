@@ -4,19 +4,15 @@
 ###########################################################################
 package Bio::MView::Build::Search;
 
-use vars qw(@ISA);
 use Bio::MView::Build;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build);
 
-#allow (query+$topn) items, unless $topn is zero
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->{'show'} = $self->{'topn'};
-    $self->{'show'}++  if $self->{'show'} > 0;
-}
+#there's a query sequence to account for an extra row
+sub has_query {1}
 
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;
