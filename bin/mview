@@ -3,8 +3,8 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: mview,v 1.78 2015/06/16 16:29:31 npb Exp $
 
-my $VERSION  = '1.58';
-my $PATCH    = '1';
+my $VERSION  = '1.59';
+my $PATCH    = '';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
