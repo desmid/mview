@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: mview,v 1.78 2015/06/16 16:29:31 npb Exp $
+# $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
 my $VERSION  = '1.58';
-my $PATCH    = '';
+my $PATCH    = '1';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
@@ -30,7 +30,7 @@ exit 1  if $::COMPILE_ERROR;
 my $PROG    = Universal::basename($0);
 my $INVOKE  = "$PROG @ARGV";
 my $DOCTYPE = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
-my $SCRATCH = "/tmp/mview_$$";
+my $SCRATCH = Universal::tmpfile("mview_$$");
 
 my %KNOWN_FORMAT =
     (

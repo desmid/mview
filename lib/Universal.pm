@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Universal.pm,v 1.27 2015/06/14 17:09:03 npb Exp $
+# $Id: Universal.pm,v 1.28 2015/06/18 20:26:00 npb Exp $
 
 ######################################################################
 package Universal;
@@ -109,9 +109,13 @@ sub die {
 #replacement for /bin/basename
 sub basename {
     my ($path, $ext) = (@_, "");
-    ($path) = "/$path" =~ /.*\/(.+)$/;
+    if ($^O ne 'MSWin32') {
+        ($path) = "/$path" =~ /.*\/(.+)$/;
+        return $1  if $path =~ /(.*)$ext$/;
+        return $path;
+    }
+    ($path) = "\\$path" =~ /.*\\(.+)$/;
     return $1  if $path =~ /(.*)$ext$/;
-    return $path;
 }
 
 #basename and extension
@@ -122,6 +126,13 @@ sub fileparts {
     return ('', $1)  if $path =~ /^\.([^.]+)$/;
     return ($1, '')  if $path =~ /^(.+)\.$/;
     return ($path, '');
+}
+
+#temporary file name
+sub tmpfile {
+    my ($s) = (@_, $$);
+    return "/tmp/$s"  if $^O ne 'MSWin32';
+    return $s;
 }
 
 #arithmetic min() function
