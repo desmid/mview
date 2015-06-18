@@ -109,9 +109,13 @@ sub die {
 #replacement for /bin/basename
 sub basename {
     my ($path, $ext) = (@_, "");
-    ($path) = "/$path" =~ /.*\/(.+)$/;
+    if ($^O ne 'MSWin32') {
+        ($path) = "/$path" =~ /.*\/(.+)$/;
+        return $1  if $path =~ /(.*)$ext$/;
+        return $path;
+    }
+    ($path) = "\\$path" =~ /.*\\(.+)$/;
     return $1  if $path =~ /(.*)$ext$/;
-    return $path;
 }
 
 #basename and extension
@@ -122,6 +126,13 @@ sub fileparts {
     return ('', $1)  if $path =~ /^\.([^.]+)$/;
     return ($1, '')  if $path =~ /^(.+)\.$/;
     return ($path, '');
+}
+
+#temporary file name
+sub tmpfile {
+    my ($s) = (@_, $$);
+    return "/tmp/$s"  if $^O ne 'MSWin32';
+    return "\\tmp\\$s";
 }
 
 #arithmetic min() function
