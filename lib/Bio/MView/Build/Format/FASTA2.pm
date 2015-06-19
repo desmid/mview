@@ -16,32 +16,23 @@ use strict;
 
 
 ###########################################################################
+###########################################################################
 package Bio::MView::Build::Row::FASTA2;
 
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $initn, $init1, $opt, $z, $e) = @_;
-    my $self = new Bio::MView::Build::Row::FASTA(@_);
-    $self->{'z'} = $z;
-    $self->{'e'} = $e;
-    bless $self, $type;
-}
-
-sub data  {
-    my $s = $_[0]->SUPER::data;
-    return $s .= sprintf(" %7s %9s", 'z-sc', 'E-value') unless $_[0]->num;
-    $s .= sprintf " %7s %9s", $_[0]->{'z'}, $_[0]->{'e'};
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'z'}, $self->{'e'})  if $mode eq 'data';
-    return ('Z', 'E')  if $mode eq 'attr';
-    return ('7S', '9S')  if $mode eq 'form';
+sub schema {[
+    # use?   key              string        format   default 
+    [ 1,     'initn',         'initn',      '5N',      ''  ],
+    [ 2,     'init1',         'init1',      '5N',      ''  ],
+    [ 3,     'opt',           'opt',        '5N',      ''  ],
+    [ 4,     'zscore',        'z-sc',       '7N',      ''  ],
+    [ 5,     'expect',        'E-value',    '9N',      ''  ],
+    [ 6,     'query_orient',  'qy',         '2S',      '?' ],
+    [ 7,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
 }
 
 
@@ -52,59 +43,13 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA2);
 
-sub new {
-    my $type = shift;
-    my $self = new Bio::MView::Build::Row::FASTA2(@_);
-    $self->{'query_orient'} = $_[@_-2];
-    $self->{'sbjct_orient'} = $_[@_-1];
-    bless $self, $type;
-}
-
-sub data {
-    my $s = $_[0]->SUPER::data;
-    return $s .= sprintf(" %2s %2s", 'qy', 'ht') unless $_[0]->num;
-    $s .= sprintf(" %2s %2s", $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'query_orient'}, $self->{'sbjct_orient'})
-	if $mode eq 'data';
-    return ('query_orient', 'sbjct_orient')  if $mode eq 'attr';
-    return ('2S', '2S')  if $mode eq 'form';
-}
-
-sub assemble { my $self = shift; $self->assemble_fasta(@_) }
-
 
 ###########################################################################
 package Bio::MView::Build::Row::FASTA2::tfasta;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build::Row::FASTA2);
-
-sub new {
-    my $type = shift;
-    my $self = new Bio::MView::Build::Row::FASTA2(@_);
-    $self->{'orient'} = $_[@_-1];
-    bless $self, $type;
-}
-
-sub data {
-    my $s = $_[0]->SUPER::data;
-    return $s .= sprintf(" %2s %2s", 'qy', 'ht') unless $_[0]->num;
-    $s .= sprintf(" %2s %2s", '+', $_[0]->{'orient'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ('+', $self->{'orient'})  if $mode eq 'data';
-    return ('query_orient', 'sbjct_orient')  if $mode eq 'attr';
-    return ('2S', '2S')  if $mode eq 'form';
-}
-
-sub assemble { my $self = shift; $self->assemble_tfasta(@_) }
+@ISA = qw(Bio::MView::Build::Row::FASTA2::fasta);
 
 
 ###########################################################################
@@ -112,7 +57,23 @@ package Bio::MView::Build::Row::FASTA2::tfastx;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build::Row::FASTA2::tfasta);
+@ISA = qw(Bio::MView::Build::Row::FASTA2::fasta);
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTA2::tfasty;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA2::fasta);
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTA2::tfastxy;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA2::fasta);
 
 
 ###########################################################################
@@ -159,8 +120,11 @@ sub parse {
 	$query = 'Query';
     }
 
-    push @hit, new Bio::MView::Build::Row::FASTA2::fasta
-	(
+    #the actual Row subclass to build
+    my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
+    my $class = "Bio::MView::Build::Row::FASTA2::$rtype";
+
+    push @hit, new $class(
 	 '',
 	 $query,
 	 '',
@@ -188,8 +152,7 @@ sub parse {
 
 	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'};
 
-	push @hit, new Bio::MView::Build::Row::FASTA2::fasta
-	    (
+	push @hit, new $class(
 	     $rank,
 	     $match->{'id'},
 	     $match->{'desc'},
@@ -215,10 +178,8 @@ sub parse {
 	#only read hits already seen in ranking
 	next  unless exists $hit{$key};
 
-	#override the row description
-	if ($sum->{'desc'}) {
-	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
-	}
+	#override description
+        $hit[$hit{$key}]->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
 
 	#then the individual matched fragments
 	foreach $aln ($match->parse(qw(ALN))) {
@@ -255,8 +216,8 @@ sub parse {
 		 $aln->{'sbjct_stop'},
 		);
 
-	    #override row data
-	    $hit[$hit{$key}]->{'sbjct_orient'} = $aln->{'sbjct_orient'};
+	    #override sbjct orientation
+	    $hit[$hit{$key}]->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
     }
 
@@ -288,14 +249,6 @@ use vars qw(@ISA);
 
 
 ###########################################################################
-package Bio::MView::Build::Format::FASTA2::fastxy;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Build::Format::FASTA2::fasta);
-
-
-###########################################################################
 package Bio::MView::Build::Format::FASTA2::tfasta;
 
 use vars qw(@ISA);
@@ -307,6 +260,7 @@ sub parse {
     my ($match, $sum, $aln, $query, $key);
     my ($rank, $use, %hit, @hit) = (0);
 
+    #all strands done?
     return  unless defined $self->{scheduler}->next;
 
     #identify the query itself
@@ -320,17 +274,21 @@ sub parse {
 	$query = 'Query';
     }
 
-    push @hit, new Bio::MView::Build::Row::FASTA2::tfasta
-	(
-	 '',
-	 $query,
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
+    #the actual Row subclass to build
+    my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
+    my $class = "Bio::MView::Build::Row::FASTA2::$rtype";
+
+    push @hit, new $class(
+        '',
+        $query,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        $self->strand,
+        '',
 	);
     
     #extract cumulative scores and identifiers from the ranking
@@ -349,17 +307,17 @@ sub parse {
 	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'} . 
 	    lc $match->{'orient'};
 	
-	push @hit, new Bio::MView::Build::Row::FASTA2::tfasta
-	    (
-	     $rank,
-	     $match->{'id'},
-	     $match->{'desc'},
-	     $match->{'initn'},
-	     $match->{'init1'},
-	     $match->{'opt'},
-	     $match->{'zscore'},
-	     $match->{'expect'},
-	     $match->{'orient'},
+	push @hit, new $class(
+            $rank,
+            $match->{'id'},
+            $match->{'desc'},
+            $match->{'initn'},
+            $match->{'init1'},
+            $match->{'opt'},
+            $match->{'zscore'},
+            $match->{'expect'},
+            $self->strand,
+            $match->{'orient'},
 	    );
 	$hit{$key} = $#hit;
     }
@@ -376,10 +334,8 @@ sub parse {
 	#only read hits accepted in ranking
 	next  unless exists $hit{$key};
 
-	#override the row description
-	if ($sum->{'desc'}) {
-	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
-	}
+	#override description
+        $hit[$hit{$key}]->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
 
 	#then the individual matched fragments
 	foreach $aln ($match->parse(qw(ALN))) {

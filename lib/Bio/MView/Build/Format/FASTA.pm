@@ -180,7 +180,7 @@ sub posn2 {
 }
 
 #based on assemble_blastn() fragment processing
-sub assemble_fasta {
+sub assemble {
     my $self = shift;
 
     #query:     protein|dna
@@ -203,7 +203,34 @@ sub assemble_fasta {
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_fastx {
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc) = (shift, shift, shift);
+
+    my $self = new Bio::MView::Build::Row($num, $id, $desc);
+
+    bless $self, $type;
+
+    $self->save_info(@_);
+    $self;
+}
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA);
+
+sub range {
+    my $self = shift;
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
+}
+
+sub assemble {
     my $self = shift;
 
     #query:     dna
@@ -230,46 +257,6 @@ sub assemble_fastx {
             $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
-}
-
-sub assemble_tfasta {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $initn, $init1, $opt) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'initn'} = $initn;
-    $self->{'init1'} = $init1;
-    $self->{'opt'}   = $opt;
-    bless $self, $type;
-}
-
-sub data  {
-    return sprintf("%5s %5s %5s", 'initn', 'init1', 'opt') unless $_[0]->num;
-    sprintf("%5s %5s %5s", $_[0]->{'initn'}, $_[0]->{'init1'}, $_[0]->{'opt'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'initn'}, $self->{'init1'}, $self->{'opt'})
-	if $mode eq 'data';
-    return ('initn', 'init1', 'opt')  if $mode eq 'attr';
-    return ('5N', '5N', '5N')  if $mode eq 'form';
 }
 
 

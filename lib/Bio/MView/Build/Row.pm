@@ -48,10 +48,14 @@ sub new {
 
     $self->{'url'}  = Bio::SRS::srsLink($self->{'cid'});  #url
 
+    $self->{'data'} = {};                       #other parsed data
+
     $self;
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub uniqid { "$_[1]\034/$_[2]" }
 
 #methods returning standard strings for use in generic output modes
 sub rid  { $_[0]->{'rid'} }
@@ -61,7 +65,9 @@ sub num  { $_[0]->{'num'} }
 sub url  { $_[0]->{'url'} }
 sub sob  { $_[0]->{'seq'} }
 
-sub seq  {
+sub desc { $_[0]->{'desc'} }  #row description
+
+sub seq  {                    #the sequence
     my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
     return ''  unless defined $self->{'seq'};
     $self->set_pad($pad);
@@ -69,21 +75,17 @@ sub seq  {
     return $self->{'seq'}->string
 }
 
-sub desc { $_[0]->{'desc'} }
+sub head { '' }               #headers for labels
+sub pcid { '' }               #identity %label
+sub pcid_std { 'id%' }        #standard text for identity% label
+sub posn1 { '' }              #first sequence range
+sub posn2 { '' }              #second sequence range
 
-sub head { '' }         #headers for labels
-sub pcid { '' }         #identity %label
-sub pcid_std { 'id%' }  #standard text for identity% label
-sub data { '' }         #label values, per sequence row
-
-sub text {
+sub text {                    #possibly truncated description
     my $w = defined $_[1] ? $_[1] : $DEF_TEXTWIDTH;
-    $w = length $_[0]->{'desc'}    if $w > length $_[0]->{'desc'};
+    $w = length $_[0]->{'desc'}  if $w > length $_[0]->{'desc'};
     sprintf("%-${w}s", $_[0]->truncate($_[0]->{'desc'}, $w));
 }
-
-sub posn1 { '' }
-sub posn2 { '' }
 
 #convert nucleotide positions to a relative amino acid scale
 sub translate_range {
@@ -93,7 +95,13 @@ sub translate_range {
     die "translate_range: from == to  $fm, $to";
 }
 
-sub uniqid { "$_[1]\034/$_[2]" }
+#truncate a string
+sub truncate {
+    my ($self, $s, $n, $t) = (@_, $DEF_TEXTWIDTH);
+    $t = substr($s, 0, $n);
+    substr($t, -3, 3) = '...'    if length $s > $n;
+    $t;
+}
 
 sub print {
     sub _format {
@@ -106,13 +114,6 @@ sub print {
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
     $self;
-}
-
-sub truncate {
-    my ($self, $s, $n, $t) = (@_, $DEF_TEXTWIDTH);
-    $t = substr($s, 0, $n);
-    substr($t, -3, 3) = '...'    if length $s > $n;
-    $t;
 }
 
 #routine to sort 'frag' list: default is null
@@ -177,6 +178,89 @@ sub assemble {
 sub set_pad { $_[0]->{'seq'}->set_pad($_[1]) }
 sub set_gap { $_[0]->{'seq'}->set_gap($_[1]) }
 sub set_spc { $_[0]->{'seq'}->set_spc($_[1]) }
+
+###########################################################################
+
+sub schema { die "@{[ref $_[0]]}: no schema found\n" }
+
+#save row information following a schema
+sub save_info {
+    my $self = shift;
+    #warn "save_info: [@_]\n";
+
+    my $schema = $self->schema;
+
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        #warn "save: $n $name\n";
+        $self->{'data'}->{$name} = defined $_[$i] ? $_[$i] : $default;
+    }
+    $self;
+}
+
+#set a row information attribute if in the schema
+sub set_val {
+    my ($self, $key, $val) = @_;
+    #warn "set_val: [$key => $val]\n";
+
+    my $schema = $self->schema;
+
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        $self->{'data'}->{$name} = $val, return $self  if $key eq $name;
+        $self->{'data'}->{$name} = $val, return $self  if $key eq $string;
+    }
+    warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
+    $self;
+}
+
+#return a string of formatted row information following the schema
+sub data {
+    my ($self, $delim) = (@_, ' ');
+
+    my $fmtstr = sub {
+        my $fmt = shift;
+        $fmt =~ /(\d+)(\S)/o;
+        "%$1s";
+    };
+
+    my $schema = eval { $self->schema };
+    return ''  unless defined $schema;
+
+    my @tmp = ();
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n > 0;  #ignore this datum
+        my $fmt = &$fmtstr($format);
+        my $data = $self->{'data'}->{$name};
+        push(@tmp, sprintf($fmt, $data)),  next  if $self->num;  #data
+        push(@tmp, sprintf($fmt, $string))                       #header
+    }
+    return join($delim, @tmp);
+}
+
+#return a list of row information following the schema
+sub rdb_info {
+    my ($self, $mode) = @_;
+
+    my $schema = eval { $self->schema };
+    return ''  unless defined $schema;
+
+    my @tmp = ();
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n > 0;  #ignore this datum
+        my $data = $self->{'data'}->{$name};
+        #warn "rdb:  $n $name\n";
+        push(@tmp, $string), next  if $mode eq 'attr';
+        push(@tmp, $format), next  if $mode eq 'form';
+        push(@tmp, $data),   next  if $mode eq 'data';
+    }
+    @tmp;
+}
+
+###########################################################################
+# output modes
 
 sub plain {
     my ($self, $w, $pad, $gap) = (@_, $DEF_IDWIDTH, $DEF_PAD, $DEF_GAP);
@@ -270,8 +354,6 @@ sub rdb {
     #warn "[@cols]";
     return join("\t", @cols);
 }
-
-sub rdb_info {}  #override for format-specific columns
 
 
 ###########################################################################
