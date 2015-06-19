@@ -11,14 +11,6 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build);
 
-# NIGE Build does this????!!!
-# #allow $topn items
-# sub set_parameters {
-#     my $self = shift;
-#     $self->SUPER::set_parameters(@_);
-#     $self->{'show'} = $self->{'topn'};
-# }
-
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;
     my $pat;

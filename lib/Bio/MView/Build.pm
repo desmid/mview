@@ -17,7 +17,6 @@ my $DEBUG_PARAM = 0;
 my %Template = 
     (
      'entry'       => undef,   #parse tree ref
-     'status'      => undef,   #parse status (undef=stop; otherwise=go)
      'align'       => undef,   #current alignment
      'index2row'   => undef,   #list of aligned rows, from zero
      'uid2row'     => undef,   #hash of aligned rows, by Build::Row->uid
@@ -152,7 +151,6 @@ sub initialise_parameters {
 
 sub _initialise_parameters {
     my ($self, $p) = @_;
-
     foreach my $k (keys %$p) {
 	warn "_initialise_parameters() $k\n"  if $DEBUG_PARAM;
 	if (ref $p->{$k}->[0] eq 'ARRAY') {
@@ -165,13 +163,6 @@ sub _initialise_parameters {
 	}
 	$self->{$k} = $p->{$k}->[1];
     }
-
-    # #reset how many rows to display #NIGE
-    # $self->{'show'} = $self->{'topn'};
-
-    # #generic alignment scheduler #NIGE
-    # $self->{'status'} = 1;
-
     $self;
 }
 
@@ -188,7 +179,6 @@ sub set_parameters {
 
 sub _set_parameters {
     my ($self, $p) = (shift, shift);
-
     while (my $key = shift) {
 	my $val = shift;
 	if (exists $p->{$key}) {
@@ -217,10 +207,6 @@ sub _set_parameters {
 	#ignore unrecognised parameters which may be recognised by subclass
 	#set_parameters() methods.
     }
-
-    #always reset when new parameters are given
-    $self->{'status'} = 1;
-
     $self;
 }
 
@@ -390,44 +376,7 @@ sub initialise {
 
 sub subheader {''}
 
-#generic one-pass scheduler for parsers. subclasses can override with more
-#sophisticated parsers allowing reentry of their parse() method to extract
-#different alignment subsets.
-sub schedule {
-    if (defined $_[0]->{'status'}) {
-	$_[0]->{'status'} = undef;
-	return 1;
-    }
-    $_[0]->{'status'};
-}
-
-#caller gets a sorted unique list of items from $range if present in
-#$request. The special value 0 in $request means the 'last' item in $range.
-#Used to convert lists of blast/fasta cycles, strands, frames into an
-#ordered list of known tasks.
-sub reset_schedule {
-    my ($self, $range, $request) = @_;
-    return  unless @$range;
-    #warn "reset_schedule entry: [@$range] [@$request]\n";
-
-    #empty request: schedule all
-    return [ @$range ]  unless @$request;
-
-    #make a dict of requested items for uniqueness
-    my @items = (); my %tmp = ();
-    map { $tmp{$_}++ } @$request;
-    $tmp{$range->[-1]}++  if exists $tmp{0}; #0 means the 'last'
-
-    #extact legitimate items in correct order
-    foreach my $i (@$range) {
-	push @items, $i  if exists $tmp{$i};
-    }
-    #warn "reset_schedule exit: [@items]\n";
-
-    return \@items;
-}
-
-#return the next alignment, undef if no more work, or 0 if empty alignment
+#return the next alignment, 0 if an empty alignment, or undef if no more work
 sub next {
     my $self = shift;
 
@@ -607,12 +556,11 @@ sub build_base_alignment {
 					  $self->{'show'},
 					  keys %{$self->{'keep_uid'}});
     }
-    
+
     # foreach my $r ($aln->all_ids) {
     #     $aln->id2row($r)->seqobj->print;
     # }
     # warn "LEN: ", $aln->length;
-
     $aln;
 }
 
