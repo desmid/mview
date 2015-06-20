@@ -65,17 +65,6 @@ my %Known_Identity_Mode =
      'hit'        => 1,
     );
 
-my %Known_Display_Mode =
-    (
-     #name
-     'plain'      => 1,
-     'fasta'      => 1,
-     'clustal'    => 1,
-     'pir'        => 1,
-     'msf'        => 1,
-     'rdb'        => 1,
-    );
-
 my %Known_HSP_Tiling =
     (
      'all'       => 1,
@@ -120,15 +109,6 @@ sub check_identity_mode {
 	}
     }
     return map { lc $_ } sort keys %Known_Identity_Mode;
-}
-
-sub check_display_mode {
-    if (defined $_[0]) {
-	if (exists $Known_Display_Mode{$_[0]}) {
-	    return lc $_[0];
-	}
-    }
-    return map { lc $_ } sort keys %Known_Display_Mode;
 }
 
 sub check_hsp_tiling {
@@ -418,21 +398,7 @@ sub build_alignment {
 
     return undef  unless $aln->all_ids > 0;
 
-SWITCH: {
-	if ($self->{'mode'} eq 'new') {
-	    $aln = $self->build_new_alignment($aln);
-	    last;
-	}
-	last    if $self->{'mode'} eq 'none';  #for testing
-	last    if $self->{'mode'} eq 'plain';
-	last    if $self->{'mode'} eq 'pearson';
-	last    if $self->{'mode'} eq 'clustal';
-	last    if $self->{'mode'} eq 'pir';
-	last    if $self->{'mode'} eq 'msf';
-	last    if $self->{'mode'} eq 'rdb';
-    
-	die "${self}::alignment() unknown mode '$self->{'mode'}'\n";
-    }
+    $aln = $self->build_new_alignment($aln)  if $self->{'mode'} eq 'new';
 
     $aln;
 }
@@ -645,202 +611,6 @@ sub strip_query_gaps {
 	#warn "sqg(out h)=[$$sbjct]\n";
     }
     $self;
-}
-
-#return alignment in 'plain' format
-sub plain {
-    my $self = shift;
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->plain;
-	}
-    }
-    $s;
-}
-
-#return alignment in Pearson/FASTA format
-sub pearson {
-    my $self = shift;
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->pearson;
-	}
-    }
-    $s;
-}
-
-#return alignment in PIR format
-sub pir {
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->pir($moltype);
-	}
-    }
-    $s;
-}
-
-#return alignment in RDB table format
-sub rdb {
-    my $self = shift;
-    my $s = $self->index2row(0)->rdb('attr') . "\n";
-    $s .= $self->index2row(0)->rdb('form') . "\n";
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->rdb('data') . "\n";
-	}
-    }
-    $s;
-}
-
-#return alignment in MSF format
-sub msf {
-    my $CHECKSUM = '--------------------------------------&---*---.-----------------@ABCDEFGHIJKLMNOPQRSTUVWXYZ------ABCDEFGHIJKLMNOPQRSTUVWXYZ---~---------------------------------------------------------------------------------------------------------------------------------';
-    my ($MAXSEQ, $GAP) = (50, '.');
-    
-    my $checksum = sub {
-	my $s = shift;
-	my ($sum, $ch) = (0, 0);
-	my $len = length($$s);
-	while ($len--) {
-	    $ch = ord substr($$s, $len, 1);
-	    $ch = substr($CHECKSUM, $ch, 1);
-	    $sum += (($len % 57) + 1) * ord $ch  if $ch ne '-';
-	}
-	$sum % 10000;
-    };
-
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-    my $now = `date '+%B %d, %Y %H:%M'`;
-    $now =~ s/\s0(\d{1})/ $1/; chomp $now;  #padding %-d may not work
-
-    foreach my $aln (@_) {
-	if ($moltype eq 'aa') {
-	    $s .= "!!AA_MULTIPLE_ALIGNMENT 1.0\n";
-	} else {
-	    $s .= "!!NA_MULTIPLE_ALIGNMENT 1.0\n";
-	}
-	$s .= "PileUp (MView)\n\n";
-	$s .= sprintf("   MSF: %5d  Type: %s  %s  Check: %4d  ..\n\n", 
-		      $aln->length, ($moltype eq 'aa' ? 'P' : 'N'), $now, 0);
-
-	my $w = 0;
-	foreach my $r ($aln->visible_ids) {
-	    $w = length($self->uid2row($r)->cid)
-		if length($self->uid2row($r)->cid) > $w;
-	}
-	    
-	foreach my $r ($aln->visible_ids) {
-	    $s .=
-		sprintf(" Name: %-${w}s Len: %5d  Check: %4d  Weight:  %4.2f\n",
-			$self->uid2row($r)->cid, $aln->length, 
-			&$checksum(\$self->uid2row($r)->seq), 1.0);
-	}
-	$s .= "\n//\n\n";
-
-	my %seq = ();
-	foreach my $r ($aln->visible_ids) {
-	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
-	}
-	
-    LOOP:
-	for (my $from = 0; ;$from += $MAXSEQ) {
-	    my $ruler = 1;
-	    foreach my $r ($aln->visible_ids) {
-		last LOOP    if $from >= length($seq{$r});
-		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
-		my $tmplen = length($tmp);
-		if ($ruler) {
-		    my $lo = $from + 1; my $hi = $from + $tmplen;
-		    $ruler = $tmplen - length("$lo") - length("$hi");
-		    $ruler = 1  if $ruler < 1;
-		    my $insert = int($tmplen / 10);
-		    $insert -= 1  if $tmplen % 10 == 0;
-		    $insert += $ruler;
-		    $insert = sprintf("%d%s%d", $lo, ' ' x $insert, $hi);
-		    $s .= sprintf("%-${w}s $insert\n", '');
-		    $ruler = 0;
-		}
-		$s .= sprintf("%-${w}s ", $self->uid2row($r)->cid);
-		for (my $lo=0; $lo<$tmplen; $lo+=10) {
-		    $s .= substr($tmp, $lo, 10);
-		    $s .= ' '    if $lo < 40;
-		}
-		$s .= "\n";
-	    }
-	    $s .= "\n";
-	}
-    }
-    $s;
-}
-
-#return alignment in CLUSTAL/aln format
-sub clustal {
-    my ($MAXSEQ, $MINNAME, $GAP) = (60, 16, '-');
-    my ($RULER, $CONSERVATION) = (1, 1);
-
-    my $symcount = sub {
-	my ($s, $gap, $c) = (@_, 0);
-	my @s = split('', $$s);
-	for (my $i=0; $i<@s; $i++) {
-	    $c += 1  unless $s[$i] eq $gap;
-	}
-	$c;
-    };
-
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-
-    foreach my $aln (@_) {
-	$s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";
-
-	my $w = $MINNAME;
-	my @ids = $aln->visible_ids;
-	my %seq = ();
-	my %len = ();
-
-	foreach my $r (@ids) {
-	    #warn $r, $self->uid2row($r), "\n";
-	    $w = length($self->uid2row($r)->cid)+1 if
-		length($self->uid2row($r)->cid) >= $w;
-	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
-	    $len{$r} = 0;
-	}
-
-      LOOP:
-	for (my $from = 0; ;$from+=$MAXSEQ) {
-	    foreach my $r ($aln->visible_ids) {
-		last LOOP  if $from >= length($seq{$r});
-		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
-		$s .= sprintf("%-${w}s", $self->uid2row($r)->cid);
-		$s .= $tmp;
-		if ($RULER) {
-		    my $syms = &$symcount(\$tmp, $GAP);
-		    my $hi = $len{$r} + $syms;
-		    $s .= sprintf(" %-d", $hi)  if $syms > 0;
-		    $len{$r} = $hi;
-                }
-                $s .= "\n";
-            }
-
-	    if ($CONSERVATION) {
-		$s .= sprintf("%-${w}s", '');
-		$s .= ${$self->{align}->conservation(\@ids,
-						     $from+1, $from + $MAXSEQ,
-						     $moltype)};
-	    }
-	    $s .= "\n\n";
-	}
-    }
-    $s;
 }
 
 

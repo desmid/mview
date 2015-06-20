@@ -542,7 +542,7 @@ action:   sub { __ARGS;
 	  }
 
 OPTION:   out
-usage:    "Output __CHOOSE(Bio::MView::Manager::check_display_mode)"
+usage:    "Output __CHOOSE(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 param:    mode
@@ -564,7 +564,7 @@ convert:  sub { __ARGS;
 		    __PV = 'clustal';
 		} elsif (__OV =~ /^al/i) {  #CLUSTAL/aln
 		    __PV = 'clustal';
-		} elsif (__OV =~ /^r/i) {   #RDB
+		} elsif (__OV =~ /^rd/i) {  #RDB
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
 		    __WARN("unknown output format '-__ON=__OV'.");

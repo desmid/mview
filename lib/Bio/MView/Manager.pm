@@ -5,6 +5,7 @@
 package Bio::MView::Manager;
 
 use Bio::MView::Build;
+use Bio::MView::Convert;
 use Bio::MView::Display;
 use Bio::SRS 'srsLink';
 
@@ -161,32 +162,24 @@ sub parse {
 
 	    $self->{'acount'}++;
 
-	    if ($self->{'bp'}->{'mode'} eq 'plain') {
-		print $bld->plain($aln);
-		next;
-	    }
-	    if ($self->{'bp'}->{'mode'} eq 'pearson') {
-		print $bld->pearson($aln);
-		next;
-	    }
-	    if ($self->{'bp'}->{'mode'} eq 'pir') {
-		print $bld->pir($self->{'bp'}->{'moltype'}, $aln);
-		next;
-	    }
-	    if ($self->{'bp'}->{'mode'} eq 'msf') {
-		print $bld->msf($self->{'bp'}->{'moltype'}, $aln);
-		next;
-	    }
-	    if ($self->{'bp'}->{'mode'} eq 'clustal') {
-		print $bld->clustal($self->{'bp'}->{'moltype'}, $aln);
-		next;
-	    }
-	    if ($self->{'bp'}->{'mode'} eq 'rdb') {
-		print $bld->rdb($aln);
-		next
-	    }
+            if ($self->{'bp'}->{'mode'} ne 'new') {
+                my $conv = new Bio::MView::Convert($bld, $aln,
+                                                   $self->{'bp'}->{'moltype'},
+                                                   '-', '-');
+                my $s;
+
+                $s = $conv->plain    if $self->{'bp'}->{'mode'} eq 'plain';
+                $s = $conv->pearson  if $self->{'bp'}->{'mode'} eq 'pearson';
+                $s = $conv->pir      if $self->{'bp'}->{'mode'} eq 'pir';
+                $s = $conv->clustal  if $self->{'bp'}->{'mode'} eq 'clustal';
+                $s = $conv->msf      if $self->{'bp'}->{'mode'} eq 'msf';
+                $s = $conv->rdb      if $self->{'bp'}->{'mode'} eq 'rdb';
+
+                print $$s  if defined $s;
+                next;
+            }
     
-	    $dis = $self->add_display($bld, $aln);
+    	    $dis = $self->add_display($bld, $aln);
 
 	    if ($loop++ < 1) {
 		$header2 = $bld->header($self->{'quiet'}) . $aln->header($self->{'quiet'});
@@ -374,9 +367,9 @@ sub add_display {
 
 #wrapper functions
 sub check_identity_mode   { Bio::MView::Build::check_identity_mode(@_) }
-sub check_display_mode 	  { Bio::MView::Build::check_display_mode(@_) }
 sub check_hsp_tiling 	  { Bio::MView::Build::check_hsp_tiling(@_) }
 sub check_molecule_type	  { Bio::MView::Align::check_molecule_type(@_) }
+sub check_convert_mode 	  { Bio::MView::Convert::check_convert_mode(@_) }
 sub check_alignment_color_scheme { Bio::MView::Align::check_alignment_color_scheme(@_) }
 sub check_consensus_color_scheme { Bio::MView::Align::check_consensus_color_scheme(@_) }
 sub check_colormap     	  { Bio::MView::Align::check_colormap(@_) }

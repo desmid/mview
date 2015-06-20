@@ -8,7 +8,6 @@ use Bio::MView::Sequence;
 
 use strict;
 
-my $DEF_IDWIDTH   = 20;  #default width to truncate 'id' field
 my $DEF_TEXTWIDTH = 30;  #default width to truncate 'text' field
 my $DEF_PAD = '-';       #default terminal gap character
 my $DEF_GAP = '-';       #default internal gap character
@@ -285,98 +284,18 @@ sub head {''}           #row info labels
 sub pcid { '' }         #identity% label
 sub pcid_std { 'id%' }  #standard text for identity% label
 
-###########################################################################
-# output modes
-
-sub plain {
-    my ($self, $w, $pad, $gap) = (@_, $DEF_IDWIDTH, $DEF_PAD, $DEF_GAP);
-    my $title = sprintf("%-${w}s", substr($self->cid, 0, $w));
-    my $sequence = $self->seq($pad, $gap);
-    $title . " " . $sequence . "\n";
-}
-
-sub pearson {
-    my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
-    my $MAXSEQ = 70;
-
-    my $head = sub {
-	my $self = shift;
-	my $s = ">";
-	#my $d = $self->num;
-	#$s .= ((defined $d and $d ne '') ? "$d;" : "query;");
-	$s .= $self->cid;
-    };
-
-    my $desc = sub {
-	my $self = shift;
-	my ($s, $d) = ('');
-	$d = $self->desc;  $s .= " $d"  if $d ne '';
-	$d = $self->data;  $s .= " $d"  if $d ne '';
-	$d = $self->posn1; $s .= " $d"  if $d ne '';
-	$d = $self->posn2; $s .= " $d"  if $d ne '';
-	$s . "\n";
-    };
-
-    my $sequence = sub {
-	my ($self, $pad, $gap) = @_;
-	my $seq = $self->seq($pad, $gap);
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
-	    $s .= substr($seq, $i, $MAXSEQ) . "\n";
-	}
-	$s;
-    };
-
-    &$head($self) . &$desc($self) . &$sequence($self, $pad, $gap);
-}
-
-sub pir {
-    my ($self, $moltype, $pad, $gap) = (@_, 'aa', $DEF_PAD, $DEF_GAP);
-    my $MAXSEQ = 60;
-
-    my $head = sub {
-	my ($self, $moltype) = @_;
-	my $s = $moltype eq 'aa' ? ">P1;" : ">XX;";
-	#my $d = $self->num;
-	#$s .= ((defined $d and $d ne '') ? "$d;" : "query;");
-	$s .= $self->cid . "\n";
-    };
-
-    my $desc = sub {
-	my $self = shift;
-	my ($s, $d) = ('');
-	$d = $self->desc;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->data;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn1; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn2; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$s = '.'  if $s eq '';
-	$s;
-    };	
-
-    my $sequence = sub {
-	my ($self, $pad, $gap) = @_;
-	my $seq = $self->seq($pad, $gap);
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
-	    $s .= "\n" . substr($seq, $i, $MAXSEQ);
-	}
-	$s .= "\n"    if length($s) % ($MAXSEQ+1) < 1 and $s ne '';
-	$s .= "*\n\n";
-    };
-
-    &$head($self, $moltype) . &$desc($self) . &$sequence($self, $pad, $gap);
-}
-
-sub rdb {
-    my ($self, $mode, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
-    my @cols = ('row', 'id', 'desc', 'seq')  if $mode eq 'attr';
-    @cols = ('4N', '30S', '500S', '500S') if $mode eq 'form';
+#tabulated output: called from Convert
+sub rdb_row {
+    my ($self, $mode, $pad, $gap) = @_;
+    my @cols;
+    @cols = ('row', 'id', 'desc', 'seq')   if $mode eq 'attr';
+    @cols = ('4N', '30S', '500S', '500S')  if $mode eq 'form';
     @cols = ($self->num, $self->cid, $self->desc, $self->seq($pad, $gap))
 	if $mode eq 'data';
+
     my @new = $self->rdb_info($mode);     #subtype has any data?
     splice(@cols, -1, 0, @new)  if @new;  #insert penultimately
+
     #warn "[@cols]";
     return join("\t", @cols);
 }
