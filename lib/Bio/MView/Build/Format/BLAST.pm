@@ -194,7 +194,7 @@ sub posn1 {
 sub posn2 {
     my $hfm = $_[0]->{'seq'}->fromlabel2;
     my $hto = $_[0]->{'seq'}->tolabel2;
-    return "$hfm:$hto"    if defined $_[0]->num and $_[0]->num;
+    return "$hfm:$hto"  if defined $_[0]->num and $_[0]->num;
     return '';
 }
 
@@ -204,121 +204,135 @@ sub sort {
 	[
 	 sort {
 	     my $c = $a->[7] <=> $b->[7];                   #compare score
-	     return $c    if $c != 0;
+	     return $c  if $c != 0;
 	     return length($a->[0]) <=> length($b->[0]);    #compare length
 	 } @{$_[0]->{'frag'}}
 	];
     $_[0];
 }
 
-sub assemble_blastp {
-    my $self = shift;
+# sub assemble_blastp {
+#     my $self = shift;
 
-    #query:     protein
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in protein units
-    #query orientation: +
-    #sbjct orientation: +
+#     #query:     protein
+#     #database:  protein
+#     #alignment: protein x protein
+#     #query numbered in protein units
+#     #sbjct numbered in protein units
+#     #query orientation: +
+#     #sbjct orientation: +
 
-    #processing steps:
-    #  (1) assemble frags
+#     #processing steps:
+#     #  (1) assemble frags
    
+#     $self->SUPER::assemble(@_);
+# }
+
+# sub assemble_blastn {
+#     my $self = shift;
+
+#     #query:     dna
+#     #database:  dna
+#     #alignment: dna x dna
+#     #query numbered in dna units
+#     #sbjct numbered in dna units
+#     #query orientation: +-
+#     #sbjct orientation: +-
+
+#     #processing steps:
+#     #if query -
+#     #  (1) reverse assembly position numbering
+#     #  (2) reverse each frag
+#     #  (3) assemble frags
+#     #  (4) reverse assembly
+#     #if query +
+#     #  (1) assemble frags
+    
+#     $self->SUPER::assemble(@_);
+# }
+
+# sub assemble_blastx {
+#     my $self = shift;
+
+#     #query:     dna
+#     #database:  protein
+#     #alignment: protein x protein
+#     #query numbered in dna units
+#     #sbjct numbered in protein units
+#     #query orientation: +-
+#     #sbjct orientation: +
+
+#     #processing steps:
+#     #if query -
+#     #  (1) convert to protein units
+#     #  (2) reverse assembly position numbering
+#     #  (3) reverse each frag
+#     #  (4) assemble frags
+#     #  (5) reverse assembly
+#     #if query +
+#     #  (1) convert to protein units
+#     #  (2) assemble frags
+    
+#     foreach my $frag (@{$self->{'frag'}}) {
+#         ($frag->[1], $frag->[2]) =
+#             $self->translate_range($frag->[1], $frag->[2]);
+#     }
+#     $self->SUPER::assemble(@_);
+# }
+
+# sub assemble_tblastn {
+#     my $self = shift;
+
+#     #query:     protein
+#     #database:  dna
+#     #alignment: protein x protein
+#     #query numbered in protein units
+#     #sbjct numbered in dna units
+#     #query orientation: +
+#     #sbjct orientation: +-
+
+#     #processing steps:
+#     #  (1) assemble frags
+    
+#     $self->SUPER::assemble(@_);
+# }
+
+# sub assemble_tblastx {
+#     my $self = shift;
+
+#     #query:     dna
+#     #database:  dna
+#     #alignment: protein x protein
+#     #query numbered in dna units
+#     #sbjct numbered in dna units
+#     #query orientation: +-
+#     #sbjct orientation: +-
+
+#     #processing steps:
+#     #if query -
+#     #  (1) convert to protein units
+#     #  (2) reverse assembly position numbering
+#     #  (3) reverse each frag
+#     #  (4) assemble frags
+#     #  (5) reverse assembly
+#     #if query +
+#     #  (1) convert to protein units
+#     #  (2) assemble frags
+    
+#     foreach my $frag (@{$self->{'frag'}}) {
+#         ($frag->[1], $frag->[2]) =
+#             $self->translate_range($frag->[1], $frag->[2]);
+#     }
+#     $self->SUPER::assemble(@_);
+# }
+
+sub assemble {
+    my $self = shift;
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_blastn {
+sub assemble_translated {
     my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: dna x dna
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_blastx {
-    my $self = shift;
-
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
-    foreach my $frag (@{$self->{'frag'}}) {
-        ($frag->[1], $frag->[2]) =
-            $self->translate_range($frag->[1], $frag->[2]);
-    }
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastn {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastx {
-    my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);
