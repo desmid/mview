@@ -62,39 +62,25 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST);
 
+#suppress cycle in all output; it's only for blastp/psi-blastp
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 0,   0,    'cycle',         'cycle',      '2N',      ''  ],
+    [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9S',      ''  ],
+    [ 4,   4,    'n',             'N',          '2N',      ''  ],
+    [ 5,   5,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 6,   6,    'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
+}
+
 sub new {
     my $type = shift;
-    my ($num, $id, $desc, $bits, $e, $n, $qo, $ho, $cycle) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'bits'}   	    = $bits;
-    $self->{'expect'} 	    = $e;
-    $self->{'n'}      	    = $n; 
-    $self->{'query_orient'} = $qo;
-    $self->{'sbjct_orient'} = $ho;
-    $self->{'cycle'}        = $cycle;
+    my ($num, $id, $desc) = splice @_, 0, 3;
+    my $self = new Bio::MView::Build::Row::BLAST($num, $id, $desc);
     bless $self, $type;
+    $self->save_info(@_);
 }
-
-sub data {
-    return sprintf("%5s %9s %2s %2s %2s",
-		   $_[0]->{'bits'}, $_[0]->{'expect'}, $_[0]->{'n'},
-		   $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'})
-	if $_[0]->num;
-    return sprintf("%5s %9s %2s %2s %2s", 'bits', 'E-value', 'N', 'qy', 'ht');
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'bits'}, $self->{'expect'}, $self->{'n'},
-	    $self->{'query_orient'}, $self->{'sbjct_orient'}, $self->{'cycle'})
-	if $mode eq 'data';
-    return ('bits', 'expect', 'N', 'query_orient', 'sbjct_orient', 'cycle')
-	if $mode eq 'attr';
-    return ('5N', '9S', '2N', '2S', '2S', '2N')  if $mode eq 'form';
-}
-
-sub eval { $_[0]->{'expect'} }
-sub bits { $_[0]->{'bits'} }
 
 
 ###########################################################################
@@ -104,14 +90,17 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST2);
 
-sub assemble { my $self = shift; $self->assemble_blastp(@_) }
-
-#suppress query and sbjct orientations for blastp data() method
-sub data {
-    return sprintf("%5s %9s %2s",
-		   $_[0]->{'bits'}, $_[0]->{'expect'}, $_[0]->{'n'})
-	if $_[0]->num;
-    return sprintf("%5s %9s %2s", 'bits', 'E-value', 'N');
+#enable cycle in rdb tabulated output
+#suppress query and sbjct orientations for blastp data
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 0,   1,    'cycle',         'cycle',      '2N',      ''  ],
+    [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9S',      ''  ],
+    [ 4,   4,    'n',             'N',          '2N',      ''  ],
+    [ 0,   0,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 0,   0,    'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
 }
 
 
@@ -121,8 +110,6 @@ package Bio::MView::Build::Row::BLAST2::blastn;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST2);
-
-sub assemble { my $self = shift; $self->assemble_blastn(@_) }
 
 
 ###########################################################################
@@ -138,7 +125,7 @@ sub range {
     $self->translate_range($lo, $hi);
 }
 
-sub assemble { my $self = shift; $self->assemble_blastx(@_) }
+sub assemble { my $self = shift; $self->assemble_translated(@_) }
 
 
 ###########################################################################
@@ -147,8 +134,6 @@ package Bio::MView::Build::Row::BLAST2::tblastn;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST2);
-
-sub assemble { my $self = shift; $self->assemble_tblastn(@_) }
 
 
 ###########################################################################
@@ -164,7 +149,7 @@ sub range {
     $self->translate_range($lo, $hi);
 }
 
-sub assemble { my $self = shift; $self->assemble_tblastx(@_) }
+sub assemble { my $self = shift; $self->assemble_translated(@_) }
 
 
 ###########################################################################
@@ -180,7 +165,7 @@ sub scheduler { 'cycle' }
 sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
-    return $s    if $quiet;
+    return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Search cycle: " . $self->cycle . "\n";
     $s;    
@@ -213,12 +198,12 @@ sub parse {
 	 '',                    #alignment row number
 	 $match->{'query'},     #sequence identifier
 	 $match->{'summary'},   #description
+	 $self->cycle,          #cycle
 	 '',                    #bits
 	 '',                    #expectation
 	 '',                    #number of HSP used
 	 '+',                   #query orientation
 	 '+',                   #sbjct orientation
-	 $self->cycle,          #cycle (psi-blast compatibility)
 	);
 
     #extract hits and identifiers from the ranking
@@ -241,12 +226,12 @@ sub parse {
 	     $rank,
 	     $match->{'id'},
 	     $match->{'summary'},
+             $self->cycle,          #cycle
 	     $match->{'bits'},
 	     $match->{'expect'},
 	     1,
 	     '+',                   #query orientation
 	     '+',                   #sbjct orientation
-	     $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 	
 	$idx{$match->{'id'}} = $#hit;
@@ -324,9 +309,9 @@ sub parse_hits_all {
 	}
 
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'bits'}   = $score;
-	$hit->[$idx->{$sum->{'id'}}]->{'expect'} = $e;
-	$hit->[$idx->{$sum->{'id'}}]->{'n'}      = $n;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('bits', $score);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('expect', $e);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('n', $n);
     }
     $self;
 }
@@ -351,11 +336,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
+		  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
 	    
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-                         $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -421,12 +406,12 @@ sub parse_hits_discrete {
 		     $key,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
 		     '+',                   #query orientation
 		     '+',                   #sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -509,12 +494,12 @@ sub parse {
 	 '',                    #alignment row number
 	 $match->{'query'},     #sequence identifier
 	 $match->{'summary'},   #description
+	 $self->cycle,          #cycle
 	 '',                    #bits
 	 '',                    #expectation
 	 '',                    #number of HSP used
 	 $self->strand,         #query orientation
 	 '?',                   #sbjct orientation (none)
-         $self->cycle,          #cycle (psi-blast compatibility)
         );
     
     #extract hits and identifiers from the ranking
@@ -537,12 +522,12 @@ sub parse {
 	     $rank,
 	     $match->{'id'},
 	     $match->{'summary'},
+             $self->cycle,          #cycle
 	     $match->{'bits'},
 	     $match->{'expect'},
 	     1,
 	     $self->strand,         #query orientation
 	     '?',                   #sbjct orientation (still unknown)
-             $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 
 	$idx{$match->{'id'}} = $#hit;
@@ -601,12 +586,12 @@ sub parse_hits_all {
 		     $rank,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
 		     $self->strand,         #query orientation
 		     $orient,               #sbjct orientation
-		     $self->cycle,          #cycle
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -654,16 +639,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score1;
-	    $hit->[$idx->{$key}]->{'expect'} = $e1;
-	    $hit->[$idx->{$key}]->{'n'}      = $n1;
+	    $hit->[$idx->{$key}]->set_val('bits', $score1);
+	    $hit->[$idx->{$key}]->set_val('expect', $e1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score2;
-	    $hit->[$idx->{$key}]->{'expect'} = $e2;
-	    $hit->[$idx->{$key}]->{'n'}      = $n2;
+	    $hit->[$idx->{$key}]->set_val('bits', $score2);
+	    $hit->[$idx->{$key}]->set_val('expect', $e2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -697,8 +682,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same e-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_e($aln->{'expect'},
-				 $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				 2) >= 0) {
+                $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -714,13 +698,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'expect'},
-				      2) < 1;
+		  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
 
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-				      $hit->[$idx->{$sum->{'id'}}]->{'bits'},
-				      2) >= 0;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -753,7 +735,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('sbjct_orient', $orient);
 	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
@@ -790,12 +772,12 @@ sub parse_hits_discrete {
 		     $key,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
 		     $self->strand,         #query orientation
 		     $aln->{'sbjct_orient'},#sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		     );
 
 		$idx->{$key} = $#$hit;
@@ -878,12 +860,12 @@ sub parse {
 	 '',                    #alignment row number
 	 $match->{'query'},     #sequence identifier
 	 $match->{'summary'},   #description
+         $self->cycle,          #cycle
 	 '',                    #bits
 	 '',                    #expectation
 	 '',                    #number of HSP used
 	 $self->strand,         #query orientation
 	 '+',                   #sbjct orientation
-	 $self->cycle,          #cycle (psi-blast compatibility)
 	);
 
     #extract cumulative scores and identifiers from the ranking
@@ -906,12 +888,12 @@ sub parse {
 	     $rank,
 	     $match->{'id'},
 	     $match->{'summary'},
+             $self->cycle,          #cycle
 	     $match->{'bits'},
 	     $match->{'expect'},
 	     1,
 	     $self->strand,         #query orientation
 	     '+',                   #sbjct orientation
-	     $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 
 	$idx{$match->{'id'}} = $#hit;
@@ -994,10 +976,10 @@ sub parse_hits_all {
 	}
 
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'bits'}         = $score;
-	$hit->[$idx->{$sum->{'id'}}]->{'expect'}       = $e;
-	$hit->[$idx->{$sum->{'id'}}]->{'n'}            = $n;
-	$hit->[$idx->{$sum->{'id'}}]->{'query_orient'} = $self->strand;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('bits', $score);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('expect', $e);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('n', $n);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('query_orient', $self->strand);
     }
     $self;
 }
@@ -1025,11 +1007,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
 	    
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1100,6 +1082,7 @@ sub parse_hits_discrete {
 		     $key,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
@@ -1108,7 +1091,6 @@ sub parse_hits_discrete {
 		      $aln->{'query_frame'} : $self->strand
 		     ),                     #query orientation
 		     '+',                   #sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -1184,12 +1166,12 @@ sub parse {
 	 '',                    #alignment row number
 	 $match->{'query'},     #sequence identifier
 	 $match->{'summary'},   #description
+         $self->cycle,          #cycle
 	 '',                    #bits
 	 '',                    #expectation
 	 '',                    #number of HSP used
 	 '+',                   #query orientation
 	 '?',                   #sbjct orientation (none)
-	 $self->cycle,          #cycle (psi-blast compatibility)
 	);
 
     #extract cumulative scores and identifiers from the ranking
@@ -1212,12 +1194,12 @@ sub parse {
 	     $rank,
 	     $match->{'id'},
 	     $match->{'summary'},
+             $self->cycle,          #cycle
 	     $match->{'bits'},
 	     $match->{'expect'},
 	     1,
 	     '+',                   #query orientation
 	     '?',                   #sbjct orientation (unknown)
-	     $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 
 	$idx{$match->{'id'}} = $#hit;
@@ -1272,12 +1254,12 @@ sub parse_hits_all {
 		     $rank,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
 		     '+',                   #query orientation
 		     $orient,               #sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -1327,16 +1309,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score1;
-	    $hit->[$idx->{$key}]->{'expect'} = $e1;
-	    $hit->[$idx->{$key}]->{'n'}      = $n1;
+	    $hit->[$idx->{$key}]->set_val('bits', $score1);
+	    $hit->[$idx->{$key}]->set_val('expect', $e1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit 1 orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score2;
-	    $hit->[$idx->{$key}]->{'expect'} = $e2;
-	    $hit->[$idx->{$key}]->{'n'}      = $n2;
+	    $hit->[$idx->{$key}]->set_val('bits', $score2);
+	    $hit->[$idx->{$key}]->set_val('expect', $e2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -1366,7 +1348,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same e-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_e($aln->{'expect'},
-                       $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) >= 0) {
+                $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -1382,11 +1364,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
 
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
 	    
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1421,7 +1403,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data (hit + orientation)
-	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('sbjct_orient', $orient);
 	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
@@ -1455,6 +1437,7 @@ sub parse_hits_discrete {
 		     $key,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
@@ -1463,7 +1446,6 @@ sub parse_hits_discrete {
 		      exists $aln->{'sbjct_frame'} ?
 		      $aln->{'sbjct_frame'} : $aln->{'sbjct_orient'}
 		     ),                     #sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -1548,12 +1530,12 @@ sub parse {
 	 '',                    #alignment row number
 	 $match->{'query'},     #sequence identifier
 	 $match->{'summary'},   #description
+         $self->cycle,          #cycle
 	 '',                    #bits
 	 '',                    #expectation
 	 '',                    #number of HSP used
 	 $self->strand,         #query orientation
 	 '?',                   #sbjct orientation
-	 $self->cycle,          #cycle (psi-blast compatibility)
 	);
     
     #extract hits and identifiers from the ranking
@@ -1576,12 +1558,12 @@ sub parse {
 	     $rank,
 	     $match->{'id'},
 	     $match->{'summary'},
+             $self->cycle,          #cycle
 	     $match->{'bits'},
 	     $match->{'expect'},
              1,
 	     $self->strand,         #query orientation
 	     '?',                   #sbjct orientation
-	     $self->cycle,          #cycle (psi-blast compatibility)
 	    );
 
 	$idx{$match->{'id'}} = $#hit;
@@ -1639,12 +1621,12 @@ sub parse_hits_all {
 		     $rank,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,           #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
 		     $self->strand,          #query orientation
 		     $orient,                #sbjct orientation
-		     $self->cycle,           #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;
@@ -1695,16 +1677,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score1;
-	    $hit->[$idx->{$key}]->{'expect'} = $e1;
-	    $hit->[$idx->{$key}]->{'n'}      = $n1;
+	    $hit->[$idx->{$key}]->set_val('bits', $score1);
+	    $hit->[$idx->{$key}]->set_val('expect', $e1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'bits'}   = $score2;
-	    $hit->[$idx->{$key}]->{'expect'} = $e2;
-	    $hit->[$idx->{$key}]->{'n'}      = $n2;
+	    $hit->[$idx->{$key}]->set_val('bits', $score2);
+	    $hit->[$idx->{$key}]->set_val('expect', $e2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -1736,7 +1718,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same e-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_e($aln->{'expect'},
-		       $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) >= 0) {
+                $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -1752,11 +1734,11 @@ sub parse_hits_ranked {
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
-                         $hit->[$idx->{$sum->{'id'}}]->{'expect'}, 2) < 1;
+                  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
 
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
-			 $hit->[$idx->{$sum->{'id'}}]->{'bits'}, 2) >= 0;
+		  $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1791,7 +1773,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data (hit + orientation)
-	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('sbjct_orient', $orient);
 	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
@@ -1828,6 +1810,7 @@ sub parse_hits_discrete {
 		     $key,
 		     $sum->{'id'},
 		     $sum->{'desc'},
+                     $self->cycle,          #cycle
 		     $aln->{'bits'},
 		     $aln->{'expect'},
 		     $aln->{'n'},
@@ -1839,7 +1822,6 @@ sub parse_hits_discrete {
 		      exists $aln->{'sbjct_frame'} ?
 		      $aln->{'sbjct_frame'} : $aln->{'sbjct_orient'}
 		     ),                     #sbjct orientation
-		     $self->cycle,          #cycle (psi-blast compatibility)
 		    );
 
 		$idx->{$key} = $#$hit;

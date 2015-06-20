@@ -4,26 +4,25 @@
 ###########################################################################
 package Bio::MView::Build::Row::HSSP;
 
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $chain, $seq) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    $self->{'chain'} = $chain;
-    bless $self, $type;
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 0,   1,    'chain',         'chain',      '1S',       '' ],
+    ]
 }
 
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'chain'})  if $mode eq 'data';
-    return ('chain')  if $mode eq 'attr';
-    return ('1S')  if $mode eq 'form';
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
+    bless $self, $type;
+    $self->save_info(@_);
 }
 
 
@@ -31,7 +30,6 @@ sub rdb_info {
 package Bio::MView::Build::Format::HSSP;
 
 use Bio::MView::Build::Search;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -99,8 +97,8 @@ sub parse {
 	 '',
 	 $head->{'pdbid'},
 	 $head->{'header'},
-	 $self->chain,
 	 $align->get_query($self->chain),
+	 $self->chain,
 	);
 
     #extract cumulative scores and identifiers from the ranking and
@@ -139,8 +137,8 @@ sub parse {
 						    $rank,
 						    $id,
 						    $match->{'protein'},
-						    $self->chain,
 						    $seq,
+						    $self->chain,
 						   );
     }
     #map { $_->print } @hit;

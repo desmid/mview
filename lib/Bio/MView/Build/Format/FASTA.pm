@@ -179,97 +179,43 @@ sub posn2 {
     return '';
 }
 
-#based on assemble_blastn() fragment processing
-sub assemble_fasta {
+sub assemble {
     my $self = shift;
-
-    #query:     protein|dna
-    #database:  protein|dna
-    #alignment: protein|dna x protein|dna
-    #query numbered in protein|dna units
-    #sbjct numbered in protein|dna units
-    #query orientation: +/-
-    #sbjct orientation: +/-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_fastx {
-    my $self = shift;
-
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
-    foreach my $frag (@{$self->{'frag'}}) {
-        ($frag->[1], $frag->[2]) =
-            $self->translate_range($frag->[1], $frag->[2]);
-    }
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tfasta {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
     $self->SUPER::assemble(@_);
 }
 
 sub new {
     my $type = shift;
-    my ($num, $id, $desc, $initn, $init1, $opt) = @_;
+    my ($num, $id, $desc) = (shift, shift, shift);
     my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'initn'} = $initn;
-    $self->{'init1'} = $init1;
-    $self->{'opt'}   = $opt;
     bless $self, $type;
+    $self->save_info(@_);
 }
 
-sub data  {
-    return sprintf("%5s %5s %5s", 'initn', 'init1', 'opt') unless $_[0]->num;
-    sprintf("%5s %5s %5s", $_[0]->{'initn'}, $_[0]->{'init1'}, $_[0]->{'opt'});
+
+###########################################################################
+package Bio::MView::Build::Row::FASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA);
+
+#recompute range for translated sequence
+sub range {
+    my $self = shift;
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
 }
 
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'initn'}, $self->{'init1'}, $self->{'opt'})
-	if $mode eq 'data';
-    return ('initn', 'init1', 'opt')  if $mode eq 'attr';
-    return ('5N', '5N', '5N')  if $mode eq 'form';
+#assemble translated
+sub assemble {
+    my $self = shift;
+    foreach my $frag (@{$self->{'frag'}}) {
+        ($frag->[1], $frag->[2]) =
+            $self->translate_range($frag->[1], $frag->[2]);
+    }
+    $self->SUPER::assemble(@_);
 }
 
 

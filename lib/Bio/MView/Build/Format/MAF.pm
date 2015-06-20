@@ -4,41 +4,39 @@
 ###########################################################################
 package Bio::MView::Build::Row::MAF;
 
+use Bio::MView::Build::Row;
+
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq, $start, $size, $strand, $srcsize) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    $self->{'start'}   = $start;
-    $self->{'size'}    = $size;
-    $self->{'strand'}  = $strand;
-    $self->{'srcsize'} = $srcsize;
-    bless $self, $type;
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'start',         'start',      '8N',       '' ],
+    [ 2,   2,    'size',          'size',       '8N',       '' ],
+    [ 3,   3,    'strand',        'strand',     '6S',       '' ],
+    [ 4,   4,    'srcsize',       'srcsize',    '10S',      '' ],
+    ]
 }
 
-sub head {
-    sprintf("%8s %8s %6s %10s", 'start', 'size', 'strand', 'srcsize');
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
+    bless $self, $type;
+    $self->save_info(@_);
 }
 
 sub pcid { $_[0]->SUPER::pcid_std }
 
-sub data {
-    return sprintf("%8s %8s %6s %10s",
-		   $_[0]->{'start'}, $_[0]->{'size'}, $_[0]->{'strand'},
-		   $_[0]->{'srcsize'})
-	if $_[0]->num;
-    $_[0]->head;
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'start'}, $self->{'size'}, $self->{'strand'},
-	    $self->{'srcsize'})  if $mode eq 'data';
-    return ('start', 'size', 'strand', 'srcsize')  if $mode eq 'attr';
-    return ('8N', '8N', '6S', '10S')  if $mode eq 'form';
+sub head {
+    my $self = shift;
+    my $tmp = $self->{'num'};
+    $self->{'num'} = '';
+    my $s = $self->data;
+    $self->{'num'} = $tmp;
+    $s;
 }
 
 
@@ -46,7 +44,6 @@ sub rdb_info {
 package Bio::MView::Build::Format::MAF;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);

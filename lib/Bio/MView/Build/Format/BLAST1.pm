@@ -58,38 +58,23 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST);
 
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'score',         'score',      '5N',      ''  ],
+    [ 2,   2,    'p',             'P(N)',       '9S',      ''  ],
+    [ 3,   3,    'n',             'N',          '2N',      ''  ],
+    [ 4,   4,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 5,   5,    'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
+}
+
 sub new {
     my $type = shift;
-    my ($num, $id, $desc, $score, $p, $n, $qo, $ho) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'score'} 	    = $score;
-    $self->{'p'}     	    = $p;
-    $self->{'n'}     	    = $n;
-    $self->{'query_orient'} = $qo;
-    $self->{'sbjct_orient'} = $ho;
+    my ($num, $id, $desc) = splice @_, 0, 3;
+    my $self = new Bio::MView::Build::Row::BLAST($num, $id, $desc);
     bless $self, $type;
+    $self->save_info(@_);
 }
-
-sub data {
-    return sprintf("%5s %9s %2s %2s %2s",
-		   $_[0]->{'score'}, $_[0]->{'p'}, $_[0]->{'n'},
-		   $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'})
-	if $_[0]->num;
-    return sprintf("%5s %9s %2s %2s %2s", 'score', 'P(N)', 'N', 'qy', 'ht');
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'score'}, $self->{'p'}, $self->{'n'},
-	    $self->{'query_orient'}, $self->{'sbjct_orient'})
-	if $mode eq 'data';
-    return ('score', 'p', 'n', 'query_orient', 'sbjct_orient')
-	if $mode eq 'attr';
-    return ('5N', '9S', '2N', '2S', '2S')  if $mode eq 'form';
-}
-
-sub pval  { $_[0]->{'p'} }
-sub score { $_[0]->{'score'} }
 
 
 ###########################################################################
@@ -99,13 +84,15 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST1);
 
-sub assemble { my $self = shift; $self->assemble_blastp(@_) }
-
-#suppress query and sbjct orientations for blastp data() method
-sub data {
-    return sprintf("%5s %9s %2s", $_[0]->{'score'}, $_[0]->{'p'}, $_[0]->{'n'})
-	if $_[0]->num;
-    return sprintf("%5s %9s %2s", 'score', 'P(N)', 'N');
+#suppress query and sbjct orientations for blastp
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'score',         'score',      '5N',      ''  ],
+    [ 2,   2,    'p',             'P(N)',       '9S',      ''  ],
+    [ 3,   3,    'n',             'N',          '2N',      ''  ],
+    [ 0,   0,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 0,   0,    'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
 }
 
 
@@ -115,8 +102,6 @@ package Bio::MView::Build::Row::BLAST1::blastn;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST1);
-
-sub assemble { my $self = shift; $self->assemble_blastn(@_) }
 
 
 ###########################################################################
@@ -132,7 +117,7 @@ sub range {
     $self->translate_range($lo, $hi);
 }
 
-sub assemble { my $self = shift; $self->assemble_blastx(@_) }
+sub assemble { my $self = shift; $self->assemble_translated(@_) }
 
 
 ###########################################################################
@@ -141,8 +126,6 @@ package Bio::MView::Build::Row::BLAST1::tblastn;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLAST1);
-
-sub assemble { my $self = shift; $self->assemble_tblastn(@_) }
 
 
 ###########################################################################
@@ -158,7 +141,7 @@ sub range {
     $self->translate_range($lo, $hi);
 }
 
-sub assemble { my $self = shift; $self->assemble_tblastx(@_) }
+sub assemble { my $self = shift; $self->assemble_translated(@_) }
 
 
 ###########################################################################
@@ -305,9 +288,9 @@ sub parse_hits_all {
 	}
 
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'score'} = $score;
-	$hit->[$idx->{$sum->{'id'}}]->{'p'}     = $p;
-	$hit->[$idx->{$sum->{'id'}}]->{'n'}     = $n;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('score', $score);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('p', $p);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('n', $n);
     }
     $self;
 }
@@ -334,8 +317,7 @@ sub parse_hits_ranked {
 
 	    #ignore higher p-value than ranked
 	    next  unless $self->compare_p($aln->{'p'},
-					  $hit->[$idx->{$sum->{'id'}}]->{'p'},
-					  2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) < 1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -368,7 +350,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+        $hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -626,16 +608,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score1;
-	    $hit->[$idx->{$key}]->{'p'}     = $p1;
-	    $hit->[$idx->{$key}]->{'n'}     = $n1;
+	    $hit->[$idx->{$key}]->set_val('score', $score1);
+	    $hit->[$idx->{$key}]->set_val('p', $p1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score2;
-	    $hit->[$idx->{$key}]->{'p'}     = $p2;
-	    $hit->[$idx->{$key}]->{'n'}     = $n2;
+	    $hit->[$idx->{$key}]->set_val('score', $score2);
+	    $hit->[$idx->{$key}]->set_val('p', $p2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -675,8 +657,7 @@ sub parse_hits_ranked {
 	#same frag count N (already satisfied) and the same p-value.
 	$orient = '?'; foreach $aln (@tmp) {
 	    if ($self->compare_p($aln->{'p'},
-				 $hit->[$idx->{$sum->{'id'}}]->{'p'},
-				 2) >= 0) {
+		$hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) >= 0) {
 		$orient = $aln->{'sbjct_orient'};
 		last;
 	    }
@@ -689,8 +670,7 @@ sub parse_hits_ranked {
 
 	    #ignore higher p-value than ranked
 	    next  unless $self->compare_p($aln->{'p'},
-					 $hit->[$idx->{$sum->{'id'}}]->{'p'},
-					 2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) < 1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -723,8 +703,8 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'} = $orient;
-	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+        $hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+	$hit->[$idx->{$sum->{'id'}}]->set_val('sbjct_orient', $orient);
     }
     $self;
 }
@@ -961,10 +941,10 @@ sub parse_hits_all {
 	}
 
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'score'}        = $score;
-	$hit->[$idx->{$sum->{'id'}}]->{'p'}            = $p;
-	$hit->[$idx->{$sum->{'id'}}]->{'n'}            = $n;
-	$hit->[$idx->{$sum->{'id'}}]->{'query_orient'} = $self->strand;
+	$hit->[$idx->{$sum->{'id'}}]->set_val('score', $score);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('p', $p);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('n', $n);
+	$hit->[$idx->{$sum->{'id'}}]->set_val('query_orient', $self->strand);
     }
     $self;
 }
@@ -994,8 +974,7 @@ sub parse_hits_ranked {
 
 	    #ignore higher p-value than ranked
 	    next  unless $self->compare_p($aln->{'p'},
-					  $hit->[$idx->{$sum->{'id'}}]->{'p'},
-					  2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) < 1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -1030,7 +1009,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+        $hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1286,16 +1265,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score1;
-	    $hit->[$idx->{$key}]->{'p'}     = $p1;
-	    $hit->[$idx->{$key}]->{'n'}     = $n1;
+	    $hit->[$idx->{$key}]->set_val('score', $score1);
+	    $hit->[$idx->{$key}]->set_val('p', $p1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit 1 orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score2;
-	    $hit->[$idx->{$key}]->{'p'}     = $p2;
-	    $hit->[$idx->{$key}]->{'n'}     = $n2;
+	    $hit->[$idx->{$key}]->set_val('score', $score2);
+	    $hit->[$idx->{$key}]->set_val('p', $p2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -1318,7 +1297,7 @@ sub parse_hits_ranked {
 	    
 	    #ignore different hit frame to ranking
 	    next  unless $aln->{'sbjct_frame'} eq 
-		$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'};
+		$hit->[$idx->{$sum->{'id'}}]->get_val('sbjct_orient');
 
 	    $key = $aln->{'n'} . $sum->{'id'};
 	    
@@ -1327,8 +1306,7 @@ sub parse_hits_ranked {
 	    
 	    #ignore higher p-value than ranked
 	    next  unless $self->compare_p($aln->{'p'},
-					  $hit->[$idx->{$sum->{'id'}}]->{'p'},
-					  2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) < 1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -1363,7 +1341,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+        $hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1629,16 +1607,16 @@ sub parse_hits_all {
 	#override row data (hit + orientation)
 	$key = $idx->{$sum->{'id'}} . '.+';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score1;
-	    $hit->[$idx->{$key}]->{'p'}     = $p1;
-	    $hit->[$idx->{$key}]->{'n'}     = $n1;
+	    $hit->[$idx->{$key}]->set_val('score', $score1);
+	    $hit->[$idx->{$key}]->set_val('p', $p1);
+	    $hit->[$idx->{$key}]->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	$key = $idx->{$sum->{'id'}} . '.-';
 	if (exists $idx->{$key}) {
-	    $hit->[$idx->{$key}]->{'score'} = $score2;
-	    $hit->[$idx->{$key}]->{'p'}     = $p2;
-	    $hit->[$idx->{$key}]->{'n'}     = $n2;
+	    $hit->[$idx->{$key}]->set_val('score', $score2);
+	    $hit->[$idx->{$key}]->set_val('p', $p2);
+	    $hit->[$idx->{$key}]->set_val('n', $n2);
 	}
     }
     $self;
@@ -1664,7 +1642,7 @@ sub parse_hits_ranked {
 
 	    #ignore different hit frame to ranking
 	    next  unless $aln->{'sbjct_frame'} eq 
-		$hit->[$idx->{$sum->{'id'}}]->{'sbjct_orient'};
+		$hit->[$idx->{$sum->{'id'}}]->get_val('sbjct_orient');
 
 	    $key = $aln->{'n'} . $sum->{'id'};
 
@@ -1673,8 +1651,7 @@ sub parse_hits_ranked {
 	    
 	    #ignore higher p-value than ranked
 	    next  unless $self->compare_p($aln->{'p'},
-					  $hit->[$idx->{$sum->{'id'}}]->{'p'},
-					  2) < 1;
+			 $hit->[$idx->{$sum->{'id'}}]->get_val('p'), 2) < 1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -1709,7 +1686,7 @@ sub parse_hits_ranked {
 		);
 	}
 	#override row data
-	$hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
+        $hit->[$idx->{$sum->{'id'}}]->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
