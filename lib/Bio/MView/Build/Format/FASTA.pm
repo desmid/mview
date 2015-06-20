@@ -179,29 +179,7 @@ sub posn2 {
     return '';
 }
 
-#based on assemble_blastn() fragment processing
-sub assemble {
-    my $self = shift;
-
-    #query:     protein|dna
-    #database:  protein|dna
-    #alignment: protein|dna x protein|dna
-    #query numbered in protein|dna units
-    #sbjct numbered in protein|dna units
-    #query orientation: +/-
-    #sbjct orientation: +/-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-
-    $self->SUPER::assemble(@_);
-}
+sub assemble { $_[0]->SUPER::assemble(@_) }
 
 sub new {
     my $type = shift;
@@ -220,34 +198,16 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
+#recompute range for translated sequence
 sub range {
     my $self = shift;
     my ($lo, $hi) = $self->SUPER::range;
     $self->translate_range($lo, $hi);
 }
 
+#assemble translated
 sub assemble {
     my $self = shift;
-
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);
