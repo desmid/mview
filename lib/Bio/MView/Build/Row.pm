@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Row.pm,v 1.16 2015/06/14 17:09:04 npb Exp $
+# $Id: Row.pm,v 1.17 2015/06/20 21:55:23 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Row;
@@ -221,7 +221,7 @@ sub pearson {
 }
 
 sub pir {
-    my ($self, $moltype, $pad, $gap) = (@_, 'aa', $DEF_PAD, $DEF_GAP);
+    my ($self, $moltype, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
     my $MAXSEQ = 60;
 
     my $head = sub {

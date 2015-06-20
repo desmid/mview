@@ -1,5 +1,5 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Search.pm,v 1.11 2015/06/16 16:29:31 npb Exp $
+# Copyright (C) 1997-2006 Nigel P. Brown
+# $Id: Search.pm,v 1.12 2015/06/18 21:26:11 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Search;
@@ -87,20 +87,6 @@ sub map_id {
     my ($self, $ref) = @_;
     $ref = 0  if $ref =~ /query/i;
     $self->SUPER::map_id($ref);
-}
-
-#given a ref to a list of parse() hits, remove any lacking positional data;
-#finally remove the query itself if that's all that's left
-sub discard_empty_ranges {
-    my ($self, $hit) = @_;
-    for (my $i=1; $i<@$hit; $i++) {
-        #warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
-	if (@{$hit->[$i]->{'frag'}} < 1) {
-	    splice(@$hit, $i--, 1);
-	}
-    }
-    pop @$hit  unless @$hit > 1;
-    $self;
 }
 
 

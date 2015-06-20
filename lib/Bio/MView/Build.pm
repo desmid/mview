@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Build.pm,v 1.23 2015/06/16 16:29:31 npb Exp $
+# $Id: Build.pm,v 1.24 2015/06/18 21:26:11 npb Exp $
 
 ######################################################################
 package Bio::MView::Build;
@@ -648,6 +648,20 @@ sub strip_query_gaps {
 	#warn "sqg(out q)=[$$query]\n";
 	#warn "sqg(out h)=[$$sbjct]\n";
     }
+    $self;
+}
+
+#given a ref to a list of parse() hits, remove any that have no positional
+#data, finally removing the query itself if that's all that's left.
+sub discard_empty_ranges {
+    my ($self, $hit, $i) = @_;
+    for ($i=1; $i<@$hit; $i++) {
+#	warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
+	if (@{$hit->[$i]->{'frag'}} < 1) {
+	    splice(@$hit, $i--, 1);
+	}
+    }
+    pop @$hit    unless @$hit > 1;
     $self;
 }
 

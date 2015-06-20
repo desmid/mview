@@ -1,6 +1,6 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: FASTA3X.pm,v 1.6 2015/06/16 17:11:10 npb Exp $
+# $Id: FASTA3X.pm,v 1.7 2015/06/18 21:26:11 npb Exp $
 
 ###########################################################################
 #
@@ -438,7 +438,7 @@ sub parse_body {
 
 	#only read hits already seen in ranking
 	while (1) {
-	    #FASTA3X reports three s-w scores, any might match:
+	    #FASTM3X reports three s-w scores, any might match:
 	    $key = $sum->{'id'} . $sum->{'opt'} . $sum->{'expect'};
 	    last  if exists $hit{$key};
 	    $key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'};
@@ -587,7 +587,7 @@ sub strip_query_gaps {
 
 
 ###########################################################################
-package Bio::MView::Build::Format::FASTA3X::fastf;
+package Bio::MView::Build::Format::FASTA3X::fasts;
 
 use vars qw(@ISA);
 
@@ -595,7 +595,7 @@ use vars qw(@ISA);
 
 
 ###########################################################################
-package Bio::MView::Build::Format::FASTA3X::fasts;
+package Bio::MView::Build::Format::FASTA3X::fastf;
 
 use vars qw(@ISA);
 
