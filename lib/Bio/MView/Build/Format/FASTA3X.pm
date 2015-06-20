@@ -87,15 +87,15 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 1,     'initn',         'initn',      '5N',      ''  ],
-    [ 2,     'init1',         'init1',      '5N',      ''  ],
-    [ 3,     'bits',          'bits',       '7N',      ''  ],
-    [ 4,     'e',             'E-value',    '9N',      ''  ],
-    [ 5,     'sn',            'sn',         '3N',      ''  ],
-    [ 6,     'sl',            'sl',         '3N',      ''  ],
-    [ 7,     'query_orient',  'qy',         '2S',      '?' ],
-    [ 8,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'initn',         'initn',      '5N',      ''  ],
+    [ 2,   2,    'init1',         'init1',      '5N',      ''  ],
+    [ 3,   3,    'bits',          'bits',       '7N',      ''  ],
+    [ 4,   4,    'e',             'E-value',    '9N',      ''  ],
+    [ 5,   5,    'sn',            'sn',         '3N',      ''  ],
+    [ 6,   6,    'sl',            'sl',         '3N',      ''  ],
+    [ 7,   7,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 8,   8,    'sbjct_orient',  'ht',         '2S',      '?' ],
     ]
 }
 
@@ -124,12 +124,12 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 1,     'score',         'S-W',        '5N',      ''  ],
-    [ 2,     'bits',          'bits',       '7N',      ''  ],
-    [ 3,     'expect',        'E-value',    '9N',      ''  ],
-    [ 4,     'query_orient',  'qy',         '2S',      '?' ],
-    [ 5,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'score',         'S-W',        '5N',      ''  ],
+    [ 2,   2,    'bits',          'bits',       '7N',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
+    [ 4,   4,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 5,   5,    'sbjct_orient',  'ht',         '2S',      '?' ],
     ]
 }
 
@@ -142,12 +142,12 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA3X::ssearch);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 1,     'score',         'N-W',        '5N',      ''  ],
-    [ 2,     'bits',          'bits',       '7N',      ''  ],
-    [ 3,     'expect',        'E-value',    '9N',      ''  ],
-    [ 4,     'query_orient',  'qy',         '2S',      '?' ],
-    [ 5,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'score',         'N-W',        '5N',      ''  ],
+    [ 2,   2,    'bits',          'bits',       '7N',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
+    [ 4,   4,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 5,   5,    'sbjct_orient',  'ht',         '2S',      '?' ],
     ]
 }
 

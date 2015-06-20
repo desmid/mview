@@ -12,11 +12,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 1,     'start',         'start',      '8N',       '' ],
-    [ 2,     'size',          'size',       '8N',       '' ],
-    [ 3,     'strand',        'strand',     '6S',       '' ],
-    [ 4,     'srcsize',       'srcsize',    '10S',      '' ],
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'start',         'start',      '8N',       '' ],
+    [ 2,   2,    'size',          'size',       '8N',       '' ],
+    [ 3,   3,    'strand',        'strand',     '6S',       '' ],
+    [ 4,   4,    'srcsize',       'srcsize',    '10S',      '' ],
     ]
 }
 

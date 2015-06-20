@@ -12,8 +12,8 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 0,     'weight',        'weight',     '5N',       '' ],
+    # use? rdb?  key              label         format   default
+    [ 0,   1,    'weight',        'weight',     '5N',       '' ],
     ]
 }
 

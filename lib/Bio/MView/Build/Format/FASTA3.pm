@@ -26,14 +26,14 @@ use vars qw(@ISA);
 #'z-score', 'initn' and 'init1'. The last two are stored, but flagged here
 #with use=0 to ignore them on output.
 sub schema {[
-    # use?   key              label         format   default 
-    [ 0,     'initn',         'initn',      '5N',      ''  ],
-    [ 0,     'init1',         'init1',      '5N',      ''  ],
-    [ 3,     'opt',           'opt',        '5N',      ''  ],
-    [ 4,     'bits',          'bits',       '7N',      ''  ],
-    [ 5,     'expect',        'E-value',    '9N',      ''  ],
-    [ 6,     'query_orient',  'qy',         '2S',      '?' ],
-    [ 7,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    # use? rdb?  key              label         format   default
+    [ 0,   1,    'initn',         'initn',      '5N',      ''  ],
+    [ 0,   2,    'init1',         'init1',      '5N',      ''  ],
+    [ 3,   3,    'opt',           'opt',        '5N',      ''  ],
+    [ 4,   4,    'bits',          'bits',       '7N',      ''  ],
+    [ 5,   5,    'expect',        'E-value',    '9N',      ''  ],
+    [ 6,   6,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 7,   7,    'sbjct_orient',  'ht',         '2S',      '?' ],
     ]
 }
 
@@ -163,7 +163,6 @@ sub parse {
 	'',
 	$query,
 	'',
-        #$class->schema,
 	'',
 	'',
 	'',
@@ -199,7 +198,6 @@ sub parse {
 	    $rank,
 	    $match->{'id'},
 	    $match->{'desc'},
-            #$class->schema,
 	    $match->{'initn'},
 	    $match->{'init1'},
 	    $match->{'opt'},
@@ -270,7 +268,9 @@ sub parse {
 		 $aln->{'sbjct_stop'},
 		);
 
-	    #override sbjct orientation
+	    #override initn, init1, sbjct orientation
+	    $hit[$hit{$key}]->set_val('initn', $sum->{'initn'});
+	    $hit[$hit{$key}]->set_val('init1', $sum->{'init1'});
 	    $hit[$hit{$key}]->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
     }

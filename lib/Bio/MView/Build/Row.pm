@@ -189,8 +189,8 @@ sub save_info {
     return $self  unless defined $schema;
 
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
-        #warn "save: $n $name\n";
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        #warn "save: $name\n";
         $self->{'data'}->{$name} = defined $_[$i] ? $_[$i] : $default;
     }
     $self;
@@ -205,7 +205,7 @@ sub set_val {
     return $self  unless defined $schema;
 
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
         $self->{'data'}->{$name} = $val, return $self  if $key eq $name;
         $self->{'data'}->{$name} = $val, return $self  if $key eq $string;
     }
@@ -226,7 +226,7 @@ sub get_val {
     }
 
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
         return $self->{'data'}->{$name}  if $key eq $name;
         return $self->{'data'}->{$name}  if $key eq $string;
     }
@@ -249,10 +249,10 @@ sub data {
 
     my @tmp = ();
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
-        next  unless $n > 0;  #ignore this datum
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n1 > 0;  #ignore this datum
         my $fmt = &$fmtstr($format);
-        #warn "data:  $n $name\n";
+        #warn "data: $name\n";
         my $data = $self->{'data'}->{$name};
         push(@tmp, sprintf($fmt, $data)),  next  if $self->num;  #data
         push(@tmp, sprintf($fmt, $string))                       #header
@@ -269,10 +269,10 @@ sub rdb_info {
 
     my @tmp = ();
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
-        next  unless $n > 0;  #ignore this datum
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n2 > 0;  #ignore this datum
         my $data = $self->{'data'}->{$name};
-        #warn "rdb:  $n $name\n";
+        #warn "rdb: $name\n";
         push(@tmp, $string), next  if $mode eq 'attr';
         push(@tmp, $format), next  if $mode eq 'form';
         push(@tmp, $data),   next  if $mode eq 'data';

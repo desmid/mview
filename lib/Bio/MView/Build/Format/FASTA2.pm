@@ -24,14 +24,14 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              label         format   default 
-    [ 1,     'initn',         'initn',      '5N',      ''  ],
-    [ 2,     'init1',         'init1',      '5N',      ''  ],
-    [ 3,     'opt',           'opt',        '5N',      ''  ],
-    [ 4,     'zscore',        'z-sc',       '7N',      ''  ],
-    [ 5,     'expect',        'E-value',    '9N',      ''  ],
-    [ 6,     'query_orient',  'qy',         '2S',      '?' ],
-    [ 7,     'sbjct_orient',  'ht',         '2S',      '?' ],
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'initn',         'initn',      '5N',      ''  ],
+    [ 2,   2,    'init1',         'init1',      '5N',      ''  ],
+    [ 3,   3,    'opt',           'opt',        '5N',      ''  ],
+    [ 4,   4,    'zscore',        'z-sc',       '7N',      ''  ],
+    [ 5,   5,    'expect',        'E-value',    '9N',      ''  ],
+    [ 6,   6,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 7,   7,    'sbjct_orient',  'ht',         '2S',      '?' ],
     ]
 }
 
