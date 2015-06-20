@@ -179,7 +179,7 @@ sub parse {
                 next;
             }
     
-    	    $dis = $self->add_display($bld, $aln);
+            $dis = $self->add_display($bld, $aln);
 
 	    if ($loop++ < 1) {
 		$header2 = $bld->header($self->{'quiet'}) . $aln->header($self->{'quiet'});

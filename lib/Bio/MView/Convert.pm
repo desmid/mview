@@ -153,7 +153,7 @@ sub pir_row {
 	$d = $row->posn2; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
 	$s = '.'  if $s eq '';
 	$s;
-    };	
+    };
 
     my $sequence = sub {
 	my ($row, $pad, $gap) = @_;

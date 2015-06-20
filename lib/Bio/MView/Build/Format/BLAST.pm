@@ -21,7 +21,7 @@ sub parser { 'BLAST' }
 
 my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format       default  ]
 

@@ -31,7 +31,7 @@ use vars qw(@ISA);
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'HSSP' }
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format  default ]
      'chain'      => [ [],     undef   ],
