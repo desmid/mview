@@ -244,7 +244,6 @@ sub is_reversed {0}
 
 sub reverse {
     no strict qw(subs);
-    #warn "##################### SEQUENCE REVERSE ###################\n";
     bless $_[0], Bio::MView::Reverse_Sequence;
 }
 
