@@ -185,7 +185,8 @@ sub save_info {
     my $self = shift;
     #warn "save_info: [@_]\n";
 
-    my $schema = $self->schema;
+    my $schema = eval { $self->schema };
+    return $self  unless defined $schema;
 
     for (my $i=0; $i<@$schema; $i++) {
         my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
@@ -200,7 +201,8 @@ sub set_val {
     my ($self, $key, $val) = @_;
     #warn "set_val: [$key => $val]\n";
 
-    my $schema = $self->schema;
+    my $schema = eval { $self->schema };
+    return $self  unless defined $schema;
 
     for (my $i=0; $i<@$schema; $i++) {
         my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
@@ -209,6 +211,27 @@ sub set_val {
     }
     warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
     $self;
+}
+
+#get a row information attribute if in the schema
+sub get_val {
+    my ($self, $key) = @_;
+    #warn "get_val: [$key]\n";
+
+    my $schema = eval { $self->schema };
+
+    if (! defined $schema) {
+        return $self->{$key}  if exists $self->{key};
+        return '';
+    }
+
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
+        return $self->{'data'}->{$name}  if $key eq $name;
+        return $self->{'data'}->{$name}  if $key eq $string;
+    }
+    warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
+    '';
 }
 
 #return a string of formatted row information following the schema
