@@ -75,9 +75,6 @@ sub seq  {                    #the sequence
     return $self->{'seq'}->string
 }
 
-sub head { '' }               #headers for labels
-sub pcid { '' }               #identity %label
-sub pcid_std { 'id%' }        #standard text for identity% label
 sub posn1 { '' }              #first sequence range
 sub posn2 { '' }              #second sequence range
 
@@ -232,6 +229,7 @@ sub data {
         my ($n, $name, $string, $format, $default) = @{$schema->[$i]};
         next  unless $n > 0;  #ignore this datum
         my $fmt = &$fmtstr($format);
+        #warn "data:  $n $name\n";
         my $data = $self->{'data'}->{$name};
         push(@tmp, sprintf($fmt, $data)),  next  if $self->num;  #data
         push(@tmp, sprintf($fmt, $string))                       #header
@@ -258,6 +256,11 @@ sub rdb_info {
     }
     @tmp;
 }
+
+#column labels used in headers and rulers: wrapper for 'sub data'
+sub head {''}           #row info labels
+sub pcid { '' }         #identity% label
+sub pcid_std { 'id%' }  #standard text for identity% label
 
 ###########################################################################
 # output modes

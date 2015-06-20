@@ -26,7 +26,7 @@ use vars qw(@ISA);
 #'z-score', 'initn' and 'init1'. The last two are stored, but flagged here
 #with use=0 to ignore them on output.
 sub schema {[
-    # use?   key              string        format   default 
+    # use?   key              label         format   default 
     [ 0,     'initn',         'initn',      '5N',      ''  ],
     [ 0,     'init1',         'init1',      '5N',      ''  ],
     [ 3,     'opt',           'opt',        '5N',      ''  ],

@@ -87,7 +87,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              string        format   default 
+    # use?   key              label         format   default 
     [ 1,     'initn',         'initn',      '5N',      ''  ],
     [ 2,     'init1',         'init1',      '5N',      ''  ],
     [ 3,     'bits',          'bits',       '7N',      ''  ],
@@ -124,7 +124,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              string        format   default 
+    # use?   key              label         format   default 
     [ 1,     'score',         'S-W',        '5N',      ''  ],
     [ 2,     'bits',          'bits',       '7N',      ''  ],
     [ 3,     'expect',        'E-value',    '9N',      ''  ],
@@ -142,7 +142,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA3X::ssearch);
 
 sub schema {[
-    # use?   key              string        format   default 
+    # use?   key              label         format   default 
     [ 1,     'score',         'N-W',        '5N',      ''  ],
     [ 2,     'bits',          'bits',       '7N',      ''  ],
     [ 3,     'expect',        'E-value',    '9N',      ''  ],

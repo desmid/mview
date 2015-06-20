@@ -24,7 +24,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
 sub schema {[
-    # use?   key              string        format   default 
+    # use?   key              label         format   default 
     [ 1,     'initn',         'initn',      '5N',      ''  ],
     [ 2,     'init1',         'init1',      '5N',      ''  ],
     [ 3,     'opt',           'opt',        '5N',      ''  ],

@@ -206,13 +206,9 @@ sub assemble {
 sub new {
     my $type = shift;
     my ($num, $id, $desc) = (shift, shift, shift);
-
     my $self = new Bio::MView::Build::Row($num, $id, $desc);
-
     bless $self, $type;
-
     $self->save_info(@_);
-    $self;
 }
 
 

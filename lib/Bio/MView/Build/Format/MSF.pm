@@ -4,31 +4,25 @@
 ###########################################################################
 package Bio::MView::Build::Row::MSF;
 
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq, $weight) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    $self->{'weight'} = $weight;
-    bless $self, $type;
+sub schema {[
+    # use?   key              label         format   default 
+    [ 0,     'weight',        'weight',     '5N',       '' ],
+    ]
 }
 
-#could be used in header/ruler
-#sub head { 'weight' }
-#sub pcid { $_[0]->SUPER::pcid_std }
-#sub data  { sprintf("%5s", $_[0]->{'weight'}) }
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'weight'})  if $mode eq 'data';
-    return ('weight')  if $mode eq 'attr';
-    return ('5N')  if $mode eq 'form';
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
+    bless $self, $type;
+    $self->save_info(@_);
 }
 
 
@@ -36,7 +30,6 @@ sub rdb_info {
 package Bio::MView::Build::Format::MSF;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
