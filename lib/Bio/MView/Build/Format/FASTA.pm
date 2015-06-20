@@ -179,7 +179,10 @@ sub posn2 {
     return '';
 }
 
-sub assemble { $_[0]->SUPER::assemble(@_) }
+sub assemble {
+    my $self = shift;
+    $self->SUPER::assemble(@_);
+}
 
 sub new {
     my $type = shift;
