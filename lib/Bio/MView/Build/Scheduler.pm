@@ -25,15 +25,15 @@ use strict;
 # method will return a true value just once, effecting a one-pass scheduler.
 #
 # use Bio::MView::Build::Simple_Scheduler;
-# 
+#
 # $s = new Bio::MView::Build::Simple_Scheduler;
 # $s->next;  #returns each of 1, undef
-# 
+#
 # $s = new Bio::MView::Build::Simple_Scheduler([1,2,3]);
 # $s->next;  #returns each of 1, 2, 3, undef
 # $s->reset;
 # $s->next;  #repeats
-# 
+#
 # $s = new Bio::MView::Build::Simple_Scheduler([1,2,3]);
 # $s->filter([2, 3, 'fred']);
 # $s->next;  #returns each of 2, 3, undef
@@ -50,7 +50,7 @@ sub new {
     $self->{'items'}   = $self->_get_items($items);  #ordered set
     $self->{'todo'}    = undef;                      #values actually wanted
     $self->{'todoidx'} = undef;                      #current todoset index
-    
+
     $self->filter;
 }
 
@@ -212,10 +212,10 @@ use strict;
 # method will return a true value just once, effecting a one-pass scheduler.
 
 # use Bio::MView::Build::Multi_Scheduler;
-# 
+#
 # $s = new Bio::MView::Build::Multi_Scheduler;
 # $s->next;  #returns each of 1, undef
-# 
+#
 # $s = new Bio::MView::Build::Multi_Scheduler([1,2,3]);
 # $s->filter([2, 3, 'fred']);
 # $s->next;  #returns each of 2, 3, undef

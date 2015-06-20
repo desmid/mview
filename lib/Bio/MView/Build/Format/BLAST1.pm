@@ -68,14 +68,6 @@ sub schema {[
     ]
 }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc) = splice @_, 0, 3;
-    my $self = new Bio::MView::Build::Row::BLAST($num, $id, $desc);
-    bless $self, $type;
-    $self->save_info(@_);
-}
-
 
 ###########################################################################
 package Bio::MView::Build::Row::BLAST1::blastp;

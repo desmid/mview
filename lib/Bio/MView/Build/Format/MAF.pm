@@ -20,14 +20,6 @@ sub schema {[
     ]
 }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    bless $self, $type;
-    $self->save_info(@_);
-}
-
 sub pcid { $_[0]->SUPER::pcid_std }
 
 sub head {
@@ -53,7 +45,7 @@ use vars qw(@ISA);
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'MAF' }
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format  default ]
      'block'      => [ [],     undef   ],
@@ -117,7 +109,7 @@ sub parse {
     foreach my $row (@{$self->{'parsed'}->{'row'}}) {
 
 	$rank++;
-        
+
 	#check row wanted, by rank OR identifier OR row count limit
         $use = $self->use_row($rank, $rank, $row->{'id'});
 
@@ -129,12 +121,11 @@ sub parse {
 	push @hit, new Bio::MView::Build::Row::MAF($rank,
 						   $row->{'id'},
 						   '',
-						   $row->{'seq'},
 						   $row->{'start'},
 						   $row->{'size'},
 						   $row->{'strand'},
-						   $row->{'srcsize'},
-	    );
+						   $row->{'srcsize'});
+        $hit[$#hit]->add_frag($row->{'seq'});
     }
     #map { $_->print } @hit;
 

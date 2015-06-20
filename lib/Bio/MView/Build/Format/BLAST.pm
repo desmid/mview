@@ -24,22 +24,22 @@ my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
 my %Known_Parameters = 
     (
      #name        => [ format       default  ]
-                                                   
+
      #BLAST* display various HSP selections
      'hsp'        => [ '\S+',       'ranked' ],
 
-     #BLAST* (version 1)                                           
+     #BLAST* (version 1)
      'maxpval'    => [ $RX_Ureal,   undef    ],
      'minscore'   => [ '\d+',       undef    ],
-                                            
-     #BLAST* (version 2)                                    
+
+     #BLAST* (version 2)
      'maxeval'    => [ $RX_Ureal,   undef    ],
      'minbits'    => [ '\d+',       undef    ],
      'cycle'      => [ [],          undef    ],
-        
+
      #BLASTN (version 1, version 2); BLASTX (version 2)
      'strand'     => [ [],          undef    ],
-        
+
      #BLASTX/TBLASTX (version 1)
     );
 
@@ -150,7 +150,7 @@ sub subheader {
     } else {
 	$s .= "HSP processing: ranked\n";
     }
-    $s;    
+    $s;
 }
 
 #override base class method to process query row differently
@@ -224,7 +224,7 @@ sub sort {
 
 #     #processing steps:
 #     #  (1) assemble frags
-   
+
 #     $self->SUPER::assemble(@_);
 # }
 
@@ -247,7 +247,7 @@ sub sort {
 #     #  (4) reverse assembly
 #     #if query +
 #     #  (1) assemble frags
-    
+
 #     $self->SUPER::assemble(@_);
 # }
 
@@ -272,7 +272,7 @@ sub sort {
 #     #if query +
 #     #  (1) convert to protein units
 #     #  (2) assemble frags
-    
+
 #     foreach my $frag (@{$self->{'frag'}}) {
 #         ($frag->[1], $frag->[2]) =
 #             $self->translate_range($frag->[1], $frag->[2]);
@@ -293,7 +293,7 @@ sub sort {
 
 #     #processing steps:
 #     #  (1) assemble frags
-    
+
 #     $self->SUPER::assemble(@_);
 # }
 
@@ -318,7 +318,7 @@ sub sort {
 #     #if query +
 #     #  (1) convert to protein units
 #     #  (2) assemble frags
-    
+
 #     foreach my $frag (@{$self->{'frag'}}) {
 #         ($frag->[1], $frag->[2]) =
 #             $self->translate_range($frag->[1], $frag->[2]);

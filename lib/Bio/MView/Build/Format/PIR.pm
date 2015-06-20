@@ -33,11 +33,11 @@ sub parse {
 
 	#warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Row($rank,
-					      $rec->{'id'},
-					      $rec->{'desc'},
-					      $rec->{'seq'},
-					     );
+	push @hit, new Bio::MView::Build::Simple_Row($rank,
+                                                     $rec->{'id'},
+                                                     $rec->{'desc'},
+                                                     $rec->{'seq'},
+            );
     }
     #map { $_->print } @hit;
 

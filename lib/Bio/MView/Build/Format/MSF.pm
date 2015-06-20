@@ -17,14 +17,6 @@ sub schema {[
     ]
 }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    bless $self, $type;
-    $self->save_info(@_);
-}
-
 
 ###########################################################################
 package Bio::MView::Build::Format::MSF;
@@ -60,12 +52,8 @@ sub parse {
 	$wgt = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id}->{'weight'};
 	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::MSF($rank,
-						   $id,
-						   '',
-						   $seq,
-						   $wgt,
-						  );
+	push @hit, new Bio::MView::Build::Row::MSF($rank, $id, '', $wgt);
+        $hit[$#hit]->add_frag($seq);
     }
     #map { $_->print } @hit;
 

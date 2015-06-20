@@ -30,7 +30,7 @@ sub parse {
     last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
     next  unless $use;
     $seq = $aln->get_query;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     #no special subtype: use default
     push @hit, $row;
 
@@ -39,7 +39,7 @@ sub parse {
     last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
     next  unless $use;
     $seq = $aln->get_align;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
@@ -48,7 +48,7 @@ sub parse {
     last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
     next  unless $use;
     $seq = $aln->get_conf;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.conf');    #override the default
     push @hit, $row;
 
@@ -57,7 +57,7 @@ sub parse {
     last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
     next  unless $use;
     $seq = $aln->get_final;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 

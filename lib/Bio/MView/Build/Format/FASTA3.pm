@@ -136,7 +136,7 @@ sub parse {
     #if this is a pre-3.3 fasta call the old FASTA2 parser
     if ($match->{'version'} =~ /^3\.(\d+)/ and $1 < 3) {
 	require Bio::MView::Build::Format::FASTA2;
-	my $class = "Bio::MView::Build::Format::FASTA2::$rtype";	
+	my $class = "Bio::MView::Build::Format::FASTA2::$rtype";
 	bless $self, $class;
 	return $self->parse(@_);
     }

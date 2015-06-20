@@ -74,14 +74,6 @@ sub schema {[
     ]
 }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc) = splice @_, 0, 3;
-    my $self = new Bio::MView::Build::Row::BLAST($num, $id, $desc);
-    bless $self, $type;
-    $self->save_info(@_);
-}
-
 
 ###########################################################################
 package Bio::MView::Build::Row::BLAST2::blastp;
@@ -168,7 +160,7 @@ sub subheader {
     return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Search cycle: " . $self->cycle . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
@@ -183,7 +175,7 @@ sub parse {
 
     #search doesn't exist?
     return  unless defined $self->{'cycle_ptr'};
-    
+
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
 
@@ -191,7 +183,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return  unless defined $ranking; 
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastp
 	(
@@ -271,7 +263,7 @@ sub parse_hits_all {
 	my ($n, $score, $e) = (0, 0, -1);
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -330,18 +322,18 @@ sub parse_hits_ranked {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #ignore more than one fragment: assumes first was best
 	    last  unless $hit->[$idx->{$sum->{'id'}}]->count_frag < 1;
 
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
 		  $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
-	    
+	
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
                   $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -392,7 +384,7 @@ sub parse_hits_discrete {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    $key = $match->{'index'} . '.' . $aln->{'index'};
 
 	    #apply row filter with new row numbers
@@ -419,7 +411,7 @@ sub parse_hits_discrete {
 
 	    #for WashU blast2 gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
-	    
+	
 	    $hit->[0]->add_frag
 		(
 		 $aln->{'query'},
@@ -464,7 +456,7 @@ sub subheader {
     return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
@@ -487,7 +479,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return  unless defined $ranking; 
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastn
 	(
@@ -501,7 +493,7 @@ sub parse {
 	 $self->strand,         #query orientation
 	 '?',                   #sbjct orientation (none)
         );
-    
+
     #extract hits and identifiers from the ranking
     foreach $match (@{$ranking->{'hit'}}) {
 
@@ -668,7 +660,7 @@ sub parse_hits_ranked {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	#we don't know which hit orientation was chosen for the ranking
-	#since BLASTN neglects to tell us. it is conceivable that two sets 
+	#since BLASTN neglects to tell us. it is conceivable that two sets
 	#of hits in each orientation could have the same frag 'n' count.
 	#gather both, then decide which the ranking refers to.
 	@tmp = (); foreach $aln ($match->parse(qw(ALN))) {
@@ -703,7 +695,7 @@ sub parse_hits_ranked {
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
                   $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -760,11 +752,11 @@ sub parse_hits_discrete {
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
 	    $key = $match->{'index'} . '.' . $aln->{'index'};
-	    
+	
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key, $sum->{'id'},
 					$aln->{'bits'}, $aln->{'expect'});
-	    
+	
 	    if (! exists $idx->{$key}) {
 		
 		push @$hit, new Bio::MView::Build::Row::BLAST2::blastn
@@ -830,14 +822,14 @@ sub subheader {
     return $s    if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
     my $self = shift;
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
-    
+
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
@@ -845,7 +837,7 @@ sub parse {
 
     #search doesn't exist?
     return  unless defined $self->{'cycle_ptr'};
-    
+
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
 
@@ -853,7 +845,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return  unless defined $ranking; 
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST2::blastx
 	(
@@ -933,7 +925,7 @@ sub parse_hits_all {
 	my ($n, $score, $e) = (0, 0, -1);
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #ignore other query strand orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
@@ -998,7 +990,7 @@ sub parse_hits_ranked {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #ignore more than one fragment: assumes first was best
 	    last  unless $hit->[$idx->{$sum->{'id'}}]->count_frag < 1;
 
@@ -1008,11 +1000,11 @@ sub parse_hits_ranked {
 	    #ignore higher e-value than ranked
 	    next  unless $self->compare_e($aln->{'expect'},
                   $hit->[$idx->{$sum->{'id'}}]->get_val('expect'), 2) < 1;
-	    
+	
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
                   $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -1050,7 +1042,7 @@ sub parse_hits_ranked {
     }
     $self;
 }
-    
+
 sub parse_hits_discrete {
     my ($self, $hit, $idx) = @_;
     my ($match, $sum, $aln, $key);
@@ -1065,7 +1057,7 @@ sub parse_hits_discrete {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #process by query orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
@@ -1143,7 +1135,7 @@ sub parse {
     my $self = shift;
     my ($match, $ranking, $sum, $aln, $key);
     my ($rank, $use, %idx, @hit) = (0);
-    
+
     #all done?
     return  unless defined $self->{scheduler}->next;
 
@@ -1151,7 +1143,7 @@ sub parse {
 
     #search doesn't exist?
     return  unless defined $self->{'cycle_ptr'};
-    
+
     #identify the query itself
     $match = $self->{'entry'}->parse(qw(HEADER));
 
@@ -1159,7 +1151,7 @@ sub parse {
     $ranking = $self->{'cycle_ptr'}->parse(qw(RANK));
 
     #empty ranking?
-    return  unless defined $ranking; 
+    return  unless defined $ranking;
 
     push @hit, new Bio::MView::Build::Row::BLAST2::tblastn
 	(
@@ -1239,7 +1231,7 @@ sub parse_hits_all {
 	my ($n1,$n2, $score1,$score2, $e1,$e2) = (0,0,  0,0, -1,-1);
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -1355,7 +1347,7 @@ sub parse_hits_ranked {
 	}
 
 	foreach $aln (@tmp) {
-	    
+	
 	    #ignore more than one fragment: assumes first was best
 	    last  unless $hit->[$idx->{$sum->{'id'}}]->count_frag < 1;
 
@@ -1369,7 +1361,7 @@ sub parse_hits_ranked {
 	    #ignore lower score than ranked
 	    next  unless $self->compare_bits($aln->{'bits'},
                   $hit->[$idx->{$sum->{'id'}}]->get_val('bits'), 2) >= 0;
-	    
+	
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -1423,13 +1415,13 @@ sub parse_hits_discrete {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    $key = $match->{'index'} . '.' . $aln->{'index'};
 
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key, $sum->{'id'},
 					$aln->{'bits'}, $aln->{'expect'});
-	    
+	
 	    if (! exists $idx->{$key}) {
 		
 		push @$hit, new Bio::MView::Build::Row::BLAST2::tblastn
@@ -1500,7 +1492,7 @@ sub subheader {
     return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
@@ -1537,7 +1529,7 @@ sub parse {
 	 $self->strand,         #query orientation
 	 '?',                   #sbjct orientation
 	);
-    
+
     #extract hits and identifiers from the ranking
     foreach $match (@{$ranking->{'hit'}}) {
 
@@ -1603,7 +1595,7 @@ sub parse_hits_all {
 	my ($n1,$n2, $score1,$score2, $e1,$e2) = (0,0,  0,0, -1,-1);
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #process by query orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
@@ -1671,7 +1663,7 @@ sub parse_hits_all {
 		 $aln->{'bits'},
 		 $aln->{'sbjct_orient'},    #unused
 		);
-	    
+	
 	}
 
 	#override row data (hit + orientation)
@@ -1725,7 +1717,7 @@ sub parse_hits_ranked {
 	}
 
 	foreach $aln (@tmp) {
-	    
+	
 	    #ignore more than one fragment: assumes first was best
 	    last  unless $hit->[$idx->{$sum->{'id'}}]->count_frag < 1;
 
@@ -1742,7 +1734,7 @@ sub parse_hits_ranked {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
-	    
+	
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
@@ -1793,7 +1785,7 @@ sub parse_hits_discrete {
 	next  unless exists $idx->{$sum->{'id'}};
 
 	foreach $aln ($match->parse(qw(ALN))) {
-	    
+	
 	    #process by query orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
@@ -1802,7 +1794,7 @@ sub parse_hits_discrete {
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key, $sum->{'id'},
 					$aln->{'bits'}, $aln->{'expect'});
-	    
+	
 	    if (! exists $idx->{$key}) {
 		
 		push @$hit, new Bio::MView::Build::Row::BLAST2::tblastx

@@ -220,7 +220,7 @@ sub msf {
         $s .= "!!NA_MULTIPLE_ALIGNMENT 1.0\n";
     }
     $s .= "PileUp (MView)\n\n";
-    $s .= sprintf("   MSF: %5d  Type: %s  %s  Check: %4d  ..\n\n", 
+    $s .= sprintf("   MSF: %5d  Type: %s  %s  Check: %4d  ..\n\n",
           $aln->length, ($self->{'moltype'} eq 'aa' ? 'P' : 'N'), $now, 0);
 
     my $w = 0;
@@ -232,7 +232,7 @@ sub msf {
     foreach my $r ($aln->visible_ids) {
         $s .=
             sprintf(" Name: %-${w}s Len: %5d  Check: %4d  Weight:  %4.2f\n",
-                    $bld->uid2row($r)->cid, $aln->length, 
+                    $bld->uid2row($r)->cid, $aln->length,
                     &$checksum(\$bld->uid2row($r)->seq), 1.0);
     }
     $s .= "\n//\n\n";

@@ -17,14 +17,6 @@ sub schema {[
     ]
 }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq) = splice @_, 0, 4;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    bless $self, $type;
-    $self->save_info(@_);
-}
-
 
 ###########################################################################
 package Bio::MView::Build::Format::HSSP;
@@ -97,9 +89,9 @@ sub parse {
 	 '',
 	 $head->{'pdbid'},
 	 $head->{'header'},
-	 $align->get_query($self->chain),
 	 $self->chain,
 	);
+    $hit[$#hit]->add_frag($align->get_query($self->chain));
 
     #extract cumulative scores and identifiers from the ranking and
     #corresponding sequences from the already parsed alignment.
@@ -133,13 +125,11 @@ sub parse {
 
 	$seq =~ tr/ /-/;    #replace spaces with hyphens
 
-	push @hit, new Bio::MView::Build::Row::HSSP(
-						    $rank,
-						    $id,
+	push @hit, new Bio::MView::Build::Row::HSSP($rank,
+                                                    $id,
 						    $match->{'protein'},
-						    $seq,
-						    $self->chain,
-						   );
+						    $self->chain);
+        $hit[$#hit]->add_frag($seq);
     }
     #map { $_->print } @hit;
 

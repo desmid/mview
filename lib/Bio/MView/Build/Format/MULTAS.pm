@@ -15,7 +15,7 @@ use vars qw(@ISA);
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'MULTAS' }
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format  default ]
      'block'      => [ [],     undef   ],
@@ -37,7 +37,7 @@ sub initialise_child {
 
     $self->{scheduler} = new Bio::MView::Build::Scheduler([1..$last]);
 
-    $self->{'parsed'} = undef;  #ref to parsed block   
+    $self->{'parsed'} = undef;  #ref to parsed block
 
     $self;
 }
@@ -93,7 +93,7 @@ sub parse {
 
 	#warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Row($rank+1, $id, $desc, $seq);
+	push @hit, new Bio::MView::Build::Simple_Row($rank+1, $id, $desc, $seq);
     }
     #map { $_->print } @hit;
 

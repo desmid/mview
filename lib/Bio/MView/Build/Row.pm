@@ -14,7 +14,7 @@ my $DEF_GAP = '-';       #default internal gap character
 
 sub new {
     my $type = shift;
-    my ($num, $id, $desc, $seq) = (@_, undef);
+    my ($num, $id, $desc) = splice @_, 0, 3;
     my $self = {};
 
     bless $self, $type;
@@ -43,11 +43,11 @@ sub new {
 
     $self->{'seq'}  = new Bio::MView::Sequence; #finished sequence
 
-    $self->add_frag($seq)    if defined $seq;
-
     $self->{'url'}  = Bio::SRS::srsLink($self->{'cid'});  #url
 
-    $self->{'data'} = {};                       #other parsed data
+    $self->{'data'} = {};                       #other parsed info
+
+    $self->save_info(@_);
 
     $self;
 }
@@ -298,6 +298,24 @@ sub rdb_row {
 
     #warn "[@cols]";
     return join("\t", @cols);
+}
+
+
+###########################################################################
+package Bio::MView::Build::Simple_Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row);
+
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq) = @_;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc);
+    bless $self, $type;
+    $self->add_frag($seq)  if defined $seq;
+    $self;
 }
 
 

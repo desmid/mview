@@ -25,7 +25,7 @@ use vars qw(@ISA);
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'FASTA' }
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format  default ]
      'minopt'     => [ '\d+',  undef   ],
@@ -131,7 +131,7 @@ sub strip_query_gaps {
             }
         }
     };
-    
+
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
 
@@ -182,14 +182,6 @@ sub posn2 {
 sub assemble {
     my $self = shift;
     $self->SUPER::assemble(@_);
-}
-
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc) = (shift, shift, shift);
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    bless $self, $type;
-    $self->save_info(@_);
 }
 
 

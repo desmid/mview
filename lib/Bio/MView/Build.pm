@@ -41,7 +41,7 @@ my %Template =
      'gap'         => undef,   #output sequence gap character
     );
 
-my %Known_Parameters = 
+my %Known_Parameters =
     (
      #name        => [ format,     default   ]
      'topn'       => [ '\d+',      0         ],
