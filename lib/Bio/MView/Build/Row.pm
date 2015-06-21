@@ -130,7 +130,7 @@ sub add_frag {
 
     push @{$self->{'frag'}}, [ \$frag, $qry_from, $qry_to, @_ ];
 
-    #warn "@{$self->{'frag'}->[ $#{$self->{'frag'}} ]}\n";
+    #warn "@{$self->{'frag'}->[-1]}\n";
 
     $self;
 }
