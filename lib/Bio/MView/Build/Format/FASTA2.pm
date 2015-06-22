@@ -103,86 +103,87 @@ sub subheader {
 
 sub parse {
     my $self = shift;
-    my ($match, $sum, $aln, $query, $key);
-    my ($rank, $use, %hit, @hit) = (0);
 
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
 
-    if ($match->{'query'} ne '') {
-	$query = $match->{'query'};
-    } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
+    #fasta run with no hits
+    my $rankparse = $self->{'entry'}->parse(qw(RANK));
+
+    return []  unless defined $rankparse;
+
+    my $query = 'Query';
+    if ($header->{'query'} ne '') {
+	$query = $header->{'query'};
+    } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
 	$query = $1;
-    } else {
-	$query = 'Query';
     }
 
-    #the actual Row subclass to build
+    my $coll = new Bio::MView::Build::Search::Collector($self);
+
     my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
     my $class = "Bio::MView::Build::Row::FASTA2::$rtype";
 
-    push @hit, new $class(
-	 '',
-	 $query,
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
-	 $self->strand,
-	 '',
-	);
+    $coll->insert((new $class(
+                       '',
+                       $query,
+                       '',
+                       '',
+                       '',
+                       '',
+                       '',
+                       '',
+                       $self->strand,
+                       '',
+                   )));
 
-    #extract cumulative scores and identifiers from the ranking
-    foreach $match (@{$self->{'entry'}->parse(qw(RANK))->{'hit'}}) {
+    #extract hits and identifiers from the ranking
+    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
 
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'opt'});
+	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
 
 	last  if $use < 0;
 	next  if $use < 1;
 
-	#warn "KEEP: ($rank,$match->{'id'})\n";
+	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'};
+	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'});
 
-	push @hit, new $class(
-	     $rank,
-	     $match->{'id'},
-	     $match->{'desc'},
-	     $match->{'initn'},
-	     $match->{'init1'},
-	     $match->{'opt'},
-	     $match->{'zscore'},
-	     $match->{'expect'},
-	     $self->strand,
-	     '',
-	    );
-	$hit{$key} = $#hit;
+	$coll->insert((new $class(
+                           $rank,
+                           $hit->{'id'},
+                           $hit->{'desc'},
+                           $hit->{'initn'},
+                           $hit->{'init1'},
+                           $hit->{'opt'},
+                           $hit->{'zscore'},
+                           $hit->{'expect'},
+                           $self->strand,
+                           '',
+                       )),
+                      $key
+            );
     }
 
     #pull out each hit
-    foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
+    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
 
 	#first the summary
-	$sum = $match->parse(qw(SUM));
+	my $sum = $match->parse(qw(SUM));
 
-	$key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'};
+        my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'expect'});
 
 	#only read hits already seen in ranking
-	next  unless exists $hit{$key};
-
-	#override description
-        $hit[$hit{$key}]->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	next  unless $coll->has($key);
 
 	#then the individual matched fragments
-	foreach $aln ($match->parse(qw(ALN))) {
+	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
             next  unless $self->use_strand($aln->{'query_orient'});
@@ -194,41 +195,28 @@ sub parse {
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 	    
-	    $hit[0]->add_frag
-		(
-		 $aln->{'query'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 0,
-		 0,
-		);
-	    
-	    $hit[$hit{$key}]->add_frag
-		(
-		 $aln->{'sbjct'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'sbjct_start'},
-		 $aln->{'sbjct_stop'},
-		);
+            $coll->add_frags(
+                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                    $aln->{'query'},
+                    $aln->{'query_start'},
+                    $aln->{'query_stop'},
+                ], [
+                    $aln->{'sbjct'},
+                    $aln->{'sbjct_start'},
+                    $aln->{'sbjct_stop'},
+                ]);
 
 	    #override sbjct orientation
-	    $hit[$hit{$key}]->set_val('sbjct_orient', $aln->{'sbjct_orient'});
+	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
+	#override description
+        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
     }
-
-    $self->discard_empty_ranges(\@hit);
 
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
-    #map { $_->print; print "\n" } @hit;
-
-    return \@hit;
+    return $coll->list;
 }
 
 
@@ -257,88 +245,89 @@ use vars qw(@ISA);
 
 sub parse {
     my $self = shift;
-    my ($match, $sum, $aln, $query, $key);
-    my ($rank, $use, %hit, @hit) = (0);
 
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
 
-    if ($match->{'query'} ne '') {
-	$query = $match->{'query'};
-    } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
+    #fasta run with no hits
+    my $rankparse = $self->{'entry'}->parse(qw(RANK));
+
+    return []  unless defined $rankparse;
+
+    my $query = 'Query';
+    if ($header->{'query'} ne '') {
+	$query = $header->{'query'};
+    } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
 	$query = $1;
-    } else {
-	$query = 'Query';
     }
 
-    #the actual Row subclass to build
+    my $coll = new Bio::MView::Build::Search::Collector($self);
+
     my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
     my $class = "Bio::MView::Build::Row::FASTA2::$rtype";
 
-    push @hit, new $class(
-        '',
-        $query,
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        $self->strand,
-        '',
-	);
+    $coll->insert((new $class(
+                       '',
+                       $query,
+                       '',
+                       '',
+                       '',
+                       '',
+                       '',
+                       '',
+                       $self->strand,
+                       '',
+                   )));
     
-    #extract cumulative scores and identifiers from the ranking
-    foreach $match (@{$self->{'entry'}->parse(qw(RANK))->{'hit'}}) {
+    #extract hits and identifiers from the ranking
+    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
 
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	$use = $self->use_row($rank, $rank, $match->{'id'}, $match->{'opt'});
+	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
 
 	last  if $use < 0;
 	next  if $use < 1;
 
-	#warn "KEEP: ($rank,$match->{'id'})\n";
+	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'} . 
-	    lc $match->{'orient'};
-	
-	push @hit, new $class(
-            $rank,
-            $match->{'id'},
-            $match->{'desc'},
-            $match->{'initn'},
-            $match->{'init1'},
-            $match->{'opt'},
-            $match->{'zscore'},
-            $match->{'expect'},
-            $self->strand,
-            $match->{'orient'},
-	    );
-	$hit{$key} = $#hit;
+	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'},
+                             lc $hit->{'orient'});
+
+	$coll->insert((new $class(
+                           $rank,
+                           $hit->{'id'},
+                           $hit->{'desc'},
+                           $hit->{'initn'},
+                           $hit->{'init1'},
+                           $hit->{'opt'},
+                           $hit->{'zscore'},
+                           $hit->{'expect'},
+                           $self->strand,
+                           $hit->{'orient'},
+                       )),
+                      $key
+            );
     }
 
     #pull out each hit
-    foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
+    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
 
 	#first the summary
-	$sum = $match->parse(qw(SUM));
+	my $sum = $match->parse(qw(SUM));
 
-	$key = $sum->{'id'} . $sum->{'initn'} . $sum->{'expect'} .
-	    lc $sum->{'orient'};
+	my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'expect'},
+                             lc $sum->{'orient'});
 
 	#only read hits accepted in ranking
-	next  unless exists $hit{$key};
-
-	#override description
-        $hit[$hit{$key}]->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	next  unless $coll->has($key);
 
 	#then the individual matched fragments
-	foreach $aln ($match->parse(qw(ALN))) {
+	foreach my $aln ($match->parse(qw(ALN))) {
 
             next  unless $self->use_strand($aln->{'query_orient'});
 
@@ -349,38 +338,25 @@ sub parse {
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 	    
-	    $hit[0]->add_frag
-		(
-		 $aln->{'query'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 0,
-		 0,
-		);
-	    
-	    $hit[$hit{$key}]->add_frag
-		(
-		 $aln->{'sbjct'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'sbjct_start'},
-		 $aln->{'sbjct_stop'},
-		);
+            $coll->add_frags(
+                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                    $aln->{'query'},
+                    $aln->{'query_start'},
+                    $aln->{'query_stop'},
+                ], [
+                    $aln->{'sbjct'},
+                    $aln->{'sbjct_start'},
+                    $aln->{'sbjct_stop'},
+                ]);
 	}
+	#override description
+        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
     }
-
-    $self->discard_empty_ranges(\@hit);
 
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
-    #map { $_->print } @hit;
-
-    return \@hit;
+    return $coll->list;
 }
 
 
