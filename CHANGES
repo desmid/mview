@@ -3,6 +3,8 @@
 Version 1.58.1  2015-06-20
   Patched filepaths to work on Windows systems, thanks to Steven Sullivan.
   Fixed bug in PIR output that inserted wrong terminal gap character.
+  Fixed bug in CLUSTAL convervation that miscalculated column positions for
+    some BLAST or FASTA searches.
 
 Version 1.58  2015-06-14
   Added CLUSTAL/aln output mode.
