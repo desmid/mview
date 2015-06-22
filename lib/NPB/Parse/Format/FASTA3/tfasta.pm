@@ -99,7 +99,7 @@ sub new {
 	   \s+
 	   \[(\S)\]             #frame
 	   \s+
-	   (\d+)                #headed 'initn' but actually 'init1'
+	   (\d+)                #headed 'initn' but actually 'opt'
 	   \s+
 	   (\S+)                #headed 'init1' but actually 'bits'
 	   \s+
@@ -117,8 +117,8 @@ sub new {
 		  'frame'  => NPB::Parse::Format::FASTA::parse_frame($4),
 		  'orient' => NPB::Parse::Format::FASTA::parse_orient($4),
 		  'initn'  => '',
-		  'init1'  => $5,
-		  'opt'    => '',
+		  'init1'  => '',
+		  'opt'    => $5,
 		  'bits'   => $6,
 		  'zscore' => '',
 		  'expect' => $7,
