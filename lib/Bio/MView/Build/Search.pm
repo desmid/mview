@@ -85,10 +85,77 @@ sub map_id {
     $self->SUPER::map_id($ref);
 }
 
-#given a ref to a list of parse() hits, remove any lacking positional data;
-#finally remove the query itself if that's all that's left
-sub discard_empty_ranges {
-    my ($self, $hit) = @_;
+
+###########################################################################
+package Bio::MView::Build::Search::Collector;
+
+my $QUERY = 0;
+my $DELIM = '.';
+
+sub new {
+    my $type = shift;
+    my $self = {};
+    bless $self, $type;
+
+    $self->{parent} = shift;
+    $self->{keys} = {};
+    $self->{list} = [];
+
+    $self;
+}
+
+sub key {
+    my $self = shift;
+    join($DELIM, @_);
+}
+
+sub insert {
+    my ($self, $item) = (shift, shift);
+    push @_, $QUERY  unless @_;
+    foreach my $key (@_) {
+        #allow this
+        #warn "insert: key already exists '$key'\n"
+        #    if exists $self->{keys}->{$key};
+        $self->{keys}->{$key} = scalar @{$self->{list}};
+    }
+    push @{$self->{list}}, $item;
+    $self;
+}
+
+sub has {
+    my ($self, $key) = @_;
+    return 1  if exists $self->{keys}->{$key};
+    return 0;
+}
+
+sub item {
+    my ($self, $key) = @_;
+    die "get: unknown key '$key'\n"  unless exists $self->{keys}->{$key};
+    $self->{list}->[ $self->{keys}->{$key} ];
+}
+
+sub add_frags {
+    my ($self, $key, $qf, $qt, $qdata, $hdata) = @_;
+    my ($q, $q1, $q2, @qrest) = @$qdata;
+    #warn "[$q1, $q2, @qrest]\n";
+    $self->item($QUERY)->add_frag($q, $qf,$qt, $q1,$q2, 0,0, @qrest);
+    my ($h, $h1, $h2, @hrest) = @$hdata;
+    #warn "[$h1, $h2, @hrest]\n";
+    $self->item($key)->add_frag($h, $qf,$qt, $q1,$q2, $h1,$h2, @hrest);
+    $self;
+}
+
+sub list {
+    my $self = shift;
+    $self->_discard_empty_ranges;
+    $self->{list};
+}
+
+#remove hits lacking positional data; finally remove the query itself if
+#that's all that's left
+sub _discard_empty_ranges {
+    my $self = shift;
+    my $hit = $self->{list};
     for (my $i=1; $i<@$hit; $i++) {
         #warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
 	if (@{$hit->[$i]->{'frag'}} < 1) {
@@ -97,6 +164,16 @@ sub discard_empty_ranges {
     }
     pop @$hit  unless @$hit > 1;
     $self;
+}
+
+sub dump {
+    my $self = shift;
+    warn "Collector:\n";
+    warn "keys: @{[scalar keys %{$self->{keys}}]} list: @{[scalar @{$self->{list}}]}\n";
+    foreach my $k (sort { $self->{keys}->{$a} <=> $self->{keys}->{$b} } keys %{$self->{keys}}) {
+        my $i = $self->{keys}->{$k};
+        warn "[$self->{keys}->{$k}] <= $k => $self->{list}->[$i]\n";
+    }
 }
 
 

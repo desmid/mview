@@ -198,140 +198,59 @@ sub posn2 {
     return '';
 }
 
-#fragment sort(worst to best): 1) increasing score, 2) increasing length
-sub sort {
-    $_[0]->{'frag'} =
-	[
-	 sort {
-	     my $c = $a->[7] <=> $b->[7];                   #compare score
-	     return $c  if $c != 0;
-	     return length($a->[0]) <=> length($b->[0]);    #compare length
-	 } @{$_[0]->{'frag'}}
-	];
+sub sort { $_[0]->sort_worst_to_best }
+
+#don't sort fragments: take them in discovery/insert order
+sub sort_none {$_[0]}
+
+#sort fragments: (1) increasing score, (2) increasing length; used by
+#Row::assemble(); as originally used up to MView version 1.58.1
+sub sort_worst_to_best {
+    $_[0]->{'frag'} = [
+        sort {
+            my $c = $a->[7] <=> $b->[7];                 #compare score
+            return $c  if $c != 0;
+            return length($a->[0]) <=> length($b->[0]);  #compare length
+        } @{$_[0]->{'frag'}}
+       ];
     $_[0];
 }
 
-# sub assemble_blastp {
-#     my $self = shift;
-
-#     #query:     protein
-#     #database:  protein
-#     #alignment: protein x protein
-#     #query numbered in protein units
-#     #sbjct numbered in protein units
-#     #query orientation: +
-#     #sbjct orientation: +
-
-#     #processing steps:
-#     #  (1) assemble frags
-
-#     $self->SUPER::assemble(@_);
-# }
-
-# sub assemble_blastn {
-#     my $self = shift;
-
-#     #query:     dna
-#     #database:  dna
-#     #alignment: dna x dna
-#     #query numbered in dna units
-#     #sbjct numbered in dna units
-#     #query orientation: +-
-#     #sbjct orientation: +-
-
-#     #processing steps:
-#     #if query -
-#     #  (1) reverse assembly position numbering
-#     #  (2) reverse each frag
-#     #  (3) assemble frags
-#     #  (4) reverse assembly
-#     #if query +
-#     #  (1) assemble frags
-
-#     $self->SUPER::assemble(@_);
-# }
-
-# sub assemble_blastx {
-#     my $self = shift;
-
-#     #query:     dna
-#     #database:  protein
-#     #alignment: protein x protein
-#     #query numbered in dna units
-#     #sbjct numbered in protein units
-#     #query orientation: +-
-#     #sbjct orientation: +
-
-#     #processing steps:
-#     #if query -
-#     #  (1) convert to protein units
-#     #  (2) reverse assembly position numbering
-#     #  (3) reverse each frag
-#     #  (4) assemble frags
-#     #  (5) reverse assembly
-#     #if query +
-#     #  (1) convert to protein units
-#     #  (2) assemble frags
-
-#     foreach my $frag (@{$self->{'frag'}}) {
-#         ($frag->[1], $frag->[2]) =
-#             $self->translate_range($frag->[1], $frag->[2]);
-#     }
-#     $self->SUPER::assemble(@_);
-# }
-
-# sub assemble_tblastn {
-#     my $self = shift;
-
-#     #query:     protein
-#     #database:  dna
-#     #alignment: protein x protein
-#     #query numbered in protein units
-#     #sbjct numbered in dna units
-#     #query orientation: +
-#     #sbjct orientation: +-
-
-#     #processing steps:
-#     #  (1) assemble frags
-
-#     $self->SUPER::assemble(@_);
-# }
-
-# sub assemble_tblastx {
-#     my $self = shift;
-
-#     #query:     dna
-#     #database:  dna
-#     #alignment: protein x protein
-#     #query numbered in dna units
-#     #sbjct numbered in dna units
-#     #query orientation: +-
-#     #sbjct orientation: +-
-
-#     #processing steps:
-#     #if query -
-#     #  (1) convert to protein units
-#     #  (2) reverse assembly position numbering
-#     #  (3) reverse each frag
-#     #  (4) assemble frags
-#     #  (5) reverse assembly
-#     #if query +
-#     #  (1) convert to protein units
-#     #  (2) assemble frags
-
-#     foreach my $frag (@{$self->{'frag'}}) {
-#         ($frag->[1], $frag->[2]) =
-#             $self->translate_range($frag->[1], $frag->[2]);
-#     }
-#     $self->SUPER::assemble(@_);
-# }
+#sort fragments: (1) decreasing score, (2) decreasing length; used by
+#Row::assemble(); taking into account the NO OVERWRITE policy in Sequence.pm
+sub sort_best_to_worst {
+    $_[0]->{'frag'} = [
+        sort {
+            my $c = $b->[7] <=> $a->[7];                 #compare score
+            return $c  if $c != 0;
+            return length($b->[0]) <=> length($a->[0]);  #compare length
+        } @{$_[0]->{'frag'}}
+	];
+    $_[0];
+}
 
 sub assemble {
     my $self = shift;
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_translated {
+###########################################################################
+package Bio::MView::Build::Row::BLASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::BLAST);
+
+#recompute range for translated sequence
+sub range {
+    my $self = shift;
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
+}
+
+#assemble translated
+sub assemble {
     my $self = shift;
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
