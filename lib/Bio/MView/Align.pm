@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Align.pm,v 1.49 2015/06/14 17:09:03 npb Exp $
+# $Id: Align.pm,v 1.50 2015/06/22 22:27:17 npb Exp $
 
 ######################################################################
 package Bio::MView::Align;
@@ -996,8 +996,10 @@ sub build_conservation_row {
     my $to   = $from + $self->{'length'} -1;
     #warn "fm/to: ($from, $to)\n";
 
-    my $string = $self->conservation(\@ids, $from, $to, $moltype);
+    #alignment column numbering
+    my $string = $self->conservation(\@ids, 1, $self->{'length'}, $moltype);
 
+    #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
     new Bio::MView::Align([$obj], $self->{'parent'});
