@@ -163,8 +163,8 @@ sub assemble {
     }
     #warn "Row::assemble: [@_] $reverse\n";
     $self->sort;                                 #fragment order
-    $self->{'seq'}->reverse  if $reverse;        #before calling append()
-    $self->{'seq'}->append(@{$self->{'frag'}});  #assemble fragments
+    $self->{'seq'}->reverse  if $reverse;        #before calling insert()
+    $self->{'seq'}->insert(@{$self->{'frag'}});  #assemble fragments
     $self->{'seq'}->set_range($lo, $hi);         #set sequence range
     $self->{'seq'}->set_pad($gap);
     $self->{'seq'}->set_gap($gap);
