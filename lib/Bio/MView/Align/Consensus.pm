@@ -556,7 +556,7 @@ sub new {
     $self->{'string'}->set_find_gap('\.');
     $self->{'string'}->set_pad('.');
     $self->{'string'}->set_gap('.');
-    $self->{'string'}->append([$string, $from, $to]);
+    $self->{'string'}->insert([$string, $from, $to]);
     
     bless $self, $type;
 

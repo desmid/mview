@@ -796,8 +796,8 @@ sub color_by_consensus_sequence {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
@@ -825,8 +825,8 @@ sub color_by_consensus_group {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
@@ -992,8 +992,8 @@ sub build_conservation_row {
     #extract sequence rows
     my @ids = $self->visible_ids;
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->{'length'} -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->{'length'} - 1;
     #warn "fm/to: ($from, $to)\n";
 
     #alignment column numbering
@@ -1024,8 +1024,8 @@ sub build_consensus_rows {
     my @obj = ();
     
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     foreach my $thresh (@$threshold) {
 	my $con = new Bio::MView::Align::Consensus($from, $to,
@@ -1138,7 +1138,7 @@ sub conservation {
 	#iterate over sequence list
 	for (my $i=0; $i<@$ids; $i++) {
 	    my $thischar = uc $self->id2row($ids->[$i])->seqobj->raw($j);
-	    #warn "[$i][$j] $refchar, $thischar, $ids->[$i]\n";
+	    #warn "[$j][$i] $refchar, $thischar, $ids->[$i]\n";
 	    next  if $self->is_nop($ids->[$i]);
 	    $same++   if $thischar eq $refchar;
 	    &$addcons($strong, $thischar);
@@ -1160,7 +1160,7 @@ sub conservation {
 	}
 	$s .= ' ';
     }
-    #warn "[$s]\n";
+    #warn "@{[length($s)]} [$s]\n";
     \$s;
 }
 

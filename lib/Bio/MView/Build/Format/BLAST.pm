@@ -198,37 +198,39 @@ sub posn2 {
     return '';
 }
 
-sub sort { $_[0]->sort_worst_to_best }
+#sort fragments, called by Row::assemble
+sub sort { $_[0]->sort_none }
 
-#don't sort fragments: take them in discovery/insert order
+#don't sort fragments: assemble them in discovery order: this the same as
+#sort_best_to_worst() because BLAST generates them already sorted
 sub sort_none {$_[0]}
 
-#sort fragments: (1) increasing score, (2) increasing length; used by
-#Row::assemble(); as originally used up to MView version 1.58.1
-sub sort_worst_to_best {
-    $_[0]->{'frag'} = [
-        sort {
-            my $c = $a->[7] <=> $b->[7];                 #compare score
-            return $c  if $c != 0;
-            return length($a->[0]) <=> length($b->[0]);  #compare length
-        } @{$_[0]->{'frag'}}
-       ];
-    $_[0];
-}
+# #sort fragments: (1) increasing score, (2) increasing length; used up to MView
+# #version 1.58.1, but inconsistent with NO OVERWRITE policy in Sequence.pm
+# sub sort_worst_to_best {
+#     $_[0]->{'frag'} = [
+#         sort {
+#             my $c = $a->[7] <=> $b->[7];                 #compare score
+#             return $c  if $c != 0;
+#             return length($a->[0]) <=> length($b->[0]);  #compare length
+#         } @{$_[0]->{'frag'}}
+#        ];
+#     $_[0];
+# }
 
-#sort fragments: (1) decreasing score, (2) decreasing length; used by
-#Row::assemble(); taking into account the NO OVERWRITE policy in Sequence.pm
-sub sort_best_to_worst {
-    $_[0]->{'frag'} = [
-        sort {
-            my $c = $b->[7] <=> $a->[7];                 #compare score
-            return $c  if $c != 0;
-            return length($b->[0]) <=> length($a->[0]);  #compare length
-        } @{$_[0]->{'frag'}}
-	];
-    $_[0];
-}
+# #sort fragments: (1) decreasing score, (2) decreasing length
+# sub sort_best_to_worst {
+#     $_[0]->{'frag'} = [
+#         sort {
+#             my $c = $b->[7] <=> $a->[7];                 #compare score
+#             return $c  if $c != 0;
+#             return length($b->[0]) <=> length($a->[0]);  #compare length
+#         } @{$_[0]->{'frag'}}
+# 	];
+#     $_[0];
+# }
 
+#wrapper for logical symmetry with Bio::MView::Build::Row::BLASTX
 sub assemble {
     my $self = shift;
     $self->SUPER::assemble(@_);
