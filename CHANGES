@@ -1,7 +1,8 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.58.1  2015-06-23
-  Patched filepaths to work on Windows systems, thanks to Steven Sullivan.
+Version 1.58.1  2015-06-24
+  Patched filepaths and CRLF handling to work on Windows systems, thanks to
+    Steven Sullivan.
   Fixed bug in PIR output that inserted wrong terminal gap character.
   Fixed bug in CLUSTAL conservation mode that sometimes miscalculated
     column positions for BLAST and FASTA searches.
