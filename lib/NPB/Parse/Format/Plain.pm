@@ -28,20 +28,17 @@ my $Plain_ALIGNMENT      = '^\s*\S+\s+\S';
 my $Plain_ALIGNMENTend   = $Plain_END;
 
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new Plain instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
-
-    while (defined ($line = <$fh>)) {
+    while (defined ($line = $parent->{'text'}->getline)) {
 
 	#start of entry
  	if ($line =~ /$Plain_START/o and $offset < 0) {
-	    $offset = $fh->tell - length($line);
+	    $offset = $parent->{'text'}->startofline;
 	    next;
 	}
 
@@ -52,9 +49,9 @@ sub get_entry {
     }
     return 0   if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
-    new NPB::Parse::Format::Plain(undef, $text, $offset, $bytes);
+    new NPB::Parse::Format::Plain(undef, $parent->{'text'}, $offset, $bytes);
 }
 	    
 #Parse one entry

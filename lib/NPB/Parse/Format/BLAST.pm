@@ -131,32 +131,28 @@ my $SCORE_END = "(?:"
 #Generic get_entry() and new() constructors for all BLAST style parsers:
 #determine program and version and coerce appropriate subclass.
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new BLAST instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
-
     my ($type, $prog, $version) = ('NPB::Parse::Format::BLAST', undef, undef);
-    
     my ($saveformat, $saveversion) = ('', '');
 
-    while (defined ($line = <$fh>)) {
-	
-	#start of entry
-	if ($line =~ /$ENTRY_START/o and $offset < 0) {
-	    $offset = $fh->tell - length($line);
-	    #fall through for version tests
-	}
+    while (defined ($line = $parent->{'text'}->getline)) {
+
+        #start of entry
+        if ($line =~ /$ENTRY_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            #fall through for version tests
+        }
 
 	#end of entry
-	last    if $line =~ /$ENTRY_END/o;
+	last  if $line =~ /$ENTRY_END/o;
 
 	#escape iteration if we've found the BLAST type previously
-	next    if defined $prog and defined $version;
+	next  if defined $prog and defined $version;
 	
 	if ($line =~ /$HEADER_START\s+(\d+)/o) {
 
@@ -180,9 +176,9 @@ sub get_entry {
 	}
 	
     }
-    return 0   if $offset < 0;
+    return 0  if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
     unless (defined $prog and defined $version) {
 	die "get_entry() top-level BLAST parser could not determine program/version\n";
@@ -203,7 +199,7 @@ sub get_entry {
 
     #package $type defines this constructor and coerces to $type
 
-    my $self = $type->new(undef, $text, $offset, $bytes);
+    my $self = $type->new(undef, $parent->{'text'}, $offset, $bytes);
 
     $self->{'format'}  = $saveformat;
     $self->{'version'} = $saveversion;

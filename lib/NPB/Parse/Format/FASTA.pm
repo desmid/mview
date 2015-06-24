@@ -212,24 +212,23 @@ my $TRAILER_END = "(?:"
 #Generic get_entry() and new() constructors for all FASTA style parsers:
 #determine program and version and coerce appropriate subclass.
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new FASTA instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
+
     my ($type, $prog, $version, $class, $format) = ('NPB::Parse::Format::FASTA');
-    my ($GCG, $self) = (0);
+    my $GCG = 0;
     my $start = '';
 
-    while (defined ($line = <$fh>)) {
+    while (defined ($line = $parent->{'text'}->getline)) {
 
 	#warn "($offset) >>$line";
 
         #start of entry
         if ($line =~ /$ENTRY_START/o and $offset < 0) {
-            $offset = $fh->tell - length($line);
+            $offset = $parent->{'text'}->startofline;
 	    $start = $line;
 	    #warn "STA $offset, $bytes, ($line)\n";
             #fall through for version tests
@@ -238,13 +237,12 @@ sub get_entry {
 
 	    if ($start =~ /$FASTA_START/o and $line =~ /^\s*L?ALIGN/) {
 		#replace offset
-		$offset = $fh->tell - length($line);
+		$offset = $parent->{'text'}->startofline;
 		$start = $line;
 		#warn "STA $offset, $bytes, ($line)\n";
 		#fall through for version tests
 
-	    } elsif ($start =~ /^\s*LALIGN/o and
-                     $line =~ /^\s*Comparison of:/) {
+	    } elsif ($start =~ /^\s*LALIGN/o and $line =~ /^\s*Comparison of:/) {
 		#keep old offset
 		$start = $line;
 		#warn "STA $offset, $bytes, ($line)\n";
@@ -260,7 +258,7 @@ sub get_entry {
 	}
 	
 	#escape iteration if we've hit the alignment section
-	next    if $line =~ /$ALN_START/;
+	next  if $line =~ /$ALN_START/;
 
 	#try to get program and version from header; these headers are
 	#only present if stderr was collected. sigh.
@@ -358,7 +356,7 @@ sub get_entry {
     }
     return 0   if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
     unless (defined $prog and defined $version) {
 	die "get_entry() top-level FASTA parser could not determine program/version\n";
@@ -394,7 +392,8 @@ sub get_entry {
 
     #contruct specific parser
     no strict 'refs';
-    $self = &{"${class}::new"}($class, undef, $text, $offset, $bytes);
+    my $self =
+        &{"${class}::new"}($class, undef, $parent->{'text'}, $offset, $bytes);
 
     $self->{'format'}  = $format;
     $self->{'version'} = $version;

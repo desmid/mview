@@ -17,29 +17,26 @@ my $Pearson_SEQ      = '^\s*>';
 my $Pearson_SEQend   = "(?:$Pearson_SEQ|$Pearson_Null)";
 
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new Slurp instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
+    while (defined ($line = $parent->{'text'}->getline)) {
 
-    while (defined ($line = <$fh>)) {
-	
 	#start of entry
 	if ($offset < 0) {
-            $offset = $fh->tell - length($line);
+            $offset = $parent->{'text'}->startofline;
 	    next;
 	}
 
     }
-    return 0   if $offset < 0;
+    return 0  if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
-    new NPB::Parse::Format::Pearson(undef, $text, $offset, $bytes);
+    new NPB::Parse::Format::Pearson(undef, $parent->{'text'}, $offset, $bytes);
 }
 	    
 #Parse one entry

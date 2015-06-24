@@ -37,20 +37,17 @@ my $MULTAS_ALIGNMENT      = '(?:>>){0}';
 my $MULTAS_ALIGNMENTend   = $MULTAS_BLOCKend;
 
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new MULTAS instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
+    while (defined ($line = $parent->{'text'}->getline)) {
 
-    while (defined ($line = <$fh>)) {
-	
 	#start of entry
 	if ($line =~ /$MULTAS_START/o and $offset < 0) {
-            $offset = $fh->tell - length($line);
+            $offset = $parent->{'text'}->startofline;
 	    next;
 	}
 
@@ -61,9 +58,9 @@ sub get_entry {
     }
     return 0   if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
-    new NPB::Parse::Format::MULTAS(undef, $text, $offset, $bytes);
+    new NPB::Parse::Format::MULTAS(undef, $parent->{'text'}, $offset, $bytes);
 }
 	    
 #Parse one entry

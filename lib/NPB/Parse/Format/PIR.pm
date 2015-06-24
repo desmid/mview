@@ -17,29 +17,26 @@ my $PIR_SEQ      = '^\s*>';
 my $PIR_SEQend   = $PIR_SEQ;
 
 
-#Consume one entry-worth of input on stream $fh associated with $file and
+#Consume one entry-worth of input on text stream associated with $file and
 #return a new Slurp instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my $fh   = $parent->{'fh'};
-    my $text = $parent->{'text'};
-
-    while (defined ($line = <$fh>)) {
+    while (defined ($line = $parent->{'text'}->getline)) {
 	
 	#start of entry
 	if ($offset < 0) {
-            $offset = $fh->tell - length($line);
+            $offset = $parent->{'text'}->startofline;
 	    next;
 	}
 
     }
     return 0   if $offset < 0;
 
-    $bytes = $fh->tell - $offset;
+    $bytes = $parent->{'text'}->tell - $offset;
 
-    new NPB::Parse::Format::PIR(undef, $text, $offset, $bytes);
+    new NPB::Parse::Format::PIR(undef, $parent->{'text'}, $offset, $bytes);
 }
 	    
 #Parse one entry
@@ -51,7 +48,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
