@@ -9,14 +9,9 @@
 #   fasta, tfastx
 #
 ###########################################################################
-###########################################################################
-package Bio::MView::Build::Format::FASTA1;
-
 use Bio::MView::Build::Format::FASTA;
-use strict;
-use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build::Format::FASTA);
+use strict;
 
 
 ###########################################################################
@@ -27,6 +22,16 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA);
 
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 1,   1,    'initn',         'initn',      '5N',      ''  ],
+    [ 2,   2,    'init1',         'init1',      '5N',      ''  ],
+    [ 3,   3,    'opt',           'opt',        '5N',      ''  ],
+    [ 4,   4,    'query_orient',  'qy',         '2S',      '?' ],
+    [ 5,   5,    'sbjct_orient',  'ht',         '2S',      '?' ],
+    ]
+}
+
 
 ###########################################################################
 package Bio::MView::Build::Row::FASTA1::fasta;
@@ -34,30 +39,6 @@ package Bio::MView::Build::Row::FASTA1::fasta;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA1);
-
-sub new {
-    my $type = shift;
-    my $self = new Bio::MView::Build::Row::FASTA1(@_);
-    $self->{'query_orient'} = $_[@_-2];
-    $self->{'sbjct_orient'} = $_[@_-1];
-    bless $self, $type;
-}
-
-sub data {
-    my $s = $_[0]->SUPER::data;
-    return $s .= sprintf(" %2s %2s", 'qy', 'ht') unless $_[0]->num;
-    $s .= sprintf(" %2s %2s", $_[0]->{'query_orient'}, $_[0]->{'sbjct_orient'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'query_orient'}, $self->{'sbjct_orient'})
-	if $mode eq 'data';
-    return ('query_orient', 'sbjct_orient')  if $mode eq 'attr';
-    return ('2S', '2S')  if $mode eq 'form';
-}
-
-sub assemble { my $self = shift; $self->assemble_fasta(@_) }
 
 
 ###########################################################################
@@ -67,31 +48,16 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::FASTA1);
 
-sub new {
-    my $type = shift;
-    my $self = new Bio::MView::Build::Row::FASTA1(@_);
-    $self->{'orient'} = $_[@_-1];
-    bless $self, $type;
-}
-
-sub data {
-    my $s = $_[0]->SUPER::data;
-    return $s .= sprintf(" %2s %2s", 'qy', 'ht') unless $_[0]->num;
-    $s .= sprintf(" %2s %2s", '+', $_[0]->{'orient'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ('+', $self->{'orient'})  if $mode eq 'data';
-    return ('query_orient', 'sbjct_orient')  if $mode eq 'attr';
-    return ('2S', '2S')  if $mode eq 'form';
-}
-
-
-sub assemble { my $self = shift; $self->assemble_tfasta(@_) }
-
 
 ###########################################################################
+###########################################################################
+package Bio::MView::Build::Format::FASTA1;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA);
+
+
 ###########################################################################
 package Bio::MView::Build::Format::FASTA1::fasta;
 
@@ -110,87 +76,86 @@ sub subheader {
 
 sub parse {
     my $self = shift;
-    my ($match, $sum, $aln, $query, $key);
-    my ($rank, $use, %hit, @hit) = (0);
 
-    return     unless defined $self->schedule_by_strand;
+    return  unless defined $self->{scheduler}->next;
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
+    #fasta run with no hits
+    my $rankparse = $self->{'entry'}->parse(qw(RANK));
 
-    if ($match->{'query'} ne '') {
-	$query = $match->{'query'};
-    } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
+    return []  unless defined $rankparse;
+
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
+
+    my $query = 'Query';
+    if ($header->{'query'} ne '') {
+	$query = $header->{'query'};
+    } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
 	$query = $1;
-    } else {
-	$query = 'Query';
     }
 
-    push @hit, new Bio::MView::Build::Row::FASTA1::fasta
-	(
-	 '',
-	 $query,
-	 '',
-	 '',
-	 '',
-	 '',
-	 $self->strand,
-	 '',
-	);
+    my $coll = new Bio::MView::Build::Search::Collector($self);
+
+    my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
+    my $class = "Bio::MView::Build::Row::FASTA1::$rtype";
+
+    $coll->insert((new $class(
+                       '',
+                       $query,
+                       '',
+                       '',
+                       '',
+                       '',
+                       $self->strand,
+                       '',
+                   )));
     
-    #extract cumulative scores and identifiers from the ranking
-    foreach $match (@{$self->{'entry'}->parse(qw(RANK))->{'hit'}}) {
+    #extract hits and identifiers from the ranking
+    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
 
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'opt'})
-		 ) < 0;
-	next  unless $use;
+	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
 
-	#warn "KEEP: ($rank,$match->{'id'})\n";
+	last  if $use < 0;
+	next  if $use < 1;
 
-	$key = $match->{'id'} . $match->{'initn'} . $match->{'init1'};
+	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	push @hit, new Bio::MView::Build::Row::FASTA1::fasta
-	    (
-	     $rank,
-	     $match->{'id'},
-	     $match->{'desc'},
-	     $match->{'initn'},
-	     $match->{'init1'},
-	     $match->{'opt'},
-	     $self->strand,
-	     '',
-	    );
-	$hit{$key} = $#hit;
+	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'init1'});
+
+	$coll->insert((new $class(
+                           $rank,
+                           $hit->{'id'},
+                           $hit->{'desc'},
+                           $hit->{'initn'},
+                           $hit->{'init1'},
+                           $hit->{'opt'},
+                           $self->strand,
+                           '',
+                       )),
+                      $key
+            );
     }
 
     #pull out each hit
-    foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
+    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
 
 	#first the summary
-	$sum = $match->parse(qw(SUM));
+	my $sum = $match->parse(qw(SUM));
 
-	$key = $sum->{'id'} . $sum->{'initn'} . $sum->{'init1'};
+	my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'init1'});
 
 	#only read hits already seen in ranking
-	next  unless exists $hit{$key};
-
-	#override the row description
-	if ($sum->{'desc'}) {
-	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
-	}
+	next  unless $coll->has($key);
 
 	#then the individual matched fragments
-	foreach $aln ($match->parse(qw(ALN))) {
+	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
-            next  unless $aln->{'query_orient'} eq $self->strand;
+            next  unless $self->use_strand($aln->{'query_orient'});
 
-	    $aln = $match->parse(qw(ALN));
-	    
 	    #$aln->print;
 	    
 	    #for FASTA gapped alignments
@@ -198,41 +163,28 @@ sub parse {
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 
-	    $hit[0]->add_frag
-		(
-		 $aln->{'query'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 0,
-		 0,
-		);
-	    
-	    $hit[$hit{$key}]->add_frag
-		(
-		 $aln->{'sbjct'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'sbjct_start'},
-		 $aln->{'sbjct_stop'},
-		);
+            $coll->add_frags(
+                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                    $aln->{'query'},
+                    $aln->{'query_start'},
+                    $aln->{'query_stop'},
+                ], [
+                    $aln->{'sbjct'},
+                    $aln->{'sbjct_start'},
+                    $aln->{'sbjct_stop'},
+                ]);
 
-	    #override row data
-	    $hit[$hit{$key}]->{'sbjct_orient'} = $aln->{'sbjct_orient'};
-	}
+	    #override sbjct orientation
+	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
+        }
+	#override description
+        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
     }
-
-    $self->discard_empty_ranges(\@hit);
 
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
-    #map { $_->print } @hit;
-
-    return \@hit;
+    return $coll->list;
 }
 
 
@@ -245,81 +197,85 @@ use vars qw(@ISA);
 
 sub parse {
     my $self = shift;
-    my ($match, $sum, $aln, $query, $key);
-    my ($rank, $use, %hit, @hit) = (0);
 
-    return     unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
-    #identify the query itself
-    $match = $self->{'entry'}->parse(qw(HEADER));
+    #fasta run with no hits
+    my $rankparse = $self->{'entry'}->parse(qw(RANK));
 
-    if ($match->{'query'} ne '') {
-	$query = $match->{'query'};
-    } elsif ($match->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
+    return []  unless defined $rankparse;
+
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
+
+    my $query = 'Query';
+    if ($header->{'query'} ne '') {
+	$query = $header->{'query'};
+    } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
 	$query = $1;
-    } else {
-	$query = 'Query';
     }
 
-    push @hit, new Bio::MView::Build::Row::FASTA1::tfastx
-	(
-	 '',
-	 $query,
-	 '',
-	 '',
-	 '',
-	 '',
-	 '',
-	);
+    my $coll = new Bio::MView::Build::BLAST::Collector($self);
 
-    #extract cumulative scores and identifiers from the ranking
-    foreach $match (@{$self->{'entry'}->parse(qw(RANK))->{'hit'}}) {
+    my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
+    my $class = "Bio::MView::Build::Row::FASTA1::$rtype";
+
+    $coll->insert((new $class(
+                       '',
+                       $query,
+                       '',
+                       '',
+                       '',
+                       '',
+                       $self->strand,
+                       '',
+                   )));
+
+    #extract hits and identifiers from the ranking
+    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
 	
 	$rank++;
 
 	#check row wanted, by num OR identifier OR row count limit OR opt
-	last  if ($use = $self->use_row($rank, $rank, $match->{'id'},
-					$match->{'opt'})
-		 ) < 0;
-	next  unless $use;
+	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
 
-	#warn "KEEP: ($rank,$match->{'id'})\n";
+	last  if $use < 0;
+	next  if $use < 1;
 
-	$key = $match->{'id'} . $match->{'initn'} . $match->{'expect'} . 
-	    lc $match->{'orient'};
-	
-	push @hit, new Bio::MView::Build::Row::FASTA1::tfastx
-	    (
-	     $rank,
-	     $match->{'id'},
-	     $match->{'desc'},
-	     $match->{'initn'},
-	     $match->{'init1'},
-	     $match->{'opt'},
-	     $match->{'orient'},
-	    );
-	$hit{$key} = $#hit;
+	#warn "KEEP: ($rank,$hit->{'id'})\n";
+
+        my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'},
+                             lc $hit->{'orient'});
+
+	$coll->insert((new $class(
+                           $rank,
+                           $hit->{'id'},
+                           $hit->{'desc'},
+                           $hit->{'initn'},
+                           $hit->{'init1'},
+                           $hit->{'opt'},
+                           $self->strand,
+                           $hit->{'orient'},
+                       )),
+                      $key
+            );
     }
 
     #pull out each hit
-    foreach $match ($self->{'entry'}->parse(qw(MATCH))) {
+    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
 
 	#first the summary
-	$sum = $match->parse(qw(SUM));
+	my $sum = $match->parse(qw(SUM));
 
-	$key = $sum->{'id'} . $sum->{'initn'} . $sum->{'init1'};
+        my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'init1'});
 
 	#only read hits accepted in ranking
-	next  unless exists $hit{$key};
-
-	#override the row description
-	if ($sum->{'desc'}) {
-	    $hit[$hit{$key}]->{'desc'} = $sum->{'desc'};
-	}
+	next  unless $coll->has($key);
 
 	#then the individual matched fragments
-	foreach $aln ($match->parse(qw(ALN))) {
-	    $aln = $match->parse(qw(ALN));
+	foreach my $aln ($match->parse(qw(ALN))) {
+
+            next  unless $self->use_strand($aln->{'query_orient'});
 	    
 	    #$aln->print;
 	    
@@ -328,38 +284,25 @@ sub parse {
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 	    
-	    $hit[0]->add_frag
-		(
-		 $aln->{'query'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 0,
-		 0,
-		);
-	    
-	    $hit[$hit{$key}]->add_frag
-		(
-		 $aln->{'sbjct'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'query_start'},
-		 $aln->{'query_stop'},
-		 $aln->{'sbjct_start'},
-		 $aln->{'sbjct_stop'},
-		);
+            $coll->add_frags(
+                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                    $aln->{'query'},
+                    $aln->{'query_start'},
+                    $aln->{'query_stop'},
+                ], [
+                    $aln->{'sbjct'},
+                    $aln->{'sbjct_start'},
+                    $aln->{'sbjct_stop'},
+                ]);
 	}
+	#override description
+        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
     }
-
-    $self->discard_empty_ranges(\@hit);
 
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
-    #map { $_->print } @hit;
-
-    return \@hit;
+    return $coll->list;
 }
 
 

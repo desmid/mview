@@ -15,46 +15,36 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Search;
-use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'FASTA' }
 
-my %Known_Parameter = 
+my %Known_Parameters =
     (
-     #name        => [ format,             default ]
-     'minopt'     => [ '\d+',              undef   ],
+     #name        => [ format  default ]
+     'minopt'     => [ '\d+',  undef   ],
 
      #GCG FASTA (version 2)
-     'strand'     => [ [],         	   undef   ],
+     'strand'     => [ [],     undef   ],
     );
 
-sub initialise_parameters {
-    my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-    $self->reset_strand;
-}
+#tell the parent
+sub known_parameters { \%Known_Parameters }
 
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-    $self->reset_strand;
-}
-
+#our own constructor since this is the entry point for different subtypes
 sub new {
-    shift;    #discard type
+    shift;  #discard our own type
     my $self = new Bio::MView::Build::Search(@_);
     my ($type, $p, $v, $file);
 
     #determine the real type from the underlying parser
-    ($p, $v) = (lc $self->{'entry'}->{'format'},$self->{'entry'}->{'version'});
+    ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
 
     $type = "Bio::MView::Build::Format::FASTA$v";
     ($file = $type) =~ s/::/\//g;
@@ -63,56 +53,34 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise;
-}
+    $self->initialise_parameters;
+    $self->initialise_child;
 
-#initialise parse iteration scheduler variable(s). just do them all at once
-#and don't bother overriding with specific methods. likewise the scheduler
-#routines can all be defined here.
-sub initialise {
-    my $self = shift;
-    #may define strand orientation and reading frame filters later
-
-    #FASTA strand orientation
-    $self->{'strand_list'} = [ qw(+ -) ];    #strand orientations
-    $self->{'do_strand'}   = undef;          #list of required strand
-    $self->{'strand_idx'}  = undef;          #current index into 'do_strand'
-
-    $self->initialise_parameters;            #other parameters done last
     $self;
 }
 
-sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-
-sub reset_strand {
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    #warn "reset_strand: [@{$self->{'strand'}}]\n";
-    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
-						 $self->{'strand'});
+    #warn "initialise_child\n";
+    #schedule by strand orientation
+    $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
+    $self;
 }
 
-sub next_strand {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-
-    #first pass?
-    $self->{'strand_idx'} = 0    unless defined $self->{'strand_idx'};
-    
-    #normal pass: post-increment strand counter
-    if ($self->{'strand_idx'} < @{$self->{'do_strand'}}) {
-	return $self->{'do_strand'}->[$self->{'strand_idx'}++];
-    }
-
-    #finished loop
-    $self->{'strand_idx'} = undef;
+    #warn "reset_child [@{$self->{'strand'}}]\n";
+    $self->{scheduler}->filter($self->{'strand'});
+    $self;
 }
 
-sub schedule_by_strand {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_strand)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
+#current strand being processed
+sub strand { $_[0]->{scheduler}->item }
+
+#compare argument with current strand
+sub use_strand { $_[0]->{scheduler}->use_item($_[1]) }
 
 #row filter
 sub use_row {
@@ -163,7 +131,7 @@ sub strip_query_gaps {
             }
         }
     };
-    
+
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
 
@@ -190,9 +158,10 @@ sub strip_query_gaps {
 ###########################################################################
 package Bio::MView::Build::Row::FASTA;
 
-use vars qw(@ISA);
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
@@ -210,97 +179,35 @@ sub posn2 {
     return '';
 }
 
-#based on assemble_blastn() fragment processing
-sub assemble_fasta {
+sub assemble {
     my $self = shift;
-
-    #query:     protein|dna
-    #database:  protein|dna
-    #alignment: protein|dna x protein|dna
-    #query numbered in protein|dna units
-    #sbjct numbered in protein|dna units
-    #query orientation: +/-
-    #sbjct orientation: +/-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_fastx {
+
+###########################################################################
+package Bio::MView::Build::Row::FASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA);
+
+#recompute range for translated sequence
+sub range {
     my $self = shift;
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
+}
 
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
+#assemble translated
+sub assemble {
+    my $self = shift;
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
-}
-
-sub assemble_tfasta {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $initn, $init1, $opt) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'initn'} = $initn;
-    $self->{'init1'} = $init1;
-    $self->{'opt'}   = $opt;
-    bless $self, $type;
-}
-
-sub data  {
-    return sprintf("%5s %5s %5s", 'initn', 'init1', 'opt') unless $_[0]->num;
-    sprintf("%5s %5s %5s", $_[0]->{'initn'}, $_[0]->{'init1'}, $_[0]->{'opt'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'initn'}, $self->{'init1'}, $self->{'opt'})
-	if $mode eq 'data';
-    return ('initn', 'init1', 'opt')  if $mode eq 'attr';
-    return ('5N', '5N', '5N')  if $mode eq 'form';
 }
 
 

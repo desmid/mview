@@ -11,8 +11,8 @@ use Bio::MView::Align::Header;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
-use strict;
 
+use strict;
 use vars qw($Colour_Black $Colour_White $Colour_DarkGray $Colour_LightGray
 	    $Colour_Cream $Colour_Comment);
 

@@ -4,18 +4,12 @@
 ###########################################################################
 package Bio::MView::Build::Align;
 
-use vars qw(@ISA);
 use Bio::MView::Build;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build);
-
-#allow $topn items
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->{'show'} = $self->{'topn'};
-}
 
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;

@@ -5,16 +5,16 @@
 package Bio::MView::Build::Row;
 
 use Bio::MView::Sequence;
+
 use strict;
 
-my $DEF_IDWIDTH   = 20;  #default width to truncate 'id' field
 my $DEF_TEXTWIDTH = 30;  #default width to truncate 'text' field
 my $DEF_PAD = '-';       #default terminal gap character
 my $DEF_GAP = '-';       #default internal gap character
 
 sub new {
     my $type = shift;
-    my ($num, $id, $desc, $seq) = (@_, undef);
+    my ($num, $id, $desc) = splice @_, 0, 3;
     my $self = {};
 
     bless $self, $type;
@@ -43,14 +43,18 @@ sub new {
 
     $self->{'seq'}  = new Bio::MView::Sequence; #finished sequence
 
-    $self->add_frag($seq)    if defined $seq;
-
     $self->{'url'}  = Bio::SRS::srsLink($self->{'cid'});  #url
+
+    $self->{'data'} = {};                       #other parsed info
+
+    $self->save_info(@_);
 
     $self;
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub uniqid { "$_[1]\034/$_[2]" }
 
 #methods returning standard strings for use in generic output modes
 sub rid  { $_[0]->{'rid'} }
@@ -60,7 +64,9 @@ sub num  { $_[0]->{'num'} }
 sub url  { $_[0]->{'url'} }
 sub sob  { $_[0]->{'seq'} }
 
-sub seq  {
+sub desc { $_[0]->{'desc'} }  #row description
+
+sub seq  {                    #the sequence
     my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
     return ''  unless defined $self->{'seq'};
     $self->set_pad($pad);
@@ -68,21 +74,14 @@ sub seq  {
     return $self->{'seq'}->string
 }
 
-sub desc { $_[0]->{'desc'} }
+sub posn1 { '' }              #first sequence range
+sub posn2 { '' }              #second sequence range
 
-sub head { '' }         #headers for labels
-sub pcid { '' }         #identity %label
-sub pcid_std { 'id%' }  #standard text for identity% label
-sub data { '' }         #label values, per sequence row
-
-sub text {
+sub text {                    #possibly truncated description
     my $w = defined $_[1] ? $_[1] : $DEF_TEXTWIDTH;
-    $w = length $_[0]->{'desc'}    if $w > length $_[0]->{'desc'};
+    $w = length $_[0]->{'desc'}  if $w > length $_[0]->{'desc'};
     sprintf("%-${w}s", $_[0]->truncate($_[0]->{'desc'}, $w));
 }
-
-sub posn1 { '' }
-sub posn2 { '' }
 
 #convert nucleotide positions to a relative amino acid scale
 sub translate_range {
@@ -92,7 +91,13 @@ sub translate_range {
     die "translate_range: from == to  $fm, $to";
 }
 
-sub uniqid { "$_[1]\034/$_[2]" }
+#truncate a string
+sub truncate {
+    my ($self, $s, $n, $t) = (@_, $DEF_TEXTWIDTH);
+    $t = substr($s, 0, $n);
+    substr($t, -3, 3) = '...'    if length $s > $n;
+    $t;
+}
 
 sub print {
     sub _format {
@@ -105,13 +110,6 @@ sub print {
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
     $self;
-}
-
-sub truncate {
-    my ($self, $s, $n, $t) = (@_, $DEF_TEXTWIDTH);
-    $t = substr($s, 0, $n);
-    substr($t, -3, 3) = '...'    if length $s > $n;
-    $t;
 }
 
 #routine to sort 'frag' list: default is null
@@ -132,7 +130,7 @@ sub add_frag {
 
     push @{$self->{'frag'}}, [ \$frag, $qry_from, $qry_to, @_ ];
 
-    #warn "@{$self->{'frag'}->[ $#{$self->{'frag'}} ]}\n";
+    #warn "@{$self->{'frag'}->[-1]}\n";
 
     $self;
 }
@@ -165,8 +163,8 @@ sub assemble {
     }
     #warn "Row::assemble: [@_] $reverse\n";
     $self->sort;                                 #fragment order
-    $self->{'seq'}->reverse  if $reverse;        #before calling append()
-    $self->{'seq'}->append(@{$self->{'frag'}});  #assemble fragments
+    $self->{'seq'}->reverse  if $reverse;        #before calling insert()
+    $self->{'seq'}->insert(@{$self->{'frag'}});  #assemble fragments
     $self->{'seq'}->set_range($lo, $hi);         #set sequence range
     $self->{'seq'}->set_pad($gap);
     $self->{'seq'}->set_gap($gap);
@@ -177,100 +175,148 @@ sub set_pad { $_[0]->{'seq'}->set_pad($_[1]) }
 sub set_gap { $_[0]->{'seq'}->set_gap($_[1]) }
 sub set_spc { $_[0]->{'seq'}->set_spc($_[1]) }
 
-sub plain {
-    my ($self, $w, $pad, $gap) = (@_, $DEF_IDWIDTH, $DEF_PAD, $DEF_GAP);
-    my $title = sprintf("%-${w}s", substr($self->cid, 0, $w));
-    my $sequence = $self->seq($pad, $gap);
-    $title . " " . $sequence . "\n";
+###########################################################################
+
+sub schema { die "@{[ref $_[0]]}: no schema found\n" }
+
+#save row information following a schema
+sub save_info {
+    my $self = shift;
+    #warn "save_info: [@_]\n";
+
+    my $schema = eval { $self->schema };
+    return $self  unless defined $schema;
+
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        #warn "save: $name\n";
+        $self->{'data'}->{$name} = defined $_[$i] ? $_[$i] : $default;
+    }
+    $self;
 }
 
-sub pearson {
-    my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
-    my $MAXSEQ = 70;
+#set a row information attribute if in the schema
+sub set_val {
+    my ($self, $key, $val) = @_;
+    #warn "set_val: [$key => $val]\n";
 
-    my $head = sub {
-	my $self = shift;
-	my $s = ">";
-	#my $d = $self->num;
-	#$s .= ((defined $d and $d ne '') ? "$d;" : "query;");
-	$s .= $self->cid;
-    };
+    my $schema = eval { $self->schema };
+    return $self  unless defined $schema;
 
-    my $desc = sub {
-	my $self = shift;
-	my ($s, $d) = ('');
-	$d = $self->desc;  $s .= " $d"  if $d ne '';
-	$d = $self->data;  $s .= " $d"  if $d ne '';
-	$d = $self->posn1; $s .= " $d"  if $d ne '';
-	$d = $self->posn2; $s .= " $d"  if $d ne '';
-	$s . "\n";
-    };
-
-    my $sequence = sub {
-	my ($self, $pad, $gap) = @_;
-	my $seq = $self->seq($pad, $gap);
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
-	    $s .= substr($seq, $i, $MAXSEQ) . "\n";
-	}
-	$s;
-    };
-
-    &$head($self) . &$desc($self) . &$sequence($self, $pad, $gap);
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        $self->{'data'}->{$name} = $val, return $self  if $key eq $name;
+        $self->{'data'}->{$name} = $val, return $self  if $key eq $string;
+    }
+    warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
+    $self;
 }
 
-sub pir {
-    my ($self, $moltype, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
-    my $MAXSEQ = 60;
+#get a row information attribute if in the schema
+sub get_val {
+    my ($self, $key) = @_;
+    #warn "get_val: [$key]\n";
 
-    my $head = sub {
-	my ($self, $moltype) = @_;
-	my $s = $moltype eq 'aa' ? ">P1;" : ">XX;";
-	#my $d = $self->num;
-	#$s .= ((defined $d and $d ne '') ? "$d;" : "query;");
-	$s .= $self->cid . "\n";
-    };
+    my $schema = eval { $self->schema };
 
-    my $desc = sub {
-	my $self = shift;
-	my ($s, $d) = ('');
-	$d = $self->desc;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->data;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn1; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $self->posn2; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$s = '.'  if $s eq '';
-	$s;
-    };	
+    if (! defined $schema) {
+        return $self->{$key}  if exists $self->{key};
+        return '';
+    }
 
-    my $sequence = sub {
-	my ($self, $pad, $gap) = @_;
-	my $seq = $self->seq($pad, $gap);
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$MAXSEQ) {
-	    $s .= "\n" . substr($seq, $i, $MAXSEQ);
-	}
-	$s .= "\n"    if length($s) % ($MAXSEQ+1) < 1 and $s ne '';
-	$s .= "*\n\n";
-    };
-
-    &$head($self, $moltype) . &$desc($self) . &$sequence($self, $pad, $gap);
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        return $self->{'data'}->{$name}  if $key eq $name;
+        return $self->{'data'}->{$name}  if $key eq $string;
+    }
+    warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
+    '';
 }
 
-sub rdb {
-    my ($self, $mode, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
-    my @cols = ('row', 'id', 'desc', 'seq')  if $mode eq 'attr';
-    @cols = ('4N', '30S', '500S', '500S') if $mode eq 'form';
+#return a string of formatted row information following the schema
+sub data {
+    my ($self, $delim) = (@_, ' ');
+
+    my $fmtstr = sub {
+        my $fmt = shift;
+        $fmt =~ /(\d+)(\S)/o;
+        "%$1s";
+    };
+
+    my $schema = eval { $self->schema };
+    return ''  unless defined $schema;
+
+    my @tmp = ();
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n1 > 0;  #ignore this datum
+        my $fmt = &$fmtstr($format);
+        #warn "data: $name\n";
+        my $data = $self->{'data'}->{$name};
+        push(@tmp, sprintf($fmt, $data)),  next  if $self->num;  #data
+        push(@tmp, sprintf($fmt, $string))                       #header
+    }
+    return join($delim, @tmp);
+}
+
+#return a list of row information following the schema
+sub rdb_info {
+    my ($self, $mode) = @_;
+
+    my $schema = eval { $self->schema };
+    return ''  unless defined $schema;
+
+    my @tmp = ();
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        next  unless $n2 > 0;  #ignore this datum
+        my $data = $self->{'data'}->{$name};
+        #warn "rdb: $name\n";
+        push(@tmp, $string), next  if $mode eq 'attr';
+        push(@tmp, $format), next  if $mode eq 'form';
+        push(@tmp, $data),   next  if $mode eq 'data';
+    }
+    @tmp;
+}
+
+#column labels used in headers and rulers: wrapper for 'sub data'
+sub head {''}           #row info labels
+sub pcid { '' }         #identity% label
+sub pcid_std { 'id%' }  #standard text for identity% label
+
+#tabulated output: called from Convert
+sub rdb_row {
+    my ($self, $mode, $pad, $gap) = @_;
+    my @cols;
+    @cols = ('row', 'id', 'desc', 'seq')   if $mode eq 'attr';
+    @cols = ('4N', '30S', '500S', '500S')  if $mode eq 'form';
     @cols = ($self->num, $self->cid, $self->desc, $self->seq($pad, $gap))
 	if $mode eq 'data';
+
     my @new = $self->rdb_info($mode);     #subtype has any data?
     splice(@cols, -1, 0, @new)  if @new;  #insert penultimately
+
     #warn "[@cols]";
     return join("\t", @cols);
 }
 
-sub rdb_info {}  #override for format-specific columns
+
+###########################################################################
+package Bio::MView::Build::Simple_Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row);
+
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq) = @_;
+    my $self = new Bio::MView::Build::Row($num, $id, $desc);
+    bless $self, $type;
+    $self->add_frag($seq)  if defined $seq;
+    $self;
+}
 
 
 ###########################################################################

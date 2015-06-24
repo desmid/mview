@@ -6,83 +6,54 @@
 # generic BLAST material
 #
 ###########################################################################
-
-
-###########################################################################
 package Bio::MView::Build::Format::BLAST;
 
-use vars qw(@ISA %Known_Parameter);
-use NPB::Parse::Regexps;
 use Bio::MView::Build::Search;
+use NPB::Parse::Regexps;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
-my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
-
-#return the name of the underlying NPB::Parse::Stream parser
+#the name of the underlying NPB::Parse::Stream parser
 sub parser { 'BLAST' }
 
-%Known_Parameter = 
-    (
-     #name        => [ format,     	   default  ]
-						   
-     #BLAST* display various HSP selections
-     'hsp'        => [ '\S+',              'ranked' ],
+my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
 
-     #BLAST* (version 1)					   
-     'maxpval'    => [ $RX_Ureal,  	   undef    ],
-     'minscore'   => [ '\d+',      	   undef    ],
-						   
-     #BLAST* (version 2)					   
-     'maxeval'    => [ $RX_Ureal,  	   undef    ],
-     'minbits'    => [ '\d+',      	   undef    ],
-     'cycle'      => [ [],         	   undef    ],
-	
-     #BLASTN (version 1, version 2)
-     #BLASTX (version 2)
-     'strand'     => [ [],         	   undef    ],
-	
+my %Known_Parameters =
+    (
+     #name        => [ format       default  ]
+
+     #BLAST* display various HSP selections
+     'hsp'        => [ '\S+',       'ranked' ],
+
+     #BLAST* (version 1)
+     'maxpval'    => [ $RX_Ureal,   undef    ],
+     'minscore'   => [ '\d+',       undef    ],
+
+     #BLAST* (version 2)
+     'maxeval'    => [ $RX_Ureal,   undef    ],
+     'minbits'    => [ '\d+',       undef    ],
+     'cycle'      => [ [],          undef    ],
+
+     #BLASTN (version 1, version 2); BLASTX (version 2)
+     'strand'     => [ [],          undef    ],
+
      #BLASTX/TBLASTX (version 1)
     );
 
-sub initialise_parameters {
-    my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-    $self->reset_cycle;
-    $self->reset_strand;
-}
+#tell the parent
+sub known_parameters { \%Known_Parameters }
 
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-    $self->reset_cycle;
-    $self->reset_strand;
-}
-
-sub subheader {
-    my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s    if $quiet;
-    if ($self->{'hsp'} eq 'all') {
-	$s .= "HSP processing: all\n";
-    } elsif ($self->{'hsp'} eq 'discrete') {
-	$s .= "HSP processing: discrete\n";
-    } else {
-	$s .= "HSP processing: ranked\n";
-    }
-    $s;    
-}
-
+#our own constructor since this is the entry point for different subtypes
 sub new {
-    shift;    #discard type
+    shift;  #discard type
     my $self = new Bio::MView::Build::Search(@_);
     my ($type, $p, $v, $file);
 
     #determine the real type from the underlying parser
-    ($p, $v) = (lc $self->{'entry'}->{'format'},$self->{'entry'}->{'version'});
+    ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
 
     $type = "Bio::MView::Build::Format::BLAST$v";
     ($file = $type) =~ s/::/\//g;
@@ -91,133 +62,95 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise;
-}
-
-#initialise parse iteration scheduler variable(s). just do them all at once
-#and don't bother overriding with specific methods. likewise the scheduler
-#routines can all be defined here.
-sub initialise {
-    my $self = shift;
-
-    #NCBI BLAST2/PSI-BLAST search cycle
-    $self->{'do_cycle'}    = undef;    #required list of cycle numbers
-    $self->{'cycle_idx'}   = undef;    #current index into 'do_cycle'
-    $self->{'cycle_ptr'}   = undef;    #current cycle parse object ref
-
-    #BLASTN strand orientations
-    $self->{'strand_list'} = [ qw(+ -) ];  #strand orientations
-    $self->{'do_strand'}   = undef;    #list of required strand
-    $self->{'strand_idx'}  = undef;    #current index into 'do_strand'
-
-    $self->initialise_parameters;      #other parameters done last
+    $self->initialise_parameters;
+    $self->initialise_child;
 
     $self;
 }
 
-sub cycle    { $_[0]->{'do_cycle'}->[$_[0]->{'cycle_idx'}-1] }
-sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-
-sub reset_cycle {
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    #initialise scheduler loops and loop counters
-    #warn "cycle: [@{$self->{'cycle'}}]\n";
+    my $scheduler = $self->scheduler;
+    #warn "initialise_child ($scheduler)\n";
+    while (1) {
+        $self->{scheduler} = new Bio::MView::Build::Scheduler,
+        last if $scheduler eq 'none';
 
-    my $last = $self->{'entry'}->count(qw(SEARCH));
+        $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
+        last if $scheduler eq 'strand';
 
-    $self->{'do_cycle'} = $self->reset_schedule([1..$last], $self->{'cycle'});
+        if ($scheduler eq 'cycle') {
+            my $last = $self->{'entry'}->count(qw(SEARCH));
+            $self->{scheduler} = new Bio::MView::Build::Scheduler([1..$last]);
+            last;
+        }
 
-    if (defined $self->{'cycle_ptr'}) {
-	#flag previous cycle parse for garbage collection
-	$self->{'cycle_ptr'}->free;
-	$self->{'cycle_ptr'} = undef;
+        if ($scheduler eq 'cycle+strand') {
+            my $last = $self->{'entry'}->count(qw(SEARCH));
+            $self->{scheduler} =
+                new Bio::MView::Build::Scheduler([1..$last], [qw(+ -)]);
+            last;
+        }
+
+        die "initialise_child: unknown scheduler '$scheduler'";
     }
+    return $self;
 }
 
-sub reset_strand {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-    #warn "strand: [@{$self->{'strand'}}]\n";
-    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
-						 $self->{'strand'});
-}
+    my $scheduler = $self->scheduler;
+    #warn "reset_child ($scheduler)\n";
+    while (1) {
+        last if $scheduler eq 'none';
 
-sub next_cycle {
-    my $self = shift;
+        #(warn "strands: [@{$self->{'strand'}}]\n"),
+        $self->{scheduler}->filter($self->{'strand'}),
+        last if $scheduler eq 'strand';
 
-    #first pass?
-    $self->{'cycle_idx'} = 0    unless defined $self->{'cycle_idx'};
-    
-    #normal pass: post-increment cycle counter
-    if ($self->{'cycle_idx'} < @{$self->{'do_cycle'}}) {
-	return $self->{'do_cycle'}->[$self->{'cycle_idx'}++];
+        #(warn "cycles: [@{$self->{'cycle'}}]\n"),
+        $self->{scheduler}->filter($self->{'cycle'}),
+        last if $scheduler eq 'cycle';
+
+        #(warn "cycles+strands: [@{$self->{'cycle'}}][@{$self->{'strand'}}]\n"),
+        $self->{scheduler}->filter($self->{'cycle'}, $self->{'strand'}),
+        last if $scheduler eq 'cycle+strand';
+
+        die "reset_child: unknown scheduler '$scheduler'";
     }
-
-    #finished loop
-    $self->{'cycle_idx'} = undef;
+    return $self;
 }
 
-sub next_strand {
-    my $self = shift;
-
-    #first pass?
-    $self->{'strand_idx'} = 0    unless defined $self->{'strand_idx'};
-    
-    #normal pass: post-increment strand counter
-    if ($self->{'strand_idx'} < @{$self->{'do_strand'}}) {
-	return $self->{'do_strand'}->[$self->{'strand_idx'}++];
-    }
-
-    #finished loop
-    $self->{'strand_idx'} = undef;
+#current cycle being processed
+sub cycle {
+    my $scheduler = $_[0]->scheduler;
+    return $_[0]->{scheduler}->item       if $scheduler eq 'cycle';
+    return ($_[0]->{scheduler}->item)[0]  if $scheduler eq 'cycle+strand';
+    return 1;
 }
 
-sub schedule_by_cycle {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_cycle)) {
-	return $next;
-    }
-    return undef;           #tell parser    
+#current strand being processed
+sub strand {
+    my $scheduler = $_[0]->scheduler;
+    return $_[0]->{scheduler}->item       if $scheduler eq 'strand';
+    return ($_[0]->{scheduler}->item)[1]  if $scheduler eq 'cycle+strand';
+    return '+';
 }
 
-sub schedule_by_strand {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_strand)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
-
-sub schedule_by_cycle_and_strand {
-    my ($self, $next) = (@_, 1);
-
-    if (defined $self->{'cycle_idx'}) {
-	#keep current cycle
-	if (! defined $self->{'strand_idx'}) {
-	    #strands finished: goto next cycle
-	    $next = $self->next_cycle;
-	}
+sub subheader {
+    my ($self, $quiet) = (@_, 0);
+    my $s = '';
+    return $s  if $quiet;
+    if ($self->{'hsp'} eq 'all') {
+	$s .= "HSP processing: all\n";
+    } elsif ($self->{'hsp'} eq 'discrete') {
+	$s .= "HSP processing: discrete\n";
     } else {
-	#goto first cycle
-	$next = $self->next_cycle;
+	$s .= "HSP processing: ranked\n";
     }
-    
-    #test the cycle
-    if (defined $next) {
-	#current/new cycle: goto next/first strand
-	$next = $self->next_strand;
-    } else {
-	#all cycles finished
-	return undef;           #tell parser    
-    }
-
-    #test the strand
-    if (defined $next) {
-	#ready to parse
-	return $next;
-    }
-
-    #all cycles finished
-    return undef;           	#tell parser    
+    $s;
 }
 
 #override base class method to process query row differently
@@ -242,10 +175,12 @@ sub build_rows {
 
 
 ###########################################################################
+###########################################################################
 package Bio::MView::Build::Row::BLAST;
 
 use Bio::MView::Build::Row;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
@@ -259,131 +194,66 @@ sub posn1 {
 sub posn2 {
     my $hfm = $_[0]->{'seq'}->fromlabel2;
     my $hto = $_[0]->{'seq'}->tolabel2;
-    return "$hfm:$hto"    if defined $_[0]->num and $_[0]->num;
+    return "$hfm:$hto"  if defined $_[0]->num and $_[0]->num;
     return '';
 }
 
-#fragment sort(worst to best): 1) increasing score, 2) increasing length
-sub sort {
-    $_[0]->{'frag'} =
-	[
-	 sort {
-	     my $c = $a->[7] <=> $b->[7];                   #compare score
-	     return $c    if $c != 0;
-	     return length($a->[0]) <=> length($b->[0]);    #compare length
-	 } @{$_[0]->{'frag'}}
-	];
-    $_[0];
-}
+#sort fragments, called by Row::assemble
+sub sort { $_[0]->sort_none }
 
-sub assemble_blastp {
+#don't sort fragments: assemble them in discovery order: this the same as
+#sort_best_to_worst() because BLAST generates them already sorted
+sub sort_none {$_[0]}
+
+# #sort fragments: (1) increasing score, (2) increasing length; used up to MView
+# #version 1.58.1, but inconsistent with NO OVERWRITE policy in Sequence.pm
+# sub sort_worst_to_best {
+#     $_[0]->{'frag'} = [
+#         sort {
+#             my $c = $a->[7] <=> $b->[7];                 #compare score
+#             return $c  if $c != 0;
+#             return length($a->[0]) <=> length($b->[0]);  #compare length
+#         } @{$_[0]->{'frag'}}
+#        ];
+#     $_[0];
+# }
+
+# #sort fragments: (1) decreasing score, (2) decreasing length
+# sub sort_best_to_worst {
+#     $_[0]->{'frag'} = [
+#         sort {
+#             my $c = $b->[7] <=> $a->[7];                 #compare score
+#             return $c  if $c != 0;
+#             return length($b->[0]) <=> length($a->[0]);  #compare length
+#         } @{$_[0]->{'frag'}}
+# 	];
+#     $_[0];
+# }
+
+#wrapper for logical symmetry with Bio::MView::Build::Row::BLASTX
+sub assemble {
     my $self = shift;
-
-    #query:     protein
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in protein units
-    #query orientation: +
-    #sbjct orientation: +
-
-    #processing steps:
-    #  (1) assemble frags
-   
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_blastn {
+###########################################################################
+package Bio::MView::Build::Row::BLASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::BLAST);
+
+#recompute range for translated sequence
+sub range {
     my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: dna x dna
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
 }
 
-sub assemble_blastx {
+#assemble translated
+sub assemble {
     my $self = shift;
-
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
-    foreach my $frag (@{$self->{'frag'}}) {
-        ($frag->[1], $frag->[2]) =
-            $self->translate_range($frag->[1], $frag->[2]);
-    }
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastn {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastx {
-    my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);

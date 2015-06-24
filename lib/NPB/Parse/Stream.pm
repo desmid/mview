@@ -6,7 +6,6 @@
 package NPB::Parse::Stream;
 
 use vars qw(@ISA);
-# use FileHandle;
 use NPB::Parse::Message;
 use NPB::Parse::Record;
 use NPB::Parse::Substring;
@@ -38,17 +37,17 @@ sub get_length { $_[0]->{'text'}->get_length }
 
 sub get_entry {
     my $self = shift;
-    #warn "\nStream::get_entry\n";
+    #warn "Stream::get_entry: offset= $self->{'offset'}\n";
 
     $self->{'text'}->reset($self->{'offset'});  #start parsing here
 
     no strict 'refs';
-    my $e = &{"NPB::Parse::Format::$self->{'format'}::get_entry"}($self);
-    return undef  unless $e;
+    my $pv = &{"NPB::Parse::Format::$self->{'format'}::get_entry"}($self);
+    return undef  unless $pv;
 
-    $self->{'offset'} += $e->{'bytes'};  #parsed this many bytes
+    $self->{'offset'} += $pv->{'bytes'};  #parsed this many bytes
 
-    $e;
+    $pv;
 }
 
 sub print {

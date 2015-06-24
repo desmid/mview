@@ -3,8 +3,8 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
-my $VERSION  = '1.58';
-my $PATCH    = '1';
+my $VERSION  = '1.59';
+my $PATCH    = '';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
@@ -542,7 +542,7 @@ action:   sub { __ARGS;
 	  }
 
 OPTION:   out
-usage:    "Output __CHOOSE(Bio::MView::Manager::check_display_mode)"
+usage:    "Output __CHOOSE(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 param:    mode
@@ -564,7 +564,7 @@ convert:  sub { __ARGS;
 		    __PV = 'clustal';
 		} elsif (__OV =~ /^al/i) {  #CLUSTAL/aln
 		    __PV = 'clustal';
-		} elsif (__OV =~ /^r/i) {   #RDB
+		} elsif (__OV =~ /^rd/i) {  #RDB
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
 		    __WARN("unknown output format '-__ON=__OV'.");
@@ -1394,10 +1394,29 @@ default:  both
 text:     "HSSP/Maxhom:"
 
 OPTION:   chain
-usage:    "Report only these chainnames/numbers {A,B,...,*}"
+usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
 type:     @s
 default:  *
 param:
+convert:  sub { __ARGS;
+		local $_; my @tmp=();
+		foreach (@{__PV}) {
+		    if ($_ eq 'first') {
+			push @tmp, 1;
+		    } elsif ($_ eq 'last') {
+			push @tmp, 0;
+		    } elsif ($_ eq 'all') {
+			@tmp = ();
+			last;
+		    } elsif ($_ eq '*') {
+			@tmp = ();
+			last;
+		    } else {
+			push @tmp, $_;
+		    }
+		}
+                return [ @tmp ];
+            }
 
 
 ###########################################################################
