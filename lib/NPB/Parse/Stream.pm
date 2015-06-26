@@ -42,6 +42,7 @@ sub get_entry {
     $self->{'text'}->reset($self->{'offset'});  #start parsing here
 
     no strict 'refs';
+
     my $pv = &{"NPB::Parse::Format::$self->{'format'}::get_entry"}($self);
     return undef  unless $pv;
 

@@ -2,7 +2,7 @@
 
 Version 1.58.1  2015-06-24
   Patched filepaths and CRLF handling to work on Windows systems, thanks to
-    Steven Sullivan.
+    Steven Sullivan@NYU.
   Fixed bug in PIR output that inserted wrong terminal gap character.
   Fixed bug in CLUSTAL conservation mode that sometimes miscalculated
     column positions for BLAST and FASTA searches.
