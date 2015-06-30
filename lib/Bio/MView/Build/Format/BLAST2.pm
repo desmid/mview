@@ -29,30 +29,14 @@ sub use_row {
 #bits/E-value filter
 sub use_hsp {
     my ($self, $bits, $eval) = @_;
-    return 0  if defined $self->{'maxeval'}  and $eval  > $self->{'maxeval'};
+    return 0  if defined $self->{'maxeval'} and $eval > $self->{'maxeval'};
     return 0  if defined $self->{'minbits'} and $bits < $self->{'minbits'};
     return 1;
 }
 
-#Can be extended like BLAST1::compare_p() if BLAST2 shows same difference
-#of rounding problem for e-values in the ranking and alignment sections as
-#BLAST1 shows for p-values.
-sub compare_e {
-    shift; my ($h, $r, $dp) = @_;
-    return $h <=> $r;
-}
-
-#'bits' in ranking is subject to rounding to nearest integer: direction of
-#rounding when delta == 0.5 is unimportant in this comparison.
-sub compare_bits {
-    shift; my ($h, $r) = @_;
-    if ($h < $r) {
-	return -1    if $r - $h > 0.5;
-    } elsif ($h > $r) {
-	return  1    if $h - $r > 0.5;
-    }
-    return 0;
-}
+#standard attribute names
+sub score_attr { 'bits' }
+sub sig_attr   { 'expect' }
 
 
 ###########################################################################
@@ -208,7 +192,7 @@ sub parse {
                           $self->cycle,
                           $hit->{'bits'},
                           $hit->{'expect'},
-                          1,
+                          $hit->{'n'},
                           '+',  #query orientation
                           '+',  #sbjct orientation
                       ),
@@ -270,9 +254,9 @@ sub parse_blastp_hits_all {
 	}
 	#override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
+	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('bits', $score);
 	$coll->item($key1)->set_val('expect', $e);
-	$coll->item($key1)->set_val('n', $n);
     }
     $self;
 }
@@ -291,19 +275,15 @@ sub parse_blastp_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    #ignore more than one fragment: assumes first was best
-	    last  unless $coll->item($key1)->count_frag < 1;
+        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #ignore higher e-value than ranked
-	    next  unless $self->compare_e($aln->{'expect'},
-		  $coll->item($key1)->get_val('expect'), 2) < 1;
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore lower score than ranked
-	    next  unless $self->compare_bits($aln->{'bits'},
-                  $coll->item($key1)->get_val('bits'), 2) >= 0;
-
+        foreach my $aln (@$raln) {
+            
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -322,9 +302,14 @@ sub parse_blastp_hits_ranked {
                     $aln->{'sbjct_stop'},
                     $aln->{'bits'},
                 ]);
-	}
-	#override row data
+        }
+        #override row data
 	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $bits, $expect, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('bits', $bits);
+        $coll->item($key1)->set_val('expect', $expect);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -440,7 +425,7 @@ sub parse {
                       '',                    #expectation
                       '',                    #number of HSP used
                       $self->strand,         #query orientation
-                      '?',                   #sbjct orientation (none)
+                      '?',                   #sbjct orientation (unknown)
                   ));
 
     #extract hits and identifiers from the ranking
@@ -466,7 +451,7 @@ sub parse {
                           $self->cycle,
                           $hit->{'bits'},
                           $hit->{'expect'},
-                          1,
+                          $hit->{'n'},
                           $self->strand,  #query orientation
                           '?',            #sbjct orientation (still unknown)
                       ),
@@ -563,16 +548,16 @@ sub parse_blastn_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('bits', $score1);
 	    $coll->item($keyp)->set_val('expect', $e1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('bits', $score2);
 	    $coll->item($keym)->set_val('expect', $e2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -592,50 +577,14 @@ sub parse_blastn_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	#we don't know which hit orientation was chosen for the ranking
-	#since BLASTN neglects to tell us. it is conceivable that two sets
-	#of hits in each orientation could have the same frag 'n' count.
-	#gather both, then decide which the ranking refers to.
-	my @tmp = (); foreach my $aln ($match->parse(qw(ALN))) {
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
 
-            # BLAST1 did this
-            # my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        #nothing matched
+        next  unless @$raln;
 
-	    # #ignore unranked fragments
-	    # next  unless $coll->has($key2);
-
-	    push @tmp, $aln;
-	}
-	next  unless @tmp;
-
-	#define sbjct strand orientation by looking for an HSP with the
-	#same frag count N (already satisfied) and the same e-value.
-	my $orient = '?'; foreach my $aln (@tmp) {
-	    if ($self->compare_e($aln->{'expect'},
-                $coll->item($key1)->get_val('expect'), 2) >= 0) {
-		$orient = $aln->{'sbjct_orient'};
-		last;
-	    }
-	}
-
-	foreach my $aln (@tmp) {
-
-	    #ignore more than one fragment: assumes first was best
-	    last  unless $coll->item($key1)->count_frag < 1;
-
-	    #ignore other subjct orientation
-	    next  unless $aln->{'sbjct_orient'} eq $orient;
-
-	    #ignore higher e-value than ranked
-	    next  unless $self->compare_e($aln->{'expect'},
-		  $coll->item($key1)->get_val('expect'), 2) < 1;
-
-	    #ignore lower score than ranked
-	    next  unless $self->compare_bits($aln->{'bits'},
-                  $coll->item($key1)->get_val('bits'), 2) >= 0;
+        foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -658,7 +607,11 @@ sub parse_blastn_hits_ranked {
 	}
 	#override row data
 	$coll->item($key1)->{'desc'} = $sum->{'desc'};
-	$coll->item($key1)->set_val('sbjct_orient', $orient);
+        my ($N, $bits, $expect, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('bits', $bits);
+        $coll->item($key1)->set_val('expect', $expect);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -803,7 +756,7 @@ sub parse {
                           $self->cycle,
                           $hit->{'bits'},
                           $hit->{'expect'},
-                          1,
+                          $hit->{'n'},
                           $self->strand,  #query orientation
                           '+',            #sbjct orientation
                       ),
@@ -870,9 +823,9 @@ sub parse_blastx_hits_all {
 	}
 	#override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
+	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('bits', $score);
 	$coll->item($key1)->set_val('expect', $e);
-	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('query_orient', $self->strand);
     }
     $self;
@@ -892,21 +845,14 @@ sub parse_blastx_hits_ranked {
 	#ignore hit?
         next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    #ignore more than one fragment: assumes first was best
-	    last  unless $coll->item($key1)->count_frag < 1;
+        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #process by query orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore higher e-value than ranked
-	    next  unless $self->compare_e($aln->{'expect'},
-                  $coll->item($key1)->get_val('expect'), 2) < 1;
-
-	    #ignore lower score than ranked
-	    next  unless $self->compare_bits($aln->{'bits'},
-                  $coll->item($key1)->get_val('bits'), 2) >= 0;
+        foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -929,9 +875,14 @@ sub parse_blastx_hits_ranked {
                     $aln->{'bits'},
                     $aln->{'query_orient'},  #unused
                 ]);
-	}
+        }
 	#override row data
 	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $bits, $expect, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('bits', $bits);
+        $coll->item($key1)->set_val('expect', $expect);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -1046,7 +997,7 @@ sub parse {
                       '',                    #expectation
                       '',                    #number of HSP used
                       '+',                   #query orientation
-                      '?',                   #sbjct orientation (none)
+                      '?',                   #sbjct orientation (unknown)
                   ));
 
     #extract hits and identifiers from the ranking
@@ -1072,7 +1023,7 @@ sub parse {
                           $self->cycle,
                           $hit->{'bits'},
                           $hit->{'expect'},
-                          1,
+                          $hit->{'n'},
                           '+',  #query orientation
                           '?',  #sbjct orientation (unknown)
                       ),
@@ -1168,16 +1119,16 @@ sub parse_tblastn_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('bits', $score1);
 	    $coll->item($keyp)->set_val('expect', $e1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('bits', $score2);
 	    $coll->item($keym)->set_val('expect', $e2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -1197,38 +1148,14 @@ sub parse_tblastn_hits_ranked {
 	#ignore hit?
         next  unless $coll->has($key1);
 
-	#we don't know which hit orientation was chosen for the ranking since
-        #TBLASTN neglects to tell us: gather all fragments before choosing.
-	my @tmp = (); foreach my $aln ($match->parse(qw(ALN))) {
-	    push @tmp, $aln;
-	}
-	next  unless @tmp;
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	#define sbjct strand orientation by looking for an HSP with the
-	#same frag count N (already satisfied) and the same e-value.
-	my $orient = '?'; foreach my $aln (@tmp) {
-	    if ($self->compare_e($aln->{'expect'},
-                $coll->item($key1)->get_val('expect'), 2) >= 0) {
-		$orient = $aln->{'sbjct_orient'};
-		last;
-	    }
-	}
+        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	foreach my $aln (@tmp) {
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore more than one fragment: assumes first was best
-	    last  unless $coll->item($key1)->count_frag < 1;
-
-	    #ignore different hit orientation to ranking
-	    next  unless $aln->{'sbjct_orient'} eq $orient;
-
-	    #ignore higher e-value than ranked
-	    next  unless $self->compare_e($aln->{'expect'},
-                  $coll->item($key1)->get_val('expect'), 2) < 1;
-
-	    #ignore lower score than ranked
-	    next  unless $self->compare_bits($aln->{'bits'},
-                  $coll->item($key1)->get_val('bits'), 2) >= 0;
+        foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1251,9 +1178,13 @@ sub parse_tblastn_hits_ranked {
                     $aln->{'sbjct_orient'},  #unused
                 ]);
 	}
-	#override row data (hit + orientation)
+	#override row data
 	$coll->item($key1)->{'desc'} = $sum->{'desc'};
-	$coll->item($key1)->set_val('sbjct_orient', $orient);
+        my ($N, $bits, $expect, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('bits', $bits);
+        $coll->item($key1)->set_val('expect', $expect);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -1401,7 +1332,7 @@ sub parse {
                           $self->cycle,
                           $hit->{'bits'},
                           $hit->{'expect'},
-                          1,
+                          $hit->{'n'},
                           $self->strand,  #query orientation
                           '?',            #sbjct orientation
                       ),
@@ -1500,16 +1431,16 @@ sub parse_tblastx_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('bits', $score1);
 	    $coll->item($keyp)->set_val('expect', $e1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('bits', $score2);
 	    $coll->item($keym)->set_val('expect', $e2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -1529,40 +1460,14 @@ sub parse_tblastx_hits_ranked {
 	#ignore hit?
         next  unless $coll->has($key1);
 
-	#we don't know which hit orientation was chosen for the ranking since
-        #TBLASTX neglects to tell us: gather all fragments before choosing.
-	my @tmp = (); foreach my $aln ($match->parse(qw(ALN))) {
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
-	    push @tmp, $aln;
-	}
-	next  unless @tmp;
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	#define sbjct strand orientation by looking for an HSP with the
-	#same frag count N (already satisfied) and the same e-value.
-	my $orient = '?'; foreach my $aln (@tmp) {
-	    if ($self->compare_e($aln->{'expect'},
-                $coll->item($key1)->get_val('expect'), 2) >= 0) {
-		$orient = $aln->{'sbjct_orient'};
-		last;
-	    }
-	}
+        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	foreach my $aln (@tmp) {
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore more than one fragment: assumes first was best
-	    last  unless $coll->item($key1)->count_frag < 1;
-
-	    #ignore different hit orientation to ranking
-	    next  unless $aln->{'sbjct_orient'} eq $orient;
-
-	    #ignore higher e-value than ranked
-	    next  unless $self->compare_e($aln->{'expect'},
-                  $coll->item($key1)->get_val('expect'), 2) < 1;
-
-	    #ignore lower score than ranked
-	    next  unless $self->compare_bits($aln->{'bits'},
-		  $coll->item($key1)->get_val('bits'), 2) >= 0;
+        foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
@@ -1585,9 +1490,13 @@ sub parse_tblastx_hits_ranked {
                     $aln->{'sbjct_orient'},  #unused
                 ]);
 	}
-	#override row data (hit + orientation)
+	#override row data
 	$coll->item($key1)->{'desc'} = $sum->{'desc'};
-	$coll->item($key1)->set_val('sbjct_orient', $orient);
+        my ($N, $bits, $expect, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('bits', $bits);
+        $coll->item($key1)->set_val('expect', $expect);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }

@@ -62,11 +62,11 @@ $SIG{'INT'} = sub { warn "$PROG: exiting on interrupt\n"; &cleanup(); exit 1 };
 $com = new Getopt($PROG, \*DATA)->getoptions(\@ARGV);
 $opt = $com->get_option_hash;
 $par = $com->get_parameter_hash;
-&rationalise_parameters($opt, $par);
-&dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
-&usage($com, $opt, $par, 0)    if $opt->{'help'};
+rationalise_parameters($opt, $par);
+dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
+usage($com, $opt, $par, 0)    if $opt->{'help'};
 
-&html_head($opt, $par, $stm);
+html_head($opt, $par, $stm);
 
 #echo command line?
 if ($opt->{'verbose'} & $VERB_ARGV) {
@@ -84,15 +84,15 @@ if ($opt->{'verbose'} & $VERB_ARGV) {
 }
 
 #leading copyright?
-print $stm &copyright($opt)    if $opt->{'out'} eq 'rdb';
+print $stm copyright($opt)    if $opt->{'out'} eq 'rdb';
 
 #colormap listing request: no alignment
 if ($opt->{'listcolors'}) {
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     print $stm Bio::MView::Manager::list_colormaps($opt->{'html'});
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit 0;
 }
 
@@ -101,8 +101,8 @@ if ($opt->{'listgroups'}) {
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     print $stm Bio::MView::Manager::list_groupmaps($opt->{'html'});
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit 0;
 }
 
@@ -115,7 +115,7 @@ if ($opt->{'listcss'}) {
 	'symcolor' => $par->{'symcolor'},
 	'gapcolor' => $par->{'gapcolor'},
 	);
-    exit(0);
+    exit 0;
 }
 
 #read from stdin?
@@ -127,17 +127,20 @@ unless (@ARGV or $opt->{'noparse'}) {
     push @ARGV, $SCRATCH;
 }
 
-my $acount = mview($opt, $par, $stm, @ARGV);
-
-#trailing copyright?
-print $stm &copyright($opt)
-    if $acount and $opt->{'html'} != $HTML_DATA and $opt->{'out'} =~ /^new/;
-
-&html_foot($opt, $par, $stm);
+#do the real work
+if (mview($opt, $par, $stm, @ARGV)) {
+    print $stm copyright($opt)  if $opt->{'html'} != $HTML_DATA and
+        $opt->{'out'} =~ /^new/;
+} else {
+    my $s = "$PROG: no alignments found\n";
+    print $s  if $opt->{'html'} and $opt->{'html'} != $HTML_DATA;
+    warn $s;
+}
+html_foot($opt, $par, $stm);
 
 #Universal::vmstat("FINISHED.");
 
-&cleanup();
+cleanup();
 
 
 ###########################################################################
@@ -384,19 +387,19 @@ sub check_format {
 
     #unknown format
     warn "$PROG: can't determine format of '$_[0]'\n";
-    &cleanup();
+    cleanup();
     exit 1;
 }
 
 sub usage {
     my ($com, $opt, $par, $exit, $stm) = (@_, *STDOUT);
     $opt->{'title'} = 'MView command line options';
-    &html_head($opt, $par, $stm);
+    html_head($opt, $par, $stm);
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     $com->usage($stm);
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit $exit    if defined $exit;
 }
 
