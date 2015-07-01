@@ -145,11 +145,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit OR opt
-	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_frag($hit->{'opt'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -287,11 +285,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit OR opt
-	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'opt'});
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_frag($hit->{'opt'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 

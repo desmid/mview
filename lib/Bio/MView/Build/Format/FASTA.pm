@@ -15,7 +15,7 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
-use Bio::MView::Build::Search
+use Bio::MView::Build::Search;
 use NPB::Parse::Regexps;
 
 use strict;
@@ -83,20 +83,11 @@ sub strand { $_[0]->{scheduler}->item }
 #compare argument with current strand
 sub use_strand { $_[0]->{scheduler}->use_item($_[1]) }
 
-#row filter
-sub use_row {
-    my ($self, $rank, $nid, $sid, $opt) = @_;
-    my $use = $self->SUPER::use_row($rank, $nid, $sid);
-    $use = $self->use_frag($opt)  if $use == 1;
-    #warn "FASTA::use_row($rank, $nid, $sid, $opt) = $use\n";
-    return $use;
-}
-
 #minopt filter
-sub use_frag {
+sub skip_frag {
     my ($self, $opt) = @_;
-    return 0  if defined $self->{'minopt'} and $opt < $self->{'minopt'};
-    return 1;
+    return 1  if defined $self->{'minopt'} and $opt < $self->{'minopt'};
+    return 0;
 }
 
 #remove query and hit columns at gaps and frameshifts in the query sequence;

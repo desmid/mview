@@ -340,12 +340,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit OR initn OR
-	#initn in fastm rankings.
-	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'initn'});
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_frag($hit->{'initn'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -565,13 +562,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit OR score:
-	#in ssearch rankings, 'score' seems the same as 'opt in the summaries
-	#so use the same fasta use_row filter
-	my $use = $self->use_row($rank, $rank, $hit->{'id'}, $hit->{'score'});
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_frag($hit->{'score'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
