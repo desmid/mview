@@ -5,7 +5,7 @@
 package Bio::MView::Sequence;
 use strict;
 
-use vars qw($REPORT_CLASH $OVERWRITE $HARDFASTA);
+use vars qw($WARNCLASH $OVERWRITE $HARDFASTA);
 
 my $Find_Pad = '[-._~]';  #input terminal gap characters
 my $Find_Gap = '[-._~]';  #input internal gap characters
@@ -25,9 +25,9 @@ my $Mark_Spc = "\003";    #encoded whitespace
 my $Mark_Fs1 = "\004";    #encoded frameshift
 my $Mark_Fs2 = "\005";    #encoded frameshift
 
-$REPORT_CLASH = 0;  #set to 1 to enable reporting of clashing symbols
-$OVERWRITE = 0;     #set to 1 to enable clash overwrite by newest symbol
-$HARDFASTA = 0;     #relax length rules for UV. FASTA input
+$WARNCLASH = 0;    #set to 1 to enable reporting of clashing symbols
+$OVERWRITE = 0;    #set to 1 to enable clash overwrite by newest symbol
+$HARDFASTA = 0;    #relax length rules for UV. FASTA input
 
 #All range numbers count from 1, set to 0 when undefined.
 #
@@ -380,7 +380,7 @@ sub insert {
 	    if (exists $self->{'seq'}->{$p}) {
 		next if $self->{'seq'}->{$p} eq $c;
 		warn "${self}::insert(+): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::REPORT_CLASH;
+		    if $Bio::MView::Sequence::WARNCLASH;
 		next unless $Bio::MView::Sequence::OVERWRITE;
 		#unrecord old frameshift
 		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
@@ -599,7 +599,7 @@ sub insert {
 	    if (exists $self->{'seq'}->{$p}) {
 		next if $self->{'seq'}->{$p} eq $c;
 		warn "${self}::insert(-): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::REPORT_CLASH;
+		    if $Bio::MView::Sequence::WARNCLASH;
 		next unless $Bio::MView::Sequence::OVERWRITE;
 		#unrecord old frameshift
 		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
