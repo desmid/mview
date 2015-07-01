@@ -17,17 +17,19 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST);
 
-#bits/E-value filter
+#score/significance filter
 sub skip_hsp {
-    my ($self, $bits, $eval) = @_;
-    return 1  if defined $self->{'maxeval'} and $eval > $self->{'maxeval'};
-    return 1  if defined $self->{'minbits'} and $bits < $self->{'minbits'};
+    my ($self, $hsp) = @_;
+    return 1  if
+        defined $self->{'minbits'} and $hsp->{'bits'} < $self->{'minbits'};
+    return 1  if
+        defined $self->{'maxeval'} and $hsp->{'expect'} > $self->{'maxeval'};
     return 0;
 }
 
 #standard attribute names
-sub score_attr { 'bits' }
-sub sig_attr   { 'expect' }
+sub attr_score { 'bits' }
+sub attr_sig   { 'expect' }
 
 
 ###########################################################################
@@ -167,7 +169,7 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
+        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -216,8 +218,8 @@ sub parse_blastp_hits_all {
 
 	foreach my $aln ($match->parse(qw(ALN))) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #accumulate row data
 	    $score = $aln->{'bits'}    if $aln->{'bits'}   > $score;
@@ -271,8 +273,8 @@ sub parse_blastp_hits_ranked {
         next  unless @$raln;
 
         foreach my $aln (@$raln) {
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -321,7 +323,7 @@ sub parse_blastp_hits_discrete {
 
 	    #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln);
 
 	    if (! $coll->has($key2)) {
 
@@ -356,8 +358,6 @@ sub parse_blastp_hits_discrete {
                     $aln->{'bits'},
                 ]);
 	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -422,7 +422,7 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
+        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -474,11 +474,23 @@ sub parse_blastn_hits_all {
 	    #ignore other query strand orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
+
+	    #accumulate row data
+	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
-	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
+
+	    if ($orient eq '+') {
+		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
+		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
+		$n1++;
+	    } else {
+		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
+		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
+		$n2++;
+	    }
 
             my $key2 = $coll->key($sum->{'id'}, $orient);
 
@@ -497,17 +509,6 @@ sub parse_blastn_hits_all {
                               ),
                               $key2
                     );
-	    }
-
-	    #accumulate row data
-	    if ($orient eq '+') {
-		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
-		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
-		$n1++;
-	    } else {
-		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
-		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
-		$n2++;
 	    }
 
 	    #for gapped alignments
@@ -570,8 +571,8 @@ sub parse_blastn_hits_ranked {
 
         foreach my $aln (@$raln) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -623,7 +624,7 @@ sub parse_blastn_hits_discrete {
 
 	    #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln);
 
 	    if (! $coll->has($key2)) {
 
@@ -658,8 +659,6 @@ sub parse_blastn_hits_discrete {
                     $aln->{'bits'},
                 ]);
 	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -724,7 +723,7 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
+        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -776,8 +775,8 @@ sub parse_blastx_hits_all {
 	    #ignore other query strand orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #accumulate row data
 	    $score = $aln->{'bits'}    if $aln->{'bits'}   > $score;
@@ -835,8 +834,8 @@ sub parse_blastx_hits_ranked {
 
         foreach my $aln (@$raln) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -890,7 +889,7 @@ sub parse_blastx_hits_discrete {
 
 	    #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln);
 
 	    if (! $coll->has($key2)) {
 
@@ -930,8 +929,6 @@ sub parse_blastx_hits_discrete {
                     $aln->{'query_orient'},  #unused
                 ]);
 	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -987,7 +984,7 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
+        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1036,11 +1033,23 @@ sub parse_tblastn_hits_all {
 
 	foreach my $aln ($match->parse(qw(ALN))) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
+
+	    #accumulate row data
+	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
-	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
+
+	    if ($orient eq '+') {
+		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
+		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
+		$n1++;
+	    } else {
+		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
+		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
+		$n2++;
+	    }
 
             my $key2 = $coll->key($sum->{'id'}, $orient);
 
@@ -1059,17 +1068,6 @@ sub parse_tblastn_hits_all {
                               ),
                               $key2
                     );
-	    }
-
-	    #accumulate row data
-	    if ($orient eq '+') {
-		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
-		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
-		$n1++;
-	    } else {
-		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
-		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
-		$n2++;
 	    }
 
 	    #for gapped alignments
@@ -1134,8 +1132,8 @@ sub parse_tblastn_hits_ranked {
 
         foreach my $aln (@$raln) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1186,7 +1184,7 @@ sub parse_tblastn_hits_discrete {
 
 	    #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln);
 
 	    if (! $coll->has($key2)) {
 
@@ -1227,8 +1225,6 @@ sub parse_tblastn_hits_discrete {
                     $aln->{'sbjct_orient'},  #unused
                 ]);
 	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
     }
     $self;
 }
@@ -1293,7 +1289,7 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
+        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1345,11 +1341,23 @@ sub parse_tblastx_hits_all {
 	    #process by query orientation
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
-	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
+	    #accumulate row data
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
+
+            my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
+
+	    if ($orient eq '+') {
+		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
+		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
+		$n1++;
+	    } else {
+		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
+		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
+		$n2++;
+	    }
 
 	    my $key2 = $coll->key($sum->{'id'}, $orient);
 
@@ -1368,17 +1376,6 @@ sub parse_tblastx_hits_all {
                               ),
                               $key2
                     );
-	    }
-
-	    #accumulate row data
-	    if ($orient eq '+') {
-		$score1 = $aln->{'bits'}   if $aln->{'bits'}   > $score1;
-		$e1     = $aln->{'expect'} if $aln->{'expect'} < $e1 or $e1 < 0;
-		$n1++;
-	    } else {
-		$score2 = $aln->{'bits'}   if $aln->{'bits'}   > $score2;
-		$e2     = $aln->{'expect'} if $aln->{'expect'} < $e2 or $e2 < 0;
-		$n2++;
 	    }
 
 	    #for gapped alignments
@@ -1443,8 +1440,8 @@ sub parse_tblastx_hits_ranked {
 
         foreach my $aln (@$raln) {
 
-	    #apply score/E-value filter
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+	    #apply score/significance filter
+            next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1498,7 +1495,7 @@ sub parse_tblastx_hits_discrete {
 
 	    #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
-            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln);
 
 	    if (! $coll->has($key2)) {
 
@@ -1542,8 +1539,6 @@ sub parse_tblastx_hits_discrete {
                     $aln->{'sbjct_orient'},  #unused
                 ]);
 	}
-        #override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
     }
     $self;
 }

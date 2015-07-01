@@ -62,6 +62,9 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
+    $self->{'attr_score'} = $self->attr_score;
+    $self->{'attr_sig'}   = $self->attr_sig;
+
     $self->initialise_parameters;
     $self->initialise_child;
 
@@ -178,24 +181,24 @@ sub build_rows {
 sub samesign { substr($_[1], 0, 1) eq substr($_[2], 0, 1) }
 
 #override as necessary
-sub score_attr { 'unknown' }
-sub sig_attr   { 'unknown' }
+sub attr_score { 'unknown' }
+sub attr_sig   { 'unknown' }
 
 #utility/testing function
 sub report_ranking_data {
     my ($self, $match, $coll, $rkey, $qorient) = @_;
     return  unless $qorient eq '+';  #called multiply; only want one pass
-    my $n     = $coll->item($rkey)->get_val('n'),
-    my $score = $coll->item($rkey)->get_val($self->score_attr),
-    my $sig   = $coll->item($rkey)->get_val($self->sig_attr);
+    my $n     = $coll->item($rkey)->get_val('n');
+    my $score = $coll->item($rkey)->get_val($self->{'attr_score'});
+    my $sig   = $coll->item($rkey)->get_val($self->{'attr_sig'});
     my $state = -1;
     my ($asco, $asig);
     #look for a match (ranking==hit by score and sig) in either orientation
     foreach my $aln ($match->parse(qw(ALN))) {
         last  if $state > 1;
         $state = 0; #entered loop body at least once
-        $asco = $aln->{$self->score_attr};
-        $asig = $aln->{$self->sig_attr};
+        $asco = $aln->{$self->{'attr_score'}};
+        $asig = $aln->{$self->{'attr_sig'}};
         #match conditions
         $state = 2, next  if $score == $asco and $sig == $asig;
         my $ascor = sprintf('%0.f', $asco);
@@ -209,8 +212,8 @@ sub report_ranking_data {
     #no match, start reporting
     warn "(@{[$self->cycle]})$rkey <<<<<<<<<<<<<<<<\n";
     foreach my $aln ($match->parse(qw(ALN))) {
-        my $asco = $aln->{$self->score_attr};
-        my $asig = $aln->{$self->sig_attr};
+        my $asco = $aln->{$self->{'attr_score'}};
+        my $asig = $aln->{$self->{'attr_sig'}};
         my $aqorient = $aln->{'query_orient'};
         warn "$aqorient score: $score $asco " . "sig: $sig $asig  " .
             "@{[$score == $asco ? '1' : '0']} @{[$sig == $asig ? '1' : '0']} | @{[$score == sprintf('%0.f', $asco) ? '1' : '0']}\n";
@@ -226,8 +229,8 @@ sub get_hsp_groups {
     my $hash = {};
     foreach my $aln ($match->parse(qw(ALN))) {
         my $n       = $aln->{'n'};
-        my $score   = $aln->{$self->score_attr};
-        my $sig     = $aln->{$self->sig_attr};
+        my $score   = $aln->{$self->{'attr_score'}};
+        my $sig     = $aln->{$self->{'attr_sig'}};
         my $qorient = $aln->{'query_orient'};
         my $sorient = $aln->{'sbjct_orient'};
         my (%tmp, $key);
@@ -235,7 +238,7 @@ sub get_hsp_groups {
         #key by significance: can exceed $n if more HSP have the same sig
         %tmp = ( $sig => 1 );               #raw significance value
         #BLAST1 and WU-BLAST
-        if ($self->sig_attr eq 'p' and $sig !~ /e/i) {
+        if ($self->{'attr_sig'} eq 'p' and $sig !~ /e/i) {
             $tmp{sprintf("%.2f", $sig)}++;  #rounded sig (2dp)
         }
         #generic
@@ -284,7 +287,7 @@ sub get_ranked_hsps_by_query {
     my ($self, $hash, $coll, $rkey, $qorient) = @_;
 
     my $n        = $coll->item($rkey)->get_val('n');
-    my $score    = $coll->item($rkey)->get_val($self->score_attr);
+    my $score    = $coll->item($rkey)->get_val($self->{'attr_score'});
     my $qorient2 = ($qorient eq '+' ? '-' : '+');
 
     $n = 1  unless $n;  #no N in ranking
@@ -305,8 +308,8 @@ sub get_ranked_hsps_by_query {
 
         #take the sig of the first matching HSP: expand that set
         my $n     = $hash->{$key}->[0]->{'n'};
-        my $score = $hash->{$key}->[0]->{$self->score_attr};
-        my $sig   = $hash->{$key}->[0]->{$self->sig_attr};
+        my $score = $hash->{$key}->[0]->{$self->{'attr_score'}};
+        my $sig   = $hash->{$key}->[0]->{$self->{'attr_sig'}};
         warn "MAP: $qorient $n $score -> $sig\n"  if $D;
 
         my $match;
@@ -524,8 +527,8 @@ sub get_scores {
     my ($score, $sorient) = (0,'?');
 
     foreach my $aln (@$alist) {
-        $score = $aln->{$self->score_attr}  if
-            $aln->{$self->score_attr} > $score;
+        $score = $aln->{$self->{'attr_score'}}  if
+            $aln->{$self->{'attr_score'}} > $score;
 
         $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
 
@@ -535,10 +538,10 @@ sub get_scores {
     }
 
     my $n = scalar @$alist;
-    my $sig = $alist->[0]->{$self->sig_attr};
+    my $sig = $alist->[0]->{$self->{'attr_sig'}};
 
     #try to preserve original precision/format as far as possible
-    if ($self->sig_attr eq 'p') {  #BLAST1 and WU-BLAST
+    if ($self->{'attr_sig'} eq 'p') {  #BLAST1 and WU-BLAST
         if ($sig !~ /e/i) {
             $sig = sprintf("%.5f", $sig);
             $sig =~ s/\.(\d{2}\d*?)0+$/.$1/;   #trailing zeros after 2dp
