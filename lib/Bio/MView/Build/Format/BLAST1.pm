@@ -34,21 +34,8 @@ sub use_hsp {
     return 1;
 }
 
-#BLAST alignments ($h) round non-scientific notation p-values to 2 decimal
-#places, but the ranking ($r) reports more places than this: use this function
-#to compare the two p-values, returning -1, 0, +1 as $h <=> $r. If $h and $r
-#aren't in scientific notation, $h (not $r) may be rounded: treat $h == $r
-#when $h > $r and the rounded difference (delta) to $dp decimal place accuracy
-#is less than 0.5.
-sub compare_p {
-    shift; my ($h, $r, $dp) = (@_, 2);
-    return $h <=> $r  if $h =~ /e/i and $r =~ /e/i;
-    while ($dp--) { $h *= 10; $r *= 10 }
-    my $delta = $h - $r;
-    return -1  if $delta < -0.5;
-    return  1  if $delta >  0.5;
-    return  0;  #equal within error
-}
+sub score_attr { 'score' }
+sub sig_attr   { 'p' }
 
 
 ###########################################################################
@@ -136,7 +123,7 @@ sub scheduler { 'none' }
 
 sub parse {
     my $self = shift;
-    
+
     #one query orientation
     return  unless defined $self->{scheduler}->next;
 
@@ -162,7 +149,7 @@ sub parse {
                       '+',                   #query orientation
                       '+',                   #sbjct orientation
                   ));
-    
+
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
@@ -178,7 +165,6 @@ sub parse {
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
-        my $key2 = $coll->key($hit->{'n'}, $hit->{'id'});
 
         $coll->insert(new Bio::MView::Build::Row::BLAST1::blastp(
                           $rank,
@@ -190,14 +176,14 @@ sub parse {
                           '+',  #query orientation
                           '+',  #sbjct orientation
                       ),
-                      $key1, $key2
+                      $key1
             );
     }
 
     $self->parse_blastp_hits_all($coll)       if $self->{'hsp'} eq 'all';
     $self->parse_blastp_hits_ranked($coll)    if $self->{'hsp'} eq 'ranked';
     $self->parse_blastp_hits_discrete($coll)  if $self->{'hsp'} eq 'discrete';
-    
+
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
@@ -212,7 +198,7 @@ sub parse_blastp_hits_all {
 
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
-	
+
         my $key1 = $coll->key($sum->{'id'});
 
 	#ignore hit?
@@ -221,10 +207,10 @@ sub parse_blastp_hits_all {
 	my ($n, $score, $p) = (0, 0, 1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
-	    
+
 	    #accumulate row data
 	    $score = $aln->{'score'}  if $aln->{'score'} > $score;
 	    $p     = $aln->{'p'}      if $aln->{'p'}     < $p;
@@ -248,9 +234,9 @@ sub parse_blastp_hits_all {
 	}
 	#override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
+	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('score', $score);
 	$coll->item($key1)->set_val('p', $p);
-	$coll->item($key1)->set_val('n', $n);
     }
     $self;
 }
@@ -263,31 +249,29 @@ sub parse_blastp_hits_ranked {
 
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
-	
+
         my $key1 = $coll->key($sum->{'id'});
 
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
-	    
-	    my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    #ignore unranked fragments
-	    next  unless $coll->has($key2);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #ignore higher p-value than ranked
-	    next  unless $self->compare_p($aln->{'p'},
-			 $coll->item($key2)->get_val('p'), 2) < 1;
+        #nothing matched
+        next  unless @$raln;
+
+        foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
-	    
+
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
-                $key2, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -298,9 +282,14 @@ sub parse_blastp_hits_ranked {
                     $aln->{'sbjct_stop'},
                     $aln->{'score'},
                 ]);
-	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
+        }
+        #override row data
+	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $score, $p, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('score', $score);
+        $coll->item($key1)->set_val('p', $p);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -313,7 +302,7 @@ sub parse_blastp_hits_discrete {
 
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
-	
+
         my $key1 = $coll->key($sum->{'id'});
 
 	#ignore hit?
@@ -345,7 +334,7 @@ sub parse_blastp_hits_discrete {
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
-	    
+
             $coll->add_frags(
                 $key2, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
@@ -386,7 +375,7 @@ sub subheader {
 
 sub parse {
     my $self = shift;
-    
+
     #two query orientations
     return  unless defined $self->{scheduler}->next;
 
@@ -410,9 +399,9 @@ sub parse {
                       '',                    #p-value
                       '',                    #number of HSP used
                       $self->strand,         #query orientation
-                      '?',                   #sbjct orientation (none)
+                      '?',                   #sbjct orientation (unknown)
                   ));
-    
+
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
@@ -428,7 +417,6 @@ sub parse {
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
-        my $key2 = $coll->key($hit->{'n'}, $hit->{'id'});
 
 	$coll->insert(new Bio::MView::Build::Row::BLAST1::blastn(
                           $rank,
@@ -438,9 +426,9 @@ sub parse {
                           $hit->{'p'},
                           $hit->{'n'},
                           $self->strand,  #query orientation
-                          '?',            #sbjct orientation (still unknown)
+                          '?',            #sbjct orientation (unknown)
                       ),
-                      $key1, $key2
+                      $key1
             );
     }
 
@@ -477,7 +465,7 @@ sub parse_blastn_hits_all {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
-	    
+
 	    #accumulate row data
             my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
@@ -533,16 +521,16 @@ sub parse_blastn_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('score', $score1);
 	    $coll->item($keyp)->set_val('p', $p1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('score', $score2);
 	    $coll->item($keym)->set_val('p', $p2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -562,42 +550,14 @@ sub parse_blastn_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	#we don't know which hit orientation was chosen for the ranking
-	#since BLASTN neglects to tell us. it is conceivable that two sets 
-	#of hits in each orientation could have the same frag 'n' count.
-	#gather both, then decide which the ranking refers to.
-	my @tmp = (); foreach my $aln ($match->parse(qw(ALN))) {
-	    
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #ignore unranked fragments
-	    next  unless $coll->has($key2);
+        #nothing matched
+        next  unless @$raln;
 
-	    push @tmp, $aln;
-	}
-	next  unless @tmp;
-
-	#define sbjct strand orientation by looking for an HSP with the
-	#same frag count N (already satisfied) and the same p-value.
-	my $orient = '?'; foreach my $aln (@tmp) {
-	    if ($self->compare_p($aln->{'p'},
-		$coll->item($key1)->get_val('p'), 2) >= 0) {
-		$orient = $aln->{'sbjct_orient'};
-		last;
-	    }
-	}
-
-	foreach my $aln (@tmp) {
-
-	    #ignore other subjct orientation
-	    next  unless $aln->{'sbjct_orient'} eq $orient;
-
-	    #ignore higher p-value than ranked
-	    next  unless $self->compare_p($aln->{'p'},
-			 $coll->item($key1)->get_val('p'), 2) < 1;
+        foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -605,7 +565,7 @@ sub parse_blastn_hits_ranked {
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
-	    $coll->add_frags(
+            $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
@@ -617,10 +577,14 @@ sub parse_blastn_hits_ranked {
                     $aln->{'sbjct_stop'},
                     $aln->{'score'},
                 ]);
-	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
-	$coll->item($key1)->set_val('sbjct_orient', $orient);
+        }
+        #override row data
+	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $score, $p, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('score', $score);
+        $coll->item($key1)->set_val('p', $p);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -638,7 +602,7 @@ sub parse_blastn_hits_discrete {
 
 	#ignore hit?
 	next  unless $coll->has($key1);
-	
+
 	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #ignore other query strand orientation
@@ -649,9 +613,9 @@ sub parse_blastn_hits_discrete {
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
 					$aln->{'score'}, $aln->{'p'});
-	    
+
 	    if (! $coll->has($key2)) {
-		
+
 		$coll->insert(new Bio::MView::Build::Row::BLAST1::blastn(
                                   $key2,
                                   $sum->{'id'},
@@ -704,12 +668,12 @@ sub subheader {
     return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
     my $self = shift;
-    
+
     #two query orientations
     return  unless defined $self->{scheduler}->next;
 
@@ -751,7 +715,6 @@ sub parse {
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
-        my $key2 = $coll->key($hit->{'n'}, $hit->{'id'});
 
 	$coll->insert(new Bio::MView::Build::Row::BLAST1::blastx(
                           $rank,
@@ -766,7 +729,7 @@ sub parse {
                           ),    #query orientation
                           '+',  #sbjct orientation
                       ),
-                      $key1, $key2
+                      $key1
             );
     }
 
@@ -793,17 +756,17 @@ sub parse_blastx_hits_all {
 
 	#ignore hit?
 	next  unless $coll->has($key1);
-	
+
 	my ($n, $score, $p) = (0, 0, 1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #ignore other query strand orientation
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
-	    
+
 	    #accumulate row data
 	    $score = $aln->{'score'}  if $aln->{'score'} > $score;
 	    $p     = $aln->{'p'}      if $aln->{'p'}     < $p;
@@ -829,9 +792,9 @@ sub parse_blastx_hits_all {
 	}
 	#override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
+	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('score', $score);
 	$coll->item($key1)->set_val('p', $p);
-	$coll->item($key1)->set_val('n', $n);
 	$coll->item($key1)->set_val('query_orient', $self->strand);
     }
     $self;
@@ -851,19 +814,14 @@ sub parse_blastx_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
-	    
-	    #process by query orientation
-	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #ignore unranked fragments
-            next  unless $coll->has($key2);
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore higher p-value than ranked
-	    next  unless $self->compare_p($aln->{'p'},
-			 $coll->item($key1)->get_val('p'), 2) < 1;
+        foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -871,7 +829,7 @@ sub parse_blastx_hits_ranked {
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
-	    $coll->add_frags(
+            $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
@@ -884,14 +842,19 @@ sub parse_blastx_hits_ranked {
                     $aln->{'sbjct_stop'},
                     $aln->{'score'},
                     $aln->{'query_frame'},  #unused
-		]);
-	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
+                ]);
+        }
+        #override row data
+	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $score, $p, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('score', $score);
+        $coll->item($key1)->set_val('p', $p);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
-    
+
 sub parse_blastx_hits_discrete {
     my ($self, $coll) = @_;
 
@@ -906,8 +869,9 @@ sub parse_blastx_hits_discrete {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
+
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #process by query orientation
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
@@ -972,7 +936,7 @@ sub scheduler { 'none' }
 
 sub parse {
     my $self = shift;
-    
+
     #one query orientation
     return  unless defined $self->{scheduler}->next;
 
@@ -996,9 +960,9 @@ sub parse {
                       '',                    #p-value
                       '',                    #number of HSP used
                       '+',                   #query orientation
-                      '?',                   #sbjct orientation (none)
+                      '?',                   #sbjct orientation (unknown)
                   ));
-    
+
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
@@ -1014,7 +978,6 @@ sub parse {
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
-        my $key2 = $coll->key($hit->{'n'}, $hit->{'id'});
 
 	$coll->insert(new Bio::MView::Build::Row::BLAST1::tblastn(
                           $rank,
@@ -1023,17 +986,17 @@ sub parse {
                           $hit->{'score'},
                           $hit->{'p'},
                           $hit->{'n'},
-                          '+',                    #query orientation
-                          $hit->{'sbjct_frame'},  #sbjct orientation
+                          '+',  #query orientation
+                          '?',  #sbjct orientation (unknown)
                       ),
-                      $key1, $key2
+                      $key1
             );
     }
 
     $self->parse_tblastn_hits_all($coll)       if $self->{'hsp'} eq 'all';
     $self->parse_tblastn_hits_ranked($coll)    if $self->{'hsp'} eq 'ranked';
     $self->parse_tblastn_hits_discrete($coll)  if $self->{'hsp'} eq 'discrete';
-    
+
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
@@ -1057,7 +1020,7 @@ sub parse_tblastn_hits_all {
 	my ($n1,$n2, $score1,$score2, $p1,$p2) = (0,0,  0,0, 1,1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
 
@@ -1118,16 +1081,16 @@ sub parse_tblastn_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('score', $score1);
 	    $coll->item($keyp)->set_val('p', $p1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('score', $score2);
 	    $coll->item($keym)->set_val('p', $p2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -1147,20 +1110,14 @@ sub parse_tblastn_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
-	    
-	    #ignore different hit frame to ranking
-	    next  unless $aln->{'sbjct_frame'} eq
-		$coll->item($key1)->get_val('sbjct_orient');
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    #ignore unranked fragments
-	    next  unless $coll->has($key2);
-	    
-	    #ignore higher p-value than ranked
-	    next  unless $self->compare_p($aln->{'p'},
-			 $coll->item($key1)->get_val('p'), 2) < 1;
+        #nothing matched
+        next  unless @$raln;
+
+        foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -1168,7 +1125,7 @@ sub parse_tblastn_hits_ranked {
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
-	    $coll->add_frags(
+            $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
@@ -1182,9 +1139,14 @@ sub parse_tblastn_hits_ranked {
                     $aln->{'score'},
                     $aln->{'sbjct_frame'},  #unused
                 ]);
-	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
+        }
+        #override row data
+	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $score, $p, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('score', $score);
+        $coll->item($key1)->set_val('p', $p);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -1204,15 +1166,15 @@ sub parse_tblastn_hits_discrete {
 	next  unless $coll->has($key1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
 					$aln->{'score'}, $aln->{'p'});
-	    
+
 	    if (! $coll->has($key2)) {
-		
+
 		$coll->insert(new Bio::MView::Build::Row::BLAST1::tblastn(
                                   $key2,
                                   $sum->{'id'},
@@ -1271,12 +1233,12 @@ sub subheader {
     return $s  if $quiet;
     $s  = $self->SUPER::subheader($quiet);
     $s .= "Query orientation: " . $self->strand . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
     my $self = shift;
-    
+
     #two query orientations
     return  unless defined $self->{scheduler}->next;
 
@@ -1300,9 +1262,9 @@ sub parse {
                       '',                    #p-value
                       '',                    #number of HSP used
                       $self->strand,         #query orientation
-                      '?',                   #sbjct orientation (none)
+                      '?',                   #sbjct orientation (unknown)
                   ));
-    
+
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
@@ -1318,7 +1280,6 @@ sub parse {
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
-        my $key2 = $coll->key($hit->{'n'}, $hit->{'id'});
 
 	$coll->insert(new Bio::MView::Build::Row::BLAST1::tblastx(
                           $rank,
@@ -1327,10 +1288,10 @@ sub parse {
                           $hit->{'score'},
                           $hit->{'p'},
                           $hit->{'n'},
-                          $self->strand,          #query orientation
-                          $hit->{'sbjct_frame'},  #sbjct orientation
+                          $self->strand,  #query orientation
+                          '?',            #sbjct orientation (unknown)
                       ),
-                      $key1, $key2
+                      $key1
             );
     }
 
@@ -1361,13 +1322,13 @@ sub parse_tblastx_hits_all {
 	my ($n1,$n2, $score1,$score2, $p1,$p2) = (0,0,  0,0, 1,1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #process by query orientation
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
-	    
+
 	    #accumulate row data
             my $orient = substr($aln->{'sbjct_frame'}, 0, 1);
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
@@ -1425,16 +1386,16 @@ sub parse_tblastx_hits_all {
 	#override row data (hit + orientation)
 	my $keyp = $coll->key($key1, '+');
 	if ($coll->has($keyp)) {
+	    $coll->item($keyp)->set_val('n', $n1);
 	    $coll->item($keyp)->set_val('score', $score1);
 	    $coll->item($keyp)->set_val('p', $p1);
-	    $coll->item($keyp)->set_val('n', $n1);
 	}
 	#override row data (hit - orientation)
 	my $keym = $coll->key($key1, '-');
 	if ($coll->has($keym)) {
+	    $coll->item($keym)->set_val('n', $n2);
 	    $coll->item($keym)->set_val('score', $score2);
 	    $coll->item($keym)->set_val('p', $p2);
-	    $coll->item($keym)->set_val('n', $n2);
 	}
     }
     $self;
@@ -1454,23 +1415,14 @@ sub parse_tblastx_hits_ranked {
 	#ignore hit?
 	next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
-	    
-	    #process by query orientation
-	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
+        #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-	    #ignore different hit frame to ranking
-	    next  unless $aln->{'sbjct_frame'} eq 
-		$coll->item($key1)->get_val('sbjct_orient');
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
-	    my $key2 = $coll->key($aln->{'n'}, $sum->{'id'});
+        #nothing matched
+        next  unless @$raln;
 
-	    #ignore unranked fragments
-	    next  unless $coll->has($key2);
-	    
-	    #ignore higher p-value than ranked
-	    next  unless $self->compare_p($aln->{'p'},
-			 $coll->item($key1)->get_val('p'), 2) < 1;
+        foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
 	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
@@ -1478,7 +1430,7 @@ sub parse_tblastx_hits_ranked {
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
-	    $coll->add_frags(
+            $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
@@ -1490,11 +1442,16 @@ sub parse_tblastx_hits_ranked {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{'score'},
-                    $aln->{'sbjct_frame'},  #unused
+                    $aln->{'query_frame'},  #unused
                 ]);
-	}
-	#override row data
-        $coll->item($key1)->{'desc'} = $sum->{'desc'};
+        }
+        #override row data
+	$coll->item($key1)->{'desc'} = $sum->{'desc'};
+        my ($N, $score, $p, $sorient) = $self->get_scores($raln);
+        $coll->item($key1)->set_val('n', $N);
+        $coll->item($key1)->set_val('score', $score);
+        $coll->item($key1)->set_val('p', $p);
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
     $self;
 }
@@ -1514,7 +1471,7 @@ sub parse_tblastx_hits_discrete {
 	next  unless $coll->has($key1);
 
 	foreach my $aln ($match->parse(qw(ALN))) {
-	    
+
 	    #process by query orientation
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
@@ -1523,9 +1480,9 @@ sub parse_tblastx_hits_discrete {
 	    #apply row filter with new row numbers
 	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
 					$aln->{'score'}, $aln->{'p'});
-	    
+
 	    if (! $coll->has($key2)) {
-		
+
 		$coll->insert(new Bio::MView::Build::Row::BLAST1::tblastx(
                                   $key2,
                                   $sum->{'id'},

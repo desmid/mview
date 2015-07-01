@@ -277,13 +277,12 @@ sub parse_blastp_hits_ranked {
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
         #nothing matched
         next  unless @$raln;
 
         foreach my $aln (@$raln) {
-            
 	    #apply score/E-value filter
 	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
 
@@ -579,7 +578,7 @@ sub parse_blastn_hits_ranked {
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
         #nothing matched
         next  unless @$raln;
@@ -847,7 +846,7 @@ sub parse_blastx_hits_ranked {
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
         #nothing matched
         next  unless @$raln;
@@ -867,7 +866,6 @@ sub parse_blastx_hits_ranked {
                     $aln->{'query_stop'},
                     1,
                     $aln->{'query_orient'},  #unused
-
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
@@ -1150,7 +1148,7 @@ sub parse_tblastn_hits_ranked {
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
         #nothing matched
         next  unless @$raln;
@@ -1462,7 +1460,7 @@ sub parse_tblastx_hits_ranked {
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
-        my $raln = $self->find_ranked_hsps($match, $coll, $key1, $self->strand);
+        my $raln = $self->get_ranked_hsps($match, $coll, $key1, $self->strand);
 
         #nothing matched
         next  unless @$raln;
@@ -1481,13 +1479,13 @@ sub parse_tblastx_hits_ranked {
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
                     1,
-                    $aln->{'query_orient'},  #unused
+                    $aln->{'query_frame'},  #unused
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{'bits'},
-                    $aln->{'sbjct_orient'},  #unused
+                    $aln->{'sbjct_frame'},  #unused
                 ]);
 	}
 	#override row data

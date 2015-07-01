@@ -58,7 +58,7 @@ sub new {
     $type = "Bio::MView::Build::Format::BLAST$v";
     ($file = $type) =~ s/::/\//g;
     require "$file.pm";
-    
+
     $type .= "::$p";
     bless $self, $type;
 
@@ -160,9 +160,9 @@ sub build_rows {
 
     #first, compute alignment length from query sequence in row[0]
     ($lo, $hi) = $self->set_range($self->{'index2row'}->[0]);
-    
+
     #warn "range ($lo, $hi)\n";
-       
+
     #query row contains missing query sequence, rather than gaps
     $self->{'index2row'}->[0]->assemble($lo, $hi, $MISSING_QUERY_CHAR);
 
@@ -180,56 +180,6 @@ sub samesign { substr($_[1], 0, 1) eq substr($_[2], 0, 1) }
 #override as necessary
 sub score_attr { 'unknown' }
 sub sig_attr   { 'unknown' }
-
-#return a hash of HSP sets for the given query and query orientation; each set
-#is a list of ALN with a given significance and number of fragments; these
-#sets have multiple alternative keys: "sign/sig/sbjct_orient", "score",
-#"rounded_score".
-sub group_hsps_by_query_orient {
-    my ($self, $match) = @_;
-    my $hash = {};
-    foreach my $aln ($match->parse(qw(ALN))) {
-        my $n       = $aln->{'n'};
-        my $score   = $aln->{$self->score_attr};
-        my $sig     = $aln->{$self->sig_attr};
-        my $qorient = $aln->{'query_orient'};
-        my $sorient = $aln->{'sbjct_orient'};
-        my $key;
-
-        #key by sgnificance: can exceed $n if more HSP have the same sig
-        $key = join("/", $qorient, $sorient, $n, $sig);
-        push @{ $hash->{$key} }, $aln;
-
-        #also key by N and score, but we also need to consider rounding:
-        #
-        #round to nearest integer, or, if X.5, round both ways; this is
-        #because the scores reported in the ranking and in the hit summary are
-        #themselves rounded from an unknown underlying score, so simply
-        #rounding the HSP score is not enough, viz.
-        #
-        # underlying: 9.49 -> ranking (0dp) 9
-        # underlying: 9.49 -> hit     (1dp) 9.5
-        # round(9.5, 0) = 10 != 9
-
-        my %scores = ( $score => 1 );        #raw score
-        $scores{sprintf("%.0f", $score)}++;  #rounded score (0dp)
-        if ($score - int($score) == 0.5) {   #edge cases +/- 0.5
-            $scores{$score - 0.5}++;
-            $scores{$score + 0.5}++;
-        }
-        foreach my $score (keys %scores) {
-            #full information
-            $key = join("/", $qorient, $sorient, $n, $score);
-            push @{ $hash->{$key} }, $aln;
-
-            #without N as this can be missing in the ranking or wrong
-            $key = join("/", $qorient, $sorient, $score);
-            push @{ $hash->{$key} }, $aln;
-        }
-    }
-    #warn "SAVE: @{[sort keys %$hash]}\n";
-    return $hash;
-}
 
 #utility/testing function
 sub report_ranking_data {
@@ -267,138 +217,200 @@ sub report_ranking_data {
     }
 }
 
-#lookup an HSP set (common N and significance value) in an HSP dictionary,
-#trying various keys
-sub find_hsps_by_key {
+#return a hash of HSP sets; each set is a list of ALN with a given query/sbjct
+#ordering, number of fragments, and significance; these sets have multiple
+#alternative keys: "qorient/sorient/n/sig", "qorient/sorient/n/score",
+#"qorient/sorient/score" to handle fuzziness and errors in the input data.
+sub get_hsp_groups {
+    my ($self, $match) = @_;
+    my $hash = {};
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $n       = $aln->{'n'};
+        my $score   = $aln->{$self->score_attr};
+        my $sig     = $aln->{$self->sig_attr};
+        my $qorient = $aln->{'query_orient'};
+        my $sorient = $aln->{'sbjct_orient'};
+        my (%tmp, $key);
+
+        #key by significance: can exceed $n if more HSP have the same sig
+        %tmp = ( $sig => 1 );               #raw significance value
+        #BLAST1 and WU-BLAST
+        if ($self->sig_attr eq 'p' and $sig !~ /e/i) {
+            $tmp{sprintf("%.2f", $sig)}++;  #rounded sig (2dp)
+        }
+        #generic
+        foreach my $sig (keys %tmp) {
+            #full information
+            $key = join("/", $qorient, $sorient, $n, $sig);
+            push @{ $hash->{$key} }, $aln;
+
+            #without N as this can be missing in the ranking or wrong
+            $key = join("/", $qorient, $sorient, $sig);
+            push @{ $hash->{$key} }, $aln;
+        }
+
+        #key by N and score, but we also need to consider rounding:
+        #
+        #round to nearest integer, or, if X.5, round both ways; this is
+        #because the scores reported in the ranking and in the hit summary are
+        #themselves rounded from an unknown underlying score, so simply
+        #rounding the HSP score is not enough, viz.
+        # underlying: 9.49 -> ranking (0dp) 9
+        # underlying: 9.49 -> hit     (1dp) 9.5
+        # round(9.5, 0) = 10 != 9
+        %tmp = ( $score => 1 );             #raw score
+        $tmp{sprintf("%.0f", $score)}++;    #rounded score (0dp)
+        if ($score - int($score) == 0.5) {  #edge cases +/- 0.5
+            $tmp{$score - 0.5}++;
+            $tmp{$score + 0.5}++;
+        }
+        foreach my $score (keys %tmp) {
+            #full information
+            $key = join("/", $qorient, $sorient, $n, $score);
+            push @{ $hash->{$key} }, $aln;
+
+            #without N as this can be missing in the ranking or wrong
+            $key = join("/", $qorient, $sorient, $score);
+            push @{ $hash->{$key} }, $aln;
+        }
+    }
+    #warn "SAVE: @{[sort keys %$hash]}\n";
+    return $hash;
+}
+
+#lookup an HSP set in an HSP dictionary, trying various keys based on number
+#of HSPs N, significance or score.
+sub get_ranked_hsps_by_query {
     my ($self, $hash, $coll, $rkey, $qorient) = @_;
 
-    my $n     = $coll->item($rkey)->get_val('n'),
-    my $score = $coll->item($rkey)->get_val($self->score_attr),
-    my $sig   = $coll->item($rkey)->get_val($self->sig_attr);
-    my $key;
+    my $n        = $coll->item($rkey)->get_val('n');
+    my $score    = $coll->item($rkey)->get_val($self->score_attr);
+    my $qorient2 = ($qorient eq '+' ? '-' : '+');
 
     $n = 1  unless $n;  #no N in ranking
 
     my $D = 0;
 
-    #match in this query orientation?
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient, $sorient, $n, $sig);
-        return $hash->{$key}  if exists $hash->{$key};
-    }
-
-    my $qorient2 = ($qorient eq '+' ? '-' : '+');
-
-    #match in inverted query orientation? ignore it - we're done
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient2, $sorient, $n, $sig);
-        return []  if exists $hash->{$key};
-    }
-
-    warn "KEYS2($rkey): @{[sort keys %$hash]}\n"  if $D;
-    warn "NOMATCH: $key TRY: $n $score\n"  if $D;
-
-    #can't find it because the N is missing from the ranking:
-    #  tblastn_2.0.10/2.2.6
-    #or the ranking score/E-value pair don't match any HSPs together:
-    #  tblastx_2.2.6
-
-    #try N and score:
-
-    #match in this query orientation?
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient, $sorient, $n, $score);
-        return $hash->{$key}  if exists $hash->{$key};
-    }
-
-    #match in inverted query orientation? ignore it - we're done
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient2, $sorient, $n, $score);
-        return []  if exists $hash->{$key};
-    }
-
-    warn "NOMATCH: $n $score TRY: $score\n"  if $D;
-
-    #try score without the N:
-
-    #match in this query orientation?
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient, $sorient, $score);
-
-        if (exists $hash->{$key}) {
-
-            #take the sig of the first HSP and try again
-            my $list = $hash->{$key};
-            $n       = $list->[0]->{'n'};
-            $score   = $list->[0]->{$self->score_attr};
-            my $nsig = $list->[0]->{$self->sig_attr};
-
-            warn "TRANSFORM: $qorient $n $score $sig -> $nsig\n"  if $D;
-
-            #match in this query orientation?
-            foreach my $sorient (qw(+ -)) {
-                $key = join("/", $qorient, $sorient, $n, $nsig);
-                return $hash->{$key}  if exists $hash->{$key};
-            }
-
-            #match in inverted query orientation? ignore it - we're done
-            foreach my $sorient (qw(+ -)) {
-                $key = join("/", $qorient2, $sorient, $n, $nsig);
-                return []  if exists $hash->{$key};
-            }
+    my $lookup_o_n_sig = sub {
+        my ($qorient, $n, $sig) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $n, $sig);
+            return $hash->{$key}  if exists $hash->{$key};
         }
-    }
+        return undef;
+    };
 
-    #match in inverted query orientation? ignore it - we're done
-    foreach my $sorient (qw(+ -)) {
-        $key = join("/", $qorient2, $sorient, $score);
-        return []  if exists $hash->{$key};
-    }
+    my $follow_sig = sub {
+        my ($qorient, $key) = @_;
 
-    warn "NOMATCH: $n $score TRY: $score\n"  if $D;
-    warn ">>>> FAILED <<<\n"  if $D;
+        #take the sig of the first matching HSP: expand that set
+        my $n     = $hash->{$key}->[0]->{'n'};
+        my $score = $hash->{$key}->[0]->{$self->score_attr};
+        my $sig   = $hash->{$key}->[0]->{$self->sig_attr};
+        warn "MAP: $qorient $n $score -> $sig\n"  if $D;
+
+        my $match;
+
+        #match in query orientation?
+        $match = &$lookup_o_n_sig($qorient, $n, $sig);
+        return $match  if defined $match;
+
+        #match in opposite orientation? skip
+        $match = &$lookup_o_n_sig($qorient2, $n, $sig);
+        return []  if defined $match;
+
+        return undef;
+    };
+
+    my $lookup_o_n_score = sub {
+        my ($qorient, $n, $score) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $n, $score);
+            return &$follow_sig($qorient, $key)  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $lookup_score = sub {
+        my ($qorient, $score) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $score);
+            return &$follow_sig($qorient, $key)  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $match;
+
+    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+
+    #match (n, score) in query orientation?
+    warn "TRY: $qorient $n $score\n"  if $D;
+    $match = &$lookup_o_n_score($qorient, $n, $score);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (n, score) in opposite orientation? skip
+    warn "TRY: $qorient2 $n $score (to skip)\n"  if $D;
+    $match = &$lookup_o_n_score($qorient2, $n, $score);
+    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
+    return []  if defined $match;
+
+    #match (score) in query orientation?
+    warn "TRY: $qorient $score\n"  if $D;
+    $match = &$lookup_score($qorient, $score);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (score) in opposite orientation? skip
+    warn "TRY: $qorient2, $score (to skip)\n"  if $D;
+    $match = &$lookup_score($qorient2, $score);
+    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
+    return []  if defined $match;
+
+    warn "<<<< FAILED >>>>\n"  if $D;
     #no match
     return [];
 }
 
 #return a set of HSPs suitable for tiling, that are consistent with the query
 #and sbjct sequence numberings.
-sub find_ranked_hsps { my $s=shift; $s->find_ranked_hsps_by_middles(@_) }
+sub get_ranked_hsps {
+    my ($self, $match, $coll, $key, $qorient) = @_;
+
+    my $tmp = $self->get_hsp_groups($match);
+
+    return []  unless keys %$tmp;
+
+    my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
+
+    return $self->combine_hsps_by_centroid($alist, $qorient);
+}
 
 # #selects the first HSP: minimal, first is assumed to be the best one
-# sub find_ranked_first_matching_hsp {
+# sub get_first_ranked_hsp {
 #     my ($self, $match, $coll, $key, $qorient) = @_;
-#
-#     my $tmp = $self->group_hsps_by_query_orient($match, $qorient);
-#     my $alist = $self->find_hsps_by_key($tmp, $coll, $key);
-
+#     my $tmp = $self->get_hsp_groups($match);
+#     my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
 #     return [ $alist->[0] ]  if @$alist;
 #     return $alist;
 # }
 
 # #selects all HSPs: will include out of sequence order HSPs
-# sub find_ranked_all_hsps {
+# sub get_all_ranked_hsps {
 #     my ($self, $match, $coll, $key, $qorient) = @_;
-#
-#     my $tmp = $self->group_hsps_by_query_orient($match, $qorient);
-#     my $alist = $self->find_hsps_by_key($tmp, $coll, $key);
-#
+#     my $tmp = $self->get_hsp_groups($match);
+#     my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
 #     return $alist;
 # }
 
 #selects the first HSP as a seed then adds HSPs that satisfy query and sbjct
 #sequence ordering constraints
-sub find_ranked_hsps_by_middles {
-    my ($self, $match, $coll, $key, $qorient) = @_;
-
-    my $tmp = $self->group_hsps_by_query_orient($match);
-
-    return []  unless keys %$tmp;
-
-    my $alist = $self->find_hsps_by_key($tmp, $coll, $key, $qorient);
+sub combine_hsps_by_centroid {
+    my ($self, $alist, $qorient) = @_;
 
     return $alist  if @$alist < 2;  #0 or 1
-    
+
     my $strictly_ordered = sub {
         my ($o, $a, $b) = @_;
         return $a < $b  if $o eq '+';
@@ -422,22 +434,22 @@ sub find_ranked_hsps_by_middles {
         return undef;
     };
 
-    my $query_middle = sub {
+    my $query_centre = sub {
         ($_[0]->{'query_start'} + $_[0]->{'query_stop'}) / 2.0;
     };
 
-    my $sbjct_middle = sub {
+    my $sbjct_centre = sub {
         ($_[0]->{'sbjct_start'} + $_[0]->{'sbjct_stop'}) / 2.0;
     };
 
     my $sort_downstream = sub {
         my ($o, $alist) = @_;
 
-        #sort on middle position (increasing) and length (decreasing)
+        #sort on centre position (increasing) and length (decreasing)
         my $sort = sub {
-            my $av = &$query_middle($a);
-            my $bv = &$query_middle($b);
-            return $av <=> $bv  if $av != $bv;  #middle
+            my $av = &$query_centre($a);
+            my $bv = &$query_centre($b);
+            return $av <=> $bv  if $av != $bv;  #centre
             $av = abs($a->{'query_start'} - $a->{'query_stop'});
             $bv = abs($b->{'query_start'} - $b->{'query_stop'});
             return $bv <=> $av;  #length: choose larger, so flip order
@@ -450,12 +462,12 @@ sub find_ranked_hsps_by_middles {
     };
 
     my $sort_upstream = sub { reverse &$sort_downstream(@_) };
-        
+
     my $aln = shift @$alist;  #first element with the best score
-    my ($qm, $sm) = (&$query_middle($aln), &$sbjct_middle($aln));
+    my ($qm, $sm) = (&$query_centre($aln), &$sbjct_centre($aln));
     my $sorient = $aln->{'sbjct_orient'};
     my @tmp = ($aln);
- 
+
     #my $D = 0;
     #warn "\n"  if $D;
 
@@ -467,9 +479,9 @@ sub find_ranked_hsps_by_middles {
     #grow upstream
     foreach my $aln (&$sort_upstream($qorient, $alist)) {
 
-        my ($aqm, $asm) = (&$query_middle($aln), &$sbjct_middle($aln));
+        my ($aqm, $asm) = (&$query_centre($aln), &$sbjct_centre($aln));
 
-        #warn "UP($qorient$sorient): middles $aqm .. $qm : $asm .. $sm  @{[&$strictly_ordered($qorient, $aqm, $qm)?'1':'0']} @{[&$strictly_ordered($sorient, $asm, $sm)?'1':'0']}\n"  if $D;
+        #warn "UP($qorient$sorient): centres $aqm .. $qm : $asm .. $sm  @{[&$strictly_ordered($qorient, $aqm, $qm)?'1':'0']} @{[&$strictly_ordered($sorient, $asm, $sm)?'1':'0']}\n"  if $D;
 
         next  unless
             (&$strictly_ordered($qorient, $aqm, $qm) and
@@ -487,10 +499,10 @@ sub find_ranked_hsps_by_middles {
 
         next  if grep {$_ eq $aln} @tmp;  #seen it already
 
-        my ($aqm, $asm) = (&$query_middle($aln), &$sbjct_middle($aln));
+        my ($aqm, $asm) = (&$query_centre($aln), &$sbjct_centre($aln));
 
-        #warn "DN($qorient$sorient): middles $qm .. $aqm : $sm .. $asm  @{[&$strictly_ordered($qorient, $qm, $aqm)?'1':'0']} @{[&$strictly_ordered($sorient, $sm, $asm)?'1':'0']}\n"  if $D;
-       
+        #warn "DN($qorient$sorient): centres $qm .. $aqm : $sm .. $asm  @{[&$strictly_ordered($qorient, $qm, $aqm)?'1':'0']} @{[&$strictly_ordered($sorient, $sm, $asm)?'1':'0']}\n"  if $D;
+
         next  unless
             (&$strictly_ordered($qorient, $qm, $aqm) and
              &$strictly_ordered($sorient, $sm, $asm))
@@ -509,7 +521,7 @@ sub get_scores {
 
     return unless @$alist;
 
-    my ($n, $score, $sig, $sorient) = (0,0,0,'?');
+    my ($score, $sorient) = (0,'?');
 
     foreach my $aln (@$alist) {
         $score = $aln->{$self->score_attr}  if
@@ -521,9 +533,25 @@ sub get_scores {
             warn "gs: mixed up sbjct orientations\n";
         }
     }
-    $n = scalar @$alist;
-    $score = sprintf("%.0f", $score);  #round to nearest integer
-    $sig = $alist->[0]->{'expect'};
+
+    my $n = scalar @$alist;
+    my $sig = $alist->[0]->{$self->sig_attr};
+
+    #try to preserve original precision/format as far as possible
+    if ($self->sig_attr eq 'p') {  #BLAST1 and WU-BLAST
+        if ($sig !~ /e/i) {
+            $sig = sprintf("%.5f", $sig);
+            $sig =~ s/\.(\d{2}\d*?)0+$/.$1/;   #trailing zeros after 2dp
+            $sig = "0.0"  if $sig == 0;
+            $sig = "1.0"  if $sig == 1;
+        }
+    } else {  #BLAST2
+        my $rscore = sprintf("%.0f", $score);  #bit score as integer
+        if ($rscore != $score) {               #num. different? put 1dp back
+            $score = sprintf("%.1f", $score);  #bit score to 1 dp
+        }
+    }
+
     ($n, $score, $sig, $sorient);
 }
 
@@ -552,18 +580,20 @@ sub posn2 {
     return '';
 }
 
-#sort fragments, called by Row::assemble
-sub sort { $_[0]->sort_none }
+#fragment sort, called by Row::assemble
+sub sort { $_[0]->sort_best_to_worst }
 
-#don't sort fragments: assemble them in discovery order: this the same as
-#sort_best_to_worst() because BLAST generates them already sorted
-sub sort_none {$_[0]}
+# #don't sort fragments; blast lists HSPs by decreasing score, so this would be
+# #good, but the mview fragment collecting algorithm called by get_ranked_hsps()
+# #changes the order.
+# sub sort_none {$_[0]}
 
-# #sort fragments: (1) increasing score, (2) increasing length; used up to MView
+# #sort fragments by (1) increasing score, (2) increasing length; used up to MView
 # #version 1.58.1, but inconsistent with NO OVERWRITE policy in Sequence.pm
 # sub sort_worst_to_best {
 #     $_[0]->{'frag'} = [
 #         sort {
+#             warn "$b->[7] <=> $a->[7]\n";
 #             my $c = $a->[7] <=> $b->[7];                 #compare score
 #             return $c  if $c != 0;
 #             return length($a->[0]) <=> length($b->[0]);  #compare length
@@ -572,17 +602,18 @@ sub sort_none {$_[0]}
 #     $_[0];
 # }
 
-# #sort fragments: (1) decreasing score, (2) decreasing length
-# sub sort_best_to_worst {
-#     $_[0]->{'frag'} = [
-#         sort {
-#             my $c = $b->[7] <=> $a->[7];                 #compare score
-#             return $c  if $c != 0;
-#             return length($b->[0]) <=> length($a->[0]);  #compare length
-#         } @{$_[0]->{'frag'}}
-# 	];
-#     $_[0];
-# }
+#sort fragments by (1) decreasing score, (2) decreasing length
+sub sort_best_to_worst {
+    $_[0]->{'frag'} = [
+        sort {
+            #warn "$b->[7] <=> $a->[7]\n";
+            my $c = $b->[7] <=> $a->[7];                 #compare score
+            return $c  if $c != 0;
+            return length($b->[0]) <=> length($a->[0]);  #compare length
+        } @{$_[0]->{'frag'}}
+	];
+    $_[0];
+}
 
 #wrapper for logical symmetry with Bio::MView::Build::Row::BLASTX
 sub assemble {

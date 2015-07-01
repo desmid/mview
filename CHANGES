@@ -1,19 +1,22 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.59  2015-06-28
+Version 1.59  2015-07-01
   Modified code to work on Windows: fixed problems with filepaths
     containing backslashes; added low-level handling of line endings to
     allow UNIX (LF) and Windows/DOS (CRLF) data files to be read on either
     system. Tested with Strawberry Perl 5.22.0.1 64bit under Wine.
-  Improved heuristics for BLAST assembly of multiple HSPs: now just uses the
-    input ordering instead of sorting them; added strict constraint on HSP
-    ordering; affects all ungapped BLAST versions and -hsp 'all' option
-    (which may be removed in future anyway).
+  Improved heuristic for BLAST assembly of multiple HSPs: added strict
+    constraint on HSP ordering; scoring information now reports actual
+    number of HSPs used (N) and best score (bits or score), significance
+    (E-value or P), and optional strand orientations (+/-) rather than the
+    numbers and reading frames stated in the BLAST ranking; affects all
+    BLAST searches.
   Fixed bug in CLUSTAL conservation line that sometimes miscalculated
     column positions; affects BLAST and FASTA searches.
   Fixed bug in PIR output that inserted wrong terminal gap character.
-  Progressive refactoring of various components; no outward effect.
-  Discontinued CVS on SourceForge.
+  Fixed bug in percent identity calculation: now case-sensitive and treats
+    unknown 'X' characters as mismatches.
+  Major refactoring of components and discontinued CVS on SourceForge.
 
 Version 1.58  2015-06-14
   Added CLUSTAL/aln output mode.
