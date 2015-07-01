@@ -110,11 +110,8 @@ sub parse {
 	    $id = $match->{'id'};
 	}
 
-	#check row wanted, by rank OR identifier OR row count limit
-	$use = $self->use_row($rank, $rank, $id);
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
 
 	#warn "KEEP: ($rank,$id)\n";
 

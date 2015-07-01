@@ -884,7 +884,7 @@ sub do_gc {
 }
 
 #compute effective all pairwise alignment and keep only those sequences
-#with $min <= pairwise identity <= $max. also keep any sequences with id's
+#with $min <= pairwise identity <= $max; also keep any sequences with id's
 #supplied as remaining arguments. The mode argument determines which
 #sequence length is used to normalise: 'reference', 'aligned', 'hit'.
 sub prune_all_identities {

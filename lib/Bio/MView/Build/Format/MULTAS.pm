@@ -85,11 +85,8 @@ sub parse {
 	$desc = $list->{'hit'}->[$rank]->{'desc'};
 	$seq  = $align->{'seq'}->[$rank];
 
-	#check row wanted, by rank OR identifier OR row count limit
-        $use = $self->use_row($rank+1, $rank+1, $id);
-
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank+1);
+        next  if $self->skip_row($rank+1, $rank+1, $id);
 
 	#warn "KEEP: ($rank,$id)\n";
 

@@ -15,13 +15,7 @@ sub use_row {
     my ($self, $num, $nid, $sid) = @_;
     my $pat;
 
-    #warn "use_row($num, $nid, $sid)  $self->{'topn'}  $self->{'maxident'}\n";
-
-    #only read $self->{'topn'} hits, if set and if not filtering on identity;
-    return -1
-	if $self->{'topn'} > 0 and
-	    $num > $self->{'topn'} and
-		$self->{'maxident'} == 100;
+    #warn "use_row($num, $nid, $sid)\n";
 
     #first, check explicit keeplist and reference row
     foreach $pat (@{$self->{'keeplist'}}, $self->{'ref_id'}) {

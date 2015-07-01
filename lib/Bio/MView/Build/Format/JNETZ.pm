@@ -23,39 +23,33 @@ sub parse {
 
     $aln = $self->{'entry'}->parse(qw(ALIGNMENT));
     
-    #check each row wanted, by rank OR identifier OR row count limit
-
-    $rank++;
-    $id  = 'res';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'res';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_query;
     $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     #no special subtype: use default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'align';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'align';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_align;
     $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'conf';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'conf';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_conf;
     $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.conf');    #override the default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'final';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'final';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_final;
     $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default

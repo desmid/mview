@@ -17,7 +17,7 @@ sub has_query {1}
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;
 
-    #warn "use_row($num, $nid, $sid)  $self->{'topn'}  $self->{'maxident'}\n";
+    #warn "use_row($num, $nid, $sid)\n";
     
     #first, check explicit keeplist and reference row
     foreach my $pat (@{$self->{'keeplist'}}, $self->{'ref_id'}) {
