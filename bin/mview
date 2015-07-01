@@ -1217,7 +1217,7 @@ default:  unlimited
 param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
-		__TEST('i', __ON, __OV);
+		__TEST('f', __ON, __OV);
 		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
 		__OV;
 	  }

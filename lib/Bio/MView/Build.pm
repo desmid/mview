@@ -208,6 +208,19 @@ sub reset_child {
     $_[0];
 }
 
+#return 1 if topn rows already generated, 0 otherwise; ignore if if filtering
+#on identity; it is assumed the query is implicitly accepted anyway by the
+#parser
+sub topn_done {
+    my ($self, $num) = @_;
+    return 0  if $self->{'maxident'} != 100;
+    return 1  if $self->{'topn'} > 0 and $num > $self->{'topn'};
+    return 0;
+}
+
+#return 1 is row should be ignored by row rank or identifier
+sub skip_row { my $self = shift; ! $self->use_row(@_) }
+
 #override in children
 sub use_row { die "$_[0] use_row() virtual method called\n" }
 

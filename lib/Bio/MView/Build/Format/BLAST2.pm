@@ -17,21 +17,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST);
 
-#row filter
-sub use_row {
-    my ($self, $rank, $nid, $sid, $bits, $eval) = @_;
-    my $use = $self->SUPER::use_row($rank, $nid, $sid);
-    $use = $self->use_hsp($bits, $eval)  if $use == 1;
-    #warn "BLAST2::use_row($rank, $nid, $sid, $bits, $eval) = $use\n";
-    return $use;
-}
-
 #bits/E-value filter
-sub use_hsp {
+sub skip_hsp {
     my ($self, $bits, $eval) = @_;
-    return 0  if defined $self->{'maxeval'} and $eval > $self->{'maxeval'};
-    return 0  if defined $self->{'minbits'} and $bits < $self->{'minbits'};
-    return 1;
+    return 1  if defined $self->{'maxeval'} and $eval > $self->{'maxeval'};
+    return 1  if defined $self->{'minbits'} and $bits < $self->{'minbits'};
+    return 0;
 }
 
 #standard attribute names
@@ -174,12 +165,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit
-	#OR bits OR expect
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'bits'}, $hit->{'expect'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -229,7 +217,7 @@ sub parse_blastp_hits_all {
 	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #accumulate row data
 	    $score = $aln->{'bits'}    if $aln->{'bits'}   > $score;
@@ -284,7 +272,7 @@ sub parse_blastp_hits_ranked {
 
         foreach my $aln (@$raln) {
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -332,8 +320,8 @@ sub parse_blastp_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    if (! $coll->has($key2)) {
 
@@ -432,12 +420,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit
-	#OR bits OR expect
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'bits'}, $hit->{'expect'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -490,7 +475,7 @@ sub parse_blastn_hits_all {
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
@@ -586,7 +571,7 @@ sub parse_blastn_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -637,8 +622,8 @@ sub parse_blastn_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    if (! $coll->has($key2)) {
 
@@ -737,12 +722,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit
-	#OR bits OR expect
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'bits'}, $hit->{'expect'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -795,7 +777,7 @@ sub parse_blastx_hits_all {
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #accumulate row data
 	    $score = $aln->{'bits'}    if $aln->{'bits'}   > $score;
@@ -854,7 +836,7 @@ sub parse_blastx_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -907,8 +889,8 @@ sub parse_blastx_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    if (! $coll->has($key2)) {
 
@@ -1003,12 +985,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit
-	#OR bits OR expect
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'bits'}, $hit->{'expect'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1058,7 +1037,7 @@ sub parse_tblastn_hits_all {
 	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
@@ -1156,7 +1135,7 @@ sub parse_tblastn_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1206,8 +1185,8 @@ sub parse_tblastn_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    if (! $coll->has($key2)) {
 
@@ -1312,12 +1291,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by num OR identifier OR row count limit
-	#OR bits OR expect
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'bits'}, $hit->{'expect'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'bits'}, $hit->{'expect'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1370,7 +1346,7 @@ sub parse_tblastx_hits_all {
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
 	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
@@ -1468,7 +1444,7 @@ sub parse_tblastx_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/E-value filter
-	    next  unless $self->use_hsp($aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1521,8 +1497,8 @@ sub parse_tblastx_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'bits'}, $aln->{'expect'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'bits'}, $aln->{'expect'});
 
 	    if (! $coll->has($key2)) {
 

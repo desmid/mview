@@ -15,7 +15,8 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
-use Bio::MView::Build::Search;
+use Bio::MView::Build::Search
+use NPB::Parse::Regexps;
 
 use strict;
 use vars qw(@ISA);
@@ -28,10 +29,10 @@ sub parser { 'FASTA' }
 my %Known_Parameters =
     (
      #name        => [ format  default ]
-     'minopt'     => [ '\d+',  undef   ],
+     'minopt'     => [ $RX_Ureal,  undef   ],
 
      #GCG FASTA (version 2)
-     'strand'     => [ [],     undef   ],
+     'strand'     => [ [],         undef   ],
     );
 
 #tell the parent

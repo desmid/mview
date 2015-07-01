@@ -17,21 +17,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::BLAST);
 
-#row filter
-sub use_row {
-    my ($self, $rank, $nid, $sid, $score, $pval) = @_;
-    my $use = $self->SUPER::use_row($rank, $nid, $sid);
-    $use = $self->use_hsp($score, $pval)  if $use == 1;
-    #warn "BLAST1::use_row($rank, $nid, $sid, $score, $pval) = $use\n";
-    return $use;
-}
-
 #score/p-value filter
-sub use_hsp {
+sub skip_hsp {
     my ($self, $score, $pval) = @_;
-    return 0  if defined $self->{'maxpval'}  and $pval  > $self->{'maxpval'};
-    return 0  if defined $self->{'minscore'} and $score < $self->{'minscore'};
-    return 1;
+    return 1  if defined $self->{'maxpval'}  and $pval  > $self->{'maxpval'};
+    return 1  if defined $self->{'minscore'} and $score < $self->{'minscore'};
+    return 0;
 }
 
 sub score_attr { 'score' }
@@ -155,12 +146,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	#OR score OR p-value
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'score'}, $hit->{'p'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'score'}, $hit->{'p'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -209,7 +197,7 @@ sub parse_blastp_hits_all {
 	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+	    next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #accumulate row data
 	    $score = $aln->{'score'}  if $aln->{'score'} > $score;
@@ -265,7 +253,7 @@ sub parse_blastp_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+	    next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -313,8 +301,8 @@ sub parse_blastp_hits_discrete {
 	    my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    if (! $coll->has($key2)) {
 
@@ -407,12 +395,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	#OR score OR p-value
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'score'}, $hit->{'p'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'score'}, $hit->{'p'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -464,7 +449,7 @@ sub parse_blastn_hits_all {
 	    next  unless $aln->{'query_orient'} eq $self->strand;
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #accumulate row data
             my $orient = substr($aln->{'sbjct_orient'}, 0, 1);
@@ -560,7 +545,7 @@ sub parse_blastn_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -611,8 +596,8 @@ sub parse_blastn_hits_discrete {
 	    my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    if (! $coll->has($key2)) {
 
@@ -705,12 +690,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	#OR score OR p-value
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'score'}, $hit->{'p'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'score'}, $hit->{'p'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -765,7 +747,7 @@ sub parse_blastx_hits_all {
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #accumulate row data
 	    $score = $aln->{'score'}  if $aln->{'score'} > $score;
@@ -824,7 +806,7 @@ sub parse_blastx_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -878,8 +860,8 @@ sub parse_blastx_hits_discrete {
 	    my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    if (! $coll->has($key2)) {
 
@@ -968,12 +950,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	#OR score OR p-value
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'score'}, $hit->{'p'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'score'}, $hit->{'p'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1022,7 +1001,7 @@ sub parse_tblastn_hits_all {
 	foreach my $aln ($match->parse(qw(ALN))) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #accumulate row data
 	    my $orient = substr($aln->{'sbjct_frame'}, 0, 1);
@@ -1120,7 +1099,7 @@ sub parse_tblastn_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1170,8 +1149,8 @@ sub parse_tblastn_hits_discrete {
 	    my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    if (! $coll->has($key2)) {
 
@@ -1270,12 +1249,9 @@ sub parse {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	#OR score OR p-value
-	my $use = $self->use_row($rank, $rank, $hit->{'id'},
-                                 $hit->{'score'}, $hit->{'p'});
-	last  if $use < 0;
-	next  if $use < 1;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $hit->{'id'});
+        next  if $self->skip_hsp($hit->{'score'}, $hit->{'p'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
@@ -1327,7 +1303,7 @@ sub parse_tblastx_hits_all {
 	    next  unless index($aln->{'query_frame'}, $self->strand) > -1;
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #accumulate row data
             my $orient = substr($aln->{'sbjct_frame'}, 0, 1);
@@ -1425,7 +1401,7 @@ sub parse_tblastx_hits_ranked {
         foreach my $aln (@$raln) {
 
 	    #apply score/p-value filter
-	    next  unless $self->use_hsp($aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
@@ -1478,8 +1454,8 @@ sub parse_tblastx_hits_discrete {
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
 	    #apply row filter with new row numbers
-	    next  unless $self->use_row($match->{'index'}, $key2, $sum->{'id'},
-					$aln->{'score'}, $aln->{'p'});
+            next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
+            next  if $self->skip_hsp($aln->{'score'}, $aln->{'p'});
 
 	    if (! $coll->has($key2)) {
 

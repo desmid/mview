@@ -30,11 +30,11 @@ my %Known_Parameters =
 
      #BLAST* (version 1)
      'maxpval'    => [ $RX_Ureal,   undef    ],
-     'minscore'   => [ '\d+',       undef    ],
+     'minscore'   => [ $RX_Ureal,   undef    ],
 
      #BLAST* (version 2)
      'maxeval'    => [ $RX_Ureal,   undef    ],
-     'minbits'    => [ '\d+',       undef    ],
+     'minbits'    => [ $RX_Ureal,   undef    ],
      'cycle'      => [ [],          undef    ],
 
      #BLASTN (version 1, version 2); BLASTX (version 2)
