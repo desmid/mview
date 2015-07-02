@@ -46,6 +46,13 @@ my %Known_Parameters =
 #tell the parent
 sub known_parameters { \%Known_Parameters }
 
+#standard attribute names: override
+sub attr_score { 'unknown' }
+sub attr_sig   { 'unknown' }
+
+#scheduler type: override
+sub scheduler { 'unknown' }
+
 #our own constructor since this is the entry point for different subtypes
 sub new {
     shift;  #discard type
@@ -142,20 +149,6 @@ sub strand {
     return '+';
 }
 
-sub subheader {
-    my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s  if $quiet;
-    if ($self->{'hsp'} eq 'all') {
-	$s .= "HSP processing: all\n";
-    } elsif ($self->{'hsp'} eq 'discrete') {
-	$s .= "HSP processing: discrete\n";
-    } else {
-	$s .= "HSP processing: ranked\n";
-    }
-    $s;
-}
-
 #override base class method to process query row differently
 sub build_rows {
     my $self = shift;
@@ -175,14 +168,6 @@ sub build_rows {
     }
     $self;
 }
-
-#return true if two strings encode the same strand orientation; assumes
-#the first character contains the sign
-sub samesign { substr($_[1], 0, 1) eq substr($_[2], 0, 1) }
-
-#override as necessary
-sub attr_score { 'unknown' }
-sub attr_sig   { 'unknown' }
 
 #utility/testing function
 sub report_ranking_data {
@@ -517,45 +502,6 @@ sub combine_hsps_by_centroid {
         push @tmp, $aln;
     }
     return \@tmp;
-}
-
-sub get_scores {
-    my ($self, $alist) = @_;
-
-    return unless @$alist;
-
-    my ($score, $sorient) = (0,'?');
-
-    foreach my $aln (@$alist) {
-        $score = $aln->{$self->{'attr_score'}}  if
-            $aln->{$self->{'attr_score'}} > $score;
-
-        $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
-
-        if ($aln->{'sbjct_orient'} ne $sorient) {
-            warn "gs: mixed up sbjct orientations\n";
-        }
-    }
-
-    my $n = scalar @$alist;
-    my $sig = $alist->[0]->{$self->{'attr_sig'}};
-
-    #try to preserve original precision/format as far as possible
-    if ($self->{'attr_sig'} eq 'p') {  #BLAST1 and WU-BLAST
-        if ($sig !~ /e/i) {
-            $sig = sprintf("%.5f", $sig);
-            $sig =~ s/\.(\d{2}\d*?)0+$/.$1/;   #trailing zeros after 2dp
-            $sig = "0.0"  if $sig == 0;
-            $sig = "1.0"  if $sig == 1;
-        }
-    } else {  #BLAST2
-        my $rscore = sprintf("%.0f", $score);  #bit score as integer
-        if ($rscore != $score) {               #num. different? put 1dp back
-            $score = sprintf("%.1f", $score);  #bit score to 1 dp
-        }
-    }
-
-    ($n, $score, $sig, $sorient);
 }
 
 
