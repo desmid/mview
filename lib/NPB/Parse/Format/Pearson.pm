@@ -105,11 +105,11 @@ sub new {
 	     $self->{'desc'},
 	    ) = ($1, "$2");
 	    #2015-01-19, GeneDoc puts a '.' in after the identifier
-	    $self->{'desc'} = ''  if $self->{'desc'} =~ /\s*\.\s*/;
+	    $self->{'desc'} = ''  if $self->{'desc'} =~ /^\s*\.\s*$/;
 	    next;
 	} 
 
-	#read sequence lines upto asterisk, if present
+	#read sequence lines up to asterisk, if present
 	if ($line =~ /([^\*]+)/) {
 	    $self->{'seq'} .= $1;
 	    next;
