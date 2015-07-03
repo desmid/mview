@@ -383,6 +383,7 @@ sub check_format {
         return 'FASTA'    if $_ =~ /tfast/i;
         return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
 	return FASTA(@_)  if $_ =~ /fasta/i;
+        return 'Pearson'  if $_ =~ /pear/i;
     }
 
     #unknown format
