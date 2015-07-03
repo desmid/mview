@@ -73,14 +73,14 @@ sub get_scores {
     foreach my $aln (@$list) {
         $qorient = $aln->{'query_orient'}, next  if $qorient eq '?';
         if ($aln->{'query_orient'} ne $qorient) {
-            warn "gs: mixed up query orientations\n";
+            warn "get_scores: mixed up query orientations\n";
         }
     }
 
     foreach my $aln (@$list) {
         $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
         if ($aln->{'sbjct_orient'} ne $sorient) {
-            warn "gs: mixed up sbjct orientations\n";
+            warn "get_scores: mixed up sbjct orientations\n";
         }
     }
 

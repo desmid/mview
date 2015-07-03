@@ -1,16 +1,18 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.59  2015-07-01
+Version 1.59  2015-07-04
   Modified code to work on Windows: fixed problems with filepaths
     containing backslashes; added low-level handling of line endings to
     allow UNIX (LF) and Windows/DOS (CRLF) data files to be read on either
     system. Tested with Strawberry Perl 5.22.0.1 64bit under Wine.
-  Improved heuristic for BLAST assembly of multiple HSPs: added strict
-    constraint on HSP ordering; scoring information now reports actual
-    number of HSPs used (N) and best score (bits or score), significance
-    (E-value or P), and optional strand orientations (+/-) rather than the
-    numbers and reading frames stated in the BLAST ranking; affects all
-    BLAST searches.
+  Improved algorithm for assembly of alternative search alignment fragments
+    with stricter constraints on selection of fragments that maintain query
+    and hit sequence orderings; affects all BLAST and FASTA searches.
+  BLAST scoring information now reports actual number of HSPs used (N) and
+    best score (bits or score), significance (E-value or P), and optional
+    strand orientations (+/-) rather than the numbers and reading frames
+    stated in the BLAST ranking; affects all BLAST searches.
+  Updated parser for FASTA36 to recognise '>--' alternative alignments.
   Fixed bug in CLUSTAL conservation line that sometimes miscalculated
     column positions; affects BLAST and FASTA searches.
   Fixed bug in PIR output that inserted wrong terminal gap character.

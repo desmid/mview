@@ -300,9 +300,9 @@ sub parse {
     return  unless defined $self->{scheduler}->next;
 
     #fasta run with no hits
-    my $rankparse = $self->{'entry'}->parse(qw(RANK));
+    my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    return []  unless defined $rankparse;
+    return []  unless defined $ranking;
 
     #identify the query
     my $header = $self->{'entry'}->parse(qw(HEADER));
@@ -336,7 +336,7 @@ sub parse {
                    )));
 
     #extract hits and identifiers from the ranking
-    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
+    my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
 	$rank++;
 
@@ -525,9 +525,9 @@ sub parse {
     return  unless defined $self->{scheduler}->next;
 
     #fasta run with no hits
-    my $rankparse = $self->{'entry'}->parse(qw(RANK));
+    my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    return []  unless defined $rankparse;
+    return []  unless defined $ranking;
 
     #identify the query
     my $header = $self->{'entry'}->parse(qw(HEADER));
@@ -558,7 +558,7 @@ sub parse {
                    )));
 
     #extract hits and identifiers from the ranking
-    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
+    my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
 	$rank++;
 

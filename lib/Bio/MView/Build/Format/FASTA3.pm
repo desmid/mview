@@ -142,9 +142,9 @@ sub parse {
     return  unless defined $self->{scheduler}->next;
 
     #fasta run with no hits
-    my $rankparse = $self->{'entry'}->parse(qw(RANK));
+    my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    return []  unless defined $rankparse;
+    return []  unless defined $ranking;
 
     my $query = 'Query';
     if ($header->{'query'} ne '') {
@@ -172,26 +172,18 @@ sub parse {
                    )));
     
     #extract hits and identifiers from the ranking
-    my $rank = 0; foreach my $hit (@{$rankparse->{'hit'}}) {
+    my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
 	$rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_frag($hit->{'opt'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-        my $key;
+        my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
 
-	if ($hit->{'opt'} eq '') {
-	    #seen in: tfast[axy]_3.4t23 omit opt by mistake
-            $key = $coll->key($hit->{'id'}, $hit->{'init1'}, $hit->{'expect'});
-	} else {
-            $key = $coll->key($hit->{'id'}, $hit->{'opt'}, $hit->{'expect'});
-	}
-
-	#warn "ADD: [$key]\n";
+	#warn "ADD: [$key1]\n";
 
 	$coll->insert((new $class(
                            $rank,
@@ -205,7 +197,7 @@ sub parse {
                            $self->strand,
                            '',
                        )),
-                      $key
+                      $key1
             );
     }
 
@@ -215,39 +207,30 @@ sub parse {
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-        my $key;
+        my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
 
-	#only read hits already seen in ranking
-	while (1) {
-	    $key = $coll->key($sum->{'id'}, $sum->{'opt'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-	    $key = $coll->key($sum->{'id'}, $sum->{'init1'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-	    #tfastx_3.4t23 confuses init1 with s-w score between RANK and SUM
-	    $key = $coll->key($sum->{'id'}, $sum->{'score'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-            $key = 'unknown';
-            last;
-	}
-	next  unless $coll->has($key);
+	next  unless $coll->has($key1);
 
-	#warn "SEE: [$key]\n";
+	#warn "USE: [$key1]\n";
 
-	#then the individual matched fragments
-	foreach my $aln ($match->parse(qw(ALN))) {
+        my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
 
-	    #ignore other query strand orientation
-            next  unless $self->use_strand($aln->{'query_orient'});
+        #nothing matched
+        next  unless @$aset;
+
+        foreach my $aln (@$aset) {
+	    #apply score/significance filter
+            next  if $self->skip_frag($sum->{'opt'});
 
 	    #$aln->print;
 	    
-	    #for FASTA gapped alignments
+	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 	    
             $coll->add_frags(
-                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -256,20 +239,135 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
-
-	    #override initn, init1, sbjct orientation
-	    $coll->item($key)->set_val('initn', $sum->{'initn'});
-	    $coll->item($key)->set_val('init1', $sum->{'init1'});
-	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
-	#override description
-        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	#override row data
+        $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+
+        my ($qorient, $sorient) = $self->get_orient($aset);
+        $coll->item($key1)->set_val('initn', $sum->{'initn'});
+        $coll->item($key1)->set_val('init1', $sum->{'init1'});
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
     #free objects
     $self->{'entry'}->free(qw(HEADER RANK MATCH));
 
     return $coll->list;
+}
+
+#return a hash of frag sets; each set is a list of ALN with a given
+#query/sbjct ordering, score, and significance; these sets have multiple
+#alternative keys: "qorient/sorient/opt/sig", "qorient/sorient/init1/sig",
+#"qorient/sorient/initn/sig" to handle variations in the input data.
+sub get_frag_groups {
+    my ($self, $match) = @_;
+    my $hash = {};
+    my $sum = $match->parse(qw(SUM));
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $opt     = $sum->{'opt'};
+        my $init1   = $sum->{'init1'};
+        my $initn   = $sum->{'initn'};
+        my $sig     = $sum->{'expect'};
+        my $qorient = $aln->{'query_orient'};
+        my $sorient = $aln->{'sbjct_orient'};
+        my (%tmp, $key);
+        
+        $tmp { join("/", $qorient, $sorient, $opt,   $sig) }++;
+        $tmp { join("/", $qorient, $sorient, $init1, $sig) }++;
+        $tmp { join("/", $qorient, $sorient, $initn, $sig) }++;
+
+        foreach my $key (keys %tmp) {
+            push @{ $hash->{$key} }, $aln;
+        }
+    }
+    #warn "SAVE: @{[sort keys %$hash]}\n";
+    return $hash;
+}        
+
+#lookup a frag set in a frag dictionary, trying various keys based on scores
+#and significance.
+sub get_ranked_frags_by_query {
+    my ($self, $hash, $coll, $rkey, $qorient) = @_;
+
+    my $opt      = $coll->item($rkey)->get_val('opt');
+    my $sig      = $coll->item($rkey)->get_val('expect');
+    my $init1    = $coll->item($rkey)->get_val('init1');
+    my $initn    = $coll->item($rkey)->get_val('initn');
+    my $qorient2 = ($qorient eq '+' ? '-' : '+');
+    
+    my $D = 0;
+
+    my $lookup_o_score_sig = sub {
+        my ($qorient, $score, $sig) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $score, $sig);
+            return $hash->{$key}  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $match;
+
+    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+
+    #match (opt, sig) in query orientation?
+    warn "TRY: $qorient $opt $sig\n"  if $D;
+    $match = &$lookup_o_score_sig($qorient, $opt, $sig);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (init1, sig) in query orientation?
+    warn "TRY: $qorient $init1 $sig\n"  if $D;
+    $match = &$lookup_o_score_sig($qorient, $init1, $sig);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (initn, sig) in query orientation?
+    warn "TRY: $qorient $initn $sig\n"  if $D;
+    $match = &$lookup_o_score_sig($qorient, $initn, $sig);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    warn "<<<< FAILED >>>>\n"  if $D;
+    #no match
+    return [];
+}
+
+#return a set of frags suitable for tiling, that are consistent with the query
+#and sbjct sequence numberings.
+sub get_ranked_frags {
+    my ($self, $match, $coll, $key, $qorient) = @_;
+    my $tmp = $self->get_frag_groups($match);
+    
+    return []  unless keys %$tmp;
+
+    my $alist = $self->get_ranked_frags_by_query($tmp, $coll, $key, $qorient);
+
+    return $self->combine_frags_by_centroid($alist, $qorient);
+}
+
+sub get_orient {
+    my ($self, $list) = @_;
+
+    return unless @$list;
+
+    my ($qorient, $sorient) = ('?', '?');
+
+    foreach my $aln (@$list) {
+        $qorient = $aln->{'query_orient'}, next  if $qorient eq '?';
+        if ($aln->{'query_orient'} ne $qorient) {
+            warn "get_orient: mixed up query orientations\n";
+        }
+    }
+
+    foreach my $aln (@$list) {
+        $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
+        if ($aln->{'sbjct_orient'} ne $sorient) {
+            warn "get_orient: mixed up sbjct orientations\n";
+        }
+    }
+
+    ($qorient, $sorient);
 }
 
 
