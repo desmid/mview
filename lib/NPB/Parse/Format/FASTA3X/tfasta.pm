@@ -230,6 +230,20 @@ sub new {
 	 $self->{'length'},
 	) = (NPB::Parse::Record::clean_identifier($1),
 	     NPB::Parse::Record::strip_english_newlines($2), $3);
+    } elsif ($record =~ /^>--/) {  #alternative alignment
+        my $sib = $self->get_sibling(0);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+         $self->{'alternative'},
+        ) =
+        (
+         $sib->{'id'},
+         $sib->{'desc'},
+         $sib->{'length'},
+         1,  #true
+        );
     } else {
 	$self->warn("unknown field: $record");
     }

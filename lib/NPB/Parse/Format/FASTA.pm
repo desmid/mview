@@ -615,6 +615,10 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
+sub get_sibling {
+    $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[$_[1]][3];
+}
+
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
