@@ -77,6 +77,118 @@ sub map_id {
     $self->SUPER::map_id($ref);
 }
 
+#selects the first frag as a seed then add remaining frags that satisfy query
+#and sbjct sequence ordering constraints
+sub combine_frags_by_centroid {
+    my ($self, $alist, $qorient) = @_;
+
+    return $alist  if @$alist < 2;  #0 or 1
+
+    my $strictly_ordered = sub {
+        my ($o, $a, $b) = @_;
+        return $a < $b  if $o eq '+';
+        return $a > $b  if $o eq '-';
+        return undef;
+    };
+
+    my $coincident = sub { $_[0] == $_[1] and $_[2] == $_[3] };
+
+    my $lo = sub {
+        my ($o, $a, $b) = @_;
+        return ($a < $b ? $a : $b)  if $o eq '+';
+        return ($a > $b ? $a : $b)  if $o eq '-';
+        return undef;
+    };
+
+    my $hi = sub {
+        my ($o, $a, $b) = @_;
+        return ($a > $b ? $a : $b)  if $o eq '+';
+        return ($a < $b ? $a : $b)  if $o eq '-';
+        return undef;
+    };
+
+    my $query_centre = sub {
+        ($_[0]->{'query_start'} + $_[0]->{'query_stop'}) / 2.0;
+    };
+
+    my $sbjct_centre = sub {
+        ($_[0]->{'sbjct_start'} + $_[0]->{'sbjct_stop'}) / 2.0;
+    };
+
+    my $sort_downstream = sub {
+        my ($o, $alist) = @_;
+
+        #sort on centre position (increasing) and length (decreasing)
+        my $sort = sub {
+            my $av = &$query_centre($a);
+            my $bv = &$query_centre($b);
+            return $av <=> $bv  if $av != $bv;  #centre
+            $av = abs($a->{'query_start'} - $a->{'query_stop'});
+            $bv = abs($b->{'query_start'} - $b->{'query_stop'});
+            return $bv <=> $av;  #length: choose larger, so flip order
+        };
+
+        my @tmp = sort $sort @$alist;
+        return @tmp          if $o eq '+';  #increasing
+        return reverse @tmp  if $o eq '-';  #decreasing
+        return @$alist;
+    };
+
+    my $sort_upstream = sub { reverse &$sort_downstream(@_) };
+
+    my $aln = shift @$alist;  #first element with the best score
+    my ($qm, $sm) = (&$query_centre($aln), &$sbjct_centre($aln));
+    my $sorient = $aln->{'sbjct_orient'};
+    my @tmp = ($aln);
+
+    #my $D = 0;
+    #warn "\n"  if $D;
+
+    #accept the first frag then process the remainder rejecting any whose
+    #query or sbjct midpoint does not extend the alignment monotonically;
+    #effectively, we grow the alignment diagonally out from boxes at each end
+    #of the growing chain in the 2D alignment matrix.
+
+    #grow upstream
+    foreach my $aln (&$sort_upstream($qorient, $alist)) {
+
+        my ($aqm, $asm) = (&$query_centre($aln), &$sbjct_centre($aln));
+
+        #warn "UP($qorient$sorient): centres $aqm .. $qm : $asm .. $sm  @{[&$strictly_ordered($qorient, $aqm, $qm)?'1':'0']} @{[&$strictly_ordered($sorient, $asm, $sm)?'1':'0']}\n"  if $D;
+
+        next  unless
+            (&$strictly_ordered($qorient, $aqm, $qm) and
+             &$strictly_ordered($sorient, $asm, $sm))
+            or
+            &$coincident($aqm, $qm, $asm, $sm);
+
+        ($qm, $sm) = (&$lo($qorient, $aqm, $qm), &$lo($sorient, $asm, $sm));
+        #warn "up($qorient$sorient): [$aln->{'sbjct'}]\n"  if $D;
+        push @tmp, $aln;
+    }
+
+    #grow downstream
+    foreach my $aln (&$sort_downstream($qorient, $alist)) {
+
+        next  if grep {$_ eq $aln} @tmp;  #seen it already
+
+        my ($aqm, $asm) = (&$query_centre($aln), &$sbjct_centre($aln));
+
+        #warn "DN($qorient$sorient): centres $qm .. $aqm : $sm .. $asm  @{[&$strictly_ordered($qorient, $qm, $aqm)?'1':'0']} @{[&$strictly_ordered($sorient, $sm, $asm)?'1':'0']}\n"  if $D;
+
+        next  unless
+            (&$strictly_ordered($qorient, $qm, $aqm) and
+             &$strictly_ordered($sorient, $sm, $asm))
+            or
+            &$coincident($aqm, $qm, $asm, $sm);
+
+        ($qm, $sm) = (&$hi($qorient, $aqm, $qm), &$hi($sorient, $asm, $sm));
+        #warn "dn($qorient$sorient): [$aln->{'sbjct'}]\n"  if $D;
+        push @tmp, $aln;
+    }
+    return \@tmp;
+}
+
 
 ###########################################################################
 package Bio::MView::Build::Search::Collector;
