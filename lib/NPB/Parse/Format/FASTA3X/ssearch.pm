@@ -194,6 +194,22 @@ sub new {
 	    NPB::Parse::Format::FASTA::parse_orient($4),
 	    $5, $6, $7, $8, $9, $10, $11, $12, $13,
 	);
+
+    } elsif ($lines =~ /^>--/) {  #alternative alignment
+        my $sib = $self->get_sibling(0);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+         $self->{'alternative'},
+        ) =
+        (
+         $sib->{'id'},
+         $sib->{'desc'},
+         $sib->{'length'},
+         1,  #true
+        );
+
     } else {
 	$self->warn("unknown field: $lines");
     }
