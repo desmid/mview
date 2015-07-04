@@ -212,6 +212,25 @@ sub set_val {
     $self;
 }
 
+#test if item has attribute
+sub has {
+    my ($self, $key) = @_;
+    #warn "has: [$key]\n";
+
+    my $schema = eval { $self->schema };
+
+    if (! defined $schema) {
+        return exists $self->{$key};
+    }
+
+    for (my $i=0; $i<@$schema; $i++) {
+        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        return 1  if $key eq $name;
+        return 1  if $key eq $string;
+    }
+    0; #no key
+}
+
 #get a row information attribute if in the schema
 sub get_val {
     my ($self, $key) = @_;
@@ -220,7 +239,7 @@ sub get_val {
     my $schema = eval { $self->schema };
 
     if (! defined $schema) {
-        return $self->{$key}  if exists $self->{key};
+        return $self->{$key}  if exists $self->{$key};
         return '';
     }
 
@@ -229,7 +248,7 @@ sub get_val {
         return $self->{'data'}->{$name}  if $key eq $name;
         return $self->{'data'}->{$name}  if $key eq $string;
     }
-    warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
+    warn "@{[ref $self]}::get_val: unknown attribute '$key'\n";
     '';
 }
 

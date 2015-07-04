@@ -91,7 +91,7 @@ sub schema {[
     [ 1,   1,    'initn',         'initn',      '5N',      ''  ],
     [ 2,   2,    'init1',         'init1',      '5N',      ''  ],
     [ 3,   3,    'bits',          'bits',       '7N',      ''  ],
-    [ 4,   4,    'e',             'E-value',    '9N',      ''  ],
+    [ 4,   4,    'expect',        'E-value',    '9N',      ''  ],
     [ 5,   5,    'sn',            'sn',         '3N',      ''  ],
     [ 6,   6,    'sl',            'sl',         '3N',      ''  ],
     [ 7,   7,    'query_orient',  'qy',         '2S',      '?' ],
@@ -230,7 +230,7 @@ package Bio::MView::Build::Format::FASTA3X::fastm;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build::Format::FASTA); #note
+@ISA = qw(Bio::MView::Build::Format::FASTA3X); #note
 
 my $FASTMFS_SPACER = '\001' x 5;
 
@@ -342,13 +342,12 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_frag($hit->{'initn'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'});
+	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
 
-	#warn "ADD: [$key]\n";
+	#warn "ADD: [$key1]\n";
 
 	$coll->insert((new $class(
                            $rank,
@@ -363,7 +362,7 @@ sub parse {
                            '+',
                            '',
                        )),
-                      $key
+                      $key1
             );
     }
 
@@ -373,26 +372,23 @@ sub parse {
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-        my $key;
+        my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
 
-	#only read hits already seen in ranking
-	while (1) {
-	    #FASTA3X reports three s-w scores, any might match:
-	    $key = $coll->key($sum->{'id'}, $sum->{'opt'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-	    $key = $coll->key($sum->{'id'}, $sum->{'initn'},$sum->{'expect'});
-	    last  if $coll->has($key);
-	    $key = $coll->key($sum->{'id'}, $sum->{'init1'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-            $key = 'unknown';
-	    last;
-	}
-	next  unless $coll->has($key);
+        #ignore hit?
+	next  unless $coll->has($key1);
 
-	#warn "SEE: [$key]\n";
+	#warn "USE: [$key1]\n";
 
-	#then the individual matched fragments
-	foreach my $aln ($match->parse(qw(ALN))) {
+        my $aset = $self->get_ranked_frags($match, $coll, $key1, '+');
+
+        #nothing matched
+        next  unless @$aset;
+
+        foreach my $aln (@$aset) {
+	    #apply score/significance filter
+            next  if $self->skip_frag($sum->{'initn'});
+
+            #warn "SEE: [$key1]\n";
 
 	    #$aln->print;
 
@@ -409,7 +405,7 @@ sub parse {
             my $qstop = $aln->{'query_start'} + length($aln->{'query'}) - 1;
 
             $coll->add_frags(
-                $key, $aln->{'query_start'}, $qstop, [
+                $key1, $aln->{'query_start'}, $qstop, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -418,12 +414,14 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
-
-	    #override sbjct orientation
-	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
-	#override description
-        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	#override row data
+        $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+
+        my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);
+        #$coll->item($key1)->set_val('n', $N);        #not used yet
+        #$coll->item($key1)->set_val('expect', $sig); #not used yet
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
     #free objects
@@ -507,7 +505,7 @@ package Bio::MView::Build::Format::FASTA3X::ssearch;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build::Format::FASTA); #note
+@ISA = qw(Bio::MView::Build::Format::FASTA3X); #note
 
 sub subheader {
     my ($self, $quiet) = (@_, 0);
@@ -564,13 +562,12 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_frag($hit->{'score'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key = $coll->key($hit->{'id'}, $hit->{'score'}, $hit->{'expect'});
+	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
 
-	#warn "ADD: [$key]\n";
+	#warn "ADD: [$key1]\n";
 
 	$coll->insert((new $class(
                            $rank,
@@ -582,7 +579,7 @@ sub parse {
                            $self->strand,
                            '',
                        )),
-                      $key
+                      $key1
             );
     }
 
@@ -592,27 +589,22 @@ sub parse {
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-        my $key;
+        my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
 
-	#only read hits already seen in ranking
-	while (1) {
-	    #SSEARCH3X reports two s-w scores, either might match:
-	    $key = $coll->key($sum->{'id'}, $sum->{'opt'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-	    $key = $coll->key($sum->{'id'}, $sum->{'score'}, $sum->{'expect'});
-	    last  if $coll->has($key);
-            $key = 'unknown';
-	    last;
-	}
-	next  unless $coll->has($key);
+	next  unless $coll->has($key1);
 
-	#warn "SEE: [$key]\n";
+	#warn "USE: [$key1]\n";
 
-	#then the individual matched fragments
-	foreach my $aln ($match->parse(qw(ALN))) {
+        my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
 
-	    #ignore other query strand orientation
-            next  unless $self->use_strand($aln->{'query_orient'});
+        #nothing matched
+        next  unless @$aset;
+
+        foreach my $aln (@$aset) {
+	    #apply score/significance filter
+            next  if $self->skip_frag($sum->{'score'});
+
+            #warn "SEE: [$key1]\n";
 
 	    #$aln->print;
 
@@ -622,7 +614,7 @@ sub parse {
                                     $aln->{'query_trailer'});
 
             $coll->add_frags(
-                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -631,12 +623,14 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
+        }
+	#override row data
+        $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
 
-	    #override sbjct orientation
-	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
-	}
-	#override description
-        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+        my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);
+        #$coll->item($key1)->set_val('n', $N);        #not used yet
+        #$coll->item($key1)->set_val('expect', $sig); #not used yet
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
     #free objects
