@@ -110,7 +110,6 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_hsp($hit);
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
