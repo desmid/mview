@@ -47,6 +47,12 @@ sub new {
     #determine the real type from the underlying parser
     ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
 
+    #if this is a pre-3.3 fasta call the FASTA2 parser
+    if ($v eq '3') {
+        my $header = $self->{'entry'}->parse(qw(HEADER));
+        $v = 2  if $header->{'version'} =~ /^3\.(\d+)/ and $1 < 3;
+    }
+
     $type = "Bio::MView::Build::Format::FASTA$v";
     ($file = $type) =~ s/::/\//g;
     require "$file.pm";

@@ -254,18 +254,6 @@ sub subheader {
 sub parse {
     my $self = shift;
 
-    #identify the query
-    my $header = $self->{'entry'}->parse(qw(HEADER));
-
-    #if this is a pre-3.3 fasta call the old FASTA2 parser
-    if ($header->{'version'} =~ /^3\.(\d+)/ and $1 < 3) {
-	require Bio::MView::Build::Format::FASTA2;
-        my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
-	my $class = "Bio::MView::Build::Format::FASTA2::$rtype";
-	bless $self, $class;
-	return $self->parse(@_);
-    }
-
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
@@ -273,6 +261,9 @@ sub parse {
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
     return []  unless defined $ranking;
+
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
 
     my $query = 'Query';
     if ($header->{'query'} ne '') {
