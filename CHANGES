@@ -18,6 +18,7 @@ Version 1.59  2015-07-04
   Fixed bug in PIR output that inserted wrong terminal gap character.
   Fixed bug in percent identity calculation: now case-sensitive and treats
     unknown 'X' characters as mismatches.
+  Fixed bug in FASTA/Pearson parser that could skip description field.
   Major refactoring of components and discontinued CVS on SourceForge.
 
 Version 1.58  2015-06-14

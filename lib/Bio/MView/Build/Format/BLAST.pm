@@ -155,7 +155,7 @@ sub build_rows {
     my ($lo, $hi, $i);
 
     #first, compute alignment length from query sequence in row[0]
-    ($lo, $hi) = $self->set_range($self->{'index2row'}->[0]);
+    ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
 
     #warn "range ($lo, $hi)\n";
 

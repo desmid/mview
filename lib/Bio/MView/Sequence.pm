@@ -406,7 +406,7 @@ sub insert {
     $self->{'reflo'} = $self->{'lo'} + $self->{'pfxlen'};
     $self->{'refhi'} = $self->{'hi'} - $self->{'sfxlen'};
 
-    #self->print;
+    #$self->print;
 
     $self;
 }

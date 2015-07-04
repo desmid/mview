@@ -27,6 +27,7 @@ my %Template =
      'maxident'    => undef,   #show items with at most maxident %identity 
      'pcid'        => undef,   #identity calculation method
      'mode'        => undef,   #display format mode
+     'aligned'     => undef,   #treat input as aligned
      'ref_id'      => undef,   #reference id for %identity
 
      'skiplist'    => undef,   #discard rows by {num,id,regex}
@@ -152,6 +153,9 @@ sub set_parameters {
         warn "set_parameters: $p\n"  if $DEBUG_PARAM;
         $self->_set_parameters($p, @_);
     }
+
+    $self->{'aligned'} = 0;
+
     #how many expected rows of alignment
     $self->{'show'} = $self->{'topn'} + $self->has_query;
     $self;
@@ -369,14 +373,14 @@ sub initialise {
 
 sub subheader {''}
 
-#return the next alignment, 0 if an empty alignment, or undef if no more work
+#return the block of sequences, 0 if empty block, or undef if no more work
 sub next {
     my $self = shift;
 
     #drop old data structures: GC *before* next assignment!
     $self->{'align'} = $self->{'index2row'} = undef;
     
-    #extract an array of aligned row objects
+    #extract an array of row objects
     $self->{'index2row'} = $self->parse;
     #Universal::vmstat("Build->next(parse) done");
 
@@ -388,11 +392,11 @@ sub next {
     #	      $self->index2row($i)->cid, "\n";
     #}
 
-    #this alignment empty?
+    #this block empty?
     return 0  unless @{$self->{'index2row'}};
 
-    $self->{'align'} = $self->build_alignment;
-    #Universal::vmstat("Build->next(build_alignment) done");
+    $self->{'align'} = $self->build_block;
+    #Universal::vmstat("Build->next(build_block) done");
 
     #maybe more data but this alignment empty? (identity filtered)
     return 0  unless defined $self->{'align'};
@@ -401,18 +405,40 @@ sub next {
     return $self->{'align'};
 }
 
-sub build_alignment {
+sub build_block {
     my $self = shift;
 
+    my $aligned = 1;
+
+    my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
+
+    #not a search, so do all rows have same range?
+    if ($self->isa('Bio::MView::Build::Align')) {
+        for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
+            my ($lo2, $hi2) = $self->get_range($self->{'index2row'}->[$i]);
+            #warn "$self->{'index2row'}->[$i] ($lo2, $hi2)\n";
+            $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
+        }
+    }
+
+    $self->{'aligned'} = $aligned;
+
+    if (!$aligned and
+        grep {$_ eq $self->{'mode'}} qw(new clustal msf rdb plain)) {
+        warn "Output format is '$self->{'mode'}', but sequence lengths differ - aborting\n";
+        return undef;
+    }
+
     $self->build_indices;
-    $self->build_rows;
+    $self->build_rows($lo, $hi);
 
     my $aln = $self->build_base_alignment;
 
     return undef  unless $aln->all_ids > 0;
 
-    $aln = $self->build_new_alignment($aln)  if $self->{'mode'} eq 'new';
-
+    if ($self->{'mode'} eq 'new') {
+        $aln = $self->build_new_alignment($aln);
+    }
     $aln;
 }
 
@@ -472,32 +498,30 @@ sub build_indices {
     #warn "keep: [", join(",", sort keys %{$self->{'keep_uid'}}), "]\n";
     #warn "nops: [", join(",", sort keys %{$self->{'nops_uid'}}), "]\n";
     #warn "hide: [", join(",", sort keys %{$self->{'hide_uid'}}), "]\n";
-
     $self;
 }
 
 sub build_rows {
-    my $self = shift;
-    my ($lo, $hi, $i);
+    my ($self, $lo, $hi) = @_;
 
-    #first, compute alignment length from query sequence in row[0]
-    ($lo, $hi) = $self->set_range($self->{'index2row'}->[0]);
+    if ($self->{'aligned'}) {  #treat as alignment: common range
+        #warn "range ($lo, $hi)\n";
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+        }
 
-    #warn "range ($lo, $hi)\n";
-
-    #assemble sparse sequence strings for all rows
-    for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
-	#warn $self->{'index2row'}->[$i];
-	$self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+    } else {  #treat as format conversion: each row has own range
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+        }
     }
     $self;
 }
 
-sub set_range {
+sub get_range {
     my ($self, $row) = @_;
-
     my ($lo, $hi) = $row->range;
-
     if (@{$self->{'range'}} and @{$self->{'range'}} % 2 < 1) {
 	if ($self->{'range'}->[0] < $self->{'range'}->[1]) {
 	    ($lo, $hi) = ($self->{'range'}->[0], $self->{'range'}->[1]);
@@ -523,7 +547,8 @@ sub build_base_alignment {
 	push @list, $row;
     }
 
-    $aln = new Bio::MView::Align(\@list);
+    $aln = new Bio::MView::Align(\@list, $self->{'aligned'});
+
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
 			 'hidehash' => $self->{'hide_uid'});
 
@@ -585,7 +610,6 @@ sub build_new_alignment {
 		);
 	}
     }
-
     $aln;
 }
 

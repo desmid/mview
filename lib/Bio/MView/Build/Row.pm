@@ -66,7 +66,7 @@ sub sob  { $_[0]->{'seq'} }
 
 sub desc { $_[0]->{'desc'} }  #row description
 
-sub seq  {                    #the sequence
+sub seq {                    #the sequence
     my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
     return ''  unless defined $self->{'seq'};
     $self->set_pad($pad);
