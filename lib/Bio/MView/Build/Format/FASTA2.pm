@@ -147,11 +147,10 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_frag($hit->{'opt'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'});
+	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
 
 	$coll->insert((new $class(
                            $rank,
@@ -165,7 +164,7 @@ sub parse {
                            $self->strand,
                            '',
                        )),
-                      $key
+                      $key1
             );
     }
 
@@ -175,16 +174,22 @@ sub parse {
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-        my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'expect'});
+        my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
 
-	#only read hits already seen in ranking
-	next  unless $coll->has($key);
+	next  unless $coll->has($key1);
 
-	#then the individual matched fragments
-	foreach my $aln ($match->parse(qw(ALN))) {
+	#warn "USE: [$key1]\n";
 
-	    #ignore other query strand orientation
-            next  unless $self->use_strand($aln->{'query_orient'});
+        my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
+
+        #nothing matched
+        next  unless @$aset;
+
+        foreach my $aln (@$aset) {
+	    #apply score/significance filter
+            next  if $self->skip_frag($sum->{'opt'});
+
+            #warn "SEE: [$key1]\n";
 	    
 	    #$aln->print;
 	    
@@ -194,7 +199,7 @@ sub parse {
                                     $aln->{'query_trailer'});
 	    
             $coll->add_frags(
-                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -203,12 +208,16 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
-
-	    #override sbjct orientation
-	    $coll->item($key)->set_val('sbjct_orient', $aln->{'sbjct_orient'});
 	}
-	#override description
-        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	#override row data
+        $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+
+        my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);
+        #$coll->item($key1)->set_val('n', $N);        #not used yet
+        $coll->item($key1)->set_val('init1', $sum->{'init1'});
+        $coll->item($key1)->set_val('initn', $sum->{'initn'});
+        #$coll->item($key1)->set_val('expect', $sig); #not used yet
+        $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
     #free objects
@@ -241,19 +250,23 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Format::FASTA2);
 
+#note 2015-07-04: for future refactoring: this differs unusually from
+#fasta::parse because the sbjct orientation has to be derived from the SUM
+#instead of the ALN object, i.e., ALN orientations derived from the sequence
+#numbering are wrong.
 sub parse {
     my $self = shift;
 
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
-    #identify the query
-    my $header = $self->{'entry'}->parse(qw(HEADER));
-
-    #fasta run with no hits
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
+    #fasta run with no hits
     return []  unless defined $ranking;
+
+    #identify the query
+    my $header = $self->{'entry'}->parse(qw(HEADER));
 
     my $query = 'Query';
     if ($header->{'query'} ne '') {
@@ -287,12 +300,10 @@ sub parse {
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
-        next  if $self->skip_frag($hit->{'opt'});
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key = $coll->key($hit->{'id'}, $hit->{'initn'}, $hit->{'expect'},
-                             lc $hit->{'orient'});
+	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
 
 	$coll->insert((new $class(
                            $rank,
@@ -306,7 +317,7 @@ sub parse {
                            $self->strand,
                            $hit->{'orient'},
                        )),
-                      $key
+                      $key1
             );
     }
 
@@ -316,16 +327,22 @@ sub parse {
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-	my $key = $coll->key($sum->{'id'}, $sum->{'initn'}, $sum->{'expect'},
-                             lc $sum->{'orient'});
+	my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
 
-	#only read hits accepted in ranking
-	next  unless $coll->has($key);
+	next  unless $coll->has($key1);
 
-	#then the individual matched fragments
-	foreach my $aln ($match->parse(qw(ALN))) {
+	#warn "USE: [$key1]\n";
 
-            next  unless $self->use_strand($aln->{'query_orient'});
+        my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
+
+        #nothing matched
+        next  unless @$aset;
+
+        foreach my $aln (@$aset) {
+	    #apply score/significance filter
+            next  if $self->skip_frag($sum->{'opt'});
+
+            #warn "SEE: [$key1]\n";
 
 	    #$aln->print;
 	    
@@ -335,7 +352,7 @@ sub parse {
                                     $aln->{'query_trailer'});
 	    
             $coll->add_frags(
-                $key, $aln->{'query_start'}, $aln->{'query_stop'}, [
+                $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
@@ -344,9 +361,19 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
+
+            #override row data (non-standard)
+            $coll->item($key1)->set_val('sbjct_orient', $sum->{'orient'});
 	}
-	#override description
-        $coll->item($key)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+	#override row data
+        $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
+
+        my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);
+        #$coll->item($key1)->set_val('n', $N);        #not used yet
+        $coll->item($key1)->set_val('init1', $sum->{'init1'});
+        $coll->item($key1)->set_val('initn', $sum->{'initn'});
+        #$coll->item($key1)->set_val('expect', $sig); #not used yet
+        #$coll->item($key1)->set_val('sbjct_orient', $sorient); NO: see above
     }
 
     #free objects

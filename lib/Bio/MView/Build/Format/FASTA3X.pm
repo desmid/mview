@@ -299,9 +299,9 @@ sub parse {
     #all peptide tuples done?
     return  unless defined $self->{scheduler}->next;
 
-    #fasta run with no hits
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
+    #fasta run with no hits
     return []  unless defined $ranking;
 
     #identify the query
@@ -522,9 +522,9 @@ sub parse {
     #all strands done?
     return  unless defined $self->{scheduler}->next;
 
-    #fasta run with no hits
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
+    #fasta run with no hits
     return []  unless defined $ranking;
 
     #identify the query

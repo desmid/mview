@@ -151,6 +151,137 @@ sub strip_query_gaps {
     $self;
 }
 
+#return a hash of frag sets; each set is a list of ALN with a given
+#query/sbjct ordering, score, and significance; these sets have multiple
+#alternative keys: "qorient/sorient/opt/sig", "qorient/sorient/init1/sig",
+#"qorient/sorient/initn/sig", "qorient/sorient/score/sig" to handle variations
+#in the input data.
+sub get_frag_groups {
+    my ($self, $match) = @_;
+    my $hash = {};
+    my $sum = $match->parse(qw(SUM));
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $sig     = exists $sum->{'expect'} ? $sum->{'expect'} : '-1';
+        my $qorient = $aln->{'query_orient'};
+        my $sorient = $aln->{'sbjct_orient'};
+        my (%tmp, $key);
+
+        if (exists $sum->{'opt'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'opt'},   $sig) }++;
+        }
+
+        if (exists $sum->{'init1'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'init1'}, $sig) }++;
+        }
+
+        if (exists $sum->{'initn'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'initn'}, $sig) }++;
+        }
+
+        if (exists $sum->{'score'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'score'}, $sig) }++;
+        }
+
+        foreach my $key (keys %tmp) {
+            push @{ $hash->{$key} }, $aln;
+        }
+    }
+    #warn "SAVE: @{[sort keys %$hash]}\n";
+    return $hash;
+}
+
+#lookup a frag set in a frag dictionary, trying various keys based on scores
+#and significance.
+sub get_ranked_frags_by_query {
+    my ($self, $hash, $coll, $rkey, $qorient) = @_;
+
+    my $sig = -1;
+    if ($coll->item($rkey)->has('expect')) {
+        $sig = $coll->item($rkey)->get_val('expect');
+    }
+    my $qorient2 = ($qorient eq '+' ? '-' : '+');
+
+    my $D = 0;
+
+    my $lookup_o_score_sig = sub {
+        my ($qorient, $score, $sig) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $score, $sig);
+            return $hash->{$key}  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $match;
+
+    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+
+    my $item = $coll->item($rkey);
+
+    foreach my $key (qw(opt init1 initn score)) {
+        if ($item->has($key)) {
+            my $score = $item->get_val($key);
+            #match (score, sig) in query orientation?
+            warn "TRY: $qorient $score $sig\n"  if $D;
+            $match = &$lookup_o_score_sig($qorient, $score, $sig);
+            warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+            return $match  if defined $match;
+        }
+    }
+
+    warn "<<<< FAILED >>>>\n"  if $D;
+    #no match
+    return [];
+}
+
+#return a set of frags suitable for tiling, that are consistent with the query
+#and sbjct sequence numberings.
+sub get_ranked_frags {
+    my ($self, $match, $coll, $key, $qorient) = @_;
+    my $tmp = $self->get_frag_groups($match);
+
+    return []  unless keys %$tmp;
+
+    my $alist = $self->get_ranked_frags_by_query($tmp, $coll, $key, $qorient);
+
+    return $self->combine_frags_by_centroid($alist, $qorient);
+}
+
+sub get_scores {
+    my ($self, $list, $sum) = @_;
+
+    return unless @$list;
+
+    my ($qorient, $sorient) = ('?', '?');
+
+    foreach my $aln (@$list) {
+        $qorient = $aln->{'query_orient'}, next  if $qorient eq '?';
+        if ($aln->{'query_orient'} ne $qorient) {
+            warn "get_scores: mixed up query orientations\n";
+        }
+    }
+
+    foreach my $aln (@$list) {
+        $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
+        if ($aln->{'sbjct_orient'} ne $sorient) {
+            warn "get_scores: mixed up sbjct orientations\n";
+        }
+    }
+
+    my $n = scalar @$list;
+    my $sig = exists $sum->{'expect'} ? $sum->{'expect'} : '';
+
+    ##tweak the significance
+    #if ($sig !~ /e/i) {
+    #    $sig = sprintf("%.5f", $sig);
+    #    $sig =~ s/\.(\d{2}\d*?)0+$/.$1/;  #drop trailing zeros after 2dp
+    #    $sig = "0.0"  if $sig == 0;
+    #    $sig = "1.0"  if $sig == 1;
+    #}
+
+    ($n, $sig, $qorient, $sorient);
+}
+
 
 ###########################################################################
 ###########################################################################
