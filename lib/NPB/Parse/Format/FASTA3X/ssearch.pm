@@ -6,8 +6,8 @@
 package NPB::Parse::Format::FASTA3X::ssearch;
 
 use NPB::Parse::Format::FASTA3X;
-use strict;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA3X);
@@ -120,8 +120,9 @@ use vars qw(@ISA);
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::ssearch::MATCH::SUM;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA::MATCH::SUM);
 

@@ -117,6 +117,30 @@ use vars qw(@ISA);
 
 
 ###########################################################################
+package Bio::MView::Build::Row::FASTA3X::tfastm;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA3X::fastm);
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTA3X::tfastf;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA3X::fastm);
+
+
+###########################################################################
+package Bio::MView::Build::Row::FASTA3X::tfasts;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA3X::fastm);
+
+
+###########################################################################
 package Bio::MView::Build::Row::FASTA3X::ssearch;
 
 use vars qw(@ISA);
@@ -277,6 +301,10 @@ sub parse_query_tuples {
     my $self = shift;
     my ($peplist, $pephash) = ([], {});
     foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+
+        #tfast[mfs] ALN needs to access its SUM
+        my $sum = $match->parse(qw(SUM));
+
 	foreach my $aln ($match->parse(qw(ALN))) {
 
             my $peptup = makepeptup("$aln->{'query'}");
@@ -485,6 +513,14 @@ sub strip_query_gaps {
 
 
 ###########################################################################
+package Bio::MView::Build::Format::FASTA3X::fastf;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA3X::fastm); #note
+
+
+###########################################################################
 package Bio::MView::Build::Format::FASTA3X::fasts;
 
 use vars qw(@ISA);
@@ -493,7 +529,23 @@ use vars qw(@ISA);
 
 
 ###########################################################################
-package Bio::MView::Build::Format::FASTA3X::fastf;
+package Bio::MView::Build::Format::FASTA3X::tfastm;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA3X::fastm); #note
+
+
+###########################################################################
+package Bio::MView::Build::Format::FASTA3X::tfastf;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Format::FASTA3X::fastm); #note
+
+
+###########################################################################
+package Bio::MView::Build::Format::FASTA3X::tfasts;
 
 use vars qw(@ISA);
 

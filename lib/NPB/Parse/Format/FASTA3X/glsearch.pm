@@ -6,8 +6,8 @@
 package NPB::Parse::Format::FASTA3X::glsearch;
 
 use NPB::Parse::Format::FASTA3X;
-use strict;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA3X);
@@ -36,8 +36,9 @@ sub new {
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::glsearch::RANK;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA::RANK);
 
@@ -121,8 +122,9 @@ use vars qw(@ISA);
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::glsearch::MATCH::SUM;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA::MATCH::SUM);
 

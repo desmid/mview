@@ -6,8 +6,8 @@
 package NPB::Parse::Format::FASTA3X::tfasta;
 
 use NPB::Parse::Format::FASTA3X;
-use strict;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA3X);
@@ -116,8 +116,9 @@ use vars qw(@ISA);
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::tfasta::MATCH::SUM;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA::MATCH::SUM);
 
@@ -258,7 +259,7 @@ package NPB::Parse::Format::FASTA3X::tfasta::MATCH::ALN;
 
 use vars qw(@ISA);
 
-@ISA   = qw(NPB::Parse::Format::FASTA3X::MATCH::ALN);
+@ISA = qw(NPB::Parse::Format::FASTA3X::MATCH::ALN);
 
 # tfast[axy]  pro x dna
 

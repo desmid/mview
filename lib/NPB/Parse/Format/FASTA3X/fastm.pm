@@ -7,8 +7,8 @@ package NPB::Parse::Format::FASTA3X::fastm;
 
 use NPB::Parse::Format::FASTA3X;
 use NPB::Parse::Format::FASTA3X::fasta;
-use strict;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA3X);
