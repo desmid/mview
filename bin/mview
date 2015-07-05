@@ -3,8 +3,8 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
-my $VERSION  = '1.58';
-my $PATCH    = '1';
+my $VERSION  = '1.59';
+my $PATCH    = '';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
@@ -62,11 +62,11 @@ $SIG{'INT'} = sub { warn "$PROG: exiting on interrupt\n"; &cleanup(); exit 1 };
 $com = new Getopt($PROG, \*DATA)->getoptions(\@ARGV);
 $opt = $com->get_option_hash;
 $par = $com->get_parameter_hash;
-&rationalise_parameters($opt, $par);
-&dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
-&usage($com, $opt, $par, 0)    if $opt->{'help'};
+rationalise_parameters($opt, $par);
+dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
+usage($com, $opt, $par, 0)    if $opt->{'help'};
 
-&html_head($opt, $par, $stm);
+html_head($opt, $par, $stm);
 
 #echo command line?
 if ($opt->{'verbose'} & $VERB_ARGV) {
@@ -84,15 +84,15 @@ if ($opt->{'verbose'} & $VERB_ARGV) {
 }
 
 #leading copyright?
-print $stm &copyright($opt)    if $opt->{'out'} eq 'rdb';
+print $stm copyright($opt)    if $opt->{'out'} eq 'rdb';
 
 #colormap listing request: no alignment
 if ($opt->{'listcolors'}) {
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     print $stm Bio::MView::Manager::list_colormaps($opt->{'html'});
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit 0;
 }
 
@@ -101,8 +101,8 @@ if ($opt->{'listgroups'}) {
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     print $stm Bio::MView::Manager::list_groupmaps($opt->{'html'});
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit 0;
 }
 
@@ -115,7 +115,7 @@ if ($opt->{'listcss'}) {
 	'symcolor' => $par->{'symcolor'},
 	'gapcolor' => $par->{'gapcolor'},
 	);
-    exit(0);
+    exit 0;
 }
 
 #read from stdin?
@@ -127,17 +127,20 @@ unless (@ARGV or $opt->{'noparse'}) {
     push @ARGV, $SCRATCH;
 }
 
-my $acount = mview($opt, $par, $stm, @ARGV);
-
-#trailing copyright?
-print $stm &copyright($opt)
-    if $acount and $opt->{'html'} != $HTML_DATA and $opt->{'out'} =~ /^new/;
-
-&html_foot($opt, $par, $stm);
+#do the real work
+if (mview($opt, $par, $stm, @ARGV)) {
+    print $stm copyright($opt)  if $opt->{'html'} != $HTML_DATA and
+        $opt->{'out'} =~ /^new/;
+} else {
+    my $s = "$PROG: no alignments found\n";
+    print $s  if $opt->{'html'} and $opt->{'html'} != $HTML_DATA;
+    warn $s;
+}
+html_foot($opt, $par, $stm);
 
 #Universal::vmstat("FINISHED.");
 
-&cleanup();
+cleanup();
 
 
 ###########################################################################
@@ -380,23 +383,24 @@ sub check_format {
         return 'FASTA'    if $_ =~ /tfast/i;
         return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
 	return FASTA(@_)  if $_ =~ /fasta/i;
+        return 'Pearson'  if $_ =~ /pear/i;
     }
 
     #unknown format
     warn "$PROG: can't determine format of '$_[0]'\n";
-    &cleanup();
+    cleanup();
     exit 1;
 }
 
 sub usage {
     my ($com, $opt, $par, $exit, $stm) = (@_, *STDOUT);
     $opt->{'title'} = 'MView command line options';
-    &html_head($opt, $par, $stm);
+    html_head($opt, $par, $stm);
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
     $com->usage($stm);
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm &copyright($opt);
-    &html_foot($opt, $par, $stm);
+    print $stm copyright($opt);
+    html_foot($opt, $par, $stm);
     exit $exit    if defined $exit;
 }
 
@@ -542,7 +546,7 @@ action:   sub { __ARGS;
 	  }
 
 OPTION:   out
-usage:    "Output __CHOOSE(Bio::MView::Manager::check_display_mode)"
+usage:    "Output __CHOOSE(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 param:    mode
@@ -564,7 +568,7 @@ convert:  sub { __ARGS;
 		    __PV = 'clustal';
 		} elsif (__OV =~ /^al/i) {  #CLUSTAL/aln
 		    __PV = 'clustal';
-		} elsif (__OV =~ /^r/i) {   #RDB
+		} elsif (__OV =~ /^rd/i) {  #RDB
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
 		    __WARN("unknown output format '-__ON=__OV'.");
@@ -1214,7 +1218,7 @@ default:  unlimited
 param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
-		__TEST('i', __ON, __OV);
+		__TEST('f', __ON, __OV);
 		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
 		__OV;
 	  }
@@ -1394,10 +1398,29 @@ default:  both
 text:     "HSSP/Maxhom:"
 
 OPTION:   chain
-usage:    "Report only these chainnames/numbers {A,B,...,*}"
+usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
 type:     @s
 default:  *
 param:
+convert:  sub { __ARGS;
+		local $_; my @tmp=();
+		foreach (@{__PV}) {
+		    if ($_ eq 'first') {
+			push @tmp, 1;
+		    } elsif ($_ eq 'last') {
+			push @tmp, 0;
+		    } elsif ($_ eq 'all') {
+			@tmp = ();
+			last;
+		    } elsif ($_ eq '*') {
+			@tmp = ();
+			last;
+		    } else {
+			push @tmp, $_;
+		    }
+		}
+                return [ @tmp ];
+            }
 
 
 ###########################################################################

@@ -6,8 +6,8 @@
 package NPB::Parse::Format::FASTA3X::ggsearch;
 
 use NPB::Parse::Format::FASTA3X;
-use strict;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::FASTA3X);
@@ -36,8 +36,9 @@ sub new {
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::ggsearch::RANK;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA::RANK);
 
@@ -121,8 +122,9 @@ use vars qw(@ISA);
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::ggsearch::MATCH::SUM;
 
-use vars qw(@ISA);
 use NPB::Parse::Regexps;
+
+use vars qw(@ISA);
 
 @ISA   = qw(NPB::Parse::Format::FASTA::MATCH::SUM);
 
@@ -195,6 +197,22 @@ sub new {
 	    NPB::Parse::Format::FASTA::parse_orient($4),
 	    $5, $6, $7, $8, $9, $10, $11, $12, $13,
 	);
+
+    } elsif ($lines =~ /^>--/) {  #alternative alignment
+        my $sib = $self->get_sibling(0);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+         $self->{'alternative'},
+        ) =
+        (
+         $sib->{'id'},
+         $sib->{'desc'},
+         $sib->{'length'},
+         1,  #true
+        );
+
     } else {
 	$self->warn("unknown field: $lines");
     }

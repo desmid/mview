@@ -101,13 +101,16 @@ sub new {
     if (@_ < 1) {
 	die "${type}::new() missing arguments\n";
     }
-    my ($obj, $parent) = (@_, undef);
+    my ($obj, $aligned, $parent) = (@_, undef);
     my $i;
 
     my %self = %Template;
 
     $self{'id2index'}  = {};
     $self{'index2row'} = [];
+    $self{'aligned'}  = $aligned;
+
+    #warn "Align: [$obj][$aligned]\n";
 
     for ($i=0; $i<@$obj; $i++) {
 
@@ -117,9 +120,9 @@ sub new {
 	    $self{'id2index'}->{$obj->[$i]->id} = $i;
 	    $self{'index2row'}->[$i] = $obj->[$i];
 
-	    $self{'length'} = $obj->[$i]->length    if $self{'length'} < 1;
-	    
-	    if ($obj->[$i]->length != $self{'length'}) {
+	    $self{'length'} = $obj->[$i]->length  if $self{'length'} < 1;
+
+	    if ($aligned and $obj->[$i]->length != $self{'length'}) {
 		#warn "[@{[$obj->[$i]->string]}]\n";
 		die "${type}::new() incompatible alignment lengths, row $i, expect $self{'length'}, got @{[$obj->[$i]->length]}\n";
 	    }
@@ -230,7 +233,7 @@ sub id2row {
 sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
 sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
 
-#return list of all rows as inernal ids
+#return list of all rows as internal ids
 sub all_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
@@ -796,8 +799,8 @@ sub color_by_consensus_sequence {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
@@ -825,8 +828,8 @@ sub color_by_consensus_group {
 	$self->compute_tallies($self->{'group'});
     }
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
@@ -884,7 +887,7 @@ sub do_gc {
 }
 
 #compute effective all pairwise alignment and keep only those sequences
-#with $min <= pairwise identity <= $max. also keep any sequences with id's
+#with $min <= pairwise identity <= $max; also keep any sequences with id's
 #supplied as remaining arguments. The mode argument determines which
 #sequence length is used to normalise: 'reference', 'aligned', 'hit'.
 sub prune_all_identities {
@@ -938,7 +941,7 @@ sub prune_all_identities {
 	#warn join(" ", map { $_->id } @obj), "\n";
     }
 
-    new Bio::MView::Align(\@obj, $self->{'parent'});
+    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
 }
 
 #generate a new alignment from an existing one with extra information
@@ -967,21 +970,21 @@ sub prune_identities_gt {
 	}
     }
 
-    new Bio::MView::Align(\@obj, $self->{'parent'});
+    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
 }
 
 #generate a new alignment with a ruler based on this alignment
 sub build_ruler {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Ruler($self->length, $refobj);
-    new Bio::MView::Align([$obj], $self->{'parent'});
+    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
 }
 
 #generate a new alignment with a header based on this alignment
 sub build_header {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Header($self->length, $refobj);
-    new Bio::MView::Align([$obj], $self->{'parent'});
+    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
 }
 
 #generate a new alignment using an existing one but with a line of
@@ -992,8 +995,8 @@ sub build_conservation_row {
     #extract sequence rows
     my @ids = $self->visible_ids;
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->{'length'} -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->{'length'} - 1;
     #warn "fm/to: ($from, $to)\n";
 
     #alignment column numbering
@@ -1002,7 +1005,7 @@ sub build_conservation_row {
     #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
-    new Bio::MView::Align([$obj], $self->{'parent'});
+    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
 }
 
 #generate a new alignment using an existing one but with lines showing
@@ -1024,8 +1027,8 @@ sub build_consensus_rows {
     my @obj = ();
     
 
-    my $from = $self->{'parent'}->{'from'};
-    my $to   = $from + $self->length -1;
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
 
     foreach my $thresh (@$threshold) {
 	my $con = new Bio::MView::Align::Consensus($from, $to,
@@ -1041,7 +1044,7 @@ sub build_consensus_rows {
 	push @obj, $con;
     }
 
-    new Bio::MView::Align(\@obj, $self->{'parent'});
+    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
 }
 
 sub compute_tallies {
@@ -1138,7 +1141,7 @@ sub conservation {
 	#iterate over sequence list
 	for (my $i=0; $i<@$ids; $i++) {
 	    my $thischar = uc $self->id2row($ids->[$i])->seqobj->raw($j);
-	    #warn "[$i][$j] $refchar, $thischar, $ids->[$i]\n";
+	    #warn "[$j][$i] $refchar, $thischar, $ids->[$i]\n";
 	    next  if $self->is_nop($ids->[$i]);
 	    $same++   if $thischar eq $refchar;
 	    &$addcons($strong, $thischar);
@@ -1160,7 +1163,7 @@ sub conservation {
 	}
 	$s .= ' ';
     }
-    #warn "[$s]\n";
+    #warn "@{[length($s)]} [$s]\n";
     \$s;
 }
 

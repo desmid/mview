@@ -4,40 +4,27 @@
 ###########################################################################
 package Bio::MView::Build::Row::MSF;
 
-use vars qw(@ISA);
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq, $weight) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc, $seq);
-    $self->{'weight'} = $weight;
-    bless $self, $type;
-}
-
-#could be used in header/ruler
-#sub head { 'weight' }
-#sub pcid { $_[0]->SUPER::pcid_std }
-#sub data  { sprintf("%5s", $_[0]->{'weight'}) }
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'weight'})  if $mode eq 'data';
-    return ('weight')  if $mode eq 'attr';
-    return ('5N')  if $mode eq 'form';
+sub schema {[
+    # use? rdb?  key              label         format   default
+    [ 0,   1,    'weight',        'weight',     '5N',       '' ],
+    ]
 }
 
 
 ###########################################################################
 package Bio::MView::Build::Format::MSF;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
@@ -48,30 +35,27 @@ sub parse {
     my $self = shift;
     my ($rank, $use, $id, $wgt, $seq, @hit) = (0);
 
-    return  unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
     foreach $id (@{$self->{'entry'}->parse(qw(NAME))->{'order'}}) {
 
 	$rank++;
 
-	#check row wanted, by rank OR identifier OR row count limit
-	last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-	next  unless $use;
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
 
 	#warn "KEEP: ($rank,$id)\n";
 
 	$wgt = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id}->{'weight'};
 	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::MSF($rank,
-						   $id,
-						   '',
-						   $seq,
-						   $wgt,
-						  );
+	push @hit, new Bio::MView::Build::Row::MSF($rank, $id, '', $wgt);
+        $hit[$#hit]->add_frag($seq);
     }
-
     #map { $_->print } @hit;
+
+    #free objects
+    $self->{'entry'}->free(qw(NAME ALIGNMENT));
 
     return \@hit;
 }

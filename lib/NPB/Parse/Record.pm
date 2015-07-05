@@ -378,6 +378,7 @@ sub parse {
     }
     
     foreach $key (@keys) {
+        #warn "parse: $key\n";
 	foreach $rec ($self->key_range($key)) {
 	    if (defined $rec->[3]) {
 		#object already processed

@@ -3,9 +3,9 @@
 
 ###########################################################################
 package Bio::MView::Sequence;
-
 use strict;
-use vars qw($REPORT_CLASH $OVERWRITE $HARDFASTA);
+
+use vars qw($WARNCLASH $OVERWRITE $HARDFASTA);
 
 my $Find_Pad = '[-._~]';  #input terminal gap characters
 my $Find_Gap = '[-._~]';  #input internal gap characters
@@ -25,9 +25,9 @@ my $Mark_Spc = "\003";    #encoded whitespace
 my $Mark_Fs1 = "\004";    #encoded frameshift
 my $Mark_Fs2 = "\005";    #encoded frameshift
 
-$REPORT_CLASH = 0;  #set to 1 to enable reporting of clashing symbols
-$OVERWRITE = 0;     #set to 1 to enable clash overwrite by newest symbol
-$HARDFASTA = 0;     #relax length rules for UV. FASTA input
+$WARNCLASH = 0;    #set to 1 to enable reporting of clashing symbols
+$OVERWRITE = 0;    #set to 1 to enable clash overwrite by newest symbol
+$HARDFASTA = 0;    #relax length rules for UV. FASTA input
 
 #All range numbers count from 1, set to 0 when undefined.
 #
@@ -244,7 +244,6 @@ sub is_reversed {0}
 
 sub reverse {
     no strict qw(subs);
-    #warn "##################### SEQUENCE REVERSE ###################\n";
     bless $_[0], Bio::MView::Reverse_Sequence;
 }
 
@@ -291,14 +290,14 @@ sub findall {
 }
 
 #input each argument frag as [string, from, to], where from <= to
-sub append {
+sub insert {
     my $self = shift;
     my ($string, $frag, $len, $i, $p, $c, $state);
 
     $state = 0;
 
     foreach $frag (@_) {
-	die "append(+) wrong direction ($frag->[1], $frag->[2])\n"
+	die "insert(+) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[1] > $frag->[2];
 
 	$string = ${ $frag->[0] };
@@ -375,13 +374,13 @@ sub append {
 
 	    $p = $lo + $i;
 
-	    #warn "append(+): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
+	    #warn "insert(+): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
 
 	    #store other text, including Mark_Spc or Mark_Fs[12] symbols
 	    if (exists $self->{'seq'}->{$p}) {
 		next if $self->{'seq'}->{$p} eq $c;
-		warn "${self}::append(+): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::REPORT_CLASH;
+		warn "${self}::insert(+): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
+		    if $Bio::MView::Sequence::WARNCLASH;
 		next unless $Bio::MView::Sequence::OVERWRITE;
 		#unrecord old frameshift
 		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
@@ -398,16 +397,16 @@ sub append {
 	
 	if ($Bio::MView::Sequence::HARDFASTA and
 	    $len != $hi-$lo+1 and $self->{'fs'} < 1) {
-	    warn "${self}::append(+) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
+	    warn "${self}::insert(+) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
 	}
-	#warn "append(+): $self->{'lo'} $self->{'hi'}\n";
+	#warn "insert(+): $self->{'lo'} $self->{'hi'}\n";
     }
 
     #adjust prefix/suffix positions given new lengths
     $self->{'reflo'} = $self->{'lo'} + $self->{'pfxlen'};
     $self->{'refhi'} = $self->{'hi'} - $self->{'sfxlen'};
 
-    #self->print;
+    #$self->print;
 
     $self;
 }
@@ -510,14 +509,14 @@ sub reverse {
 }
 
 #input each argument frag as [string, from, to], where from >= to
-sub append {
+sub insert {
     my $self = shift;
     my ($string, $frag, $len, $i, $p, $c, $state);
 
     $state = 0;
 
     foreach $frag (@_) {
-	die "append(-) wrong direction ($frag->[1], $frag->[2])\n"
+	die "insert(-) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[2] > $frag->[1];
 
 	$string = ${ $frag->[0] };
@@ -594,13 +593,13 @@ sub append {
 
 	    $p = $hi - $i;    #REVERSE
 
-	    #warn "append(-): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
+	    #warn "insert(-): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
 
 	    #store other text, including Mark_Spc or Mark_Fs[12] symbols
 	    if (exists $self->{'seq'}->{$p}) {
 		next if $self->{'seq'}->{$p} eq $c;
-		warn "${self}::append(-): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::REPORT_CLASH;
+		warn "${self}::insert(-): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
+		    if $Bio::MView::Sequence::WARNCLASH;
 		next unless $Bio::MView::Sequence::OVERWRITE;
 		#unrecord old frameshift
 		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
@@ -616,9 +615,9 @@ sub append {
 
 	if ($Bio::MView::Sequence::HARDFASTA and
 	    $len != $hi-$lo+1 and $self->{'fs'} < 1) {
-	    warn "${self}::append(-) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
+	    warn "${self}::insert(-) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
 	}
-	#warn "append(-): $self->{'lo'} $self->{'hi'}\n";
+	#warn "insert(-): $self->{'lo'} $self->{'hi'}\n";
     }
 
     #adjust prefix/suffix positions given new lengths

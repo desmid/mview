@@ -115,7 +115,7 @@ sub test__forward_insert {
 	'sequence' => '',    	'seqlen'         => 0,
 	'reverse'  => 0,    	'fs' => 0,
     };
-    ok($S->append(), "append(empty)"); test_state($S, $h);
+    ok($S->insert(), "insert(empty)"); test_state($S, $h);
     #end
 
     print "\ntest__forward_insert / insert character at [20]\n";
@@ -129,10 +129,10 @@ sub test__forward_insert {
         'sequence' => 'B',  	'seqlen'         => 1,
         'reverse'  => 0,    	'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__forward_insert / overwrite character at [20]\n";
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__forward_insert / prepend character at [19]\n";
     $s = 'A'; $f = [\$s, 19, 19]; $h = {
@@ -144,9 +144,9 @@ sub test__forward_insert {
         'sequence' => 'AB',     'seqlen'         => 2,
         'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
-    print "\ntest__forward_insert / append character at [21]\n";
+    print "\ntest__forward_insert / insert character at [21]\n";
     $s = 'C'; $f = [\$s, 21, 21]; $h = {
         'lo'       => 19,       'hi'             => 21,
         'reflo'    => 19,       'refhi'          => 21,
@@ -156,7 +156,7 @@ sub test__forward_insert {
         'sequence' => 'ABC',    'seqlen'         => 3,
         'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__forward_insert / prepend character at [17] with a gap\n";
     $s = 'X'; $f = [\$s, 17, 17]; $h = {
@@ -168,7 +168,7 @@ sub test__forward_insert {
         'sequence' => 'XABC',   'seqlen'         => 4,
         'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__forward_insert / apppend character at [23] with a gap\n";
     $s = 'Y'; $f = [\$s, 23, 23]; $h = {
@@ -180,7 +180,7 @@ sub test__forward_insert {
         'sequence' => 'XABCY',   'seqlen'         => 5,
         'reverse'  => 0,         'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 }
 
@@ -199,7 +199,7 @@ sub test__reverse_insert {
         'sequence' => '',       'seqlen'         => 0,
         'reverse'  => 1,        'fs' => 0,
     };
-    ok($S->append(), "append(empty)"); test_state($S, $h);
+    ok($S->insert(), "insert(empty)"); test_state($S, $h);
     #end
 
     print "\ntest__reverse_insert / insert character at [20]\n";
@@ -213,10 +213,10 @@ sub test__reverse_insert {
         'sequence' => 'B',      'seqlen'         => 1,
         'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__reverse_insert / overwrite character at [20]\n";
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__reverse_insert / prepend character at [19]\n";
     $s = 'A'; $f = [\$s, 19, 19]; $h = {
@@ -228,9 +228,9 @@ sub test__reverse_insert {
         'sequence' => 'BA',     'seqlen'         => 2,
         'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
-    print "\ntest__reverse_insert / append character at [21]\n";
+    print "\ntest__reverse_insert / insert character at [21]\n";
     $s = 'C'; $f = [\$s, 21, 21]; $h = {
         'lo'       => 19,       'hi'             => 21,
         'reflo'    => 21,       'refhi'          => 19,
@@ -240,7 +240,7 @@ sub test__reverse_insert {
         'sequence' => 'CBA',    'seqlen'         => 3,
         'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__reverse_insert / prepend character at [17] with a gap\n";
     $s = 'X'; $f = [\$s, 17, 17]; $h = {
@@ -252,7 +252,7 @@ sub test__reverse_insert {
         'sequence' => 'CBAX',   'seqlen'         => 4,
         'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__reverse_insert / apppend character at [23] with a gap\n";
     $s = 'Y'; $f = [\$s, 23, 23]; $h = {
@@ -264,7 +264,7 @@ sub test__reverse_insert {
         'sequence' => 'YCBAX',   'seqlen'         => 5,
         'reverse'  => 1,         'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 }
 
@@ -284,7 +284,7 @@ sub test__special_characters {
 	'sequence' => 'P',      'seqlen'         => 1,
 	'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / gap\n";
@@ -299,7 +299,7 @@ sub test__special_characters {
 	'sequence' => 'AB',     'seqlen'         => 2,
 	'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / spc\n";
@@ -314,7 +314,7 @@ sub test__special_characters {
 	'sequence' => 'AB',     'seqlen'         => 2,
 	'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / fs1\n";
@@ -328,7 +328,7 @@ sub test__special_characters {
         'sequence' => 'PESGRP',  'seqlen'         => 6,
         'reverse'  => 0,         'fs' => 1,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / fs2\n";
@@ -342,7 +342,7 @@ sub test__special_characters {
         'sequence' => 'PESGRP',  'seqlen'         => 6,
         'reverse'  => 0,         'fs' => 1,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / fastx_3.4t23.dat (simple)\n";
@@ -358,7 +358,7 @@ sub test__special_characters {
         'sequence' => $ungapped, 'seqlen'         => length($ungapped),
         'reverse'  => 0,         'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__special_characters / fastx_3.4t23.dat (frameshift)\n";
@@ -374,7 +374,7 @@ sub test__special_characters {
         'sequence' => $ungapped, 'seqlen'         => length($ungapped),
         'reverse'  => 0,         'fs' => 1,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 }
 
@@ -393,7 +393,7 @@ sub test__toy_cases {
 	'sequence' => '23456',  'seqlen'         => 5,
 	'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__case 1: forward query + forward hit\n";
     $S = new Bio::MView::Sequence();
@@ -407,7 +407,7 @@ sub test__toy_cases {
 	'sequence' => '23',     'seqlen'         => 2,
 	'reverse'  => 0,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 
     print "\ntest__case 1: reverse query\n";
@@ -421,7 +421,7 @@ sub test__toy_cases {
 	'sequence' => '65432',  'seqlen'         => 5,
 	'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
 
     print "\ntest__case 1: reverse query + forward hit\n";
     $S = new Bio::MView::Reverse_Sequence();
@@ -435,7 +435,7 @@ sub test__toy_cases {
 	'sequence' => '23',     'seqlen'         => 2,
 	'reverse'  => 1,        'fs' => 0,
     };
-    $S->append($f); test_state($S, $h);
+    $S->insert($f); test_state($S, $h);
     #end
 }
 
@@ -478,8 +478,6 @@ test is_X predicates
 repeat everything for Reverse_Sequence
 
 --
-
-rename  append()  to insert() or paint() or overlay() or somesuch
 
 subclass a Forward_Sequence
 

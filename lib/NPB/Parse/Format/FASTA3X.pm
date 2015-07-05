@@ -58,6 +58,9 @@ use vars qw(
 		     'FASTM',
 		     'FASTS',
 		     'FASTF',
+		     'TFASTM',
+		     'TFASTS',
+		     'TFASTF',
 		    ],
 	    );
 
@@ -84,11 +87,19 @@ $ENTRY_START   = '(?:^\s*'
     . '|'
     . 'GLSEARCH performs a global-query/local-library search'
     . '|'
+    . 'FASTF compares mixed peptides to a protein databank'
+    . '|'
     . 'FASTM compares ordered peptides to a protein data bank'
     . '|'
     . 'FASTS compares linked peptides to a protein data bank'
     . '|'
-    . 'FASTF compares mixed peptides to a protein databank'
+    . 'TFASTF compares mixed peptides to a protein databank' #I think not
+    . '|'
+    . 'TFASTF compares mixed peptides to a translated DNA databank' #better
+    . '|'
+    . 'TFASTM compares ordered peptides to a translated DNA databank'
+    . '|'
+    . 'TFASTS compares linked peptides to a translated DNA data bank'
     . ')';
 $ENTRY_END     = 'Function used was';
 

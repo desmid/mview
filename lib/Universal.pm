@@ -11,23 +11,10 @@ $::Prog = basename($0);
 
 use strict;
 
-#sub member {
-#    my ($pattern, $list) = @_;
-#
-#    if (scalar(grep(/^$pattern$/, @$list)) != 1) {
-#       $pattern = '\\' . $pattern;
-#       if (scalar(grep(/^$pattern$/, @$list)) != 1) {
-#           return 0;
-#       }
-#    }
-#    return 1;
-#}
-
 sub member {
     my ($pattern, $list) = @_;
-    my $i;
-    foreach $i (@$list) {
-        return 1    if $i eq $pattern;
+    foreach my $i (@$list) {
+        return 1  if $i eq $pattern;
     }
     return 0;
 }
@@ -36,11 +23,10 @@ sub member {
 sub examine {
     my $self = shift;
     my @keys = @_ ? @_ : sort keys %$self;
-    my $key;
-    print "Class $self\n";
-    foreach $key (@keys) {
-        printf "%16s => %s\n", $key,
-	    defined $self->{$key} ? $self->{$key} : '';
+    print STDERR "Class $self\n";
+    foreach my $k (@keys) {
+        printf STDERR "%16s => %s\n", $k,
+            defined $self->{$k} ? $self->{$k} : '';
     }
     $self;
 }
@@ -49,13 +35,12 @@ sub examine {
 sub copy {
     my $self = shift;
     my $copy = {};
-    local $_;
-    foreach (keys %$self) {
-	#warn "$_ => $self->{$_}\n";
-	if (defined $self->{$_}) {
-	    $copy->{$_} = $self->{$_};
+    foreach my $k (keys %$self) {
+	#warn "$k => @{[defined $self->{$k} ? $self->{$k} : 'undef']}\n";
+	if (defined $self->{$k}) {
+	    $copy->{$k} = $self->{$k};
 	} else {
-	    $copy->{$_} = '';
+	    $copy->{$k} = '';
 	}
     }
     bless $copy, ref $self;
@@ -65,21 +50,19 @@ sub copy {
 sub deep_copy {
     my $self = shift;
     my $copy = {};
-    my $type;
-    local $_;
-    foreach (keys %$self) {
-	#warn "$_ => $self->{$_}\n";
-	if (defined $self->{$_}) {
-	    if ($type = ref $self->{$_}) {
-		if (UNIVERSAL::member($type, { qw(SCALAR ARRAY HASH CODE)})) {
-		    $copy->{$_} = $self->{$_};
+    foreach my $k (keys %$self) {
+	#warn "$k => @{[defined $self->{$k} ? $self->{$k} : 'undef']}\n";
+	if (defined $self->{$k}) {
+	    if (my $type = ref $self->{$k}) {
+		if (member($type, [ qw(SCALAR ARRAY HASH CODE) ])) {
+		    $copy->{$k} = $self->{$k};
 		} else {
-		    $copy->{$_} = $copy->{$_}->deep_copy;
+		    $copy->{$k} = $copy->{$k}->deep_copy;
 		}
 	    }
-	    $copy->{$_} = $self->{$_};
+	    $copy->{$k} = $self->{$k};
 	} else {
-	    $copy->{$_} = '';
+	    $copy->{$k} = '';
 	}
     }
     bless $copy, ref $self;

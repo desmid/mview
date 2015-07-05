@@ -15,46 +15,43 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Search;
-use Bio::MView::Build::Row;
+use NPB::Parse::Regexps;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
 #the name of the underlying NPB::Parse::Format parser
 sub parser { 'FASTA' }
 
-my %Known_Parameter = 
+my %Known_Parameters =
     (
-     #name        => [ format,             default ]
-     'minopt'     => [ '\d+',              undef   ],
+     #name        => [ format  default ]
+     'minopt'     => [ $RX_Ureal,  undef   ],
 
      #GCG FASTA (version 2)
-     'strand'     => [ [],         	   undef   ],
+     'strand'     => [ [],         undef   ],
     );
 
-sub initialise_parameters {
-    my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-    $self->reset_strand;
-}
+#tell the parent
+sub known_parameters { \%Known_Parameters }
 
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-    $self->reset_strand;
-}
-
+#our own constructor since this is the entry point for different subtypes
 sub new {
-    shift;    #discard type
+    shift;  #discard our own type
     my $self = new Bio::MView::Build::Search(@_);
     my ($type, $p, $v, $file);
 
     #determine the real type from the underlying parser
-    ($p, $v) = (lc $self->{'entry'}->{'format'},$self->{'entry'}->{'version'});
+    ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
+
+    #if this is a pre-3.3 fasta call the FASTA2 parser
+    if ($v eq '3') {
+        my $header = $self->{'entry'}->parse(qw(HEADER));
+        $v = 2  if $header->{'version'} =~ /^3\.(\d+)/ and $1 < 3;
+    }
 
     $type = "Bio::MView::Build::Format::FASTA$v";
     ($file = $type) =~ s/::/\//g;
@@ -63,71 +60,40 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise;
-}
+    $self->initialise_parameters;
+    $self->initialise_child;
 
-#initialise parse iteration scheduler variable(s). just do them all at once
-#and don't bother overriding with specific methods. likewise the scheduler
-#routines can all be defined here.
-sub initialise {
-    my $self = shift;
-    #may define strand orientation and reading frame filters later
-
-    #FASTA strand orientation
-    $self->{'strand_list'} = [ qw(+ -) ];    #strand orientations
-    $self->{'do_strand'}   = undef;          #list of required strand
-    $self->{'strand_idx'}  = undef;          #current index into 'do_strand'
-
-    $self->initialise_parameters;            #other parameters done last
     $self;
 }
 
-sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-
-sub reset_strand {
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    #warn "reset_strand: [@{$self->{'strand'}}]\n";
-    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
-						 $self->{'strand'});
+    #warn "initialise_child\n";
+    #schedule by strand orientation
+    $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
+    $self;
 }
 
-sub next_strand {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-
-    #first pass?
-    $self->{'strand_idx'} = 0    unless defined $self->{'strand_idx'};
-    
-    #normal pass: post-increment strand counter
-    if ($self->{'strand_idx'} < @{$self->{'do_strand'}}) {
-	return $self->{'do_strand'}->[$self->{'strand_idx'}++];
-    }
-
-    #finished loop
-    $self->{'strand_idx'} = undef;
+    #warn "reset_child [@{$self->{'strand'}}]\n";
+    $self->{scheduler}->filter($self->{'strand'});
+    $self;
 }
 
-sub schedule_by_strand {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_strand)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
+#current strand being processed
+sub strand { $_[0]->{scheduler}->item }
 
-#row filter
-sub use_row {
-    my ($self, $rank, $nid, $sid, $opt) = @_;
-    my $use = $self->SUPER::use_row($rank, $nid, $sid);
-    $use = $self->use_frag($opt)  if $use == 1;
-    #warn "FASTA::use_row($rank, $nid, $sid, $opt) = $use\n";
-    return $use;
-}
+#compare argument with current strand
+sub use_strand { $_[0]->{scheduler}->use_item($_[1]) }
 
 #minopt filter
-sub use_frag {
+sub skip_frag {
     my ($self, $opt) = @_;
-    return 0  if defined $self->{'minopt'} and $opt < $self->{'minopt'};
-    return 1;
+    return 1  if defined $self->{'minopt'} and $opt < $self->{'minopt'};
+    return 0;
 }
 
 #remove query and hit columns at gaps and frameshifts in the query sequence;
@@ -163,7 +129,7 @@ sub strip_query_gaps {
             }
         }
     };
-    
+
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
 
@@ -185,14 +151,146 @@ sub strip_query_gaps {
     $self;
 }
 
+#return a hash of frag sets; each set is a list of ALN with a given
+#query/sbjct ordering, score, and significance; these sets have multiple
+#alternative keys: "qorient/sorient/opt/sig", "qorient/sorient/init1/sig",
+#"qorient/sorient/initn/sig", "qorient/sorient/score/sig" to handle variations
+#in the input data.
+sub get_frag_groups {
+    my ($self, $match) = @_;
+    my $hash = {};
+    my $sum = $match->parse(qw(SUM));
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $sig     = exists $sum->{'expect'} ? $sum->{'expect'} : '-1';
+        my $qorient = $aln->{'query_orient'};
+        my $sorient = $aln->{'sbjct_orient'};
+        my (%tmp, $key);
+
+        if (exists $sum->{'opt'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'opt'},   $sig) }++;
+        }
+
+        if (exists $sum->{'init1'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'init1'}, $sig) }++;
+        }
+
+        if (exists $sum->{'initn'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'initn'}, $sig) }++;
+        }
+
+        if (exists $sum->{'score'}) {
+            $tmp { join("/", $qorient, $sorient, $sum->{'score'}, $sig) }++;
+        }
+
+        foreach my $key (keys %tmp) {
+            push @{ $hash->{$key} }, $aln;
+        }
+    }
+    #warn "SAVE: @{[sort keys %$hash]}\n";
+    return $hash;
+}
+
+#lookup a frag set in a frag dictionary, trying various keys based on scores
+#and significance.
+sub get_ranked_frags_by_query {
+    my ($self, $hash, $coll, $rkey, $qorient) = @_;
+
+    my $sig = -1;
+    if ($coll->item($rkey)->has('expect')) {
+        $sig = $coll->item($rkey)->get_val('expect');
+    }
+    my $qorient2 = ($qorient eq '+' ? '-' : '+');
+
+    my $D = 0;
+
+    my $lookup_o_score_sig = sub {
+        my ($qorient, $score, $sig) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $score, $sig);
+            return $hash->{$key}  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $match;
+
+    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+
+    my $item = $coll->item($rkey);
+
+    foreach my $key (qw(opt init1 initn score)) {
+        if ($item->has($key)) {
+            my $score = $item->get_val($key);
+            #match (score, sig) in query orientation?
+            warn "TRY: $qorient $score $sig\n"  if $D;
+            $match = &$lookup_o_score_sig($qorient, $score, $sig);
+            warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+            return $match  if defined $match;
+        }
+    }
+
+    warn "<<<< FAILED >>>>\n"  if $D;
+    #no match
+    return [];
+}
+
+#return a set of frags suitable for tiling, that are consistent with the query
+#and sbjct sequence numberings.
+sub get_ranked_frags {
+    my ($self, $match, $coll, $key, $qorient) = @_;
+    my $tmp = $self->get_frag_groups($match);
+
+    return []  unless keys %$tmp;
+
+    my $alist = $self->get_ranked_frags_by_query($tmp, $coll, $key, $qorient);
+
+    return $self->combine_frags_by_centroid($alist, $qorient);
+}
+
+sub get_scores {
+    my ($self, $list, $sum) = @_;
+
+    return unless @$list;
+
+    my ($qorient, $sorient) = ('?', '?');
+
+    foreach my $aln (@$list) {
+        $qorient = $aln->{'query_orient'}, next  if $qorient eq '?';
+        if ($aln->{'query_orient'} ne $qorient) {
+            warn "get_scores: mixed up query orientations\n";
+        }
+    }
+
+    foreach my $aln (@$list) {
+        $sorient = $aln->{'sbjct_orient'}, next  if $sorient eq '?';
+        if ($aln->{'sbjct_orient'} ne $sorient) {
+            warn "get_scores: mixed up sbjct orientations\n";
+        }
+    }
+
+    my $n = scalar @$list;
+    my $sig = exists $sum->{'expect'} ? $sum->{'expect'} : '';
+
+    ##tweak the significance
+    #if ($sig !~ /e/i) {
+    #    $sig = sprintf("%.5f", $sig);
+    #    $sig =~ s/\.(\d{2}\d*?)0+$/.$1/;  #drop trailing zeros after 2dp
+    #    $sig = "0.0"  if $sig == 0;
+    #    $sig = "1.0"  if $sig == 1;
+    #}
+
+    ($n, $sig, $qorient, $sorient);
+}
+
 
 ###########################################################################
 ###########################################################################
 package Bio::MView::Build::Row::FASTA;
 
-use vars qw(@ISA);
-use Bio::MView::Build;
+use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
 
@@ -210,97 +308,35 @@ sub posn2 {
     return '';
 }
 
-#based on assemble_blastn() fragment processing
-sub assemble_fasta {
+sub assemble {
     my $self = shift;
-
-    #query:     protein|dna
-    #database:  protein|dna
-    #alignment: protein|dna x protein|dna
-    #query numbered in protein|dna units
-    #sbjct numbered in protein|dna units
-    #query orientation: +/-
-    #sbjct orientation: +/-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_fastx {
+
+###########################################################################
+package Bio::MView::Build::Row::FASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::FASTA);
+
+#recompute range for translated sequence
+sub range {
     my $self = shift;
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
+}
 
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
+#assemble translated
+sub assemble {
+    my $self = shift;
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);
     }
     $self->SUPER::assemble(@_);
-}
-
-sub assemble_tfasta {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $initn, $init1, $opt) = @_;
-    my $self = new Bio::MView::Build::Row($num, $id, $desc);
-    $self->{'initn'} = $initn;
-    $self->{'init1'} = $init1;
-    $self->{'opt'}   = $opt;
-    bless $self, $type;
-}
-
-sub data  {
-    return sprintf("%5s %5s %5s", 'initn', 'init1', 'opt') unless $_[0]->num;
-    sprintf("%5s %5s %5s", $_[0]->{'initn'}, $_[0]->{'init1'}, $_[0]->{'opt'});
-}
-
-sub rdb_info {
-    my ($self, $mode) = @_;
-    return ($self->{'initn'}, $self->{'init1'}, $self->{'opt'})
-	if $mode eq 'data';
-    return ('initn', 'init1', 'opt')  if $mode eq 'attr';
-    return ('5N', '5N', '5N')  if $mode eq 'form';
 }
 
 

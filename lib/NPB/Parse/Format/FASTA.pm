@@ -386,6 +386,9 @@ sub get_entry {
     #reuse packages: fastf,fasts -> fastm
     $class =~ s/::fast[fs]$/::fastm/;
 
+    #reuse packages: tfastf,tfasts -> tfastm
+    $class =~ s/::tfast[fs]$/::tfastm/;
+
     #warn "\nprog=$prog  version=$version (GCG=$GCG) class=$class\n";
 
     ($prog = $class) =~ s/::/\//g; require "$prog.pm";
@@ -615,6 +618,10 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
+sub get_sibling {
+    $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[$_[1]][3];
+}
+
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
@@ -642,6 +649,7 @@ sub get_summary {
 }
 
 sub new {
+
     my $keys_and_depth = sub {
 	my ($query, $sbjct) = @_;
 	#determine depth of sequence labels at left: take the

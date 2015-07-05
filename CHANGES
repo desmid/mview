@@ -1,11 +1,26 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.58.1  2015-06-24
-  Fixed problems with filepaths and CRLF handling under Windows; can now
-    read UNIX or DOS/Windows derived files on either system.
+Version 1.59  2015-07-05
+  Improved algorithm for assembly of alternative search alignment fragments
+    with stricter constraints on selection of fragments that maintain query
+    and hit sequence orderings; affects all BLAST and FASTA searches when
+    the number of seach result fragments is greater than 1.
+  Changed BLAST scoring information to report number of HSPs, best score
+    and significance for the HSPs used in the assembly, rather than those
+    stated in the parsed BLAST ranking; affects all BLAST searches.
+  Updated FASTA parsers to recognise '>--' alternative alignments.
+  Added FASTA family support for TFASTM, TFASTF, TFASTS (experimental).
+  Modified code to work on Windows: fixed problems with filepaths
+    containing backslashes; added low-level handling of line endings to
+    allow UNIX (LF) and Windows/DOS (CRLF) data files to be read on either
+    system. Tested with Strawberry Perl 5.22.0.1 64bit under Wine.
+  Fixed bug in CLUSTAL conservation line that sometimes miscalculated
+    column positions; affects BLAST and FASTA searches.
   Fixed bug in PIR output that inserted wrong terminal gap character.
-  Fixed bug in CLUSTAL conservation mode that sometimes miscalculated
-    column positions for BLAST and FASTA searches.
+  Fixed bug in percent identity calculation: now case-sensitive and treats
+    unknown 'X' characters as mismatches.
+  Fixed bug in FASTA/Pearson parser that could skip description field.
+  Major refactoring of components and discontinued CVS on SourceForge.
 
 Version 1.58  2015-06-14
   Added CLUSTAL/aln output mode.
@@ -24,6 +39,7 @@ Version 1.58  2015-06-14
   Fixed bugs in UV FASTA translated nucleotide sequence numbering;
     frameshift symbols '/' and '\' now elided and treated like gaps;
     affects FASTX, FASTY, TFASTX, TFASTY, TFASTXY.
+  Switched from CVS to git version control.
 
 Version 1.57.1  2015-05-21
   Fixed bug in bin/mview which always set 'find' colour scheme, reported on
@@ -45,11 +61,11 @@ Version 1.57  2015-01-24
     comprising a single '.' from GeneDoc output.
   Fixed CLUSTAL parser failure when input file uses CRLF line terminators.
   Fixed bug in MSF parser so that sequence identifies can contain spaces.
-  Thanks to sfrye@rr-research.no for the last 4 items.
+  Thanks to sfrye at rr-research.no for the last 4 items.
 
 Version 1.56  2013-10-20
   Updated FASTA suite GGSEARCH, GLSEARCH, SSEARCH, FASTM parsers and added
-  support for FASTF, FASTS.
+    support for FASTF, FASTS.
 
 Version 1.55  2013-09-27
   Converted documentation to Sphinx and rewrote and extended the manual.
@@ -76,15 +92,14 @@ Version 1.53  2013-08-21
   Clustal parser supports trailing numbers for clustal 2.1 (Weizhong Li).
   FASTA parsers extended to handle some more FASTA3 formats.
   Sequence assembly mechanism changed to preserve earlier fragments at the
-  expense of overlapping ones seen later by the parser: this only visibly
-  affects blast/fasta searches involving sequence fragments in mixed reading
-  frames.
+    expense of overlapping ones seen later by the parser; this only visibly
+    affects blast/fasta searches involving sequence fragments in mixed
+    reading frames.
 
 Version 1.52  2011-01-20
   Fasta parsing extended to handle versions 34,35,36 as requested by
   Shiraz Shah. Only tested for fasta itself on protein sequences and not
   for other members of the fasta suite. 
-
   Bug fixes suggested by Rob Sheridan/Chris Sander:
   SRS.pm did not truncate trailing garbage on identifiers correctly.
   EBI SRS wgetz URL templates updated.
@@ -173,7 +188,7 @@ Version 1.47.4  1-1-03
 
 Version 1.47.3  31-5-02
 
-  Fixed 'exists' bug in Sequence.pm reported by Lins1@wyeth.com.
+  Fixed 'exists' bug in Sequence.pm reported by Lins1 at wyeth.com.
 
 Version 1.47.2  29-4-02
 
@@ -182,7 +197,7 @@ Version 1.47.2  29-4-02
 Version 1.47.1  23-4-02
 
   Fixed fasta family parse error caused by a short sequence stub on the
-  first line of alignment (reported by agibbs@uvic.ca), which gave
+  first line of alignment (reported by agibbs at uvic.ca), which gave
   negative sequence positions for the query (or subject).
 
 Version 1.47  21-4-02
@@ -197,10 +212,10 @@ Version 1.47  21-4-02
      positions).
   o  Pearson, PIR, RDB, HTML output formats now report rank, description,
      score information, strand orientations, and query/hit positional
-     data - thanks to michael.spitzer@uni-muenster.de and others who
+     data - thanks to michael.spitzer at uni-muenster.de and others who
      have asked for this.
   o  Fixed inoperative '-minopt' bug for fasta, reported by
-     gkutish@asrr.arsusda.gov.
+     gkutish at asrr.arsusda.gov.
   o  Colormap now uses a palette of colors by name, run with -listcolors to
      see the extended syntax. Backwards compatible with previous versions.
   o  Input sequences having sequence identifiers that start with a hash 
@@ -213,8 +228,8 @@ Version 1.47  21-4-02
   o  New option '-labcolor' to specify the color for the label portion of
      the output alignment.
   o  JNET secondary structure prediction parser added, with own color scheme
-     (requested by andrade@stork.embl-heidelberg.de), specified with '-in
-     jnet'. This only reads the 'jnet -z' (columnar) style output.
+     (requested by andrade at stork.embl-heidelberg.de), specified with
+     '-in jnet'. This only reads the 'jnet -z' (columnar) style output.
   o  CLUSTAL-like colormaps added (thanks to Frederico.Nardi@astrazeneca.com).
   o  Kuang Lin's neural network derived colour scheme added (-colormap kxlin).
   o  Option '-out plain' added for completeness.

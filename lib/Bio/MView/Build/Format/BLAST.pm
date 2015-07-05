@@ -6,218 +6,147 @@
 # generic BLAST material
 #
 ###########################################################################
-
-
-###########################################################################
 package Bio::MView::Build::Format::BLAST;
 
-use vars qw(@ISA %Known_Parameter);
-use NPB::Parse::Regexps;
 use Bio::MView::Build::Search;
+use NPB::Parse::Regexps;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
-my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
-
-#return the name of the underlying NPB::Parse::Stream parser
+#the name of the underlying NPB::Parse::Stream parser
 sub parser { 'BLAST' }
 
-%Known_Parameter = 
-    (
-     #name        => [ format,     	   default  ]
-						   
-     #BLAST* display various HSP selections
-     'hsp'        => [ '\S+',              'ranked' ],
+my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments
 
-     #BLAST* (version 1)					   
-     'maxpval'    => [ $RX_Ureal,  	   undef    ],
-     'minscore'   => [ '\d+',      	   undef    ],
-						   
-     #BLAST* (version 2)					   
-     'maxeval'    => [ $RX_Ureal,  	   undef    ],
-     'minbits'    => [ '\d+',      	   undef    ],
-     'cycle'      => [ [],         	   undef    ],
-	
-     #BLASTN (version 1, version 2)
-     #BLASTX (version 2)
-     'strand'     => [ [],         	   undef    ],
-	
+my %Known_Parameters =
+    (
+     #name        => [ format       default  ]
+
+     #BLAST* display various HSP selections
+     'hsp'        => [ '\S+',       'ranked' ],
+
+     #BLAST* (version 1)
+     'maxpval'    => [ $RX_Ureal,   undef    ],
+     'minscore'   => [ $RX_Ureal,   undef    ],
+
+     #BLAST* (version 2)
+     'maxeval'    => [ $RX_Ureal,   undef    ],
+     'minbits'    => [ $RX_Ureal,   undef    ],
+     'cycle'      => [ [],          undef    ],
+
+     #BLASTN (version 1, version 2); BLASTX (version 2)
+     'strand'     => [ [],          undef    ],
+
      #BLASTX/TBLASTX (version 1)
     );
 
-sub initialise_parameters {
-    my $self = shift;
-    $self->SUPER::initialise_parameters;
-    $self->SUPER::initialise_parameters(\%Known_Parameter);
-    $self->reset_cycle;
-    $self->reset_strand;
-}
+#tell the parent
+sub known_parameters { \%Known_Parameters }
 
-sub set_parameters {
-    my $self = shift;
-    $self->SUPER::set_parameters(@_);
-    $self->SUPER::set_parameters(\%Known_Parameter, @_);
-    $self->reset_cycle;
-    $self->reset_strand;
-}
+#standard attribute names: override
+sub attr_score { 'unknown' }
+sub attr_sig   { 'unknown' }
 
-sub subheader {
-    my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s    if $quiet;
-    if ($self->{'hsp'} eq 'all') {
-	$s .= "HSP processing: all\n";
-    } elsif ($self->{'hsp'} eq 'discrete') {
-	$s .= "HSP processing: discrete\n";
-    } else {
-	$s .= "HSP processing: ranked\n";
-    }
-    $s;    
-}
+#scheduler type: override
+sub scheduler { 'unknown' }
 
+#our own constructor since this is the entry point for different subtypes
 sub new {
-    shift;    #discard type
+    shift;  #discard type
     my $self = new Bio::MView::Build::Search(@_);
     my ($type, $p, $v, $file);
 
     #determine the real type from the underlying parser
-    ($p, $v) = (lc $self->{'entry'}->{'format'},$self->{'entry'}->{'version'});
+    ($p, $v) = (lc $self->{'entry'}->{'format'}, $self->{'entry'}->{'version'});
 
     $type = "Bio::MView::Build::Format::BLAST$v";
     ($file = $type) =~ s/::/\//g;
     require "$file.pm";
-    
+
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise;
-}
+    $self->{'attr_score'} = $self->attr_score;
+    $self->{'attr_sig'}   = $self->attr_sig;
 
-#initialise parse iteration scheduler variable(s). just do them all at once
-#and don't bother overriding with specific methods. likewise the scheduler
-#routines can all be defined here.
-sub initialise {
-    my $self = shift;
-
-    #NCBI BLAST2/PSI-BLAST search cycle
-    $self->{'do_cycle'}    = undef;    #required list of cycle numbers
-    $self->{'cycle_idx'}   = undef;    #current index into 'do_cycle'
-    $self->{'cycle_ptr'}   = undef;    #current cycle parse object ref
-
-    #BLASTN strand orientations
-    $self->{'strand_list'} = [ qw(+ -) ];  #strand orientations
-    $self->{'do_strand'}   = undef;    #list of required strand
-    $self->{'strand_idx'}  = undef;    #current index into 'do_strand'
-
-    $self->initialise_parameters;      #other parameters done last
+    $self->initialise_parameters;
+    $self->initialise_child;
 
     $self;
 }
 
-sub cycle    { $_[0]->{'do_cycle'}->[$_[0]->{'cycle_idx'}-1] }
-sub strand   { $_[0]->{'do_strand'}->[$_[0]->{'strand_idx'}-1] }
-
-sub reset_cycle {
+#called by the constructor
+sub initialise_child {
     my $self = shift;
-    #initialise scheduler loops and loop counters
-    #warn "cycle: [@{$self->{'cycle'}}]\n";
+    my $scheduler = $self->scheduler;
+    #warn "initialise_child ($scheduler)\n";
+    while (1) {
+        $self->{scheduler} = new Bio::MView::Build::Scheduler,
+        last if $scheduler eq 'none';
 
-    my $last = $self->{'entry'}->count(qw(SEARCH));
+        $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
+        last if $scheduler eq 'strand';
 
-    $self->{'do_cycle'} = $self->reset_schedule([1..$last], $self->{'cycle'});
+        if ($scheduler eq 'cycle') {
+            my $last = $self->{'entry'}->count(qw(SEARCH));
+            $self->{scheduler} = new Bio::MView::Build::Scheduler([1..$last]);
+            last;
+        }
 
-    if (defined $self->{'cycle_ptr'}) {
-	#flag previous cycle parse for garbage collection
-	$self->{'cycle_ptr'}->free;
-	$self->{'cycle_ptr'} = undef;
+        if ($scheduler eq 'cycle+strand') {
+            my $last = $self->{'entry'}->count(qw(SEARCH));
+            $self->{scheduler} =
+                new Bio::MView::Build::Scheduler([1..$last], [qw(+ -)]);
+            last;
+        }
+
+        die "initialise_child: unknown scheduler '$scheduler'";
     }
+    return $self;
 }
 
-sub reset_strand {
+#called on each iteration
+sub reset_child {
     my $self = shift;
-    #warn "strand: [@{$self->{'strand'}}]\n";
-    $self->{'do_strand'} = $self->reset_schedule($self->{'strand_list'},
-						 $self->{'strand'});
+    my $scheduler = $self->scheduler;
+    #warn "reset_child ($scheduler)\n";
+    while (1) {
+        last if $scheduler eq 'none';
+
+        #(warn "strands: [@{$self->{'strand'}}]\n"),
+        $self->{scheduler}->filter($self->{'strand'}),
+        last if $scheduler eq 'strand';
+
+        #(warn "cycles: [@{$self->{'cycle'}}]\n"),
+        $self->{scheduler}->filter($self->{'cycle'}),
+        last if $scheduler eq 'cycle';
+
+        #(warn "cycles+strands: [@{$self->{'cycle'}}][@{$self->{'strand'}}]\n"),
+        $self->{scheduler}->filter($self->{'cycle'}, $self->{'strand'}),
+        last if $scheduler eq 'cycle+strand';
+
+        die "reset_child: unknown scheduler '$scheduler'";
+    }
+    return $self;
 }
 
-sub next_cycle {
-    my $self = shift;
-
-    #first pass?
-    $self->{'cycle_idx'} = 0    unless defined $self->{'cycle_idx'};
-    
-    #normal pass: post-increment cycle counter
-    if ($self->{'cycle_idx'} < @{$self->{'do_cycle'}}) {
-	return $self->{'do_cycle'}->[$self->{'cycle_idx'}++];
-    }
-
-    #finished loop
-    $self->{'cycle_idx'} = undef;
+#current cycle being processed
+sub cycle {
+    my $scheduler = $_[0]->scheduler;
+    return $_[0]->{scheduler}->item       if $scheduler eq 'cycle';
+    return ($_[0]->{scheduler}->item)[0]  if $scheduler eq 'cycle+strand';
+    return 1;
 }
 
-sub next_strand {
-    my $self = shift;
-
-    #first pass?
-    $self->{'strand_idx'} = 0    unless defined $self->{'strand_idx'};
-    
-    #normal pass: post-increment strand counter
-    if ($self->{'strand_idx'} < @{$self->{'do_strand'}}) {
-	return $self->{'do_strand'}->[$self->{'strand_idx'}++];
-    }
-
-    #finished loop
-    $self->{'strand_idx'} = undef;
-}
-
-sub schedule_by_cycle {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_cycle)) {
-	return $next;
-    }
-    return undef;           #tell parser    
-}
-
-sub schedule_by_strand {
-    my ($self, $next) = shift;
-    if (defined ($next = $self->next_strand)) {
-	return $next;
-    }
-    return undef;           #tell parser
-}
-
-sub schedule_by_cycle_and_strand {
-    my ($self, $next) = (@_, 1);
-
-    if (defined $self->{'cycle_idx'}) {
-	#keep current cycle
-	if (! defined $self->{'strand_idx'}) {
-	    #strands finished: goto next cycle
-	    $next = $self->next_cycle;
-	}
-    } else {
-	#goto first cycle
-	$next = $self->next_cycle;
-    }
-    
-    #test the cycle
-    if (defined $next) {
-	#current/new cycle: goto next/first strand
-	$next = $self->next_strand;
-    } else {
-	#all cycles finished
-	return undef;           #tell parser    
-    }
-
-    #test the strand
-    if (defined $next) {
-	#ready to parse
-	return $next;
-    }
-
-    #all cycles finished
-    return undef;           	#tell parser    
+#current strand being processed
+sub strand {
+    my $scheduler = $_[0]->scheduler;
+    return $_[0]->{scheduler}->item       if $scheduler eq 'strand';
+    return ($_[0]->{scheduler}->item)[1]  if $scheduler eq 'cycle+strand';
+    return '+';
 }
 
 #override base class method to process query row differently
@@ -226,10 +155,10 @@ sub build_rows {
     my ($lo, $hi, $i);
 
     #first, compute alignment length from query sequence in row[0]
-    ($lo, $hi) = $self->set_range($self->{'index2row'}->[0]);
-    
+    ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
+
     #warn "range ($lo, $hi)\n";
-       
+
     #query row contains missing query sequence, rather than gaps
     $self->{'index2row'}->[0]->assemble($lo, $hi, $MISSING_QUERY_CHAR);
 
@@ -240,12 +169,237 @@ sub build_rows {
     $self;
 }
 
+#utility/testing function
+sub report_ranking_data {
+    my ($self, $match, $coll, $rkey, $qorient) = @_;
+    return  unless $qorient eq '+';  #called multiply; only want one pass
+    my $n     = $coll->item($rkey)->get_val('n');
+    my $score = $coll->item($rkey)->get_val($self->{'attr_score'});
+    my $sig   = $coll->item($rkey)->get_val($self->{'attr_sig'});
+    my $state = -1;
+    my ($asco, $asig);
+    #look for a match (ranking==hit by score and sig) in either orientation
+    foreach my $aln ($match->parse(qw(ALN))) {
+        last  if $state > 1;
+        $state = 0; #entered loop body at least once
+        $asco = $aln->{$self->{'attr_score'}};
+        $asig = $aln->{$self->{'attr_sig'}};
+        #match conditions
+        $state = 2, next  if $score == $asco and $sig == $asig;
+        my $ascor = sprintf('%0.f', $asco);
+        $state = 3, next  if $score == $ascor and $sig == $asig;
+    }
+    return  if $state < 0;
+    warn "(@{[$self->cycle]})$rkey match: identity\n"  if $state == 2;
+    warn "(@{[$self->cycle]})$rkey match: round(score=$score/$asco)\n"
+        if $state == 3;
+    return  if $state > 0;
+    #no match, start reporting
+    warn "(@{[$self->cycle]})$rkey <<<<<<<<<<<<<<<<\n";
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $asco = $aln->{$self->{'attr_score'}};
+        my $asig = $aln->{$self->{'attr_sig'}};
+        my $aqorient = $aln->{'query_orient'};
+        warn "$aqorient score: $score $asco " . "sig: $sig $asig  " .
+            "@{[$score == $asco ? '1' : '0']} @{[$sig == $asig ? '1' : '0']} | @{[$score == sprintf('%0.f', $asco) ? '1' : '0']}\n";
+    }
+}
 
+#return a hash of HSP sets; each set is a list of ALN with a given query/sbjct
+#ordering, number of fragments, and significance; these sets have multiple
+#alternative keys: "qorient/sorient/n/sig", "qorient/sorient/n/score",
+#"qorient/sorient/score" to handle fuzziness and errors in the input data.
+sub get_hsp_groups {
+    my ($self, $match) = @_;
+    my $hash = {};
+    foreach my $aln ($match->parse(qw(ALN))) {
+        my $n       = $aln->{'n'};
+        my $score   = $aln->{$self->{'attr_score'}};
+        my $sig     = $aln->{$self->{'attr_sig'}};
+        my $qorient = $aln->{'query_orient'};
+        my $sorient = $aln->{'sbjct_orient'};
+        my (%tmp, $key);
+
+        #key by significance: can exceed $n if more HSP have the same sig
+        %tmp = ( $sig => 1 );               #raw significance value
+        #BLAST1 and WU-BLAST
+        if ($self->{'attr_sig'} eq 'p' and $sig !~ /e/i) {
+            $tmp{sprintf("%.2f", $sig)}++;  #rounded sig (2dp)
+        }
+        #generic
+        foreach my $sig (keys %tmp) {
+            #full information
+            $key = join("/", $qorient, $sorient, $n, $sig);
+            push @{ $hash->{$key} }, $aln;
+
+            #without N as this can be missing in the ranking or wrong
+            $key = join("/", $qorient, $sorient, $sig);
+            push @{ $hash->{$key} }, $aln;
+        }
+
+        #key by N and score, but we also need to consider rounding:
+        #
+        #round to nearest integer, or, if X.5, round both ways; this is
+        #because the scores reported in the ranking and in the hit summary are
+        #themselves rounded from an unknown underlying score, so simply
+        #rounding the HSP score is not enough, viz.
+        # underlying: 9.49 -> ranking (0dp) 9
+        # underlying: 9.49 -> hit     (1dp) 9.5
+        # round(9.5, 0) = 10 != 9
+        %tmp = ( $score => 1 );             #raw score
+        $tmp{sprintf("%.0f", $score)}++;    #rounded score (0dp)
+        if ($score - int($score) == 0.5) {  #edge cases +/- 0.5
+            $tmp{$score - 0.5}++;
+            $tmp{$score + 0.5}++;
+        }
+        foreach my $score (keys %tmp) {
+            #full information
+            $key = join("/", $qorient, $sorient, $n, $score);
+            push @{ $hash->{$key} }, $aln;
+
+            #without N as this can be missing in the ranking or wrong
+            $key = join("/", $qorient, $sorient, $score);
+            push @{ $hash->{$key} }, $aln;
+        }
+    }
+    #warn "SAVE: @{[sort keys %$hash]}\n";
+    return $hash;
+}
+
+#lookup an HSP set in an HSP dictionary, trying various keys based on number
+#of HSPs N, significance or score.
+sub get_ranked_hsps_by_query {
+    my ($self, $hash, $coll, $rkey, $qorient) = @_;
+
+    my $n        = $coll->item($rkey)->get_val('n');
+    my $score    = $coll->item($rkey)->get_val($self->{'attr_score'});
+    my $qorient2 = ($qorient eq '+' ? '-' : '+');
+
+    $n = 1  unless $n;  #no N in ranking
+
+    my $D = 0;
+
+    my $lookup_o_n_sig = sub {
+        my ($qorient, $n, $sig) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $n, $sig);
+            return $hash->{$key}  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $follow_sig = sub {
+        my ($qorient, $key) = @_;
+
+        #take the sig of the first matching HSP: expand that set
+        my $n     = $hash->{$key}->[0]->{'n'};
+        my $score = $hash->{$key}->[0]->{$self->{'attr_score'}};
+        my $sig   = $hash->{$key}->[0]->{$self->{'attr_sig'}};
+        warn "MAP: $qorient $n $score -> $sig\n"  if $D;
+
+        my $match;
+
+        #match in query orientation?
+        $match = &$lookup_o_n_sig($qorient, $n, $sig);
+        return $match  if defined $match;
+
+        #match in opposite orientation? skip
+        $match = &$lookup_o_n_sig($qorient2, $n, $sig);
+        return []  if defined $match;
+
+        return undef;
+    };
+
+    my $lookup_o_n_score = sub {
+        my ($qorient, $n, $score) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $n, $score);
+            return &$follow_sig($qorient, $key)  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $lookup_score = sub {
+        my ($qorient, $score) = @_;
+        foreach my $sorient (qw(+ -)) {
+            my $key = join("/", $qorient, $sorient, $score);
+            return &$follow_sig($qorient, $key)  if exists $hash->{$key};
+        }
+        return undef;
+    };
+
+    my $match;
+
+    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+
+    #match (n, score) in query orientation?
+    warn "TRY: $qorient $n $score\n"  if $D;
+    $match = &$lookup_o_n_score($qorient, $n, $score);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (n, score) in opposite orientation? skip
+    warn "TRY: $qorient2 $n $score (to skip)\n"  if $D;
+    $match = &$lookup_o_n_score($qorient2, $n, $score);
+    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
+    return []  if defined $match;
+
+    #match (score) in query orientation?
+    warn "TRY: $qorient $score\n"  if $D;
+    $match = &$lookup_score($qorient, $score);
+    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
+    return $match  if defined $match;
+
+    #match (score) in opposite orientation? skip
+    warn "TRY: $qorient2, $score (to skip)\n"  if $D;
+    $match = &$lookup_score($qorient2, $score);
+    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
+    return []  if defined $match;
+
+    warn "<<<< FAILED >>>>\n"  if $D;
+    #no match
+    return [];
+}
+
+#return a set of HSPs suitable for tiling, that are consistent with the query
+#and sbjct sequence numberings.
+sub get_ranked_hsps {
+    my ($self, $match, $coll, $key, $qorient) = @_;
+
+    my $tmp = $self->get_hsp_groups($match);
+
+    return []  unless keys %$tmp;
+
+    my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
+
+    return $self->combine_frags_by_centroid($alist, $qorient);
+}
+
+# #selects the first HSP: minimal, first is assumed to be the best one
+# sub get_first_ranked_hsp {
+#     my ($self, $match, $coll, $key, $qorient) = @_;
+#     my $tmp = $self->get_hsp_groups($match);
+#     my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
+#     return [ $alist->[0] ]  if @$alist;
+#     return $alist;
+# }
+
+# #selects all HSPs: will include out of sequence order HSPs
+# sub get_all_ranked_hsps {
+#     my ($self, $match, $coll, $key, $qorient) = @_;
+#     my $tmp = $self->get_hsp_groups($match);
+#     my $alist = $self->get_ranked_hsps_by_query($tmp, $coll, $key, $qorient);
+#     return $alist;
+# }
+
+
+###########################################################################
 ###########################################################################
 package Bio::MView::Build::Row::BLAST;
 
 use Bio::MView::Build::Row;
 
+use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row);
@@ -259,131 +413,69 @@ sub posn1 {
 sub posn2 {
     my $hfm = $_[0]->{'seq'}->fromlabel2;
     my $hto = $_[0]->{'seq'}->tolabel2;
-    return "$hfm:$hto"    if defined $_[0]->num and $_[0]->num;
+    return "$hfm:$hto"  if defined $_[0]->num and $_[0]->num;
     return '';
 }
 
-#fragment sort(worst to best): 1) increasing score, 2) increasing length
-sub sort {
-    $_[0]->{'frag'} =
-	[
-	 sort {
-	     my $c = $a->[7] <=> $b->[7];                   #compare score
-	     return $c    if $c != 0;
-	     return length($a->[0]) <=> length($b->[0]);    #compare length
-	 } @{$_[0]->{'frag'}}
+#fragment sort, called by Row::assemble
+sub sort { $_[0]->sort_best_to_worst }
+
+# #don't sort fragments; blast lists HSPs by decreasing score, so this would be
+# #good, but the mview fragment collecting algorithm called by get_ranked_hsps()
+# #changes the order.
+# sub sort_none {$_[0]}
+
+# #sort fragments by (1) increasing score, (2) increasing length; used up to MView
+# #version 1.58.1, but inconsistent with NO OVERWRITE policy in Sequence.pm
+# sub sort_worst_to_best {
+#     $_[0]->{'frag'} = [
+#         sort {
+#             warn "$b->[7] <=> $a->[7]\n";
+#             my $c = $a->[7] <=> $b->[7];                 #compare score
+#             return $c  if $c != 0;
+#             return length($a->[0]) <=> length($b->[0]);  #compare length
+#         } @{$_[0]->{'frag'}}
+#        ];
+#     $_[0];
+# }
+
+#sort fragments by (1) decreasing score, (2) decreasing length
+sub sort_best_to_worst {
+    $_[0]->{'frag'} = [
+        sort {
+            #warn "$b->[7] <=> $a->[7]\n";
+            my $c = $b->[7] <=> $a->[7];                 #compare score
+            return $c  if $c != 0;
+            return length($b->[0]) <=> length($a->[0]);  #compare length
+        } @{$_[0]->{'frag'}}
 	];
     $_[0];
 }
 
-sub assemble_blastp {
+#wrapper for logical symmetry with Bio::MView::Build::Row::BLASTX
+sub assemble {
     my $self = shift;
-
-    #query:     protein
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in protein units
-    #query orientation: +
-    #sbjct orientation: +
-
-    #processing steps:
-    #  (1) assemble frags
-   
     $self->SUPER::assemble(@_);
 }
 
-sub assemble_blastn {
+###########################################################################
+package Bio::MView::Build::Row::BLASTX;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Row::BLAST);
+
+#recompute range for translated sequence
+sub range {
     my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: dna x dna
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) reverse assembly position numbering
-    #  (2) reverse each frag
-    #  (3) assemble frags
-    #  (4) reverse assembly
-    #if query +
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
+    my ($lo, $hi) = $self->SUPER::range;
+    $self->translate_range($lo, $hi);
 }
 
-sub assemble_blastx {
+#assemble translated
+sub assemble {
     my $self = shift;
-
-    #query:     dna
-    #database:  protein
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in protein units
-    #query orientation: +-
-    #sbjct orientation: +
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
-    foreach my $frag (@{$self->{'frag'}}) {
-        ($frag->[1], $frag->[2]) =
-            $self->translate_range($frag->[1], $frag->[2]);
-    }
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastn {
-    my $self = shift;
-
-    #query:     protein
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in protein units
-    #sbjct numbered in dna units
-    #query orientation: +
-    #sbjct orientation: +-
-
-    #processing steps:
-    #  (1) assemble frags
-    
-    $self->SUPER::assemble(@_);
-}
-
-sub assemble_tblastx {
-    my $self = shift;
-
-    #query:     dna
-    #database:  dna
-    #alignment: protein x protein
-    #query numbered in dna units
-    #sbjct numbered in dna units
-    #query orientation: +-
-    #sbjct orientation: +-
-
-    #processing steps:
-    #if query -
-    #  (1) convert to protein units
-    #  (2) reverse assembly position numbering
-    #  (3) reverse each frag
-    #  (4) assemble frags
-    #  (5) reverse assembly
-    #if query +
-    #  (1) convert to protein units
-    #  (2) assemble frags
-    
     foreach my $frag (@{$self->{'frag'}}) {
         ($frag->[1], $frag->[2]) =
             $self->translate_range($frag->[1], $frag->[2]);

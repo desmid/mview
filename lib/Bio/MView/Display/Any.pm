@@ -7,8 +7,8 @@ package Bio::MView::Display::Any;
 use Bio::MView::Display;
 use Bio::MView::Display::Ruler;
 use Bio::MView::Display::Header;
-use strict;
 
+use strict;
 use vars qw(%Template);
 
 %Template =
@@ -81,6 +81,8 @@ sub new {
 
 	#are 'parent' and 'string' the same length?
 	if ($seqlen != $self->{'length'}) {
+            #warn "parent:   [@{[$self->{'parent'}->{'string'}->string]}]\n";
+            #warn "sequence: [@{[$self->{'string'}->string]}]\n";
 	    die "$type new() parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
 	}
 

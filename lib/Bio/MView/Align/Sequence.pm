@@ -7,8 +7,8 @@ package Bio::MView::Align::Sequence;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
-use strict;
 
+use strict;
 use vars qw(@ISA
 	    $Default_PRO_Colormap $Default_DNA_Colormap
             $Default_FIND_Colormap $Default_Colormap
@@ -402,7 +402,9 @@ sub set_identity {
 sub compute_identity_to {
     #warn "Bio::MView::Align::Sequence::compute_identity_to(@_)\n";
     my ($self, $othr, $mode) = @_;
-    return 0  unless defined $othr;
+
+    return 0      unless defined $othr;
+    return 100.0  if $self == $othr;  #always 100% identical to self
 
     die "${self}::compute_identity_to() length mismatch\n"
 	unless $self->length == $othr->length;
@@ -421,8 +423,14 @@ sub compute_identity_to {
 	$cnt++  if $self->{'string'}->is_char($c2);
 	next  if $cnt < 1;
 
+        #standardize case
+        $c1 = uc $c1; $c2 = uc $c2;
+
 	#ignore terminal gaps in the *first* sequence
 	$len++  unless $self->{'string'}->is_terminal_gap($c1);
+
+        #ignore unknown character: contributes to length only
+        next  if $c1 eq 'X' or $c2 eq 'X';
 
 	$sum++  if $c1 eq $c2;
 	#warn "[$i] $c1 $c2 : $cnt => $sum / $len\n";

@@ -136,7 +136,7 @@ sub _seek {
 sub _reset {
     my $self = shift;
     my ($offset) = (@_, $self->{'base'});
-    #warn " _reset(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "_reset(@_)\n"  if $NPB::Parse::Substring::Debug;
     $self->{'fh'}->seek($offset, SEEK_SET);
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
@@ -145,7 +145,7 @@ sub _reset {
 
 sub _close {
     my $self = shift;
-    warn " _close()\n"  if $NPB::Parse::Substring::Debug;
+    warn "_close()\n"  if $NPB::Parse::Substring::Debug;
     return $self  if $self->{'state'} & $NPB::Parse::Substring::File::close;
     $self->{'fh'}->close;
     $self->{'fh'} = -1;
@@ -155,7 +155,7 @@ sub _close {
 
 sub _open {
     my $self = shift;
-    #warn " _open()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "_open()\n"  if $NPB::Parse::Substring::Debug;
     $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
     $self->{'fh'}->open($self->{'file'}) or $self->die("_open() can't open ($self->{'file'})");
     $self->{'state'} = $NPB::Parse::Substring::File::open;
@@ -166,7 +166,7 @@ sub _open {
 
 sub substr {
     my $self = shift;
-    #warn " substr(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "substr(@_)\n"  if $NPB::Parse::Substring::Debug;
     if ($self->{'state'} & $NPB::Parse::Substring::File::close) {
 	$self->die("substr() can't read on closed file '$self->{'file'}'");
     }
@@ -179,7 +179,7 @@ sub substr {
 
 sub getline {
     my $self = shift;
-    #warn " getline(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "getline(@_)\n"  if $NPB::Parse::Substring::Debug;
 
     my ($offset) = (@_, $self->{'thisoffset'});
 
@@ -235,7 +235,7 @@ sub reopen {$_[0]}
 sub reset {
     my $self = shift;
     my ($offset) = (@_, $self->{'base'});
-    #warn " reset(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "reset(@_)\n"  if $NPB::Parse::Substring::Debug;
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
     $self;

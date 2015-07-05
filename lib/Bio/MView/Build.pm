@@ -9,14 +9,14 @@ use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
 use Bio::MView::Align;
 use Bio::MView::Display;
+use Bio::MView::Build::Scheduler;
 use strict;
 
-use vars qw();
+my $DEBUG_PARAM = 0;
 
 my %Template = 
     (
      'entry'       => undef,   #parse tree ref
-     'status'      => undef,   #parse status (undef=stop; otherwise=go)
      'align'       => undef,   #current alignment
      'index2row'   => undef,   #list of aligned rows, from zero
      'uid2row'     => undef,   #hash of aligned rows, by Build::Row->uid
@@ -27,6 +27,7 @@ my %Template =
      'maxident'    => undef,   #show items with at most maxident %identity 
      'pcid'        => undef,   #identity calculation method
      'mode'        => undef,   #display format mode
+     'aligned'     => undef,   #treat input as aligned
      'ref_id'      => undef,   #reference id for %identity
 
      'skiplist'    => undef,   #discard rows by {num,id,regex}
@@ -41,7 +42,7 @@ my %Template =
      'gap'         => undef,   #output sequence gap character
     );
 
-my %Known_Parameter = 
+my %Known_Parameters =
     (
      #name        => [ format,     default   ]
      'topn'       => [ '\d+',      0         ],
@@ -65,17 +66,6 @@ my %Known_Identity_Mode =
      'hit'        => 1,
     );
 
-my %Known_Display_Mode =
-    (
-     #name
-     'plain'      => 1,
-     'fasta'      => 1,
-     'clustal'    => 1,
-     'pir'        => 1,
-     'msf'        => 1,
-     'rdb'        => 1,
-    );
-
 my %Known_HSP_Tiling =
     (
      'all'       => 1,
@@ -94,7 +84,10 @@ sub new {
     $self->{'entry'} = shift;
 
     bless $self, $type;
+
     $self->initialise_parameters;
+    $self->initialise_child;
+
     $self;
 }
 
@@ -119,15 +112,6 @@ sub check_identity_mode {
     return map { lc $_ } sort keys %Known_Identity_Mode;
 }
 
-sub check_display_mode {
-    if (defined $_[0]) {
-	if (exists $Known_Display_Mode{$_[0]}) {
-	    return lc $_[0];
-	}
-    }
-    return map { lc $_ } sort keys %Known_Display_Mode;
-}
-
 sub check_hsp_tiling {
     if (defined $_[0]) {
 	if (exists $Known_HSP_Tiling{$_[0]}) {
@@ -139,38 +123,51 @@ sub check_hsp_tiling {
 
 sub initialise_parameters {
     my $self = shift;
-    my ($p) = (@_, \%Known_Parameter);
-    local $_;
-    foreach (keys %$p) {
-	#warn "initialise_parameters() $_\n";
-	if (ref $p->{$_}->[0] eq 'ARRAY') {
-	    $self->{$_} = [];
-	    next;
-	}
-	if (ref $p->{$_}->[0] eq 'HASH') {
-	    $self->{$_} = {};
-	    next;
-	}
-	$self->{$_} = $p->{$_}->[1];
+    foreach my $p (\%Known_Parameters, $self->known_parameters) {
+        warn "initialise_parameters $p\n"  if $DEBUG_PARAM;
+        $self->_initialise_parameters($p);
     }
+    $self;
+}
 
-    #reset how many rows to display
-    $self->{'show'}     = $self->{'topn'};
-
-    #generic alignment scheduler
-    $self->{'status'}   = 1;
-
+sub _initialise_parameters {
+    my ($self, $p) = @_;
+    foreach my $k (keys %$p) {
+	warn "_initialise_parameters() $k\n"  if $DEBUG_PARAM;
+	if (ref $p->{$k}->[0] eq 'ARRAY') {
+	    $self->{$k} = [];
+	    next;
+	}
+	if (ref $p->{$k}->[0] eq 'HASH') {
+	    $self->{$k} = {};
+	    next;
+	}
+	$self->{$k} = $p->{$k}->[1];
+    }
     $self;
 }
 
 sub set_parameters {
     my $self = shift;
-    my $p = ref $_[0] ? shift : \%Known_Parameter;
-    my ($key, $val);
-    while ($key = shift) {
-	$val = shift;
+    foreach my $p (\%Known_Parameters, $self->known_parameters) {
+        warn "set_parameters: $p\n"  if $DEBUG_PARAM;
+        $self->_set_parameters($p, @_);
+    }
+
+    $self->{'aligned'} = 0;
+
+    #how many expected rows of alignment
+    $self->{'show'} = $self->{'topn'} + $self->has_query;
+    $self;
+}
+
+sub _set_parameters {
+    my ($self, $p) = (shift, shift);
+    while (my $key = shift) {
+	my $val = shift;
 	if (exists $p->{$key}) {
-	    #warn "set_parameters() $key, @{[defined $val ? $val : 'undef']}\n";
+	    warn "_set_parameters() $key, @{[defined $val ? $val : 'undef']}\n"
+                if $DEBUG_PARAM;
 	    if (ref $p->{$key}->[0] eq 'ARRAY' and ref $val eq 'ARRAY') {
 		$self->{$key} = $val;
 		next;
@@ -194,13 +191,41 @@ sub set_parameters {
 	#ignore unrecognised parameters which may be recognised by subclass
 	#set_parameters() methods.
     }
-
-    #always reset when new parameters are given
-    $self->{'status'} = 1;
-
     $self;
 }
 
+#override if children add extra parameters
+sub known_parameters {{}}
+
+#override if children have an extra query sequence (children of Build::Search)
+sub has_query {0}
+
+#override if children need to do something special after during creation
+sub initialise_child {
+    $_[0]->{scheduler} = new Bio::MView::Build::Scheduler;
+    $_[0];
+}
+
+#override if children need to do something special before each iteration
+sub reset_child {
+    $_[0]->{scheduler}->filter;
+    $_[0];
+}
+
+#return 1 if topn rows already generated, 0 otherwise; ignore if if filtering
+#on identity; it is assumed the query is implicitly accepted anyway by the
+#parser
+sub topn_done {
+    my ($self, $num) = @_;
+    return 0  if $self->{'maxident'} != 100;
+    return 1  if $self->{'topn'} > 0 and $num > $self->{'topn'};
+    return 0;
+}
+
+#return 1 is row should be ignored by row rank or identifier
+sub skip_row { my $self = shift; ! $self->use_row(@_) }
+
+#override in children
 sub use_row { die "$_[0] use_row() virtual method called\n" }
 
 #map an identifier supplied as {0..N|query|M.N} to a list of row objects in
@@ -340,53 +365,22 @@ sub header {
     Bio::MView::Display::displaytext($s);
 }
 
+sub initialise {
+    my ($self, $params) = @_;
+    $self->set_parameters(%$params);
+    $self->reset_child;
+}
+
 sub subheader {''}
 
-#generic one-pass scheduler for parsers. subclasses can override with more
-#sophisticated parsers allowing reentry of their parse() method to extract
-#different alignment subsets.
-sub schedule {
-    if (defined $_[0]->{'status'}) {
-	$_[0]->{'status'} = undef;
-	return 1;
-    }
-    $_[0]->{'status'};
-}
-
-#caller gets a sorted unique list of items from $range if present in
-#$request. The special value 0 in $request means the 'last' item in $range.
-#Used to convert lists of blast/fasta cycles, strands, frames into an
-#ordered list of known tasks.
-sub reset_schedule {
-    my ($self, $range, $request) = @_;
-    return  unless @$range;
-    #warn "reset_schedule entry: [@$range] [@$request]\n";
-
-    #empty request: schedule all
-    return [ @$range ]  unless @$request;
-
-    #make a dict of requested items for uniqueness
-    my @items = (); my %tmp = ();
-    map { $tmp{$_}++ } @$request;
-    $tmp{$range->[-1]}++  if exists $tmp{0}; #0 means the 'last'
-
-    #extact legitimate items in correct order
-    foreach my $i (@$range) {
-	push @items, $i  if exists $tmp{$i};
-    }
-    #warn "reset_schedule exit: [@items]\n";
-
-    return \@items;
-}
-
-#return the next alignment, undef if no more work, or 0 if empty alignment
+#return the block of sequences, 0 if empty block, or undef if no more work
 sub next {
     my $self = shift;
 
     #drop old data structures: GC *before* next assignment!
     $self->{'align'} = $self->{'index2row'} = undef;
     
-    #extract an array of aligned row objects
+    #extract an array of row objects
     $self->{'index2row'} = $self->parse;
     #Universal::vmstat("Build->next(parse) done");
 
@@ -398,11 +392,11 @@ sub next {
     #	      $self->index2row($i)->cid, "\n";
     #}
 
-    #this alignment empty?
+    #this block empty?
     return 0  unless @{$self->{'index2row'}};
 
-    $self->{'align'} = $self->build_alignment;
-    #Universal::vmstat("Build->next(build_alignment) done");
+    $self->{'align'} = $self->build_block;
+    #Universal::vmstat("Build->next(build_block) done");
 
     #maybe more data but this alignment empty? (identity filtered)
     return 0  unless defined $self->{'align'};
@@ -411,32 +405,40 @@ sub next {
     return $self->{'align'};
 }
 
-sub build_alignment {
+sub build_block {
     my $self = shift;
 
+    my $aligned = 1;
+
+    my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
+
+    #not a search, so do all rows have same range?
+    if ($self->isa('Bio::MView::Build::Align')) {
+        for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
+            my ($lo2, $hi2) = $self->get_range($self->{'index2row'}->[$i]);
+            #warn "$self->{'index2row'}->[$i] ($lo2, $hi2)\n";
+            $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
+        }
+    }
+
+    $self->{'aligned'} = $aligned;
+
+    if (!$aligned and
+        grep {$_ eq $self->{'mode'}} qw(new clustal msf rdb plain)) {
+        warn "Output format is '$self->{'mode'}', but sequence lengths differ - aborting\n";
+        return undef;
+    }
+
     $self->build_indices;
-    $self->build_rows;
+    $self->build_rows($lo, $hi);
 
     my $aln = $self->build_base_alignment;
 
     return undef  unless $aln->all_ids > 0;
 
-SWITCH: {
-	if ($self->{'mode'} eq 'new') {
-	    $aln = $self->build_new_alignment($aln);
-	    last;
-	}
-	last    if $self->{'mode'} eq 'none';  #for testing
-	last    if $self->{'mode'} eq 'plain';
-	last    if $self->{'mode'} eq 'pearson';
-	last    if $self->{'mode'} eq 'clustal';
-	last    if $self->{'mode'} eq 'pir';
-	last    if $self->{'mode'} eq 'msf';
-	last    if $self->{'mode'} eq 'rdb';
-    
-	die "${self}::alignment() unknown mode '$self->{'mode'}'\n";
+    if ($self->{'mode'} eq 'new') {
+        $aln = $self->build_new_alignment($aln);
     }
-
     $aln;
 }
 
@@ -496,32 +498,30 @@ sub build_indices {
     #warn "keep: [", join(",", sort keys %{$self->{'keep_uid'}}), "]\n";
     #warn "nops: [", join(",", sort keys %{$self->{'nops_uid'}}), "]\n";
     #warn "hide: [", join(",", sort keys %{$self->{'hide_uid'}}), "]\n";
-
     $self;
 }
 
 sub build_rows {
-    my $self = shift;
-    my ($lo, $hi, $i);
+    my ($self, $lo, $hi) = @_;
 
-    #first, compute alignment length from query sequence in row[0]
-    ($lo, $hi) = $self->set_range($self->{'index2row'}->[0]);
+    if ($self->{'aligned'}) {  #treat as alignment: common range
+        #warn "range ($lo, $hi)\n";
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+        }
 
-    #warn "range ($lo, $hi)\n";
-
-    #assemble sparse sequence strings for all rows
-    for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
-	#warn $self->{'index2row'}->[$i];
-	$self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+    } else {  #treat as format conversion: each row has own range
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+        }
     }
     $self;
 }
 
-sub set_range {
+sub get_range {
     my ($self, $row) = @_;
-
     my ($lo, $hi) = $row->range;
-
     if (@{$self->{'range'}} and @{$self->{'range'}} % 2 < 1) {
 	if ($self->{'range'}->[0] < $self->{'range'}->[1]) {
 	    ($lo, $hi) = ($self->{'range'}->[0], $self->{'range'}->[1]);
@@ -547,7 +547,8 @@ sub build_base_alignment {
 	push @list, $row;
     }
 
-    $aln = new Bio::MView::Align(\@list);
+    $aln = new Bio::MView::Align(\@list, $self->{'aligned'});
+
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
 			 'hidehash' => $self->{'hide_uid'});
 
@@ -559,12 +560,11 @@ sub build_base_alignment {
 					  $self->{'show'},
 					  keys %{$self->{'keep_uid'}});
     }
-    
+
     # foreach my $r ($aln->all_ids) {
     #     $aln->id2row($r)->seqobj->print;
     # }
     # warn "LEN: ", $aln->length;
-
     $aln;
 }
 
@@ -610,7 +610,6 @@ sub build_new_alignment {
 		);
 	}
     }
-
     $aln;
 }
 
@@ -649,216 +648,6 @@ sub strip_query_gaps {
 	#warn "sqg(out h)=[$$sbjct]\n";
     }
     $self;
-}
-
-#given a ref to a list of parse() hits, remove any that have no positional
-#data, finally removing the query itself if that's all that's left.
-sub discard_empty_ranges {
-    my ($self, $hit, $i) = @_;
-    for ($i=1; $i<@$hit; $i++) {
-#	warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
-	if (@{$hit->[$i]->{'frag'}} < 1) {
-	    splice(@$hit, $i--, 1);
-	}
-    }
-    pop @$hit    unless @$hit > 1;
-    $self;
-}
-
-#return alignment in 'plain' format
-sub plain {
-    my $self = shift;
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->plain;
-	}
-    }
-    $s;
-}
-
-#return alignment in Pearson/FASTA format
-sub pearson {
-    my $self = shift;
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->pearson;
-	}
-    }
-    $s;
-}
-
-#return alignment in PIR format
-sub pir {
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->pir($moltype);
-	}
-    }
-    $s;
-}
-
-#return alignment in RDB table format
-sub rdb {
-    my $self = shift;
-    my $s = $self->index2row(0)->rdb('attr') . "\n";
-    $s .= $self->index2row(0)->rdb('form') . "\n";
-    foreach my $aln (@_) {
-	foreach my $r ($aln->visible_ids) {
-	    #warn "$aln [$r]\n";
-	    $s .= $self->uid2row($r)->rdb('data') . "\n";
-	}
-    }
-    $s;
-}
-
-#return alignment in MSF format
-sub msf {
-    my $CHECKSUM = '--------------------------------------&---*---.-----------------@ABCDEFGHIJKLMNOPQRSTUVWXYZ------ABCDEFGHIJKLMNOPQRSTUVWXYZ---~---------------------------------------------------------------------------------------------------------------------------------';
-    my ($MAXSEQ, $GAP) = (50, '.');
-    
-    my $checksum = sub {
-	my $s = shift;
-	my ($sum, $ch) = (0, 0);
-	my $len = length($$s);
-	while ($len--) {
-	    $ch = ord substr($$s, $len, 1);
-	    $ch = substr($CHECKSUM, $ch, 1);
-	    $sum += (($len % 57) + 1) * ord $ch  if $ch ne '-';
-	}
-	$sum % 10000;
-    };
-
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-    my $now = `date '+%B %d, %Y %H:%M'`;
-    $now =~ s/\s0(\d{1})/ $1/; chomp $now;  #padding %-d may not work
-
-    foreach my $aln (@_) {
-	if ($moltype eq 'aa') {
-	    $s .= "!!AA_MULTIPLE_ALIGNMENT 1.0\n";
-	} else {
-	    $s .= "!!NA_MULTIPLE_ALIGNMENT 1.0\n";
-	}
-	$s .= "PileUp (MView)\n\n";
-	$s .= sprintf("   MSF: %5d  Type: %s  %s  Check: %4d  ..\n\n", 
-		      $aln->length, ($moltype eq 'aa' ? 'P' : 'N'), $now, 0);
-
-	my $w = 0;
-	foreach my $r ($aln->visible_ids) {
-	    $w = length($self->uid2row($r)->cid)
-		if length($self->uid2row($r)->cid) > $w;
-	}
-	    
-	foreach my $r ($aln->visible_ids) {
-	    $s .=
-		sprintf(" Name: %-${w}s Len: %5d  Check: %4d  Weight:  %4.2f\n",
-			$self->uid2row($r)->cid, $aln->length, 
-			&$checksum(\$self->uid2row($r)->seq), 1.0);
-	}
-	$s .= "\n//\n\n";
-
-	my %seq = ();
-	foreach my $r ($aln->visible_ids) {
-	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
-	}
-	
-    LOOP:
-	for (my $from = 0; ;$from += $MAXSEQ) {
-	    my $ruler = 1;
-	    foreach my $r ($aln->visible_ids) {
-		last LOOP    if $from >= length($seq{$r});
-		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
-		my $tmplen = length($tmp);
-		if ($ruler) {
-		    my $lo = $from + 1; my $hi = $from + $tmplen;
-		    $ruler = $tmplen - length("$lo") - length("$hi");
-		    $ruler = 1  if $ruler < 1;
-		    my $insert = int($tmplen / 10);
-		    $insert -= 1  if $tmplen % 10 == 0;
-		    $insert += $ruler;
-		    $insert = sprintf("%d%s%d", $lo, ' ' x $insert, $hi);
-		    $s .= sprintf("%-${w}s $insert\n", '');
-		    $ruler = 0;
-		}
-		$s .= sprintf("%-${w}s ", $self->uid2row($r)->cid);
-		for (my $lo=0; $lo<$tmplen; $lo+=10) {
-		    $s .= substr($tmp, $lo, 10);
-		    $s .= ' '    if $lo < 40;
-		}
-		$s .= "\n";
-	    }
-	    $s .= "\n";
-	}
-    }
-    $s;
-}
-
-#return alignment in CLUSTAL/aln format
-sub clustal {
-    my ($MAXSEQ, $MINNAME, $GAP) = (60, 16, '-');
-    my ($RULER, $CONSERVATION) = (1, 1);
-
-    my $symcount = sub {
-	my ($s, $gap, $c) = (@_, 0);
-	my @s = split('', $$s);
-	for (my $i=0; $i<@s; $i++) {
-	    $c += 1  unless $s[$i] eq $gap;
-	}
-	$c;
-    };
-
-    my ($self, $moltype) = (shift, shift);
-    my $s = '';
-
-    foreach my $aln (@_) {
-	$s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";
-
-	my $w = $MINNAME;
-	my @ids = $aln->visible_ids;
-	my %seq = ();
-	my %len = ();
-
-	foreach my $r (@ids) {
-	    #warn $r, $self->uid2row($r), "\n";
-	    $w = length($self->uid2row($r)->cid)+1 if
-		length($self->uid2row($r)->cid) >= $w;
-	    $seq{$r} = $self->uid2row($r)->seq($GAP, $GAP);
-	    $len{$r} = 0;
-	}
-
-      LOOP:
-	for (my $from = 0; ;$from+=$MAXSEQ) {
-	    foreach my $r ($aln->visible_ids) {
-		last LOOP  if $from >= length($seq{$r});
-		my $tmp = substr($seq{$r}, $from, $MAXSEQ);
-		$s .= sprintf("%-${w}s", $self->uid2row($r)->cid);
-		$s .= $tmp;
-		if ($RULER) {
-		    my $syms = &$symcount(\$tmp, $GAP);
-		    my $hi = $len{$r} + $syms;
-		    $s .= sprintf(" %-d", $hi)  if $syms > 0;
-		    $len{$r} = $hi;
-                }
-                $s .= "\n";
-            }
-
-	    if ($CONSERVATION) {
-		$s .= sprintf("%-${w}s", '');
-		$s .= ${$self->{align}->conservation(\@ids,
-						     $from+1, $from + $MAXSEQ,
-						     $moltype)};
-	    }
-	    $s .= "\n\n";
-	}
-    }
-    $s;
 }
 
 

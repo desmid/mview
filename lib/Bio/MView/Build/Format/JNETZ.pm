@@ -1,13 +1,14 @@
-# Copyright (C) 1998-2006 Nigel P. Brown
+# Copyright (C) 1998-2015 Nigel P. Brown
 # $Id: JNETZ.pm,v 1.17 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ;
 
-use vars qw(@ISA);
 use Bio::MView::Build::Align;
 use Bio::MView::Build::Row;
+
 use strict;
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
@@ -18,49 +19,46 @@ sub parse {
     my $self = shift;
     my ($rank, $use, $aln, $id, $seq, $row, @hit) = (0);
 
-    return   unless defined $self->schedule;
+    return  unless defined $self->{scheduler}->next;
 
     $aln = $self->{'entry'}->parse(qw(ALIGNMENT));
     
-    #check each row wanted, by rank OR identifier OR row count limit
-
-    $rank++;
-    $id  = 'res';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'res';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_query;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     #no special subtype: use default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'align';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'align';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_align;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'conf';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'conf';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_conf;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.conf');    #override the default
     push @hit, $row;
 
-    $rank++;
-    $id  = 'final';
-    last  if ($use = $self->use_row($rank, $rank, $id)) < 0;
-    next  unless $use;
+    $rank++; $id  = 'final';
+    last  if $self->topn_done($rank);
+    next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_final;
-    $row = new Bio::MView::Build::Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
     #map { $_->print } @hit;
+
+    #free objects
+    $self->{'entry'}->free(qw(ALIGNMENT));
 
     return \@hit;
 }

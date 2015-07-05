@@ -7,8 +7,8 @@ package Bio::MView::Align::Conservation;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
-use strict;
 
+use strict;
 use vars qw(@ISA $Debug);
 
 @ISA = qw(Bio::MView::Align::Sequence);
@@ -36,7 +36,7 @@ sub new {
     $self->{'string'}->set_find_pad(' ');
     $self->{'string'}->set_pad(' ');
     $self->{'string'}->set_gap(' ');
-    $self->{'string'}->append([$string, $from, $to]);
+    $self->{'string'}->insert([$string, $from, $to]);
 
     bless $self, $type;
 

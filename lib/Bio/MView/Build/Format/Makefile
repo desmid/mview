@@ -3,6 +3,7 @@ DIRS =
 FILE = 
 EXES = 
 SRCS = BLAST.pm		\
+       BLAST0.pm	\
        BLAST1.pm	\
        BLAST2.pm	\
        CLUSTAL.pm	\

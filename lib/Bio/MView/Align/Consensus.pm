@@ -7,8 +7,8 @@ package Bio::MView::Align::Consensus;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
-use strict;
 
+use strict;
 use vars qw(@ISA
 	    $Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
 	    $Default_PRO_Group $Default_DNA_Group
@@ -556,7 +556,7 @@ sub new {
     $self->{'string'}->set_find_gap('\.');
     $self->{'string'}->set_pad('.');
     $self->{'string'}->set_gap('.');
-    $self->{'string'}->append([$string, $from, $to]);
+    $self->{'string'}->insert([$string, $from, $to]);
     
     bless $self, $type;
 
