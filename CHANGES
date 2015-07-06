@@ -1,6 +1,6 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.59  2015-07-05
+Version 1.59  2015-07-06
   Improved algorithm for assembly of alternative search alignment fragments
     with stricter constraints on selection of fragments that maintain query
     and hit sequence orderings; affects all BLAST and FASTA searches when
@@ -17,8 +17,8 @@ Version 1.59  2015-07-05
   Fixed bug in CLUSTAL conservation line that sometimes miscalculated
     column positions; affects BLAST and FASTA searches.
   Fixed bug in PIR output that inserted wrong terminal gap character.
-  Fixed bug in percent identity calculation: now case-sensitive and treats
-    unknown 'X' characters as mismatches.
+  Fixed bug in percent identity calculation: now case-insensitive and
+    treats unknown 'X' characters as mismatches.
   Fixed bug in FASTA/Pearson parser that could skip description field.
   Major refactoring of components and discontinued CVS on SourceForge.
 

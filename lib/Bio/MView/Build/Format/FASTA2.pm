@@ -150,7 +150,7 @@ sub parse {
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
+	my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
 
 	$coll->insert((new $class(
                            $rank,
@@ -169,12 +169,14 @@ sub parse {
     }
 
     #pull out each hit
-    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+    $rank = 0; foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+
+        $rank++;
 
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-        my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
+        my $key1 = $coll->key($rank, $sum->{'id'}, $sum->{'expect'});
 
 	next  unless $coll->has($key1);
 
@@ -303,7 +305,7 @@ sub parse {
 
 	#warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key1 = $coll->key($hit->{'id'}, $hit->{'expect'});
+	my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
 
 	$coll->insert((new $class(
                            $rank,
@@ -322,12 +324,14 @@ sub parse {
     }
 
     #pull out each hit
-    foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+    $rank = 0; foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
+
+        $rank++;
 
 	#first the summary
 	my $sum = $match->parse(qw(SUM));
 
-	my $key1 = $coll->key($sum->{'id'}, $sum->{'expect'});
+	my $key1 = $coll->key($rank, $sum->{'id'}, $sum->{'expect'});
 
 	next  unless $coll->has($key1);
 
