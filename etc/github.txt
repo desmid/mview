@@ -1,0 +1,35 @@
+https://help.github.com/articles/creating-project-pages-manually/
+
+git clone http://github.com/desmid/mview.git
+
+cd mview
+git co --orphan gh-pages
+rm -fr *
+
+<create pages>
+rsync -avH ../dev/dist/MView/html/ .
+
+git add --all .
+git ci -m'COMMENT' -a
+
+git push origin gh-pages
+
+
+but only shows top-level pages?
+
+Browser:
+http://desmid.github.io/mview
+https://desmid.github.io/mview
+
+
+
+
+http://stackoverflow.com/questions/9951629/how-do-i-post-a-release-on-github
+
+https://github.com/blog/1547-release-your-software
+
+https://github.com/blog/742-new-uploader-downloads-screen
+
+http://stackoverflow.com/questions/4658606/import-existing-source-code-to-github
+
+git remote add origin https://github.com/desmid/mview.git
