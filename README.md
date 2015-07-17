@@ -1,7 +1,7 @@
 ### Introduction
 
-MView is a command line utility that extracts and reformats the results of a
-sequence database search or a multiple alignment, optionally adding HTML
+**MView** is a command line utility that extracts and reformats the results of
+a sequence database search or a multiple alignment, optionally adding HTML
 markup for web page layout. It can also be used as a filter to extract and
 convert searches or alignments to common formats.
 
@@ -14,11 +14,14 @@ Outputs:
 
 - HTML markup, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated values).
 
+Full documentation can be found in the on-line
+[manual](https://desmid.github.io/mview/ "MView manual").
+
 
 ### Requirements
 
 MView is implemented in Perl, version 5 as a self-contained command line
-program that should run cross-platform.
+program that should run cross-platform. 
 
 
 ### Download
