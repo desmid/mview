@@ -1,6 +1,9 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.59  2015-07-06
+Version 1.59  2015-07-17 (GitHub)
+  Re-release on GitHub with only documentation changes to reflect this.
+
+Version 1.59  2015-07-06 (SourceForge)
   Improved algorithm for assembly of alternative search alignment fragments
     with stricter constraints on selection of fragments that maintain query
     and hit sequence orderings; affects all BLAST and FASTA searches when
