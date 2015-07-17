@@ -1,0 +1,20 @@
+A portion of a BLASTP run extracting just the first 40 hits and a rnge
+of columns, coloured by identity to the query:
+
+mview -in blast -top 40 -width 130 -range 131:260 -ruler on -coloring identity -html head -css on blastp+_2.2.28.dat >! blastp.html
+
+
+BLASTN
+
+mview -in blast -top 40 -width 130 -range 1:130 -ruler on -coloring consensus  -html head -css on -dna blastn+_2.2.28.dat >! blastn.html
+
+
+BLASTX showing the two query orientations:
+
+mview -in blast -top 40 -width 130  -ruler on -coloring identity  -html head -css on  blastx_2.2.6.dat >! blastx.html
+
+
+FASTA
+
+mview -in fasta -top 40 -width 130 -range 21:150  -ruler on -coloring identity  -html head -css on fasta_36.3.3_pro.dat  >! fasta.html
+
