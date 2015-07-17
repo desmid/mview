@@ -60,7 +60,7 @@ Download
 The `latest version`_ of the software can be downloaded from the GitHub MView
 repository as a gzipped tar archive.
 
-.. _latest version: https://sourceforge.net/projects/bio-mview
+.. _latest version: https://github.com/desmid/mview
 
 
 Found a bug?
