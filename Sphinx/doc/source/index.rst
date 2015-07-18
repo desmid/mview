@@ -12,10 +12,9 @@ MView
 =====
 
 **MView** is a command line utility that extracts and reformats the results of
-a sequence database search (BLAST, FASTA, etc.) or a multiple alignment
-(CLUSTAL, MSF, MAF, etc.) optionally adding HTML markup for colouring and web
-page layout. It can also be used as a filter to extract and convert searches
-or alignments to common formats.
+a sequence database search or a multiple alignment, optionally adding HTML
+markup for web page layout. It can also be used as a filter to extract and
+convert searches or alignments to common formats.
 
 .. mview -in pearson -html head -css on -colormap clustal -coloring
 ..   consensus -threshold 90 -consensus on -con_threshold 90,80 -con_ignore
@@ -34,42 +33,65 @@ or alignments to common formats.
     consensus/80%         <FONT COLOR="#666666">....</FONT><FONT CLASS=S36>K</FONT><FONT COLOR="#666666">..</FONT><FONT CLASS=S43>G</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S43>G</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S37>F</FONT><FONT CLASS=S43>G</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S37>V</FONT><FONT COLOR="#666666">..</FONT><FONT CLASS=S43>G</FONT><FONT COLOR="#666666">.....................</FONT><FONT CLASS=S37>VA</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S36>K</FONT><FONT COLOR="#666666">.................</FONT><FONT CLASS=S41>E</FONT><FONT CLASS=S37>A</FONT><FONT COLOR="#666666">..</FONT><FONT CLASS=S37>M</FONT><FONT COLOR="#666666">....</FONT><FONT CLASS=S39>H</FONT><FONT COLOR="#666666">...</FONT><FONT CLASS=S37>V</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S37>L</FONT><FONT COLOR="#666666">.</FONT><FONT CLASS=S43>G</FONT><FONT COLOR="#666666">..</FONT> 
   </PRE>
 
-MView is implemented in Perl as a self-contained command line program that
-should run cross-platform.
+Inputs:
+
+- Sequence database search: BLAST, FASTA suites.
+- Multiple sequence alignment: CLUSTAL, HSSP, MSF, FASTA, PIR, MAF.
+
+Outputs:
+
+- HTML, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated).
 
 
 Documentation
 ^^^^^^^^^^^^^
 
-Main topics:
+The full documentation tree is here:
 
+* `Contents <contents.html>`_
 * `Introduction <manual/intro.html>`_
 * `Manual <manual/manual.html>`_
 * `Input formats <manual/formats_in.html>`_
 * `Output formats <manual/formats_out.html>`_
 * `FAQ <manual/faq.html>`_
 
-The full documentation tree is here:
-
-* `Contents <contents.html>`_
-
 
 Download
 ^^^^^^^^
 
-The `latest version`_ of the software can be downloaded from the GitHub MView
-repository as a gzipped tar archive.
+The `latest release`_ of the software on GitHub can be downloaded by clicking
+on the 'releases' tab then selecting a version and archive format (zip or
+tar.gz).
 
-.. _latest version: https://github.com/desmid/mview
+A snapshot of the (possibly unstable) development code can be downloaded using
+the 'Download ZIP' button on the main page.
+
+Tarballs and bzip2 archives of releases can also be found at the older
+`SourceForge archive`_.
+
+.. _latest release:       https://github.com/desmid/mview
+.. _SourceForge archive:  http://sourceforge.net/projects/bio-mview/
 
 
 Found a bug?
 ^^^^^^^^^^^^
 
-Please send an email to *biomview _at_ gmail.com*. If MView isn't able to
-parse your input file or produces a warning message, it would be very helpful
-if you can include/attach the data file in your email so that I can
-(1) quickly reproduce the error, and (2) add the example to the test suite.
+Please send an email to *biomview _at_ gmail.com*.
+
+If MView isn't able to parse your input file or produces a warning message, it
+would be very helpful if you can include/attach the data file in your email so
+that I can (1) quickly reproduce the error, and (2) add the example to the
+test suite.
+
+
+Citation
+^^^^^^^^
+
+If you use MView in your work, please cite:
+
+    Brown, N.P., Leroy C., Sander C. (1998). MView: A Web compatible database
+    search or multiple alignment viewer. *Bioinformatics*. **14** (4):380-381.
+    [`PubMed <http://www.ncbi.nlm.nih.gov/pubmed/9632837?dopt=Abstract>`_]
 
 
 Copyright and licence
