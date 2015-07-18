@@ -45,8 +45,8 @@ Tarballs and bzip2 archives of releases can also be found at the older
 .. _SourceForge archive:  http://sourceforge.net/projects/bio-mview/
 
 
-Installation
-^^^^^^^^^^^^
+Install
+^^^^^^^
 
 1. Save the archive to your software area, e.g., ``/usr/local``, then uncompress
    and extract it::
