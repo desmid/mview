@@ -7,7 +7,7 @@ convert searches or alignments to common formats.
 
 Inputs:
 
-- Sequence database search: BLAST, WashU-BLAST, UVic FASTA families;
+- Sequence database search: BLAST, FASTA suites.
 - Multiple sequence alignment: CLUSTAL, HSSP, MSF, FASTA, PIR, MAF.
 
 Outputs:
@@ -15,7 +15,8 @@ Outputs:
 - HTML, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated).
 
 Full documentation can be found in the on-line
-[manual](https://desmid.github.io/mview/ "MView manual").
+[manual](https://desmid.github.io/mview/ "MView manual"), a copy of which is
+also included with the code.
 
 
 ### Requirements
@@ -26,9 +27,16 @@ program that should run cross-platform.
 
 ### Download
 
-The [latest version](https://github.com/desmid/mview "MView site") of the
-software can be downloaded from the GitHub MView project repository as a
-gzipped tar archive.
+The [latest release](https://github.com/desmid/mview "MView at GitHub") of the
+software on GitHub can be downloaded by clicking on the 'releases' tab then
+selecting a version and archive format (zip or tar.gz).
+
+A snapshot of the (possibly unstable) development code can be downloaded using
+the 'Download ZIP' button on the main page.
+
+Tarballs and bzip2 archives of releases can also be found at the older
+[SourceForge archive](http://sourceforge.net/projects/bio-mview/ "MView at
+SourceForge").
 
 
 ### Installation
@@ -79,8 +87,8 @@ test suite.
 If you use MView in your work, please cite:
 
 > Brown, N.P., Leroy C., Sander C. (1998). MView: A Web compatible database
-> search or multiple alignment viewer. *Bioinformatics*. **14** (4):380-381
-> [PubMed](http://www.ncbi.nlm.nih.gov/pubmed/9632837 "PubMed link").
+> search or multiple alignment viewer. *Bioinformatics*. **14** (4):380-381.
+> [[PubMed](http://www.ncbi.nlm.nih.gov/pubmed/9632837 "PubMed link")]
 
 
 ### Copyright and licence
