@@ -12,7 +12,7 @@ Inputs:
 
 Outputs:
 
-- HTML markup, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated values).
+- HTML, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated).
 
 Full documentation can be found in the on-line
 [manual](https://desmid.github.io/mview/ "MView manual").
