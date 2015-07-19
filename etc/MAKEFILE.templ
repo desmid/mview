@@ -40,6 +40,7 @@ NEW_PERL  = /usr/bin/perl
 COPYRIGHT = $(HOME)/etc/COPYRIGHT.templ
 
 SPHINX_BUILD_HTML = Sphinx/doc/build/html
+GH_PAGES = gh-pages
 
 #for installation of subtrees, set up in each Makefile
 #TREE    = this subdirectory path relative to $NEW_ROOT
@@ -132,6 +133,7 @@ $(HTML): force
 	@echo "installing HTML: $@"
 	@if [ ! -d $(DEST) ]; then mkdir -p $(DEST); fi
 	@$(RSYNC) -avH --delete $(SPHINX_BUILD_HTML)/ $(DEST)/$@
+	@$(RSYNC) -avH --delete $(SPHINX_BUILD_HTML)/ $(GH_PAGES)/
 
 #tidy source tree
 clean: force
