@@ -51,7 +51,7 @@ Install
 1. Save the archive to your software area, e.g., ``/usr/local``, then uncompress
    and extract it::
  
-     tar xvzf mview-1.59.tar.gz
+     tar xvzf mview-v1.59.tar.gz
 
    or::
 
