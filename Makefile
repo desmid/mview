@@ -4,7 +4,7 @@ TREE =
 DIRS = bin lib
 FILE = CHANGES LICENSE.md README.md plain.dat
 EXES = 
-SRCS =
+SRCS = 
 HTML = html
 
 include $(HOME)/etc/MAKEFILE.templ
