@@ -383,7 +383,7 @@ sub load_colormaps     	  { Bio::MView::Align::load_colormaps(@_) }
 sub list_colormaps     	  { Bio::MView::Align::list_colormaps(@_) }
 sub load_groupmaps     	  { Bio::MView::Align::Consensus::load_groupmaps(@_) }
 sub list_groupmaps   	  { Bio::MView::Align::Consensus::list_groupmaps(@_) }
-sub list_css              { Bio::MView::Align::print_css1_colormaps(@_) }
+sub list_css              { Bio::MView::Align::list_css1_colormaps(@_) }
 
 sub print {
     my ($self, $stm) = (@_, \*STDOUT);
@@ -422,24 +422,24 @@ sub print {
     while ($_ = shift @{$self->{'display'}}) {
 	#Universal::vmstat("display");
 	if ($self->{'html'}) {
-	    my $s = '';
+            my $s = "style=\"border:0px;";
 	    #body tag
 	    if (! $self->{'ap'}->{'css1'}) {
-                #supported in HTML 3.2:
-		$s .= " BGCOLOR='$self->{'ap'}->{'alncolor'}'"
+                #supported in HTML 4.01:
+		$s .= " background-color:$self->{'ap'}->{'alncolor'};"
 		    if defined $self->{'ap'}->{'alncolor'};
-                #NOT supported in HTML 3.2? do them anyway:
-		$s .= " TEXT='$self->{'ap'}->{'symcolor'}'"
-		    if defined $self->{'ap'}->{'symcolor'};
-		$s .= " LINK='$self->{'linkcolor'}'"
+		$s .= " color:$self->{'ap'}->{'labcolor'};"
+		    if defined $self->{'ap'}->{'labcolor'};
+		$s .= " a:link:$self->{'linkcolor'};"
 		    if defined $self->{'linkcolor'};
-		$s .= " ALINK='$self->{'alinkcolor'}'"
+		$s .= " a:active:$self->{'alinkcolor'};"
 		    if defined $self->{'alinkcolor'};
-		$s .= " VLINK='$self->{'vlinkcolor'}'"
+		$s .= " a:visited:$self->{'vlinkcolor'};"
 		    if defined $self->{'vlinkcolor'};
-	    }
+            }
+            $s .= "\"";
 	    print $stm "<P>\n"  unless $first;
-	    print $stm "<TABLE BORDER=0$s>\n";
+	    print $stm "<TABLE $s>\n";
 	    #header
 	    print $stm "<TR><TD><PRE>\n";
 	    print $stm ($_->[1] ? $_->[1] : '');
@@ -487,6 +487,7 @@ sub print {
 	    #alignment end
 	    print $stm "</TD></TR>\n";
 	    print $stm "</TABLE>\n";
+	    print $stm "</P>\n"  unless $first;
 	}
 	#Universal::vmstat("display done");
 	$_->[0]->free;

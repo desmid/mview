@@ -388,15 +388,15 @@ sub list_colormaps {
     my ($s, $f1, $f2, $c0, $c1, $c2) = ('', '', '', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<FONT COLOR=\"$Bio::MView::Align::Row::Colour_Black\">",
-	"<FONT COLOR=\"$Bio::MView::Align::Row::Colour_Comment\">",
-	"</FONT>")  if $html;
+	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Black\">",
+	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Comment\">",
+	"</SPAN>")  if $html;
 
     $s .= "$c1#Palette:\n\n#color                     : #RGB$c2\n";
 
     for ($u=0; $u < @{$Palette->[1]}; $u++) {
 	$rgb = $Palette->[1]->[ $u ];
-	($f1, $f2) = ("<FONT COLOR=\"$rgb\">", "</FONT>")  if $html;
+	($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 	$s .= sprintf("color %s%-20s%s : %-7s\n", 
 		      $f1, $Palette->[0]->{$u}, $f2, $Palette->[1]->[$u]);
     }
@@ -423,7 +423,7 @@ sub list_colormaps {
 	    $col = $Palette->[0]->{ $p{$sym}->[0] };
 	    $rgb = $Palette->[1]->[ $p{$sym}->[0] ];
 
-	    ($f1, $f2) = ("<FONT COLOR=\"$rgb\">", "</FONT>")  if $html;
+	    ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 
 	    #lower and upper case: same symbol
 	    if ($u eq $l) {
@@ -487,7 +487,7 @@ sub get_colormap_length {
     return $len / 2;
 }
 
-sub print_css1_colormaps {
+sub list_css1_colormaps {
     my %color = @_;
     my ($s, $i, $rgb, $fg);
 
@@ -502,7 +502,7 @@ sub print_css1_colormaps {
     
     #warn "bg=$color{'alncolor'} fg=$color{'symcolor'}\n";
     
-    $s = "TD{font-family:Fixed,Courier,monospace;background-color:$color{'alncolor'};color:$color{'labcolor'};}\n";
+    $s = "TD {font-family:Fixed,Courier,monospace; background-color:$color{'alncolor'}; color:$color{'labcolor'}}\n";
 
     for ($i=0; $i < @{$Palette->[1]}; $i++) {
 	
@@ -528,10 +528,10 @@ sub print_css1_colormaps {
 	}
 
 	#block: backgronud + foreground
-	$s .= "FONT.S${i}\{background-color:$rgb;color:$fg} ";
+	$s .= "SPAN.S${i} \{background-color:$rgb;color:$fg} ";
 
 	#transparent: no background + coloured foreground
-	$s .= "FONT.T${i}\{color:$rgb} ";
+	$s .= "SPAN.T${i} \{color:$rgb} ";
 
 	#comment
 	$s .= "/* $Palette->[0]->{$i} */\n";

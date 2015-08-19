@@ -278,9 +278,9 @@ sub next {
 		$self->{'r_map'}->[$self->{'cursor'}] > 1) {
 
 		if ($html and length $lap > 1) {
-		    push @string, "<FONT COLOR=\"$lap\">";
+		    push @string, "<SPAN style=\"color:$lap\">";
 		    push @string, $self->col($self->{'cursor'});
-		    push @string, "</FONT>";
+		    push @string, "</SPAN>";
 		} else {
 		    push @string, $lap;
 		}
@@ -333,12 +333,12 @@ sub html_wrap {
 	if defined $self->{'r_url'}->[$i];
 
     #change color?
-    push @string, "<FONT COLOR=\"$self->{'r_color'}->[$i]\">"
+    push @string, "<SPAN style=\"color:$self->{'r_color'}->[$i]\">"
 	if defined $self->{'r_color'}->[$i] and
 	    ! defined $self->{'r_class'}->[$i];
     
     #css1 class?
-    push @string, "<FONT CLASS=$self->{'r_class'}->[$i]>"
+    push @string, "<SPAN CLASS=$self->{'r_class'}->[$i]>"
 	if defined $self->{'r_class'}->[$i];
     
     #prefix
@@ -353,10 +353,10 @@ sub html_wrap {
         if defined $self->{'r_suffix'}->[$i];
     
     #unchange css1 class?
-    push @string, "</FONT>"  if defined $self->{'r_class'}->[$i];
+    push @string, "</SPAN>"  if defined $self->{'r_class'}->[$i];
     
     #unchange color?
-    push @string, "</FONT>"
+    push @string, "</SPAN>"
 	if defined $self->{'r_color'}->[$i] and
 	    ! defined $self->{'r_class'}->[$i];
     

@@ -188,9 +188,9 @@ sub list_groupmaps {
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<FONT COLOR=\"$Bio::MView::Align::Row::Colour_Black\">",
-	"<FONT COLOR=\"$Bio::MView::Align::Row::Colour_Comment\">",
-	"</FONT>")  if $html;
+	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Black\">",
+	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Comment\">",
+	"</SPAN>")  if $html;
 
     $s .= "$c1#Consensus group listing - suitable for reloading.\n";
     $s .= "#Character matching is case-insensitive.\n";

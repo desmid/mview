@@ -3,14 +3,14 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
 # $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
-my $VERSION  = '1.59';
+my $VERSION  = '1.60';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH?".$PATCH":"");
 my $COPYYRS  = "1997-2015";
-my $PROJPTH  = 'http://bio-mview.sourceforge.net';
+my $PROJPTH  = 'https://desmid.github.io/mview/';
 my $AUTHMAIL = 'biomview@gmail.com';
 
 ###########################################################################
@@ -28,9 +28,11 @@ exit 1  if $::COMPILE_ERROR;
 
 ###########################################################################
 my $PROG    = Universal::basename($0);
-my $INVOKE  = "$PROG @ARGV";
-my $DOCTYPE = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
 my $SCRATCH = Universal::tmpfile("mview_$$");
+my $INVOKE  = "$PROG @ARGV";
+
+my $DOCTYPE = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">';
+my $DOCMETA = '<META http-equiv="Content-Type" content="text/html; charset=utf-8">';
 
 my %KNOWN_FORMAT =
     (
@@ -65,6 +67,18 @@ $par = $com->get_parameter_hash;
 rationalise_parameters($opt, $par);
 dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
 usage($com, $opt, $par, 0)    if $opt->{'help'};
+
+#CSS listing request: no alignment, no HTML
+if ($opt->{'listcss'}) {
+    #http://www.w3.org/TR/REC-CSS1#containment-in-html
+    print $stm Bio::MView::Manager::list_css(
+	'alncolor' => $par->{'alncolor'},
+	'labcolor' => $par->{'labcolor'},
+	'symcolor' => $par->{'symcolor'},
+	'gapcolor' => $par->{'gapcolor'},
+	);
+    exit 0;
+}
 
 html_head($opt, $par, $stm);
 
@@ -103,18 +117,6 @@ if ($opt->{'listgroups'}) {
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
     print $stm copyright($opt);
     html_foot($opt, $par, $stm);
-    exit 0;
-}
-
-#CSS listing request: no alignment
-if ($opt->{'listcss'}) {
-    #http://www.w3.org/TR/REC-CSS1#containment-in-html
-    print $stm Bio::MView::Manager::list_css(
-	'alncolor' => $par->{'alncolor'},
-	'labcolor' => $par->{'labcolor'},
-	'symcolor' => $par->{'symcolor'},
-	'gapcolor' => $par->{'gapcolor'},
-	);
     exit 0;
 }
 
@@ -257,51 +259,57 @@ sub html_head {
 
     #want HTML HEAD?
     if ($o->{'html'} & $HTML_HTML) {
-
-	print $stm "$DOCTYPE\n<HTML>\n<HEAD>\n";
+        my $s = "$DOCMETA\n";
 
 	#want STYLE?
 	if ($o->{'html'} & $HTML_CSS) {
 	    #link styles
-	    print $stm "<STYLE TYPE=\"text/css\">\n<!--\n";
-	    print $stm "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
-	    print $stm "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
-	    print $stm "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
-	    print $stm "-->\n</STYLE>\n";
+	    $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+	    $s .= "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
+	    $s .= "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
+	    $s .= "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
+	    $s .= "-->\n</STYLE>\n";
 
 	    #alignment styles
 	    if ($o->{'css'} =~ /^(?:file|http):/i) {
 		#link to style sheet
-	        print $stm "<LINK REL=STYLESHEET HREF=\"$o->{'css'}\">\n";
+	        $s .= "<LINK REL=STYLESHEET HREF=\"$o->{'css'}\">\n";
 	    } else {
 		#style sheet in situ
-		print $stm "<STYLE TYPE=\"text/css\">\n<!--\n";
-		print $stm Bio::MView::Align::print_css1_colormaps
+		$s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+		$s .= Bio::MView::Align::list_css1_colormaps
 		    ('alncolor' => $p->{'alncolor'},
 		     'labcolor' => $p->{'labcolor'},
 		     'symcolor' => $p->{'symcolor'},
 		     'gapcolor' => $p->{'gapcolor'},
 		    );
-		print $stm "-->\n</STYLE>\n";
+		$s .= "-->\n</STYLE>\n";
 	    }
 	}
 
-	#want TITLE? (in titlebar)
-	if (defined $o->{'title'}) {
-	    print $stm "<TITLE>$o->{'title'}</TITLE>\n";
-	}
+        #page TITLE
+        if (defined $o->{'title'} and $o->{'title'} ne "") {
+            $s .= "<TITLE>$o->{'title'}</TITLE>\n";
+        } else {
+            $s .= "<TITLE>MView</TITLE>\n";
+        }
 
-	print $stm "</HEAD>\n";
+        print $stm "$DOCTYPE\n<HTML>\n";
+        print $stm "<HEAD>\n$s</HEAD>\n"  if $s;
     }
 
     #want BODY?
     if ($o->{'html'} & $HTML_BODY) {
-	print $stm "<BODY BGCOLOR='$o->{'pagecolor'}' TEXT='$o->{'textcolor'}' LINK='$o->{'linkcolor'}' ALINK='$o->{'alinkcolor'}' VLINK='$o->{'vlinkcolor'}'>\n";
+        print $stm "<BODY style=\"background-color:$o->{'pagecolor'}; color:$o->{'textcolor'}";
+        unless ($o->{'html'} & $HTML_CSS) {
+            print $stm "; a:link:$o->{'linkcolor'}; a:active:$o->{'alinkcolor'}; a:visited:$o->{'vlinkcolor'}";
+        }
+        print $stm "\">\n";
     }
 
     #want TITLE? (in document)
-    if (defined $o->{'title'}) {
-	print $stm "<H1>$o->{'title'}</H1>\n";
+    if (defined $o->{'title'} and $o->{'title'} ne "") {
+	print $stm "<H4>$o->{'title'}</H4>\n";
     }
 }
 
@@ -428,7 +436,7 @@ sub copyright {
         $s .= "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
         $s .= "$VERSION, Copyright \&copy; ";
         $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
-        $s .= "</SMALL><BR>\n";
+        $s .= "</SMALL></P>\n";
 	return $s;
     }
 

@@ -19,9 +19,9 @@ use Bio::MView::Display::Any;
 
 use strict;
 use vars qw(%Template %Known_Types $Default_Stream
-	    $Default_Columns $Default_Separator $Default_Gap $Default_Pad 
-	    $Default_Overlap $Default_Overlap_Color $Default_Ruler 
-	    $Default_HTML $Default_Bold $Default_Label0 
+	    $Default_Columns $Default_Separator $Default_Gap $Default_Pad
+	    $Default_Overlap $Default_Overlap_Color $Default_Ruler
+	    $Default_HTML $Default_Bold $Default_Label0
 	    $Default_Label1 $Default_Label2 $Default_Label3 $Default_Label4
 	    $Default_Label5 $Default_Label6 $Intercolumn_Space);
 
@@ -42,10 +42,10 @@ $Default_Label3        = 1;         #show label3
 $Default_Label4        = 1;         #show label4
 $Default_Label5        = 1;         #show label5
 $Default_Label6        = 1;         #show label6
-   
+
 $Intercolumn_Space     = ' ';       #space between output column types
 
-%Template = 
+%Template =
     (
      'string'    => undef, #parent sequence string
      'length'    => 0,     #parent sequence length
@@ -62,7 +62,7 @@ $Intercolumn_Space     = ' ';       #space between output column types
      'labwidth6' => 0,     #string width of seventh title block
     );
 
-%Known_Types = 
+%Known_Types =
     (
      'Ruler'    => 1,
      'Header'   => 1,
@@ -248,7 +248,7 @@ sub display {
     print $str "<PRE>\n"    if $par{'html'};
 
     map { $_->reset } @{$self->{'object'}};
-    
+
     my ($posnwidth, $o, $s, @left, @middle, @right, @tmp, $tmp) = (0);
 
     #need space for sequence numbers?
@@ -263,9 +263,9 @@ sub display {
 LOOP:
     {
 	while (1) {
-	    
+
 	    last LOOP   unless scalar @{$self->{'object'}};
-	    
+
 	    #Universal::vmstat("display LOOP");
 
 	    #do record
@@ -279,12 +279,11 @@ LOOP:
 			      $par{'ruler'});
 
 		last LOOP   unless $s;
-		
 		#warn "[ @$s ]\n";
 
 		#### left ############
 		@tmp = ();
-		
+
 		#first label
 		if ($par{'label0'} and $par{'labwidth0'}) {
 		    $tmp = $o->label0;
@@ -294,54 +293,54 @@ LOOP:
 		    } else {
 			#string label - left justify
 			push @tmp, sprintf("%-$par{'labwidth0'}s", $tmp);
-		    } 
+		    }
 		    push @tmp, $Intercolumn_Space;
-		}   
-		
+		}
+
 		#second label
 		if ($par{'label1'} and $par{'labwidth1'}) {
 		    if ($par{'html'} and $o->{'url'}) {
-			push @tmp, 
+			push @tmp,
 			"<A HREF=\"$o->{'url'}\">", $o->label1, "</A>";
 			push @tmp,
 			" " x ($par{'labwidth1'}-CORE::length $o->label1);
 		    } else {
-			push @tmp, 
+			push @tmp,
 			sprintf("%-$par{'labwidth1'}s", $o->label1);
 		    }
 		    push @tmp, $Intercolumn_Space;
 		}
-		
+
 		#third label
 		if ($par{'label2'} and $par{'labwidth2'}) {
 		    push @tmp, sprintf("%-$par{'labwidth2'}s", $o->label2);
 		    push @tmp, $Intercolumn_Space;
 		}
-		
+
 		#fourth label
 		if ($par{'label3'} and $par{'labwidth3'}) {
 		    push @tmp, sprintf("%$par{'labwidth3'}s", $o->label3);
 		    push @tmp, $Intercolumn_Space;
-		}   
+		}
 
 		#fifth label
 		if ($par{'label4'} and $par{'labwidth4'}) {
 		    push @tmp, sprintf("%$par{'labwidth4'}s", $o->label4);
 		    push @tmp, $Intercolumn_Space;
-		}   
-		
+		}
+
 		#sixth label
 		if ($par{'label5'} and $par{'labwidth5'}) {
 		    push @tmp, sprintf("%$par{'labwidth5'}s", $o->label5);
 		    push @tmp, $Intercolumn_Space;
-		}   
-		
+		}
+
 		#seventh label
 		if ($par{'label6'} and $par{'labwidth6'}) {
 		    push @tmp, sprintf("%$par{'labwidth6'}s", $o->label6);
 		    push @tmp, $Intercolumn_Space;
-		}   
-		
+		}
+
 		#left sequence position
 		if ($posnwidth) {
 		    if ($o->{'number'}) {
@@ -350,23 +349,23 @@ LOOP:
 			push @tmp, sprintf("$prefix%$par{'posnwidth'}s$suffix", ' ');
 		    }
 		}
-		
+
 		push @tmp, $Intercolumn_Space;
 
 		push @left, @tmp;
-		
+
 		#### middle ############
 		@tmp = ();
-		
+
 		#sequence string
 		push @tmp, $s->[2];
 		push @tmp, $Intercolumn_Space;
 
 		push @middle, @tmp;
-		
+
 		#### right ############
 		@tmp = ();
-		
+
 		#right position
 		if ($posnwidth) {
   		    if ($o->{'number'}) {
@@ -378,14 +377,14 @@ LOOP:
 			sprintf("$prefix%-$par{'posnwidth'}s$suffix", '');
 		    }
 		}
-		
+
 		push @tmp, "\n";
-		
+
 		push @right, @tmp;
 
 		#### output row ############
 		print $str @left, @middle, @right;
-		
+
 	    }#foreach
 
 	    #record separator
@@ -399,7 +398,7 @@ LOOP:
     $self;
 }
 
-sub displaytext { 
+sub displaytext {
     return $_[0]    if defined $_[0] and $_[0] ne '';
     return '';
 }
@@ -431,12 +430,12 @@ sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
   $a->append(@list);
 
   #explicitly add some (more?) display items to the $a object
- 
+
   $a->append
       (
 
        { 'type'  => 'ruler' },
-       
+
        { 'type'  => 'sequence',
 	 'label1'=> 'first',
 	 'url'   => 'http://fred.bloggs2',
@@ -444,7 +443,7 @@ sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 	 'number'=> 1,
 	 'range' => [ 1,  10, 'color'=>'red' ],
        },
-       
+
        { 'type'  => 'subrange',
 	 'label1'=> 'second',
 	 'label2'=> 2.2,
@@ -452,22 +451,22 @@ sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 	 'range' => [
 		       1,  10, 'case'=>'uc','prefix'=>'<I>','suffix'=>'</I>',
 		      15,  20, 'sym'=>'x','url'=>"URL1",
-		      55, 104, 'sym'=>'*','url'=>"URL2", 
+		      55, 104, 'sym'=>'*','url'=>"URL2",
 		     100, 112, 'sym'=>'@','url'=>"URL3",
 		    ],
        },
-       
+
        { 'type'  => 'subrange',
 	 'label1'=> 'third',
 	 'label2'=> 3.14,
-	 'range' => [ 
+	 'range' => [
 		      20, 100, 'color'=>'green' ],
-		     500, 670, 'sym'=>'*','url'=>"URL4", 
+		     500, 670, 'sym'=>'*','url'=>"URL4",
 		     470, 510, 'color'=>'salmon',
 		     800,1000, 'sym'=>'@',
 		    ],
        },
-  
+
        { 'type'  => 'subrange',
 	 'label1'=> 'more data',
 	 'label2'=> 4,
@@ -479,7 +478,7 @@ sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 		     328, 457, 'color'=>'purple',
 		    ],
        },
-  
+
       );
 
   #print the $a object using default formatting
@@ -501,9 +500,9 @@ display item given by the 'type' attribute (see below).
 
  Attribute     Description
  -----------------------------------------------------------------------
- 	     
+
  type          Mandatory. 'sequence' or 'subrange' or 'ruler', specifying
-               the display of the parent sequence, some subranges thereof, 
+               the display of the parent sequence, some subranges thereof,
                or a simple ruler. Rulers count off 5, 10, 100's.
 
  label0        Optional. First label string of display item.
@@ -530,11 +529,11 @@ display item given by the 'type' attribute (see below).
 
  range         Optional. Any subranges of the parent sequence to be
                displayed for this display item, using optional formatting
-               control attributes per subrange. 
+               control attributes per subrange.
 
  paint         If paint=1 (default=0) then overlapping ranges for this row
                will use the colouring or symbol or URL of the last range
-               definition in the region of the overlap as passed by the 
+               definition in the region of the overlap as passed by the
                caller. The default behaviour is not to paint and to use the
                overlap symbol/colour (see below) or the last overlapping
                subrange by sequence order.
@@ -561,21 +560,21 @@ Display format control affecting the whole output is limited to:
 
  Attribute  Default      Behaviour
  -----------------------------------------------------------------------
- 	    	      
+
  html       1            Controls HTML formatting {0=off,1=on}.
 
  bold       0            Embolden alignment
 
  col        80           Alignment width as number of columns. Setting
-                         col < 1 causes the whole alignment to be 
+                         col < 1 causes the whole alignment to be
                          formatted as one long scrollable record.
 
  gap        '-'          Gap character to use.
 
  lap        '%'          Set the overlap character.
- lap        '#474747'    Set the overlap colour if html=1 and lap is more 
+ lap        '#474747'    Set the overlap colour if html=1 and lap is more
                          than one character in length. Or set the overlap
-                         character if html=1 and lap is just a single 
+                         character if html=1 and lap is just a single
                          character.
 
  pad        ''           Pad character to fill leading/trailing empty space.
@@ -605,16 +604,16 @@ Subrange format controls are:
 
  Attribute          Behaviour
  -------------------------------------------------------------------
- 		 
+
  url                Embed range within this URL.
 
  sym                Use this symbol. Defaults to the parent sequence.
 
  case               Change range to case {uc|lc}. Ignored if 'sym' set.
 
- color              Set FONT with this colour.
+ color              Set SPAN with this colour.
 
- class              Use FONT.CLASS for this symbol.
+ class              Use SPAN.CLASS for this symbol.
 
  prefix		    Prefix with this arbitrary piece of HTML.
 
@@ -625,100 +624,100 @@ Subrange format controls are:
 =head1 Example output
 
  <PRE>
-		     [   .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :    
- <A HREF="http://fred.bloggs2">first</A>     1.111   1 <FONT COLOR="red">GGAAATAAAA</FONT>ATATAAAACCCGGTCGCAAGCGTGTCGCTGTAGATGAGCTGAAACGCAATTTTTCAGTGACTTTTTATCT  80
- <A HREF="http://fred.bloggs">second</A>      2.2     <I>GGAAATAAAA</I>----<A HREF="URL1">xxxxxx</A>----------------------------------<A HREF="URL2">**************************</A>    
- third      3.14     -------------------<FONT COLOR="green">y5923y98y23v9t2 t oi2ltl3ntli2tit2309tu2905t2390tuvn 2u m t[3</FONT>    
- more data     4     -----------<FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>    
- 
-			 .    :    .    |    .    :    .    :    .    :    .    :    .    :    .    :    
+		     [   .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :
+ <A HREF="http://fred.bloggs2">first</A>     1.111   1 <SPAN style="color:red">GGAAATAAAA</SPAN>ATATAAAACCCGGTCGCAAGCGTGTCGCTGTAGATGAGCTGAAACGCAATTTTTCAGTGACTTTTTATCT  80
+ <A HREF="http://fred.bloggs">second</A>      2.2     <I>GGAAATAAAA</I>----<A HREF="URL1">xxxxxx</A>----------------------------------<A HREF="URL2">**************************</A>
+ third      3.14     -------------------<SPAN style="color:green">y5923y98y23v9t2 t oi2ltl3ntli2tit2309tu2905t2390tuvn 2u m t[3</SPAN>
+ more data     4     -----------<SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>
+
+			 .    :    .    |    .    :    .    :    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111  81 CTCTAAAGACGAGCGTAGAAAGCGTCAATTCTTTTGTCAAACGCCACATTTTAAAAACAATCATTTACAAAAAAGGCACT 160
- <A HREF="http://fred.bloggs">second</A>      2.2     <A HREF="URL2">*******************</A><FONT COLOR="#474747">AAGCG</FONT><A HREF="URL3">@@@@@@@@</A>------------------------------------------------    
- third      3.14     <FONT COLOR="green"> mv[ n[ 2  2   205g5</FONT>------------------------------------------------------------    
- more data     4     <FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>    
- 
-			 .    :    .    :    .    :    .    |    .    :    .    :    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     <A HREF="URL2">*******************</A><SPAN style="color:#474747">AAGCG</SPAN><A HREF="URL3">@@@@@@@@</A>------------------------------------------------
+ third      3.14     <SPAN style="color:green"> mv[ n[ 2  2   205g5</SPAN>------------------------------------------------------------
+ more data     4     <SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>
+
+			 .    :    .    :    .    :    .    |    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 161 AACXAAGATTCTTCTATCAATTGTGATTCTTCTAGTAGGCTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC 240
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     <FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT><FONT COLOR="#474747">CTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC</FONT>    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    |    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     <SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN><SPAN style="color:#474747">CTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC</SPAN>
+
+			 .    :    .    :    .    :    .    :    .    :    .    |    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 241 CCGCTAGAGCATTTAGTTTTAXTCCCTACCGATGAGCGATCCATCAAGCAAAACCAAACCCGGCCACAAACAAGCCTCCA 320
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     <FONT COLOR="#474747">CCGCTAGAGC</FONT><FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>------    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    |    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     <SPAN style="color:#474747">CCGCTAGAGC</SPAN><SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>------
+
+			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    |
  <A HREF="http://fred.bloggs2">first</A>     1.111 321 GCAAATAACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA 400
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     -------<FONT COLOR="purple">ACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA</FONT>    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     -------<SPAN style="color:purple">ACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA</SPAN>
+
+			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 401 TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTTATATTGCTAAAAACAGCCTAGAA 480
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     ---------------------------------------------------------------------<FONT COLOR="salmon">GFKGFKFHFHF</FONT>    
- more data     4     <FONT COLOR="purple">TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTT</FONT>-----------------------    
- 
-			 .    :    .    |    .    :    .    :  ]    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     ---------------------------------------------------------------------<SPAN style="color:salmon">GFKGFKFHFHF</SPAN>
+ more data     4     <SPAN style="color:purple">TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTT</SPAN>-----------------------
+
+			 .    :    .    |    .    :    .    :  ]
  <A HREF="http://fred.bloggs2">first</A>     1.111 481 ATGATAGCGCATTATGTTTAATTXCAACAAAATCATTACTATT 523
- <A HREF="http://fred.bloggs">second</A>      2.2     -------------------------------------------    
- third      3.14     <FONT COLOR="salmon">YTRU7r7r76576565576</FONT><FONT COLOR="#474747">77%%AGCGCAT</FONT><A HREF="URL4">*************</A>    
- more data     4     -------------------------------------------    
- 
+ <A HREF="http://fred.bloggs">second</A>      2.2     -------------------------------------------
+ third      3.14     <SPAN style="color:salmon">YTRU7r7r76576565576</SPAN><SPAN style="color:#474747">77%%AGCGCAT</SPAN><A HREF="URL4">*************</A>
+ more data     4     -------------------------------------------
+
  </PRE>
 
 
 =head1 Example output formatted
 
  <PRE>
-		     [   .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :    
- <A HREF="http://fred.bloggs2">first</A>     1.111   1 <FONT COLOR="red">GGAAATAAAA</FONT>ATATAAAACCCGGTCGCAAGCGTGTCGCTGTAGATGAGCTGAAACGCAATTTTTCAGTGACTTTTTATCT  80
- <A HREF="http://fred.bloggs">second</A>      2.2     <I>GGAAATAAAA</I>----<A HREF="URL1">xxxxxx</A>----------------------------------<A HREF="URL2">**************************</A>    
- third      3.14     -------------------<FONT COLOR="green">y5923y98y23v9t2 t oi2ltl3ntli2tit2309tu2905t2390tuvn 2u m t[3</FONT>    
- more data     4     -----------<FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>    
- 
-			 .    :    .    |    .    :    .    :    .    :    .    :    .    :    .    :    
+		     [   .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :
+ <A HREF="http://fred.bloggs2">first</A>     1.111   1 <SPAN style="color:red">GGAAATAAAA</SPAN>ATATAAAACCCGGTCGCAAGCGTGTCGCTGTAGATGAGCTGAAACGCAATTTTTCAGTGACTTTTTATCT  80
+ <A HREF="http://fred.bloggs">second</A>      2.2     <I>GGAAATAAAA</I>----<A HREF="URL1">xxxxxx</A>----------------------------------<A HREF="URL2">**************************</A>
+ third      3.14     -------------------<SPAN style="color:green">y5923y98y23v9t2 t oi2ltl3ntli2tit2309tu2905t2390tuvn 2u m t[3</SPAN>
+ more data     4     -----------<SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>
+
+			 .    :    .    |    .    :    .    :    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111  81 CTCTAAAGACGAGCGTAGAAAGCGTCAATTCTTTTGTCAAACGCCACATTTTAAAAACAATCATTTACAAAAAAGGCACT 160
- <A HREF="http://fred.bloggs">second</A>      2.2     <A HREF="URL2">*******************</A><FONT COLOR="#474747">AAGCG</FONT><A HREF="URL3">@@@@@@@@</A>------------------------------------------------    
- third      3.14     <FONT COLOR="green"> mv[ n[ 2  2   205g5</FONT>------------------------------------------------------------    
- more data     4     <FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>    
- 
-			 .    :    .    :    .    :    .    |    .    :    .    :    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     <A HREF="URL2">*******************</A><SPAN style="color:#474747">AAGCG</SPAN><A HREF="URL3">@@@@@@@@</A>------------------------------------------------
+ third      3.14     <SPAN style="color:green"> mv[ n[ 2  2   205g5</SPAN>------------------------------------------------------------
+ more data     4     <SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>
+
+			 .    :    .    :    .    :    .    |    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 161 AACXAAGATTCTTCTATCAATTGTGATTCTTCTAGTAGGCTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC 240
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     <FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT><FONT COLOR="#474747">CTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC</FONT>    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    |    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     <SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN><SPAN style="color:#474747">CTTTAAGCCTACTTTAAGGTATCAGCTCTTAAGAGCAGCAC</SPAN>
+
+			 .    :    .    :    .    :    .    :    .    :    .    |    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 241 CCGCTAGAGCATTTAGTTTTAXTCCCTACCGATGAGCGATCCATCAAGCAAAACCAAACCCGGCCACAAACAAGCCTCCA 320
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     <FONT COLOR="#474747">CCGCTAGAGC</FONT><FONT COLOR="red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</FONT>------    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    |    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     <SPAN style="color:#474747">CCGCTAGAGC</SPAN><SPAN style="color:red">hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh</SPAN>------
+
+			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    |
  <A HREF="http://fred.bloggs2">first</A>     1.111 321 GCAAATAACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA 400
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     --------------------------------------------------------------------------------    
- more data     4     -------<FONT COLOR="purple">ACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA</FONT>    
- 
-			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     --------------------------------------------------------------------------------
+ more data     4     -------<SPAN style="color:purple">ACGCXAAGTCTTTAACCACTAGCCAAAATAGCTATATGCATCAAATAGCCGCCTAAATTTTGAAGTTTTGTAA</SPAN>
+
+			 .    :    .    :    .    :    .    :    .    :    .    :    .    :    .    :
  <A HREF="http://fred.bloggs2">first</A>     1.111 401 TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTTATATTGCTAAAAACAGCCTAGAA 480
- <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------    
- third      3.14     ---------------------------------------------------------------------<FONT COLOR="salmon">GFKGFKFHFHF</FONT>    
- more data     4     <FONT COLOR="purple">TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTT</FONT>-----------------------    
- 
-			 .    :    .    |    .    :    .    :  ]    
+ <A HREF="http://fred.bloggs">second</A>      2.2     --------------------------------------------------------------------------------
+ third      3.14     ---------------------------------------------------------------------<SPAN style="color:salmon">GFKGFKFHFHF</SPAN>
+ more data     4     <SPAN style="color:purple">TCACTXCAAGCAATGATTTTAACGCTTGCATGGTTTTATTCCTTTAGGATATTTTTT</SPAN>-----------------------
+
+			 .    :    .    |    .    :    .    :  ]
  <A HREF="http://fred.bloggs2">first</A>     1.111 481 ATGATAGCGCATTATGTTTAATTXCAACAAAATCATTACTATT 523
- <A HREF="http://fred.bloggs">second</A>      2.2     -------------------------------------------    
- third      3.14     <FONT COLOR="salmon">YTRU7r7r76576565576</FONT><FONT COLOR="#474747">77%%AGCGCAT</FONT><A HREF="URL4">*************</A>    
- more data     4     -------------------------------------------    
-  
+ <A HREF="http://fred.bloggs">second</A>      2.2     -------------------------------------------
+ third      3.14     <SPAN style="color:salmon">YTRU7r7r76576565576</SPAN><SPAN style="color:#474747">77%%AGCGCAT</SPAN><A HREF="URL4">*************</A>
+ more data     4     -------------------------------------------
+
  </PRE>
 
 
-=head1 Copyright (C) 1997-2006 Nigel P. Brown. 
+=head1 Copyright (C) 1997-2006 Nigel P. Brown.
 
 $Id: Display.pm,v 1.28 2015/06/14 17:09:03 npb Exp $
 
