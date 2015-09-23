@@ -44,13 +44,13 @@ SourceForge").
 1. Save the archive to your software area, e.g., `/usr/local`, then uncompress
    and extract it:
 
-        tar xvzf mview-1.59.tar.gz
+        tar xvzf mview-1.60.tar.gz
 
    or
 
-        gunzip < mview-1.59.tar.gz | tar xvf -
+        gunzip < mview-1.60.tar.gz | tar xvf -
 
-   This would create a directory called `mview-1.59` and place all the files
+   This would create a directory called `mview-1.60` and place all the files
    under there.
 
 2. Change to this directory and load `bin/mview` into an editor.
@@ -63,7 +63,7 @@ SourceForge").
 4. Find the `use lib '/path/to/mview/lib';` line and change it, in our
    example, to:
 
-        use lib '/usr/local/mview-1.59/lib';
+        use lib '/usr/local/mview-1.60/lib';
 
    and save the file.
 

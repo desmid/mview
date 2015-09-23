@@ -27,6 +27,7 @@ MView option: ``-in blast``
  `blastx`     2.2.28+, 2.2.31+                       ok          
  `tblastn`    2.2.28+, 2.2.31+                       ok          
  `tblastx`    2.2.28+, 2.2.31+                       ok          
+ `psiblast`   2.2.28+, 2.2.31+                       ok          
  ===========  ====================================== ============
 
 
@@ -43,8 +44,8 @@ MView option: ``-in blast``
  `blastx`     2.2.6                                  ok          
  `tblastn`    2.2.6                                  ok          
  `tblastx`    2.2.6                                  ok          
- `psi-blast`  2.2.6                                  ok          
- `phi-blast`  2.2.6                                  ok          
+ `psiblast`   2.2.6                                  ok          
+ `phiblast`   2.2.6                                  ok          
  ===========  ====================================== ============
 
 
@@ -61,8 +62,8 @@ MView option: ``-in blast``
  `blastx`     2.0.5, 2.0.9                           ok          
  `tblastn`    2.0.5, 2.0.10                          ok          
  `tblastx`    2.0.5                                  ok          
- `psi-blast`  2.0.2, 2.0.4, 2.0.5, 2.0.6, 2.0.10     ok          
- `phi-blast`  2.0.9                                  ok          
+ `psiblast`   2.0.2, 2.0.4, 2.0.5, 2.0.6, 2.0.10     ok          
+ `phiblast`   2.0.9                                  ok          
  ===========  ====================================== ============
 
 

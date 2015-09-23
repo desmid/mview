@@ -75,52 +75,52 @@ use vars qw(@ISA
 		     'BLASTX',
 		     'TBLASTN',
 		     'TBLASTX',
+		     'PSIBLAST',
 		    ],
 	    );
 
 $NULL  = '^\s*$';#for emacs';
 
-$ENTRY_START      = '(?:'
-    . '^BLASTP'
+$ENTRY_START = '^(?:'
+    . 'BLASTP'
     . '|'
-    . '^BLASTN'
+    . 'BLASTN'
     . '|'
-    . '^BLASTX'
+    . 'BLASTX'
     . '|'
-    . '^TBLASTN'
+    . 'TBLASTN'
     . '|'
-    . '^TBLASTX'
+    . 'TBLASTX'
+    . '|'
+    . 'PSIBLAST'
     . ')';
-$ENTRY_END        = '^  WARNINGS\s+ISSUED:';    #blast1 behavior, but blast2?
+$ENTRY_END        = '^  WARNINGS\s+ISSUED:';  #blast1 behavior, but blast2?
 
-
-$SEARCH_START     = "(?:^Searching|^\\s+High\\s+E|^\\s+Score\\s+E)";
-$SEARCH_END       = "(?:$SEARCH_START|  Database|CPU time:|^Lambda +)";
+$SEARCH_START     = "^(?:Searching|Results from round|\\s+High\\s+E|\\s+Score\\s+E)";
+$SEARCH_END       = "^(?:$SEARCH_START|  Database|CPU time:|Lambda +)";
 
 $WARNING_START    = '^WARNING';
-$WARNING_END      = "(?:done|$NULL)";    #'done' keyword in phi-blast SEARCH block
+$WARNING_END      = "(?:done|$NULL)";  #'done' keyword in phi-blast SEARCH block
 
 $WARNINGS_START   = '^WARNINGS\s+ISSUED:';
 $WARNINGS_END     = $NULL;
 
-$PARAMETERS_START = "^(?:  Database|CPU time:|^Lambda +)";
-$PARAMETERS_END   = "(?:$WARNINGS_START|$ENTRY_START)";
+$PARAMETERS_START = "^(?:  Database|CPU time:|Lambda +)";
+$PARAMETERS_END   = "^(?:$WARNINGS_START|$ENTRY_START|$SEARCH_START)";
 
-#$MATCH_START	  = '(?:^>|^[^\|:\s]+\|)';  #fails for some long query text
-$MATCH_START	  = '^>';                   #fails for web pages
-$MATCH_END          = "(?:$MATCH_START|$WARNING_START|$SEARCH_END)";
+$MATCH_START      = '^>';
+$MATCH_END        = "^(?:$MATCH_START|$WARNING_START|$SEARCH_END)";
 
-#$RANK_START       = $SEARCH_START;
-$RANK_START       = "(?:^\\s+High\\s+E|^\\s+Score\\s+E)";
-$RANK_MATCH	  = "(?:$NULL|^\\s+High|^\\s+Score|^\\s*Sequences|^\\s*CONVERGED|No hits found|^[^>].*$RX_Uint\\s+$RX_Ureal|$NPB::Parse::Format::BLAST::GCG_JUNK)";
-$RANK_END         = "(?:$MATCH_START|$SEARCH_END)"; #ignore warnings
+$RANK_START       = "^(?:\\s+High\\s+E|\\s+Score\\s+E)";
+$RANK_MATCH	  = "^(?:$NULL|\\s+High|\\s+Score|\\s*Sequences|\\s*CONVERGED| *No hits found|[^>].*$RX_Uint\\s+$RX_Ureal|$NPB::Parse::Format::BLAST::GCG_JUNK)";
+$RANK_END         = "(?:$MATCH_START|$SEARCH_END)";  #ignore warnings
 $RANK_NONE        = '^\s*\*\*\* NONE';
 
 $HEADER_START     = $ENTRY_START;
-$HEADER_END       = "(?:$SEARCH_START|$WARNING_START|$RANK_START|$MATCH_START|$PARAMETERS_START)";
+$HEADER_END       = "^(?:$SEARCH_START|$WARNING_START|$RANK_START|$MATCH_START|$PARAMETERS_START)";
 
 $SCORE_START      = '^\s{0,1}Score';  #exactly 0 or 1 leading spaces
-$SCORE_END        = "(?:$SCORE_START|$MATCH_END)";
+$SCORE_END        = "^(?:$SCORE_START|$MATCH_END)";
 
 
 sub new {
@@ -148,13 +148,16 @@ sub new {
 
 	#Search lines
 	if ($line =~ /$SEARCH_START/o) {
-	    if ($line =~ /^Searching/) {
-		#can't scan for all fields of $SEARCH_START unfortunately
-		$text->scan_until("(?:^Searching|  Database|CPU time:^Lambda +)", 'SEARCH');
-	    } else {
-		#'Searching' keyword stripped by web server
-		$text->scan_until($SEARCH_END, 'SEARCH');
-	    }
+            if ($line =~ /^Searching/) {  #BLAST2
+                $text->scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
+                next;
+            }
+            if ($line =~ /^Results from round/) {  #BLAST+
+                $text->scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
+                next;
+            }
+            #'Searching' or 'Results' keywords stripped by web server
+            $text->scan_until($SEARCH_END, 'SEARCH');
 	    next;
 	}
 
@@ -258,7 +261,7 @@ sub new {
     $self->{'hit'}    = [];
     
     while (defined ($line = $text->next_line)) {
-	
+
 	next    if $line =~ /^Sequences used in model and found again:/;
 	next    if $line =~ /^Sequences not found previously or not previously below threshold:/;
 	next    if $line =~ /^CONVERGED!/;

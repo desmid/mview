@@ -78,16 +78,16 @@ use vars qw(@ISA
 
 $NULL  = '^\s*$';#for emacs';
 
-$ENTRY_START      = '(?:'
-    . '^BLASTP'
+$ENTRY_START = '^(?:'
+    . 'BLASTP'
     . '|'
-    . '^BLASTN'
+    . 'BLASTN'
     . '|'
-    . '^BLASTX'
+    . 'BLASTX'
     . '|'
-    . '^TBLASTN'
+    . 'TBLASTN'
     . '|'
-    . '^TBLASTX'
+    . 'TBLASTX'
     . ')';
 $ENTRY_END        = '^WARNINGS\s+ISSUED:';
 
@@ -98,24 +98,23 @@ $WARNINGS_START	  = '^WARNINGS\s+ISSUED:';
 $WARNINGS_END	  = $NULL;
 
 $PARAMETERS_START = '^Parameters';
-$PARAMETERS_END	  = "(?:$WARNINGS_START|$ENTRY_START)";
+$PARAMETERS_END	  = "^(?:$WARNINGS_START|$ENTRY_START)";
 
-#$MATCH_START	  = '(?:^>|^[^\|:\s]+\|)';  #fails for some long query text
-$MATCH_START	  = '^>';                   #fails for web pages
-$MATCH_END	  = "(?:$MATCH_START|$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
+$MATCH_START	  = '^>';
+$MATCH_END	  = "^(?:$MATCH_START|$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
 
 $RANK_START	  = '^\s+Smallest';
-$RANK_MATCH	  = "(?:$NULL|^\\s+Smallest|^\\s+Sum|^\\s+High|^\\s+Reading|^\\s*Sequences|^[^>].*$RX_Uint\\s+$RX_Ureal\\s+$RX_Uint|$NPB::Parse::Format::BLAST::GCG_JUNK)";
-$RANK_END	  = "(?:$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
+$RANK_MATCH	  = "^(?:$NULL|\\s+Smallest|\\s+Sum|\\s+High|\\s+Reading|\\s*Sequences|[^>].*$RX_Uint\\s+$RX_Ureal\\s+$RX_Uint|$NPB::Parse::Format::BLAST::GCG_JUNK)";
+$RANK_END	  = "^(?:$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
 
 $HISTOGRAM_START  = '^\s+Observed Numbers';
-$HISTOGRAM_END	  = "(?:$RANK_START|$RANK_END)";
+$HISTOGRAM_END	  = "^(?:$RANK_START|$RANK_END)";
 
 $HEADER_START     = $ENTRY_START;
-$HEADER_END       = "(?:$WARNING_START|$HISTOGRAM_START|$HISTOGRAM_END)";
+$HEADER_END       = "^(?:$WARNING_START|$HISTOGRAM_START|$HISTOGRAM_END)";
 
 $SCORE_START      = '^ Score';
-$SCORE_END        = "(?:$SCORE_START|$MATCH_START|$PARAMETERS_START)";
+$SCORE_END        = "^(?:$SCORE_START|$MATCH_START|$PARAMETERS_START)";
 
 
 sub new {

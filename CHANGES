@@ -1,10 +1,8 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.60 rc2 2015-09-13
+Version 1.60 rc1  2015-09-23
 - HTML output updated: DOCTYPE HTML (for HTML5).
-
-Version 1.60 rc1 2015-08-20
-- HTML output updated: FONT tags eliminated; DOCTYPE 4.01 (strict).
+- Fixed BLAST+ PSIBLAST parser which failed to recognise format.
 
 Version 1.59  2015-07-17 (GitHub)
 - This is a re-release with only documentation changes.

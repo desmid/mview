@@ -16,7 +16,7 @@ use strict;
 @ISA = qw(NPB::Parse::Record);
 
 
-my $Plain_Null           = '^\s*$';#'
+my $Plain_Null           = '^\s*$';
 my $Plain_Comment        = '^\s*\#';
 
 #delimit full Plain entry

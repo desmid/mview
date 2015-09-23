@@ -14,7 +14,7 @@ use strict;
 
 @ISA = qw(NPB::Parse::Record);
 
-BEGIN { $GCG_JUNK = '(?:^\.\.|^\\\\)' }
+BEGIN { $GCG_JUNK = '^(?:\.\.|\\\\)' }
 
 use NPB::Parse::Format::BLAST1;
 use NPB::Parse::Format::BLAST2;
@@ -187,6 +187,11 @@ sub get_entry {
     unless (exists $VERSIONS{$version} and 
 	    grep(/^$prog$/i, @{$VERSIONS{$version}}) > 0) {
 	die "get_entry() parser for program '$prog' version '$version' not implemented\n";
+    }
+
+    if ($prog eq 'PSIBLAST') { # BLAST+
+        $prog = 'blastp';
+        $saveformat = 'blastp';
     }
 
     $prog = lc $prog;
