@@ -44,7 +44,7 @@ sub new {
     $text = new NPB::Parse::Record_Stream($self);
 
     #column headers
-    $self->{'header'} = $text->scan_lines(4);
+    $self->{'header'} = $text->scan_lines(5);
 
     #ranked search hits
     $self->{'hit'}    = [];

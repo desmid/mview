@@ -104,7 +104,8 @@ sub free {
 }
 
 #Given a triple (key, offset, bytecount), store these as an anonymous array
-#under the appropriate keys in the record_by_ attributes.
+#under the appropriate keys in the record_by_ attributes. Do NOT instantiate
+#the record object.
 sub add_record {
     my $self = shift;
     my $rec = [ @_ ];
@@ -132,6 +133,13 @@ sub get_class    { ref($_[0]) }
 sub get_index    { $_[0]->{'index'} }
 sub relative_key { $_[0]->{'relative_key'} }
 sub absolute_key { $_[0]->{'absolute_key'} }
+
+sub get_object {
+    my ($self, $rec) = @_;
+    #warn "get_object($rec = [@$rec])\n";
+    $self->add_object($rec)  unless defined $rec->[3];
+    $rec->[3];
+}
 
 sub get_type {
     my @id = split('::', ref($_[0]));
@@ -184,7 +192,7 @@ sub test_args {
     my $self = shift;
     my $line = shift;
     my $i; foreach $i (@_) {
-	next    if $i ne '';
+	next  if $i ne '';
 	$self->warn("incomplete match of line: $line");
     }
 }
@@ -380,13 +388,7 @@ sub parse {
     foreach $key (@keys) {
         #warn "parse: $key\n";
 	foreach $rec ($self->key_range($key)) {
-	    if (defined $rec->[3]) {
-		#object already processed
-		push @list, $rec->[3];
-	    } else {
-		#build object and return for caller
-		push @list, $self->add_object($rec);
-	    }
+            push @list, $self->get_object($rec);
 	}
     }
 
@@ -424,9 +426,9 @@ sub key_range {
 	#want range?
 	if ($lo != $hi) {
 	    #adjust range to fit available records?
-	    $lo = 0 
+	    $lo = 0
 		unless defined $self->{'record_by_type'}->{$key}[$lo];
-	    $hi = $#{$self->{'record_by_type'}->{$key}} 
+	    $hi = $#{$self->{'record_by_type'}->{$key}}
 	        unless defined $self->{'record_by_type'}->{$key}[$hi];
         } else {
 	    #ignore non-existent single index
@@ -587,7 +589,7 @@ sub backup {
 
 #return the remaining unprocessed stream without altering the cursor
 sub inspect_stream {
-    return ''    if $_[0]->{'cursor'} >= $_[0]->{'limit'};
+    return ''  if $_[0]->{'cursor'} >= $_[0]->{'limit'};
     $_[0]->{'text'}->substr($_[0]->{'cursor'},
 			    $_[0]->{'limit'} - $_[0]->{'cursor'} + 1);
 }
@@ -639,23 +641,20 @@ sub scan_lines {
 
     #warn "scan_lines() looking at ($count) lines\n";
 
-    $count--    if $record;    #already seen one line
-
-    if ($count > 0) {
-	#scan $count lines
-	while ($count-- > 0 and defined ($line = $self->next_line)) {
+    if ($count < 1) {  #scan everything
+	while (defined ($line = $self->next_line)) {
 	    $record .= $line;
 	}
-    } else {
-	#scan everything
-	while (defined ($line = $self->next_line)) {
+    } else {  #scan $count lines
+        $count--;  #already seen one line
+        while ($count-- > 0 and defined ($line = $self->next_line)) {
 	    $record .= $line;
 	}
     }
     #no $self->backup as we've read exactly the right amount
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -672,16 +671,15 @@ sub scan_while {
     $offset = $self->{'cursor'} - $self->{'length'};
 
     while (defined ($line = $self->next_line)) {
-	if ($line =~ /$pattern/) {
-	    $record .= $line;
-	    next;
-	}
-	$self->backup;
-	last;
+	if ($line !~ /$pattern/) {
+            $self->backup;
+            last;
+        }
+        $record .= $line;
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -703,11 +701,10 @@ sub scan_until {
 	    last;
 	}
 	$record .= $line;
-	next;
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -725,12 +722,11 @@ sub scan_until_inclusive {
 
     while (defined ($line = $self->next_line)) {
 	$record .= $line;
-	last    if $line =~ /$pattern/;
-	next;
+	last  if $line =~ /$pattern/;
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -755,11 +751,10 @@ sub scan_skipping_until {
             }
 	}
 	$record .= $line;
-	next;
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -777,16 +772,15 @@ sub scan_nest {
     $offset = $self->{'cursor'} - $self->{'length'};
 
     while (defined ($line = $self->next_line)) {
-	if ($line =~ /^(\s{$nest}|$)/) {
-	    $record .= $line;
-	    next;
-	}
-	$self->backup;
-	last;
+	if ($line !~ /^(\s{$nest}|$)/) {
+            $self->backup;
+            last;
+        }
+        $record .= $line;
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)    if $key;
+    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
