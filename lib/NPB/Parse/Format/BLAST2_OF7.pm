@@ -54,37 +54,43 @@ use vars qw(@ISA
 		    ],
 	    );
 
-my $NULL = '^\s*$';
-
-my $PROGRAMS = "(?:" . join("|", @{$VERSIONS[1]}) . ")";
-
 # Header format is like this:
+#
 #  # PSIBLAST 2.2.28+
 #  # Iteration: 1
 #  # Query: test
 #  # Database: mito.1000.aa
-#  # Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score, query seq, subject seq
+#  # Fields: query id, subject id, % identity, alignment length, ...
 #  # 65 hits found
 # <data>\t<data>\t...
 # <data>\t<data>\t...
 # ...
-# repeated in case of psiblast before each search cycle and terminated with:
+#
+# default case: single search terminates with:
+#  # BLAST processed 1 queries
+#  <eof>
+#
+# psiblast: searches repeat then terminate with:
 #  <blank>
 #  Search has CONVERGED!
 #  # BLAST processed 2 queries
 #  <eof>
 
-$ENTRY_START   = "^\# $PROGRAMS";
-$ENTRY_END     = '^\# .*processed';
+my $NULL = '^\s*$';
 
-$HEADER_START  = $ENTRY_START;
-$HEADER_END    = '^[^\#]';
+my $PROGRAMS = "(?:" . join("|", @{$VERSIONS[1]}) . ")";
 
-my $SEARCH_START    = "^[^\#][^\t]*\t";
-my $SEARCH_END      = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
+$ENTRY_START     = "^\# $PROGRAMS";
+$ENTRY_END       = '^\# .*processed';
 
-my $FIELD_SKIP = '-';
-my $FIELD_MAP = {
+$HEADER_START    = $ENTRY_START;
+$HEADER_END      = '^[^\#]';
+
+my $SEARCH_START = "^[^\#][^\t]*\t";
+my $SEARCH_END   = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
+
+my $FIELD_SKIP   = '-';
+my $FIELD_MAP    = {
     'subject id'        => 'id',
     'q. start'          => 'query_start',
     'q. end'            => 'query_stop',
@@ -95,9 +101,9 @@ my $FIELD_MAP = {
     'query seq'         => 'query',
     'subject seq'       => 'sbjct',
 };
-my $RANK_FIELDS = [ qw(id expect bits) ];
-my $SUM_FIELDS  = [ qw(id) ];
-my $ALN_FIELDS  = [ qw(expect bits
+my $RANK_FIELDS  = [ qw(id expect bits) ];
+my $SUM_FIELDS   = [ qw(id) ];
+my $ALN_FIELDS   = [ qw(expect bits
                        query query_start query_stop
                        sbjct sbjct_start sbjct_stop)
     ];
@@ -328,6 +334,13 @@ sub new {
                 $parent->pop_record;
                 $parent->push_record('MATCH', $moffset,
                                      $mbytes += $text->get_bytes);
+                #expect the first hit supplied by blast to be the highest
+                #scoring, but test just in case:
+                if ($tmp->{'bits'} > $self->{'hit'}->[-1]->{'bits'}) {
+                    #warn "later hit has greater bits score\n";
+                    pop  @{$self->{'hit'}};
+                    push @{$self->{'hit'}}, $tmp;
+                }
                 next;
             }
 

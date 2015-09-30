@@ -94,12 +94,13 @@ sub free {
     return $self;
 }
 
-#Given a record, removed and recursively free any instantiated parse object.
+#Given a record tuple reference, remove and recursively free any instantiated
+#parse object; returns the tuple reference.
 sub free_record {
     my ($self, $rec) = @_;
-    return  unless @$rec > 3;
+    return $rec  unless @$rec > 3;
     #warn "free_record: [", join(", ", @$rec), "]\n";
-    $rec->[3]->free;          #recurse
+    $rec->[3]->free;           #recurse
     my $ob = splice @$rec, 3;  #excise parse object
     undef $ob;                 #remove parse object
     $rec;
@@ -116,7 +117,7 @@ sub push_record {
 }
 
 #Remove the latest stored record and free any instantiated parse object;
-#return the deleted record.
+#returns the deleted record tuple.
 sub pop_record {
     my $self = shift;
     my $rec = pop @{$self->{'record_by_posn'}};
