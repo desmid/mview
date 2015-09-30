@@ -129,18 +129,17 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
     'subject com names'      => '-',              #scomnames
     'subject blast names'    => '-',              #sblastnames
     'subject super kingdoms' => '-',              #sskingdoms
-    'subject title'          => '-',              #stitle
-    'subject titles'         => '-',              #salltitles
+    'subject title'          => 'desc',           #stitle
+    'subject titles'         => 'desc',           #salltitles
     'subject strand'         => '-',              #sstrand
     '% subject coverage'     => '-',              #qcovs
     '% hsp coverage'         => '-',              #qcovhsp
 };
 my $RANK_FIELDS  = [ qw(id expect bits) ];
-my $SUM_FIELDS   = [ qw(id length) ];
-my $ALN_FIELDS   = [
-    qw(
-       expect bits
-       query query_start query_stop  sbjct sbjct_start sbjct_stop
+my $SUM_FIELDS   = [ qw(id length stitle stitles) ];
+my $ALN_FIELDS   = [ qw(expect bits
+       query query_start query_stop
+       sbjct sbjct_start sbjct_stop
        id_percent mismatch gapopen
     )];
 
