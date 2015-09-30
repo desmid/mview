@@ -33,8 +33,6 @@ use vars qw(@ISA
 
 	    @VERSIONS
 
-	    $NULL
-
 	    $ENTRY_START
 	    $ENTRY_END
 
@@ -76,7 +74,7 @@ use vars qw(@ISA
 		    ],
 	    );
 
-$NULL  = '^\s*$';#for emacs';
+my $NULL = '^\s*$';
 
 $ENTRY_START = '^(?:'
     . 'BLASTP'
@@ -179,6 +177,46 @@ sub new {
 
     $self;#->examine;
 }
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST1::HEADER;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::HEADER);
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST1::RANK;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::RANK);
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST1::MATCH;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::MATCH);
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST1::MATCH::SUM;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::MATCH::SUM);
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST1::MATCH::ALN;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::MATCH::ALN);
 
 
 ###########################################################################

@@ -41,7 +41,7 @@ package NPB::Parse::Format::BLAST2::blastx::SEARCH::MATCH;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH);
+@ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH);
 
 
 ###########################################################################
@@ -49,7 +49,7 @@ package NPB::Parse::Format::BLAST2::blastx::SEARCH::MATCH::SUM;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH::SUM);
+@ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH::SUM);
 
 
 ###########################################################################

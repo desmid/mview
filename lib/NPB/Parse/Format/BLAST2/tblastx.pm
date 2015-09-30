@@ -102,7 +102,7 @@ package NPB::Parse::Format::BLAST2::tblastx::WARNING;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST2::blastx::WARNING);
+@ISA = qw(NPB::Parse::Format::BLAST::WARNING);
 
 
 ###########################################################################
@@ -110,7 +110,7 @@ package NPB::Parse::Format::BLAST2::tblastx::PARAMETERS;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST2::blastx::PARAMETERS);
+@ISA = qw(NPB::Parse::Format::BLAST::PARAMETERS);
 
 
 ###########################################################################

@@ -18,34 +18,44 @@ BEGIN { $GCG_JUNK = '^(?:\.\.|\\\\)' }
 
 use NPB::Parse::Format::BLAST1;
 use NPB::Parse::Format::BLAST2;
+use NPB::Parse::Format::BLAST2_OF7;
 
 my %VERSIONS = (
 		@NPB::Parse::Format::BLAST1::VERSIONS,
 		@NPB::Parse::Format::BLAST2::VERSIONS,
+		@NPB::Parse::Format::BLAST2_OF7::VERSIONS,
 	       );
- 			 
-my $NULL        = '^\s*$';#for emacs';
-    
+
+my $NULL = '^\s*$';;
+
 my $ENTRY_START = "(?:"
     . $NPB::Parse::Format::BLAST1::ENTRY_START
     . "|"
     . $NPB::Parse::Format::BLAST2::ENTRY_START
+    . "|"
+    . $NPB::Parse::Format::BLAST2_OF7::ENTRY_START
     . ")";
 my $ENTRY_END   = "(?:"
     . $NPB::Parse::Format::BLAST1::ENTRY_END
     . "|"
     . $NPB::Parse::Format::BLAST2::ENTRY_END
+    . "|"
+    . $NPB::Parse::Format::BLAST2_OF7::ENTRY_END
     . ")";
 
 my $HEADER_START = "(?:"
     . $NPB::Parse::Format::BLAST1::HEADER_START
     . "|"
     . $NPB::Parse::Format::BLAST2::HEADER_START
+    . "|"
+    . $NPB::Parse::Format::BLAST2_OF7::HEADER_START
     . ")";
 my $HEADER_END   = "(?:"
     . $NPB::Parse::Format::BLAST1::HEADER_END
     . "|"
     . $NPB::Parse::Format::BLAST2::HEADER_END
+    . "|"
+    . $NPB::Parse::Format::BLAST2_OF7::HEADER_END
     . ")";
 
 my $PARAMETERS_START = "(?:"
@@ -138,7 +148,7 @@ sub get_entry {
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     my ($type, $prog, $version) = ('NPB::Parse::Format::BLAST', undef, undef);
-    my ($saveformat, $saveversion) = ('', '');
+    my ($savefmt, $saveformat, $saveversion) = ('', '', '');
 
     while (defined ($line = $parent->{'text'}->getline)) {
 
@@ -164,10 +174,11 @@ sub get_entry {
 		#WashU series is almost identical to NCBI BLAST1
 		$version = 1;
 	    }
-	    
-	    #read program name
-	    $line =~ /^\s*(\S+)/;
-	    $prog = $1;
+
+	    #read program name and determine output format
+	    $line =~ /^(\#)?\s*(\S+)/;
+            $savefmt = defined $1 ? '_OF7' : '';
+	    $prog = $2;
 
 	    $saveformat  = uc $prog;
 	    $saveversion = $version;
@@ -196,10 +207,10 @@ sub get_entry {
 
     $prog = lc $prog;
     $version =~ s/-/_/g;
-    $type = "NPB::Parse::Format::BLAST${version}::$prog";
+    $type = "NPB::Parse::Format::BLAST${version}${savefmt}::$prog";
 
     #warn "prog= $prog  version= $version  type= $type\n";
-    
+
     ($prog = $type) =~ s/::/\//g; require "$prog.pm";
 
     #package $type defines this constructor and coerces to $type
@@ -211,7 +222,7 @@ sub get_entry {
 
     $self;
 }
-    
+
 sub new { die "$_[0]::new() virtual function called\n" }
 
 
@@ -230,15 +241,17 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    $self->{'query'}   = '';
-    $self->{'summary'} = '';
+    $self->{'full_version'} = '';
+    $self->{'version'}      = '',
+    $self->{'query'}        = '';
+    $self->{'summary'}      = '';
 
     while ($line = $text->next_line) {
-    
+
 	#blast version info
 	if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
 	
@@ -253,12 +266,11 @@ sub new {
 	} 
 
 	#query line
-	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/) {
+	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
 
 	    #no test - either field may be missing
-
-	    $self->{'query'}   = $1    if defined $1;
-	    $self->{'summary'} = $2    if defined $2;
+	    $self->{'query'}   = $1  if defined $1;
+	    $self->{'summary'} = $2  if defined $2;
 
 	    #strip leading unix path stuff
             $self->{'query'} =~ s/.*\/([^\/]+)$/$1/;
@@ -588,7 +600,7 @@ sub parse_alignment {
     $self->{'query_stop'}   = $query_stop;
     $self->{'sbjct_start'}  = $sbjct_start;
     $self->{'sbjct_stop'}   = $sbjct_stop;
-    
+
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
         $self->{'query_start'} > $self->{'query_stop'} ? '-' : '+';
@@ -633,7 +645,7 @@ sub new {
     $text = new NPB::Parse::Record_Stream($self, 0, undef);
 
     $line = $text->scan_lines(0);
-    
+
     $self->{'warning'} = NPB::Parse::Record::strip_english_newlines($line);
 
     $self;
@@ -666,7 +678,7 @@ sub new {
     $text = new NPB::Parse::Record_Stream($self, 0, undef);
 
     $line = $text->scan_lines(0);
-    
+
     ($self->{'histogram'} = $line) =~ s/\s*$/\n/;
 
     $self;
@@ -699,7 +711,7 @@ sub new {
     $text = new NPB::Parse::Record_Stream($self, 0, undef);
 
     $line = $text->scan_lines(0);
-    
+
     ($self->{'parameters'} = $line) =~ s/\s*$/\n/;
 
     $self;

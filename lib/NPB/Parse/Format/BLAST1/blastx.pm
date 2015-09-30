@@ -11,8 +11,9 @@ use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::BLAST1);
 
-my $RANK_NONE    = '^\s*\*\*\* NONE';
-my $RANK_CUT     = 57;
+my $NULL      = '^\s*$';
+my $RANK_NONE = '^\s*\*\*\* NONE';
+my $RANK_CUT  = 57;
 
 
 ###########################################################################
@@ -20,7 +21,7 @@ package NPB::Parse::Format::BLAST1::blastx::HEADER;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::HEADER);
+@ISA = qw(NPB::Parse::Format::BLAST1::HEADER);
 
 
 ###########################################################################
@@ -29,7 +30,7 @@ package NPB::Parse::Format::BLAST1::blastx::RANK;
 use vars qw(@ISA);
 use NPB::Parse::Regexps;
 
-@ISA = qw(NPB::Parse::Format::BLAST::RANK);
+@ISA = qw(NPB::Parse::Format::BLAST1::RANK);
 
 sub new {
     my $type = shift;
@@ -52,7 +53,7 @@ sub new {
     while (defined ($line = $text->next_line)) {
 	
 	#blank line or empty record: ignore
-        next    if $line =~ /$NPB::Parse::Format::BLAST1::NULL/o;
+        next    if $line =~ /$NULL/o;
 
 	#GCG annotation: ignore
         next    if $line =~ /$NPB::Parse::Format::BLAST::GCG_JUNK/o;
@@ -117,7 +118,7 @@ package NPB::Parse::Format::BLAST1::blastx::MATCH;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH);
+@ISA = qw(NPB::Parse::Format::BLAST1::MATCH);
 
 
 ###########################################################################
@@ -125,7 +126,7 @@ package NPB::Parse::Format::BLAST1::blastx::MATCH::SUM;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH::SUM);
+@ISA = qw(NPB::Parse::Format::BLAST1::MATCH::SUM);
 
 
 ###########################################################################
@@ -134,7 +135,7 @@ package NPB::Parse::Format::BLAST1::blastx::MATCH::ALN;
 use vars qw(@ISA);
 use NPB::Parse::Regexps;
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH::ALN);
+@ISA = qw(NPB::Parse::Format::BLAST1::MATCH::ALN);
 
 sub new {
     my $type = shift;

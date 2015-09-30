@@ -141,6 +141,25 @@ sub get_object {
     $rec->[3];
 }
 
+sub get_parent {
+    my ($self, $depth) = (@_, 1);
+    $depth = -$depth  if $depth < 0;  #positive
+    return $self  if $depth == 0;
+    my $ptr = $self;
+    while ($depth-- > 0) {
+        return undef  unless defined $ptr->{'parent'};
+        return $ptr->{'parent'}  if $depth < 1;
+        $ptr = $ptr->{'parent'};
+    }
+    return undef;
+}
+
+sub get_record {
+    my ($self, $type, $index) = (@_, 0);
+    my $rec = $self->{'record_by_type'}->{$type}->[$index];
+    $self->get_object($rec);
+}
+
 sub get_type {
     my @id = split('::', ref($_[0]));
     pop @id;

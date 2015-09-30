@@ -52,7 +52,7 @@ package NPB::Parse::Format::BLAST1::tblastn::MATCH::ALN;
 use vars qw(@ISA);
 use NPB::Parse::Regexps;
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH::ALN);
+@ISA = qw(NPB::Parse::Format::BLAST1::MATCH::ALN);
 
 sub new {
     my $type = shift;
@@ -158,7 +158,7 @@ package NPB::Parse::Format::BLAST1::tblastn::WARNING;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST1::blastx::WARNING);
+@ISA = qw(NPB::Parse::Format::BLAST::WARNING);
 
 
 ###########################################################################
@@ -166,7 +166,7 @@ package NPB::Parse::Format::BLAST1::tblastn::HISTOGRAM;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST1::blastx::HISTOGRAM);
+@ISA = qw(NPB::Parse::Format::BLAST::HISTOGRAM);
 
 
 ###########################################################################
@@ -174,7 +174,7 @@ package NPB::Parse::Format::BLAST1::tblastn::PARAMETERS;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST1::blastx::PARAMETERS);
+@ISA = qw(NPB::Parse::Format::BLAST::PARAMETERS);
 
 
 ###########################################################################

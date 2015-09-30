@@ -14,7 +14,7 @@
 #   SEARCH        passes of the search engine
 #   PARAMETERS    the trailer
 #
-#   SEARCH is further subdivied into:
+#   SEARCH is further subdivided into:
 #     RANK        the list of ordered high scoring hits
 #     MATCH       the set of alignments for a given hit
 #
@@ -33,8 +33,6 @@ use strict;
 use vars qw(@ISA
 
 	    @VERSIONS
-
-	    $NULL
 
 	    $ENTRY_START
 	    $ENTRY_END
@@ -68,7 +66,7 @@ use vars qw(@ISA
 
 @ISA   = qw(NPB::Parse::Format::BLAST);
 
-@VERSIONS = ( 
+@VERSIONS = (
 	     '2' => [
 		     'BLASTP',
 		     'BLASTN',
@@ -79,7 +77,7 @@ use vars qw(@ISA
 		    ],
 	    );
 
-$NULL  = '^\s*$';#for emacs';
+my $NULL = '^\s*$';
 
 $ENTRY_START = '^(?:'
     . 'BLASTP'
@@ -131,7 +129,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
@@ -162,11 +160,11 @@ sub new {
 	}
 
 	#Parameter lines
-	if ($line =~ /$PARAMETERS_START/o) {       	      
+	if ($line =~ /$PARAMETERS_START/o) {
 	    $text->scan_until($PARAMETERS_END, 'PARAMETERS');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#WARNINGS ISSUED line: ignore
 	next    if $line =~ /$WARNINGS_START/o;
 
@@ -183,6 +181,14 @@ sub fix_expect {
     $e =~ s/^e/1e/;
     $e;
 }
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST2::HEADER;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::HEADER);
 
 
 ###########################################################################
@@ -206,25 +212,40 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
+        #chomp $line; warn "[$line]\n";
+
+	#query line: update HEADER if needed (for psiblast at least)
+	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
+	    #no test - either field may be missing
+	    my $query   = $1  if defined $1;
+	    my $summary = $2  if defined $2;
+
+	    #strip leading unix path stuff
+            $query =~ s/.*\/([^\/]+)$/$1/;
+
+            my $header = $self->get_parent(1)->get_record('HEADER');
+            $header->{'query'}   = $query    if $header->{'query'} eq '';
+            $header->{'summary'} = $summary  if $header->{'summary'} eq '';
+        }
+
 	#Rank lines
-	if ($line =~ /$NPB::Parse::Format::BLAST2::RANK_START/o) {       	      
-	    #$text->scan_while($NPB::Parse::Format::BLAST2::RANK_MATCH, 'RANK');
+	if ($line =~ /$NPB::Parse::Format::BLAST2::RANK_START/o) {
 	    $text->scan_until($NPB::Parse::Format::BLAST2::RANK_END, 'RANK');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#Hit lines
-	if ($line =~ /$NPB::Parse::Format::BLAST2::MATCH_START/o) {       	      
+	if ($line =~ /$NPB::Parse::Format::BLAST2::MATCH_START/o) {
 	    $text->scan_until($NPB::Parse::Format::BLAST2::MATCH_END, 'MATCH');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#WARNING lines
-	if ($line =~ /$NPB::Parse::Format::BLAST2::WARNING_START/o) {       	      
+	if ($line =~ /$NPB::Parse::Format::BLAST2::WARNING_START/o) {
 	    $text->scan_until($NPB::Parse::Format::BLAST2::WARNING_END, 'WARNING');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#default: ignore any other text in SEARCH block
     }
 
@@ -253,13 +274,11 @@ sub new {
     $text = new NPB::Parse::Record_Stream($self);
 
     #column headers
-    #$self->{'header'} = $text->scan_lines(4);    #<= 2.0.5
-    #$self->{'header'} = $text->scan_lines(6);    #2.0.6
-    $self->{'header'} = $text->scan_until_inclusive('Value(?:\s*N)?\s*$');#'
+    $self->{'header'} = $text->scan_until_inclusive('Value(?:\s*N)?\s*$');
 
-    #ranked search hits 
+    #ranked search hits
     $self->{'hit'}    = [];
-    
+
     while (defined ($line = $text->next_line)) {
 
 	next    if $line =~ /^Sequences used in model and found again:/;
@@ -268,7 +287,7 @@ sub new {
 	next    if $line =~ /^Significant /;    #PHI-BLAST
 
 	#blank line or empty record: ignore
-        next    if $line =~ /$NPB::Parse::Format::BLAST2::NULL/o;
+        next    if $line =~ /$NULL/o;
 
 	#GCG annotation: ignore
         next    if $line =~ /$NPB::Parse::Format::BLAST::GCG_JUNK/o;
@@ -295,7 +314,7 @@ sub new {
 	    /xo) {
 
 	    $self->test_args($line, $1, $2);
-	    
+
 	    $tmp->{'bits'}   = $1;
 	    $tmp->{'expect'} = NPB::Parse::Format::BLAST2::fix_expect($2);
 	    $tmp->{'n'}      = (defined $3 ? $3 : 0);
@@ -308,28 +327,44 @@ sub new {
 		\s*
 		(.*)?                  #summary
 		/xo) {
-		    
+
 		$self->test_args($line, $1);    #ignore $2
-		
-		$tmp->{'id'} = 
+
+		$tmp->{'id'} =
 		    NPB::Parse::Record::clean_identifier($1);
 		$tmp->{'summary'} =
 		    NPB::Parse::Record::strip_trailing_space($2);
-		
+
 	    } else {
 		$self->warn("unknown field: $line");
 	    }
-	    
+
 	    push @{$self->{'hit'}}, $tmp;
-	    
-	    next;
+
+            next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
     $self;
 }
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST2::SEARCH::MATCH;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::MATCH);
+
+
+###########################################################################
+package NPB::Parse::Format::BLAST2::SEARCH::MATCH::SUM;
+
+use vars qw(@ISA);
+
+@ISA = qw(NPB::Parse::Format::BLAST::MATCH::SUM);
 
 
 ###########################################################################
@@ -364,7 +399,7 @@ sub new {
 	Expect(?:\((\d+)\))?\s*=\s*
 	($RX_Ureal)                 #expectation
 	/xo) {
-	
+
 	$self->test_args($line, $1, $2, $4);
 
 	(
@@ -377,30 +412,30 @@ sub new {
     } else {
 	$self->warn("expecting 'Score' line: $line");
     }
-    
+
     #Identities line
     $line = $text->next_line;
 
     if ($line =~ /^\s*
 	Identities\s*=\s*
 	(\d+\/\d+)                  #identities fraction
-	\s+			    
+	\s+
 	\((\d+)%\)                  #identities percentage
 	(?:                         #not present in (some?) BLASTN 2.0.9
-	,\s+			    
-	Positives\s*=\s*	    
+	,\s+
+	Positives\s*=\s*
 	(\d+\/\d+)                  #positives fraction
-	\s+			    
+	\s+
 	\((\d+)%\)                  #positives percentage
 	(?:,\s*			    #not always present
-	 Gaps\s*=\s*		    
+	 Gaps\s*=\s*
 	 (\d+\/\d+)                 #gaps fraction
-	 \s+			    
+	 \s+
 	 \((\d+)%\)                 #gaps percentage
 	)?
 	)?
 	/xo) {
-	
+
 	$self->test_args($line, $1, $2);
 
 	(
@@ -411,11 +446,11 @@ sub new {
 	 $self->{'gap_fraction'},
 	 $self->{'gap_percent'},
 	) = ($1, $2, defined $3?$3:'', defined $4?$4:0, defined $5?$5:'', defined $6?$6:0);
-	
+
     } else {
 	$self->warn("expecting 'Identities' line: $line");
     }
-    
+
     #optional (Strand|Frame) line
     $line = $text->next_line;
 

@@ -17,7 +17,7 @@ package NPB::Parse::Format::BLAST2::blastn::HEADER;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::HEADER);
+@ISA = qw(NPB::Parse::Format::BLAST2::HEADER);
 
 
 ###########################################################################
@@ -41,7 +41,7 @@ package NPB::Parse::Format::BLAST2::blastn::SEARCH::MATCH;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH);
+@ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH);
 
 
 ###########################################################################
@@ -49,14 +49,13 @@ package NPB::Parse::Format::BLAST2::blastn::SEARCH::MATCH::SUM;
 
 use vars qw(@ISA);
 
-@ISA = qw(NPB::Parse::Format::BLAST::MATCH::SUM);
+@ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH::SUM);
 
 
 ###########################################################################
 package NPB::Parse::Format::BLAST2::blastn::SEARCH::MATCH::ALN;
 
 use vars qw(@ISA);
-use NPB::Parse::Regexps;
 
 @ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN);
 
