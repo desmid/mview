@@ -440,7 +440,7 @@ sub parse_alignment {
     my @tmp = ();
 
     #alignment lines
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $text->next_line(1))) {
 	
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -495,7 +495,6 @@ sub parse_alignment {
 	    #fall through
 
 	} else {
-	    chomp $line;
 	    $self->warn("expecting 'Query' line: [$line]");
 	    next;
 	}
@@ -552,7 +551,6 @@ sub parse_alignment {
 	    #fall through
 
 	} else {
-	    chomp $line;
 	    $self->warn("expecting 'Sbjct' line: [$line]");
 	    next;
 	}

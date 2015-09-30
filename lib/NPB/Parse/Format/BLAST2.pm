@@ -210,9 +210,8 @@ sub new {
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    while (defined ($line = $text->next_line)) {
-
-        #chomp $line; warn "[$line]\n";
+    while (defined ($line = $text->next_line(1))) {
+        #warn "[$line]\n";
 
 	#query line: update HEADER if needed (for psiblast at least)
 	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
@@ -279,7 +278,7 @@ sub new {
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $text->next_line(1))) {
 
 	next    if $line =~ /^Sequences used in model and found again:/;
 	next    if $line =~ /^Sequences not found previously or not previously below threshold:/;
@@ -298,8 +297,6 @@ sub new {
 
 	#empty ranking: done
         last    if $line =~ /$NPB::Parse::Format::BLAST2::RANK_NONE/o;
-
-	chomp $line;
 
 	my $tmp = {};
 

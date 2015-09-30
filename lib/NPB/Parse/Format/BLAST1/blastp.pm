@@ -50,7 +50,7 @@ sub new {
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $text->next_line(1))) {
 	
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -60,8 +60,6 @@ sub new {
 
 	#empty ranking: done
         last    if $line =~ /$RANK_NONE/o;
-
-	chomp $line;
 
 	#excise variable length description and append it
 	my $tmp = substr($line, 0, $RANK_CUT);
