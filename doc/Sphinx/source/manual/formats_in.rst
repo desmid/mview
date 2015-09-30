@@ -30,6 +30,31 @@ MView option: ``-in blast``
  `psiblast`   2.2.28+, 2.2.31+                       ok          
  ===========  ====================================== ============
 
+In addition, experimental support has been added for BLAST's ``-outfmt 7``
+command line option for tabular results:
+
+ ===========  ====================================== ============
+ Program      Tested                                 Status      
+ ===========  ====================================== ============
+ `blastp`     2.2.28+                                experimental
+ `psiblast`   2.2.28+                                experimental
+ ===========  ====================================== ============
+
+The ``-outfmt 7`` fields recognised by MView are the defaults ``qseqid sseqid
+pident length mismatch gapopen qstart qend sstart send evalue bitscore`` (or
+``std``) and additionally ``qseq`` and ``sseq`` to extract the sequences and
+``stitle`` or ``salltitles`` to extract the database hit descriptions.
+
+A typical minimal set of fields suitable for input to MView would be generated
+with something like:
+
+    ``blastp -outfmt '7 std qseq sseq stitle``
+
+To see what all these fields do, run ``blastp -help``. Note: MView will
+silently ignore any fields other than those listed above. The field or column
+ordering does not matter as MView identifies the columns from the embedded
+comment lines made by blast.
+
 
 BLAST series 2.2
 ----------------

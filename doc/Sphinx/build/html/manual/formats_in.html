@@ -166,6 +166,45 @@ and nucleotide sequences:</p>
 </tbody>
 </table>
 </div></blockquote>
+<p>In addition, experimental support has been added for BLAST&#8217;s <tt class="docutils literal"><span class="pre">-outfmt</span> <span class="pre">7</span></tt>
+command line option for tabular results:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="62%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Program</th>
+<th class="head">Tested</th>
+<th class="head">Status</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>blastp</cite></td>
+<td>2.2.28+</td>
+<td>experimental</td>
+</tr>
+<tr class="row-odd"><td><cite>psiblast</cite></td>
+<td>2.2.28+</td>
+<td>experimental</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The <tt class="docutils literal"><span class="pre">-outfmt</span> <span class="pre">7</span></tt> fields recognised by MView are the defaults <tt class="docutils literal"><span class="pre">qseqid</span> <span class="pre">sseqid</span>
+<span class="pre">pident</span> <span class="pre">length</span> <span class="pre">mismatch</span> <span class="pre">gapopen</span> <span class="pre">qstart</span> <span class="pre">qend</span> <span class="pre">sstart</span> <span class="pre">send</span> <span class="pre">evalue</span> <span class="pre">bitscore</span></tt> (or
+<tt class="docutils literal"><span class="pre">std</span></tt>) and additionally <tt class="docutils literal"><span class="pre">qseq</span></tt> and <tt class="docutils literal"><span class="pre">sseq</span></tt> to extract the sequences and
+<tt class="docutils literal"><span class="pre">stitle</span></tt> or <tt class="docutils literal"><span class="pre">salltitles</span></tt> to extract the database hit descriptions.</p>
+<p>A typical minimal set of fields suitable for input to MView would be generated
+with something like:</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">blastp</span> <span class="pre">-outfmt</span> <span class="pre">'7</span> <span class="pre">std</span> <span class="pre">qseq</span> <span class="pre">sseq</span> <span class="pre">stitle</span></tt></div></blockquote>
+<p>To see what all these fields do, run <tt class="docutils literal"><span class="pre">blastp</span> <span class="pre">-help</span></tt>. Note: MView will
+silently ignore any fields other than those listed above. The field or column
+ordering does not matter as MView identifies the columns from the embedded
+comment lines made by blast.</p>
 </div>
 <div class="section" id="blast-series-2-2">
 <h3>BLAST series 2.2<a class="headerlink" href="#blast-series-2-2" title="Permalink to this headline">¶</a></h3>
@@ -760,7 +799,7 @@ maintained:</p>
     </div>
     <div class="footer">
         &copy; Copyright 2015, Nigel P. Brown.
-      Last updated on 23 Sep 2015.
+      Last updated on 30 Sep 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
