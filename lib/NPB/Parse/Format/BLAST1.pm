@@ -14,12 +14,10 @@
 #   WARNING       optional warning messages
 #   HISTOGRAM     the optional scores histogram
 #   RANK          the list of ordered high scoring hits
-#   MATCH         the set of fragments (HSPs) for a given hit
+#   MATCH {*}     the set of fragments (HSPs) for a given hit
+#     SUM           the summary lines for each hit
+#     ALN {*}       each aligned fragment: score + alignment
 #   PARAMETERS    the trailer
-#
-# MATCH is further subdivided into:
-#   SUM           the summary lines for each hit
-#   ALN           each aligned fragment: score + alignment
 #
 ###########################################################################
 package NPB::Parse::Format::BLAST1;

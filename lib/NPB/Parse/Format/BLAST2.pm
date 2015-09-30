@@ -11,16 +11,12 @@
 # BLAST (NCBI version 2) iterated searching uses 3 main record types:
 #
 #   HEADER        the header text
-#   SEARCH        passes of the search engine
-#   PARAMETERS    the trailer
-#
-#   SEARCH is further subdivided into:
+#   SEARCH {*}    passes of the search engine
 #     RANK        the list of ordered high scoring hits
-#     MATCH       the set of alignments for a given hit
-#
-#   MATCH is further subdivided into:
-#     SUM         the summary lines for each hit
-#     ALN         each aligned fragment: score + alignment
+#     MATCH {*}   the set of alignments for a given hit
+#       SUM         the summary lines for each hit
+#       ALN {*}     each aligned fragment: score + alignment
+#   PARAMETERS    the trailer
 #
 ###########################################################################
 package NPB::Parse::Format::BLAST2;
