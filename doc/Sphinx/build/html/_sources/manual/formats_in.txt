@@ -11,7 +11,8 @@ and nucleotide sequences:
 NCBI BLAST family
 =================
 
-Sequence database search programs.
+Sequence database search programs. See :ref:`ref_blast_rules` for details of
+blast processing by MView.
 
 
 BLAST+
