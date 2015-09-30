@@ -50,10 +50,10 @@ use vars qw(@ISA
 		    ],
 	    );
 
-# Header format is like this:
+# BLAST -outfmt 7 HEADER format is:
 #
 #  # PSIBLAST 2.2.28+
-#  # Iteration: 1
+#  # Iteration: 1                  (note: psiblast only)
 #  # Query: test
 #  # Database: mito.1000.aa
 #  # Fields: query id, subject id, % identity, alignment length, ...
@@ -87,52 +87,53 @@ my $SEARCH_END   = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
 
 my $FIELD_SKIP   = '-';
 my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
-    #HEADER comment     MView name           #BLAST command line  std?
-    #-------------------------------------------------------------------------
-    'query id'          => '-',              #qseqid (ignore)     y
-    ''                  => '-',              #qgi
-    ''                  => '-',              #qacc
-    ''                  => '-',              #qaccver
-    ''                  => '-',              #qlen
-    'subject id'        => 'id',             #sseqid              y
-    ''                  => '-',              #sallseqid
-    ''                  => '-',              #sgi
-    ''                  => '-',              #sallgi
-    ''                  => '-',              #sacc
-    ''                  => '-',              #saccver
-    ''                  => '-',              #sallacc
-    ''                  => '-',              #slen
-    'q. start'          => 'query_start',    #qstart              y
-    'q. end'            => 'query_stop',     #qend                y
-    's. start'          => 'sbjct_start',    #sstart              y
-    's. end'            => 'sbjct_stop',     #send                y
-    'query seq'         => 'query',          #qseq
-    'subject seq'       => 'sbjct',          #sseq
-    'evalue'            => 'expect',         #evalue              y
-    'bit score'         => 'bits',           #bitscore            y
-    ''                  => 'score',          #score
-    'alignment length'  => 'length',         #length              y
-    '% identity'        => 'id_percent',     #pident              y
-    ''                  => 'nident',         #nident
-    'mismatches'        => '-',              #mismatch            y
-    ''                  => '-',              #positive
-    'gap opens'         => '-',              #gapopen             y
-    ''                  => '-',              #gaps
-    ''                  => '-',              #ppos
-    ''                  => '-',              #frames
-    ''                  => '-',              #qframe
-    ''                  => '-',              #sframe
-    ''                  => '-',              #btop
-    ''                  => '-',              #staxids
-    ''                  => '-',              #sscinames
-    ''                  => '-',              #scomnames
-    ''                  => '-',              #sblastnames
-    ''                  => '-',              #sskingdoms
-    ''                  => '-',              #stitle
-    ''                  => '-',              #salltitles
-    ''                  => '-',              #sstrand
-    ''                  => '-',              #qcovs
-    ''                  => '-',              #qcovhsp
+    #HEADER comment          MView name           #BLAST command line  std?
+    #----------------------------------------------------------------------
+
+    'query id'               => '-',              #qseqid (ignore)     y
+    'query gi'               => '-',              #qgi
+    'query acc.'             => '-',              #qacc
+    'query acc.ver'          => '-',              #qaccver
+    'query length'           => '-',              #qlen
+    'subject id'             => 'id',             #sseqid              y
+    'subject ids'            => '-',              #sallseqid
+    'subject gi'             => '-',              #sgi
+    'subject gis'            => '-',              #sallgi
+    'subject acc.'           => '-',              #sacc
+    'subject acc.ver'        => '-',              #saccver
+    'subject accs.'          => '-',              #sallacc
+    'subject length'         => '-',              #slen
+    'q. start'               => 'query_start',    #qstart              y
+    'q. end'                 => 'query_stop',     #qend                y
+    's. start'               => 'sbjct_start',    #sstart              y
+    's. end'                 => 'sbjct_stop',     #send                y
+    'query seq'              => 'query',          #qseq
+    'subject seq'            => 'sbjct',          #sseq
+    'evalue'                 => 'expect',         #evalue              y
+    'bit score'              => 'bits',           #bitscore            y
+    'score'                  => 'score',          #score
+    'alignment length'       => 'length',         #length              y
+    '% identity'             => 'id_percent',     #pident              y
+    'identical'              => 'nident',         #nident
+    'mismatches'             => 'mismatch',       #mismatch            y
+    'positives'              => '-',              #positive
+    'gap opens'              => 'gapopen',        #gapopen             y
+    'gaps'                   => '-',              #gaps
+    '% positives'            => '-',              #ppos
+    'query/sbjct frames'     => '-',              #frames
+    'query frame'            => '-',              #qframe
+    'sbjct frame'            => '-',              #sframe
+    'BTOP'                   => '-',              #btop
+    'subject tax ids'        => '-',              #staxids
+    'subject sci names'      => '-',              #sscinames
+    'subject com names'      => '-',              #scomnames
+    'subject blast names'    => '-',              #sblastnames
+    'subject super kingdoms' => '-',              #sskingdoms
+    'subject title'          => '-',              #stitle
+    'subject titles'         => '-',              #salltitles
+    'subject strand'         => '-',              #sstrand
+    '% subject coverage'     => '-',              #qcovs
+    '% hsp coverage'         => '-',              #qcovhsp
 };
 my $RANK_FIELDS  = [ qw(id expect bits) ];
 my $SUM_FIELDS   = [ qw(id length) ];
@@ -140,7 +141,7 @@ my $ALN_FIELDS   = [
     qw(
        expect bits
        query query_start query_stop  sbjct sbjct_start sbjct_stop
-       id_percent
+       id_percent mismatch gapopen
     )];
 
 #Given a string in 'line' of tab-separated fields named as in 'all', extract
@@ -516,6 +517,10 @@ sub new {
     $self->{'gap_percent'}  = '';
     #frame?
 
+    #BLAST2 -outfmt 7
+    $self->{'mismatch'}     = '';
+    $self->{'gapopen'}      = '';
+
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
     $extract_fields->($text->next_line(1), $fields, $ALN_FIELDS, $self);
@@ -527,6 +532,14 @@ sub new {
         $self->{'sbjct_start'} > $self->{'sbjct_stop'} ? '-' : '+';
 
     $self;#->examine;
+}
+
+sub print_data {
+    my ($self, $indent) = (@_, 0);
+    my $x = ' ' x $indent;
+    $self->SUPER::print_data($indent);
+    printf "$x%20s -> %s\n", 'mismatch',  $self->{'mismatch'};
+    printf "$x%20s -> %s\n", 'gapopen',   $self->{'gapopen'};
 }
 
 

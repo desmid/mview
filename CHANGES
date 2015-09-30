@@ -3,7 +3,7 @@
 Version 1.60 rc2  2015-09-30
 - HTML output updated: DOCTYPE HTML (for HTML5).
 - Fixed BLAST+ PSIBLAST parser which failed to recognise format.
-- Added BLAST+ '-outfmt 7' support (experimental).
+- Added BLAST+ '-outfmt 7' support (experimental: blastp, psiblast only).
 
 Version 1.59  2015-07-17 (GitHub)
 - This is a re-release with only documentation changes.
