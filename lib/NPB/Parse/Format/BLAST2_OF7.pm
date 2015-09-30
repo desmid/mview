@@ -90,23 +90,62 @@ my $SEARCH_START = "^[^\#][^\t]*\t";
 my $SEARCH_END   = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
 
 my $FIELD_SKIP   = '-';
-my $FIELD_MAP    = {
-    'subject id'        => 'id',
-    'q. start'          => 'query_start',
-    'q. end'            => 'query_stop',
-    's. start'          => 'sbjct_start',
-    's. end'            => 'sbjct_stop',
-    'evalue'            => 'expect',
-    'bit score'         => 'bits',
-    'query seq'         => 'query',
-    'subject seq'       => 'sbjct',
+my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
+    #HEADER comment     MView name           #BLAST command line  std?
+    #-------------------------------------------------------------------------
+    'query id'          => '-',              #qseqid (ignore)     y
+    ''                  => '-',              #qgi
+    ''                  => '-',              #qacc
+    ''                  => '-',              #qaccver
+    ''                  => '-',              #qlen
+    'subject id'        => 'id',             #sseqid              y
+    ''                  => '-',              #sallseqid
+    ''                  => '-',              #sgi
+    ''                  => '-',              #sallgi
+    ''                  => '-',              #sacc
+    ''                  => '-',              #saccver
+    ''                  => '-',              #sallacc
+    ''                  => '-',              #slen
+    'q. start'          => 'query_start',    #qstart              y
+    'q. end'            => 'query_stop',     #qend                y
+    's. start'          => 'sbjct_start',    #sstart              y
+    's. end'            => 'sbjct_stop',     #send                y
+    'query seq'         => 'query',          #qseq
+    'subject seq'       => 'sbjct',          #sseq
+    'evalue'            => 'expect',         #evalue              y
+    'bit score'         => 'bits',           #bitscore            y
+    ''                  => 'score',          #score
+    'alignment length'  => 'length',         #length              y
+    '% identity'        => 'id_percent',     #pident              y
+    ''                  => 'nident',         #nident
+    'mismatches'        => '-',              #mismatch            y
+    ''                  => '-',              #positive
+    'gap opens'         => '-',              #gapopen             y
+    ''                  => '-',              #gaps
+    ''                  => '-',              #ppos
+    ''                  => '-',              #frames
+    ''                  => '-',              #qframe
+    ''                  => '-',              #sframe
+    ''                  => '-',              #btop
+    ''                  => '-',              #staxids
+    ''                  => '-',              #sscinames
+    ''                  => '-',              #scomnames
+    ''                  => '-',              #sblastnames
+    ''                  => '-',              #sskingdoms
+    ''                  => '-',              #stitle
+    ''                  => '-',              #salltitles
+    ''                  => '-',              #sstrand
+    ''                  => '-',              #qcovs
+    ''                  => '-',              #qcovhsp
 };
 my $RANK_FIELDS  = [ qw(id expect bits) ];
-my $SUM_FIELDS   = [ qw(id) ];
-my $ALN_FIELDS   = [ qw(expect bits
-                       query query_start query_stop
-                       sbjct sbjct_start sbjct_stop)
-    ];
+my $SUM_FIELDS   = [ qw(id length) ];
+my $ALN_FIELDS   = [
+    qw(
+       expect bits
+       query query_start query_stop  sbjct sbjct_start sbjct_stop
+       id_percent
+    )];
 
 #Given a string in 'line' of tab-separated fields named as in 'all', extract
 #those in 'wanted' storing each such key/value into 'hash'; returns number of
