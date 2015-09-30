@@ -73,11 +73,7 @@ sub free {
 	foreach $type (@_) {
 	    if (exists $self->{'record_by_type'}->{$type}) {
 		foreach $rec (@{$self->{'record_by_type'}->{$type}}) {
-		    if (@$rec > 3) {
-			$rec->[3]->free;          #recurse
-                        my $o = splice @$rec, 3;  #excise+remove parse object
-                        undef $o;
-		    }
+                    $self->free_record($rec);
 		}
 	    }
 	}
@@ -86,12 +82,7 @@ sub free {
 
     #free every subrecord
     foreach $rec (@{$self->{'record_by_posn'}}) {
-	if (@$rec > 3) {
-	    #warn "  ", join(", ", @$rec), "\n";
-	    $rec->[3]->free;          #recurse
-	    my $o = splice @$rec, 3;  #excise+remove parse object
-            undef $o;
-	}
+        $self->free_record($rec);
     }
     
     #free our records
@@ -103,14 +94,34 @@ sub free {
     return $self;
 }
 
+#Given a record, removed and recursively free any instantiated parse object.
+sub free_record {
+    my ($self, $rec) = @_;
+    return  unless @$rec > 3;
+    #warn "free_record: [", join(", ", @$rec), "]\n";
+    $rec->[3]->free;          #recurse
+    my $ob = splice @$rec, 3;  #excise parse object
+    undef $ob;                 #remove parse object
+    $rec;
+}
+
 #Given a triple (key, offset, bytecount), store these as an anonymous array
 #under the appropriate keys in the record_by_ attributes. Do NOT instantiate
 #the record object.
-sub add_record {
+sub push_record {
     my $self = shift;
     my $rec = [ @_ ];
     push @{$self->{'record_by_posn'}},              $rec;
     push @{$self->{'record_by_type'}->{$rec->[0]}}, $rec;
+}
+
+#Remove the latest stored record and free any instantiated parse object;
+#return the deleted record.
+sub pop_record {
+    my $self = shift;
+    my $rec = pop @{$self->{'record_by_posn'}};
+    pop @{$self->{'record_by_type'}->{$rec->[0]}};
+    $self->free_record($rec);
 }
 
 #Given a triple (key, offset, bytecount) in $rec, extract the record
@@ -266,7 +277,7 @@ sub unpack_hash {
     $num                    = shift @tmp;
     push @{$self->{'indices'}}, splice(@tmp, 0, $num);
     while (@tmp) {
-	$self->add_record(splice(@tmp, 0, 3));
+	$self->push_record(splice(@tmp, 0, 3));
     }
 }
 
@@ -590,6 +601,9 @@ sub DESTROY {
     map { $_[0]->{$_} = undef } keys %{$_[0]};
 }
 
+sub get_offset { $_[0]->{'cursor'} - $_[0]->{'length'} }
+sub get_bytes  { $_[0]->{'length'} }
+
 sub reset {
     $_[0]->{'cursor'} = $_[0]->{'offset'};
     $_[0]->{'limit'}  = $_[0]->{'offset'} + $_[0]->{'bytes'};
@@ -673,7 +687,7 @@ sub scan_lines {
     #no $self->backup as we've read exactly the right amount
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -698,7 +712,7 @@ sub scan_while {
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -723,7 +737,7 @@ sub scan_until {
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -745,7 +759,7 @@ sub scan_until_inclusive {
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -773,7 +787,7 @@ sub scan_skipping_until {
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
@@ -799,7 +813,7 @@ sub scan_nest {
     }
     $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->add_record($key, $offset, $bytes)  if $key;
+    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
     $record;
 }
 
