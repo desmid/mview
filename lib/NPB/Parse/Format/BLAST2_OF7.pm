@@ -45,7 +45,7 @@ use vars qw(@ISA
 
 @VERSIONS = (
 	     '2of7' => [
-                     #'BLASTP',
+                     'BLASTP',
 		     #'BLASTN',
 		     #'BLASTX',
 		     #'TBLASTN',
@@ -81,7 +81,7 @@ $HEADER_START  = $ENTRY_START;
 $HEADER_END    = '^[^\#]';
 
 my $SEARCH_START    = "^[^\#][^\t]*\t";
-my $SEARCH_END      = "^(?:$HEADER_START|$NULL)";
+my $SEARCH_END      = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
 
 my $FIELD_SKIP = '-';
 my $FIELD_MAP = {
@@ -102,9 +102,9 @@ my $ALN_FIELDS  = [ qw(expect bits
                        sbjct sbjct_start sbjct_stop)
     ];
 
-#Given a string in 'line' of tab-separated fields as described in 'all',
-#extract those named in 'wanted' storing each such key/value into 'hash';
-#returns number of fields read or -1 on error.
+#Given a string in 'line' of tab-separated fields named as in 'all', extract
+#those in 'wanted' storing each such key/value into 'hash'; returns number of
+#fields read or -1 on error.
 my $extract_fields = sub {
     my ($line, $all, $wanted, $hash, $debug) = (@_, 0);
     my @list = split("\t", $line);
@@ -152,8 +152,11 @@ sub new {
 	    next;
 	}
 
-        #stop at convergence message
+        #stop at psiblast convergence message
         last  if $line =~ /^Search has CONVERGED/;
+
+        #stop before terminal comment
+        last  if $line =~ /$ENTRY_END/;
 
 	#default
 	$self->warn("unknown field: $line");
