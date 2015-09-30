@@ -43,7 +43,7 @@ use vars qw(@ISA
 
 @ISA   = qw(NPB::Parse::Format::BLAST);
 
-@VERSIONS = ( 
+@VERSIONS = (
 	     '2of7' => [
                      #'BLASTP',
 		     #'BLASTN',
@@ -107,7 +107,6 @@ my $ALN_FIELDS  = [ qw(expect bits
 #returns number of fields read or -1 on error.
 my $extract_fields = sub {
     my ($line, $all, $wanted, $hash, $debug) = (@_, 0);
-    chomp $line;
     my @list = split("\t", $line);
     warn "[@$all] -> [@$wanted]"  if $debug;
     warn "[$line]"  if $debug;
@@ -132,7 +131,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
@@ -143,15 +142,13 @@ sub new {
 
 	#HEADER block
 	if ($line =~ /$HEADER_START/o) {
-	    my $t = $text->scan_until($HEADER_END, 'HEADER');
-            #warn "H=[$t]\n"; #NIGE
+	    $text->scan_until($HEADER_END, 'HEADER');
 	    next;
 	}
 
 	#SEARCH block
 	if ($line =~ /$SEARCH_START/o) {
-	    my $t = $text->scan_until($SEARCH_END, 'SEARCH');
-            #warn "S=[$t]\n"; #NIGE
+	    $text->scan_until($SEARCH_END, 'SEARCH');
 	    next;
 	}
 
@@ -194,7 +191,7 @@ sub new {
     #BLAST2_OF7
     $self->{'fields'}       = [];
 
-    while ($line = $text->next_line) {
+    while ($line = $text->next_line(1)) {
 
 	#blast version info
 	if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
@@ -204,7 +201,7 @@ sub new {
 	     $self->{'version'},
 	    ) = ($1, $2);
 	    next;
-	} 
+	}
 
         if ($line =~ /^# Query:\s+(.*)/o) {
             $self->{'query'} = $1;
@@ -257,27 +254,12 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    #create dummy RANK object
-    $self->add_record('RANK', $offset, $bytes);
-
-    #create dummy MATCH objects
-    while (defined ($line = $text->next_line)) {
-        chomp $line;
-        #warn "[$line]\n"; #NIGE
-
-        if ($line =~ /$SEARCH_START/) {
-	    my $t = $text->scan_lines(1, 'MATCH');
-            #warn "M=[$t]\n"; #NIGE
-	    next;
-        }
-
-	#default
-	$self->warn("unknown field: $line");
-    }
+    #create SEARCH::RANK
+    $self->push_record('RANK', $offset, $bytes);
 
     $self;#->examine;
 }
@@ -302,23 +284,21 @@ sub new {
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    #warn "SEARCH::RANK\n";#NIGE
-
     #column headers
     $self->{'header'} = '';
 
     #ranked search hits
     $self->{'hit'}    = [];
 
-    my %seen = ();
-
     my $fields = $self->get_parent(2)->get_record('HEADER')->{'fields'};
     my $fcount = scalar @$fields;
     #warn "[@{[scalar @$fields]}] @{$fields}\n";
 
-    while (defined ($line = $text->next_line)) {
-        chomp $line;
-        #warn "[$line]\n"; #NIGE
+    #accumulate text block data for same hit id on successive lines
+    my ($mid, $moffset, $mbytes) = ('', 0, 0);
+
+    while (defined ($line = $text->next_line(1))) {
+        #warn "[$line]\n";
 
         my $tmp = {};
 
@@ -338,14 +318,23 @@ sub new {
                 $self->die("field count mismatch (expect $fcount, got $c)\n");
             }
 
-            #seen this id already? RANK should only contain the best hit:
-            #assume it is the first one encountered
-            next  if exists $seen{$tmp->{'id'}};
-            $seen{$tmp->{'id'}}++;
-
             $tmp->{'id'} = NPB::Parse::Record::clean_identifier($tmp->{'id'});
 
+            #id same as last line: extend SEARCH::MATCH block
+            if ($mid eq $tmp->{'id'}) {
+                $parent->pop_record;
+                $parent->push_record('MATCH', $moffset,
+                                     $mbytes += $text->get_bytes);
+                next;
+            }
+
+            #new id: create SEARCH::MATCH
+            ($mid, $moffset, $mbytes) = ($tmp->{'id'}, $text->get_offset,
+                                         $text->get_bytes);
+            $parent->push_record('MATCH', $moffset, $mbytes);
+
             push @{$self->{'hit'}}, $tmp;
+
             next;
         }
 
@@ -375,12 +364,23 @@ sub new {
     my ($self, $line, $record);
 
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
+    $text = new NPB::Parse::Record_Stream($self);
 
-    #warn "SEARCH::MATCH\n";#NIGE
+    #create SEARCH::MATCH::SUM
+    $self->push_record('SUM', $offset, $bytes);
 
-    #create dummy objects
-    $self->add_record('SUM', $offset, $bytes);
-    $self->add_record('ALN', $offset, $bytes);
+    while (defined ($line = $text->next_line(1))) {
+        #warn "[$line]\n";
+
+        if ($line =~ /$SEARCH_START/) {
+            #create SEARCH::MATCH::ALN
+            $self->push_record('ALN', $text->get_offset, $text->get_bytes);
+            next;
+        }
+
+	#default
+	$self->warn("unknown field: $line");
+    }
 
     $self;#->examine;
 }
@@ -406,8 +406,6 @@ sub new {
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
 
-    #warn "SEARCH::MATCH::SUM\n";#NIGE
-
     #BLAST
     $self->{'id'}     = '';
     $self->{'desc'}   = '';
@@ -415,8 +413,8 @@ sub new {
 
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    $extract_fields->($text->next_line, $fields, $SUM_FIELDS, $self);
-    
+    $extract_fields->($text->next_line(1), $fields, $SUM_FIELDS, $self);
+
     $self->{'id'} = NPB::Parse::Record::clean_identifier($self->{'id'});
 
     $self;#->examine;
@@ -442,8 +440,6 @@ sub new {
 
     $self = new NPB::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new NPB::Parse::Record_Stream($self);
-
-    #warn "SEARCH::MATCH::ALN\n";#NIGE
 
     #BLAST
     $self->{'query'}        = '';
@@ -471,8 +467,8 @@ sub new {
 
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    $extract_fields->($text->next_line, $fields, $ALN_FIELDS, $self);
-    
+    $extract_fields->($text->next_line(1), $fields, $ALN_FIELDS, $self);
+
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
         $self->{'query_start'} > $self->{'query_stop'} ? '-' : '+';
