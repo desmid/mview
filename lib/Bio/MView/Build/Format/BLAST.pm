@@ -220,6 +220,9 @@ sub get_hsp_groups {
         my $sorient = $aln->{'sbjct_orient'};
         my (%tmp, $key);
 
+        #first ALN has precedence: we use this later for key hints
+        $hash->{'.'} = $aln  if keys $hash < 1;
+
         #key by significance: can exceed $n if more HSP have the same sig
         %tmp = ( $sig => 1 );               #raw significance value
         #BLAST1 and WU-BLAST
@@ -274,6 +277,8 @@ sub get_ranked_hsps_by_query {
     my $n        = $coll->item($rkey)->get_val('n');
     my $score    = $coll->item($rkey)->get_val($self->{'attr_score'});
     my $qorient2 = ($qorient eq '+' ? '-' : '+');
+    my $sorient  = $hash->{'.'}->{'sbjct_orient'}; #first ALN orientation hint
+    my $sorient2 = ($sorient eq '+' ? '-' : '+');  #its opposite
 
     $n = 1  unless $n;  #no N in ranking
 
@@ -281,7 +286,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_o_n_sig = sub {
         my ($qorient, $n, $sig) = @_;
-        foreach my $sorient (qw(+ -)) {
+        foreach my $sorient ($sorient, $sorient2) {
             my $key = join("/", $qorient, $sorient, $n, $sig);
             return $hash->{$key}  if exists $hash->{$key};
         }
@@ -312,7 +317,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_o_n_score = sub {
         my ($qorient, $n, $score) = @_;
-        foreach my $sorient (qw(+ -)) {
+        foreach my $sorient ($sorient, $sorient2) {
             my $key = join("/", $qorient, $sorient, $n, $score);
             return &$follow_sig($qorient, $key)  if exists $hash->{$key};
         }
@@ -321,7 +326,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_score = sub {
         my ($qorient, $score) = @_;
-        foreach my $sorient (qw(+ -)) {
+        foreach my $sorient ($sorient, $sorient2) {
             my $key = join("/", $qorient, $sorient, $score);
             return &$follow_sig($qorient, $key)  if exists $hash->{$key};
         }
@@ -330,7 +335,7 @@ sub get_ranked_hsps_by_query {
 
     my $match;
 
-    warn "KEYS($rkey): @{[sort keys %$hash]}\n"  if $D;
+    warn "KEYS($rkey,$qorient): @{[sort keys %$hash]}\n"  if $D;
 
     #match (n, score) in query orientation?
     warn "TRY: $qorient $n $score\n"  if $D;
