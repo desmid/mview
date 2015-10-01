@@ -70,7 +70,6 @@ sub new {
 				 $self->{'query_orient'} .
 				 $self->{'sbjct_orient'}
 				}}, $self;
-    
     $self;
 }
 

@@ -37,7 +37,7 @@ use vars qw(@ISA
 	    $HEADER_END
 	   );
 
-@ISA   = qw(NPB::Parse::Format::BLAST);
+@ISA = qw(NPB::Parse::Format::BLAST);
 
 @VERSIONS = (
 	     '2of7' => [
@@ -136,12 +136,22 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
     '% hsp coverage'         => '-',              #qcovhsp
 };
 my $RANK_FIELDS  = [ qw(id expect bits) ];
-my $SUM_FIELDS   = [ qw(id length stitle stitles) ];
+my $SUM_FIELDS   = [ qw(id length desc) ];
 my $ALN_FIELDS   = [ qw(expect bits
        query query_start query_stop
        sbjct sbjct_start sbjct_stop
        id_percent mismatch gapopen
     )];
+
+#Extract column headings and return their count and $FIELD_MAP mapping.
+my $save_fields = sub {
+    my @tmp = split(/,\s+/, $_[0]);
+    my $out = [];
+    foreach my $f (@tmp) {
+        push @$out, exists $FIELD_MAP->{$f} ? $FIELD_MAP->{$f} : $FIELD_SKIP
+    }
+    return $out;
+};
 
 #Given a string in 'line' of tab-separated fields named as in 'all', extract
 #those in 'wanted' storing each such key/value into 'hash'; returns number of
@@ -157,8 +167,11 @@ my $extract_fields = sub {
         my $val = shift @list;
         next  unless grep {/^$key$/} @$wanted;
         $val =~ s/^\s+|\s+$//g;
-        $hash->{$key} = $val;
-        warn "[$key] => [$val]\n"  if $debug;
+        #create or update key/value
+        if (exists $hash->{$key} and length($val) > length($hash->{$key})) {
+            $hash->{$key} = $val;
+            warn "[$key] => [$val]\n"  if $debug;
+        }
         $c++;
     }
     return $c;
@@ -254,11 +267,7 @@ sub new {
         }
 
         if ($line =~ /^# Fields:\s+(.*)/o) {
-            my @tmp = split(/,\s+/, $1);
-            foreach my $f (@tmp) {
-                $f = exists $FIELD_MAP->{$f} ? $FIELD_MAP->{$f} : $FIELD_SKIP;
-                push @{$self->{'fields'}}, $f;
-            }
+            $self->{'fields'} = &$save_fields($1);
             next;
         }
 
@@ -335,8 +344,7 @@ sub new {
     $self->{'hit'}    = [];
 
     my $fields = $self->get_parent(2)->get_record('HEADER')->{'fields'};
-    my $fcount = scalar @$fields;
-    #warn "[@{[scalar @$fields]}] @{$fields}\n";
+    #warn "[@{[scalar @$fields]}] [@{$fields}]\n";
 
     #accumulate text block data for same hit id on successive lines
     my ($mid, $moffset, $mbytes) = ('', 0, 0);
@@ -359,7 +367,7 @@ sub new {
             my $c = $extract_fields->($line, $fields, $RANK_FIELDS, $tmp);
 
             if ($c < 0) {
-                $self->die("field count mismatch (expect $fcount, got $c)\n");
+                $self->die("field count mismatch (expect @{[scalar @$fields]}, got $c)\n");
             }
 
             $tmp->{'id'} = NPB::Parse::Record::clean_identifier($tmp->{'id'});
