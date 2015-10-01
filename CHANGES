@@ -1,9 +1,10 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.60 rc2  2015-09-30
+Version 1.60 rc3  2015-10-01
 - HTML output updated: DOCTYPE HTML (for HTML5).
 - Fixed BLAST+ PSIBLAST parser which failed to recognise format.
 - Added BLAST+ '-outfmt 7' support (experimental: blastp, psiblast only).
+- Output in 'plain' format no longer truncates identifiers.
 
 Version 1.59  2015-07-17 (GitHub)
 - This is a re-release with only documentation changes.

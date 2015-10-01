@@ -1,5 +1,5 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id$
+# $Id: Convert.pm $
 
 ######################################################################
 package Bio::MView::Convert;
@@ -50,9 +50,13 @@ my $PLAIN_ID_WIDTH = 20;  #default width for id' field
 sub plain {
     my ($self, $idw) = (@_, $PLAIN_ID_WIDTH);
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
-    foreach my $r ($aln->visible_ids) {
-        #warn "[$r]\n";
-        $s .= $self->plain_row($r, $idw);
+    foreach my $rid ($aln->visible_ids) {
+        my $w = length($self->{'build'}->uid2row($rid)->cid);
+        $idw = $w  if $w > $idw;
+    }
+    foreach my $rid ($aln->visible_ids) {
+        #warn "[$rid]\n";
+        $s .= $self->plain_row($rid, $idw);
     }
     \$s;
 }
@@ -73,9 +77,9 @@ my $PEARSON_SEQ_WIDTH = 70;
 sub pearson {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
-    foreach my $r ($aln->visible_ids) {
-        #warn "[$r]\n";
-        $s .= $self->pearson_row($r);
+    foreach my $rid ($aln->visible_ids) {
+        #warn "[$rid]\n";
+        $s .= $self->pearson_row($rid);
     }
     \$s;
 }
@@ -125,9 +129,9 @@ my $PIR_SEQ_WIDTH = 60;
 sub pir {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
-    foreach my $r ($aln->visible_ids) {
-        #warn "[$r]\n";
-        $s .= $self->pir_row($r);
+    foreach my $rid ($aln->visible_ids) {
+        #warn "[$rid]\n";
+        $s .= $self->pir_row($rid);
     }
     \$s;
 }
@@ -179,10 +183,10 @@ sub rdb {
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
     $s .= $bld->index2row(0)->rdb_row('attr') . "\n";
     $s .= $bld->index2row(0)->rdb_row('form') . "\n";
-    foreach my $r ($aln->visible_ids) {
-        #warn "[$r]\n";
-        $s .= $bld->uid2row($r)->rdb_row('data', $self->{'pad'},
-                                         $self->{'gap'}) . "\n";
+    foreach my $rid ($aln->visible_ids) {
+        #warn "[$rid]\n";
+        $s .= $bld->uid2row($rid)->rdb_row('data', $self->{'pad'},
+                                           $self->{'gap'}) . "\n";
     }
     \$s;
 }
@@ -224,31 +228,31 @@ sub msf {
           $aln->length, ($self->{'moltype'} eq 'aa' ? 'P' : 'N'), $now, 0);
 
     my $w = 0;
-    foreach my $r ($aln->visible_ids) {
-        $w = length($bld->uid2row($r)->cid)
-            if length($bld->uid2row($r)->cid) > $w;
+    foreach my $rid ($aln->visible_ids) {
+        $w = length($bld->uid2row($rid)->cid)
+            if length($bld->uid2row($rid)->cid) > $w;
     }
 
-    foreach my $r ($aln->visible_ids) {
+    foreach my $rid ($aln->visible_ids) {
         $s .=
             sprintf(" Name: %-${w}s Len: %5d  Check: %4d  Weight:  %4.2f\n",
-                    $bld->uid2row($r)->cid, $aln->length,
-                    &$checksum(\$bld->uid2row($r)->seq), 1.0);
+                    $bld->uid2row($rid)->cid, $aln->length,
+                    &$checksum(\$bld->uid2row($rid)->seq), 1.0);
     }
     $s .= "\n//\n\n";
 
     my ($pad, $gap, %seq) = ($self->{'pad'}, $self->{'gap'});
 
-    foreach my $r ($aln->visible_ids) {
-        $seq{$r} = $bld->uid2row($r)->seq($pad, $gap);
+    foreach my $rid ($aln->visible_ids) {
+        $seq{$rid} = $bld->uid2row($rid)->seq($pad, $gap);
     }
 
   LOOP:
     for (my $from = 0; ;$from += $MSF_SEQ_WIDTH) {
         my $ruler = 1;
-        foreach my $r ($aln->visible_ids) {
-            last LOOP    if $from >= length($seq{$r});
-            my $tmp = substr($seq{$r}, $from, $MSF_SEQ_WIDTH);
+        foreach my $rid ($aln->visible_ids) {
+            last LOOP    if $from >= length($seq{$rid});
+            my $tmp = substr($seq{$rid}, $from, $MSF_SEQ_WIDTH);
             my $tmplen = length($tmp);
             if ($ruler) {
                 my $lo = $from + 1; my $hi = $from + $tmplen;
@@ -261,7 +265,7 @@ sub msf {
                 $s .= sprintf("%-${w}s $insert\n", '');
                 $ruler = 0;
             }
-            $s .= sprintf("%-${w}s ", $bld->uid2row($r)->cid);
+            $s .= sprintf("%-${w}s ", $bld->uid2row($rid)->cid);
             for (my $lo=0; $lo<$tmplen; $lo+=10) {
                 $s .= substr($tmp, $lo, 10);
                 $s .= ' '    if $lo < 40;
@@ -301,26 +305,26 @@ sub clustal {
     my %seq = ();
     my %len = ();
 
-    foreach my $r (@ids) {
-        #warn $r, $bld->uid2row($r), "\n";
-        $w = length($bld->uid2row($r)->cid)+1 if
-             length($bld->uid2row($r)->cid) >= $w;
-        $seq{$r} = $bld->uid2row($r)->seq($pad, $gap);
-        $len{$r} = 0;
+    foreach my $rid (@ids) {
+        #warn $rid, $bld->uid2row($rid), "\n";
+        $w = length($bld->uid2row($rid)->cid)+1 if
+             length($bld->uid2row($rid)->cid) >= $w;
+        $seq{$rid} = $bld->uid2row($rid)->seq($pad, $gap);
+        $len{$rid} = 0;
     }
 
   LOOP:
     for (my $from = 0; ;$from+=$CLUSTAL_SEQ_WIDTH) {
-        foreach my $r ($aln->visible_ids) {
-            last LOOP  if $from >= length($seq{$r});
-            my $tmp = substr($seq{$r}, $from, $CLUSTAL_SEQ_WIDTH);
-            $s .= sprintf("%-${w}s", $bld->uid2row($r)->cid);
+        foreach my $rid ($aln->visible_ids) {
+            last LOOP  if $from >= length($seq{$rid});
+            my $tmp = substr($seq{$rid}, $from, $CLUSTAL_SEQ_WIDTH);
+            $s .= sprintf("%-${w}s", $bld->uid2row($rid)->cid);
             $s .= $tmp;
             if ($CLUSTAL_RULER) {
                 my $syms = &$symcount(\$tmp, $pad, $gap);
-                my $hi = $len{$r} + $syms;
+                my $hi = $len{$rid} + $syms;
                 $s .= sprintf(" %-d", $hi)  if $syms > 0;
-                $len{$r} = $hi;
+                $len{$rid} = $hi;
             }
             $s .= "\n";
         }
