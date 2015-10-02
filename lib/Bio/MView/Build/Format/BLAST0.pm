@@ -238,6 +238,9 @@ sub parse_discrete_hits {
                 if exists $aln->{'query_frame'};
             $coll->item($key2)->set_val('sbjct_orient', $aln->{'sbjct_frame'})
                 if exists $aln->{'sbjct_frame'};
+
+            #override N: for discrete output this must always be 1
+            $coll->item($key2)->set_val('n', 1);
 	}
     }
     $self;
