@@ -74,7 +74,7 @@ sub new {
                                                $fields, $MAP_ALN, $self);
 
     if ($self->{'sbjct_frame'} eq '') {
-        $self->die("blast column 'sframe' is needed to compute sbjct reading frames");
+        $self->die("blast column specifier 'sframe' is needed");
     }
 
     #prepend sign to forward frame

@@ -79,11 +79,11 @@ sub new {
                                                $fields, $MAP_ALN, $self);
 
     if ($self->{'query_frame'} eq '') {
-        $self->die("blast column 'qframe' is needed to compute query reading frames");
+        $self->die("blast column specifier 'qframe' is needed");
     }
 
     if ($self->{'sbjct_frame'} eq '') {
-        $self->die("blast column 'sframe' is needed to compute sbjct reading frames");
+        $self->die("blast column specifier 'sframe' is needed");
     }
 
     #prepend sign to forward frames

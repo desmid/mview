@@ -74,7 +74,7 @@ sub new {
                                                $fields, $MAP_ALN, $self);
 
     if ($self->{'query_frame'} eq '') {
-        $self->die("column 'qframe' is needed to compute query reading frames");
+        $self->die("blast column specifier 'qframe' is needed");
     }
 
     #prepend sign to forward frame

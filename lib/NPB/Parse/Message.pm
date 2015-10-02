@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2006 Nigel P. Brown
+# Copyright (C) 1996-2015 Nigel P. Brown
 # $Id: Message.pm,v 1.2 2005/12/12 20:42:48 brown Exp $
 
 ######################################################################
@@ -23,23 +23,21 @@ sub examine {
 #warn with error string
 sub warn {
     my $self = shift;
-    chomp $_[$#_];
-    if (ref($self)) {
-	warn "Warning ", ref($self), '::', @_, "\n";
-	return;
-    }
-    warn "Warning ", $self, '::', @_, "\n";
+    my $s = ref($self) ? ref($self) : $self;
+    $s = "Warning $s: @_";
+    chomp $s;
+    warn "$s\n";
 }
 
 #exit with error string
 sub die {
     my $self = shift;
-    chomp $_[$#_];
-    if (ref($self)) {
-	die "Died ", ref($self), '::', @_, "\n";
-    }
-    die "Died ", $self, '::', @_, "\n";
+    my $s = ref($self) ? ref($self) : $self;
+    $s = "Died $s: @_";
+    chomp $s;
+    die "$s\n";
 }
+
 
 ###########################################################################
 1;
