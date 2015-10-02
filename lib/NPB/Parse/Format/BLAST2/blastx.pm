@@ -64,15 +64,14 @@ sub new {
     my $self = new NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
     my $text = new NPB::Parse::Record_Stream($self);
 
-    $self->{'query_frame'} = '';
-
     my $line;
 
     $line = $text->next_line(1);
     $line = $text->next_line(1);
     $line = $text->next_line(1);
 
-    #warn "[$line]\n";
+    #blastx 2.0.5 has no Frame line, so set a useful default
+    $self->{'query_frame'} = $self->{'query_orient'};
 
     #query frame
     if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*$/) {

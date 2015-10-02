@@ -65,8 +65,6 @@ sub new {
     my $self = new NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
     my $text = new NPB::Parse::Record_Stream($self);
 
-    $self->{'sbjct_frame'} = '';
-
     my $line;
 
     $line = $text->next_line(1);
@@ -74,6 +72,9 @@ sub new {
     $line = $text->next_line(1);
 
     #warn "[$line]\n";
+
+    #tblastn 2.0.5 has no Frame line, so set a useful default
+    $self->{'sbjct_frame'} = $self->{'sbjct_orient'};
 
     #sbjct frame
     if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*$/) {

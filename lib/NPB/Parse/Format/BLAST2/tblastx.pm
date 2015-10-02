@@ -65,9 +65,6 @@ sub new {
     my $self = new NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
     my $text = new NPB::Parse::Record_Stream($self);
 
-    $self->{'query_frame'} = '';
-    $self->{'sbjct_frame'} = '';
-
     my $line;
 
     $line = $text->next_line(1);
@@ -75,6 +72,10 @@ sub new {
     $line = $text->next_line(1);
 
     #warn "[$line]\n";
+
+    #tblastx 2.0.5 has no Frame line, so set a useful default
+    $self->{'query_frame'} = $self->{'query_orient'};
+    $self->{'sbjct_frame'} = $self->{'sbjct_orient'};
 
     #query and sbjct frames
     if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*\/\s*(\S+)/) {
