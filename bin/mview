@@ -31,9 +31,8 @@ my $PROG    = Universal::basename($0);
 my $SCRATCH = Universal::tmpfile("mview_$$");
 my $INVOKE  = "$PROG @ARGV";
 
-#my $DOCTYPE = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">';
 my $DOCTYPE = '<!DOCTYPE html>';
-my $DOCMETA = '<META http-equiv="Content-Type" content="text/html; charset=utf-8"/>';  #use > instead of /> for 4.01
+my $DOCMETA = '<META http-equiv="Content-Type" content="text/html; charset=utf-8"/>';
 
 my %KNOWN_FORMAT =
     (
