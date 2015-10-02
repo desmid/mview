@@ -59,7 +59,7 @@ use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Format::BLAST2_OF7::SEARCH::MATCH::ALN);
 
-my $ALN_FIELDS = [ qw(sbjct_frame) ];
+my $MAP_ALN = { 'sframe' => 'sbjct_frame' };
 
 sub new {
     my $type = shift;
@@ -71,7 +71,7 @@ sub new {
 
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
     NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $ALN_FIELDS, $self);
+                                               $fields, $MAP_ALN, $self);
 
     if ($self->{'sbjct_frame'} eq '') {
         $self->die("blast column 'sframe' is needed to compute sbjct reading frames");

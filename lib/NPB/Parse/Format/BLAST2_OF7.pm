@@ -87,61 +87,80 @@ my $SEARCH_END   = "^(?:$NULL|$HEADER_START|$ENTRY_END)";
 
 my $FIELD_SKIP   = '-';
 my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
-    #HEADER comment          MView name           #BLAST command line  std?
-    #----------------------------------------------------------------------
-
-    'query id'               => '-',              #qseqid (ignore)     y
-    'query gi'               => '-',              #qgi
-    'query acc.'             => '-',              #qacc
-    'query acc.ver'          => '-',              #qaccver
-    'query length'           => '-',              #qlen
-    'subject id'             => 'id',             #sseqid              y
-    'subject ids'            => '-',              #sallseqid
-    'subject gi'             => '-',              #sgi
-    'subject gis'            => '-',              #sallgi
-    'subject acc.'           => '-',              #sacc
-    'subject acc.ver'        => '-',              #saccver
-    'subject accs.'          => '-',              #sallacc
-    'subject length'         => '-',              #slen
-    'q. start'               => 'query_start',    #qstart              y
-    'q. end'                 => 'query_stop',     #qend                y
-    's. start'               => 'sbjct_start',    #sstart              y
-    's. end'                 => 'sbjct_stop',     #send                y
-    'query seq'              => 'query',          #qseq
-    'subject seq'            => 'sbjct',          #sseq
-    'evalue'                 => 'expect',         #evalue              y
-    'bit score'              => 'bits',           #bitscore            y
-    'score'                  => 'score',          #score
-    'alignment length'       => 'length',         #length              y
-    '% identity'             => 'id_percent',     #pident              y
-    'identical'              => 'nident',         #nident
-    'mismatches'             => 'mismatch',       #mismatch            y
-    'positives'              => '-',              #positive
-    'gap opens'              => 'gapopen',        #gapopen             y
-    'gaps'                   => '-',              #gaps
-    '% positives'            => '-',              #ppos
-    'query/sbjct frames'     => '-',              #frames
-    'query frame'            => 'query_frame',    #qframe
-    'sbjct frame'            => 'sbjct_frame',    #sframe
-    'BTOP'                   => '-',              #btop
-    'subject tax ids'        => '-',              #staxids
-    'subject sci names'      => '-',              #sscinames
-    'subject com names'      => '-',              #scomnames
-    'subject blast names'    => '-',              #sblastnames
-    'subject super kingdoms' => '-',              #sskingdoms
-    'subject title'          => 'desc',           #stitle
-    'subject titles'         => 'desc',           #salltitles
-    'subject strand'         => '-',              #sstrand
-    '% subject coverage'     => '-',              #qcovs
-    '% hsp coverage'         => '-',              #qcovhsp
+    #HEADER comment             blast specifier      #std specifier
+    #--------------------------------------------------------------
+    'query id'               => 'qseqid',            #y
+    'query gi'               => 'qgi',
+    'query acc.'             => 'qacc',
+    'query acc.ver'          => 'qaccver',
+    'query length'           => 'qlen',
+    'subject id'             => 'sseqid',            #y
+    'subject ids'            => 'sallseqid',
+    'subject gi'             => 'sgi',
+    'subject gis'            => 'sallgi',
+    'subject acc.'           => 'sacc',
+    'subject acc.ver'        => 'saccver',
+    'subject accs.'          => 'sallacc',
+    'subject length'         => 'slen',
+    'q. start'               => 'qstart',            #y
+    'q. end'                 => 'qend',              #y
+    's. start'               => 'sstart',            #y
+    's. end'                 => 'send',              #y
+    'query seq'              => 'qseq',
+    'subject seq'            => 'sseq',
+    'evalue'                 => 'evalue',            #y
+    'bit score'              => 'bitscore',          #y
+    'score'                  => 'score',
+    'alignment length'       => 'length',            #y
+    '% identity'             => 'pident',            #y
+    'identical'              => 'nident',
+    'mismatches'             => 'mismatch',          #y
+    'positives'              => 'positive',
+    'gap opens'              => 'gapopen',           #y
+    'gaps'                   => 'gaps',
+    '% positives'            => 'ppos',
+    'query/sbjct frames'     => 'frames',
+    'query frame'            => 'qframe',
+    'sbjct frame'            => 'sframe',
+    'BTOP'                   => 'btop',
+    'subject tax ids'        => 'staxids',
+    'subject sci names'      => 'sscinames',
+    'subject com names'      => 'scomnames',
+    'subject blast names'    => 'sblastnames',
+    'subject super kingdoms' => 'sskingdoms',
+    'subject title'          => 'stitle',
+    'subject titles'         => 'salltitles',
+    'subject strand'         => 'sstrand',
+    '% subject coverage'     => 'qcovs',
+    '% hsp coverage'         => 'qcovhsp',
 };
-my $RANK_FIELDS  = [ qw(id expect bits) ];
-my $SUM_FIELDS   = [ qw(id length desc) ];
-my $ALN_FIELDS   = [ qw(expect bits
-                        query query_start query_stop
-                        sbjct sbjct_start sbjct_stop
-                        id_percent
-                   )];
+
+my $MAP_RANK = {
+    'sseqid'     => 'id',
+    'evalue'     => 'expect',
+    'bitscore'   => 'bits',
+    'stitle'     => 'summary',
+    'salltitles' => 'summary',
+};
+
+my $MAP_SUM = {
+    'sseqid'     => 'id',
+    'length'     => 'length',
+    'stitle'     => 'desc',
+    'salltitles' => 'desc',
+};
+
+my $MAP_ALN = {
+    'evalue'   => 'expect',
+    'bitscore' => 'bits',
+    'qseq'     => 'query',
+    'qstart'   => 'query_start',
+    'qend'     => 'query_stop',
+    'sseq'     => 'sbjct',
+    'sstart'   => 'sbjct_start',
+    'send'     => 'sbjct_stop',
+    'pident'   => 'id_percent',
+};
 
 #Extract column headings and return their count and $FIELD_MAP mapping.
 sub save_fields {
@@ -159,22 +178,36 @@ sub save_fields {
 sub get_fields {
     my ($line, $all, $wanted, $hash, $debug) = (@_, 0);
     my @list = split("\t", $line);
-    warn "[@$all] -> [@$wanted]"  if $debug;
-    warn "[$line]"  if $debug;
+    if ($debug) {
+        warn "GF: [@$all] => [@{[keys %$wanted]}] => [@{[values %$wanted]}]\n";
+        warn "GF: [$line]\n";
+    }
     return -1  if scalar @list != scalar @$all;
     my $c = 0;
-    foreach my $key (@$all) {
+    foreach my $key1 (@$all) {
         my $val = shift @list;
-        next  unless grep {/^$key$/} @$wanted;
+        next  unless exists $wanted->{$key1};
+        my $key2 = $wanted->{$key1};  #blast fieldname => MView fieldname
         $val =~ s/^\s+|\s+$//g;
         #create or update key/value
-        if (exists $hash->{$key} and length($val) > length($hash->{$key})) {
-            $hash->{$key} = $val;
-            warn "[$key] => [$val]\n"  if $debug;
+        if (exists $hash->{$key2} and length($val) > length($hash->{$key2})) {
+            $hash->{$key2} = $val;
+            warn "GF: [$key1] => [$key2] => [$val]\n"  if $debug;
         }
         $c++;
     }
+    warn "GF: read $c records\n"  if $debug;
     return $c;
+}
+
+#strip leading identifier from summary string
+sub strip_id {
+    my ($id, $s) = @_;
+    if (my $c = index($s, $id) == 0) {
+        $s = substr($s, length($id));
+    }
+    $s =~ s/^\s+|\s+$//g;
+    $s;
 }
 
 sub new {
@@ -366,13 +399,20 @@ sub new {
             #extract fields into tmp
             my $c = NPB::Parse::Format::BLAST2_OF7::get_fields($line,
                                                                $fields,
-                                                               $RANK_FIELDS,
+                                                               $MAP_RANK,
                                                                $tmp);
 
             if ($c < 0) {
                 $self->die("field count mismatch (expect @{[scalar @$fields]}, got $c)\n");
             }
 
+            if ($tmp->{'id'} eq '') {
+                $self->die("blast column 'seqid' is needed to identify hits");
+            }
+
+            $tmp->{'summary'} =
+                NPB::Parse::Format::BLAST2_OF7::strip_id($tmp->{'id'},
+                                                         $tmp->{'summary'});
             $tmp->{'id'} = NPB::Parse::Record::clean_identifier($tmp->{'id'});
 
             #id same as last line: extend SEARCH::MATCH block
@@ -476,8 +516,11 @@ sub new {
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
     NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $SUM_FIELDS, $self);
+                                               $fields, $MAP_SUM, $self);
 
+    $self->{'desc'} =
+        NPB::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
+                                                 $self->{'desc'});
     $self->{'id'} = NPB::Parse::Record::clean_identifier($self->{'id'});
 
     $self;#->examine;
@@ -530,7 +573,7 @@ sub new {
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
     NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $ALN_FIELDS, $self);
+                                               $fields, $MAP_ALN, $self);
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
