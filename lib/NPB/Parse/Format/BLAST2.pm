@@ -444,24 +444,8 @@ sub new {
 	$self->warn("expecting 'Identities' line: $line");
     }
 
-    #optional (Strand|Frame) line
+    #optional (Strand=|Frame=) line: handled in subclasses
     $line = $text->next_line;
-
-    #Strand orientation (BLASTN)
-    if ($line =~ /^\s*Strand\s*=/) {
-	#discard
-    }
-
-    #Single frame shift (BLASTX, TBLASTN)
-    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*$/) {
-	$self->{'frame1'} = $1;
-    }
-
-    #Double frame shift (TBLASTX 2.0.9)
-    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*\/\s*(\S+)/) {
-	$self->{'frame1'} = $1;
-	$self->{'frame2'} = $2;
-    }
 
     $self->parse_alignment($text);
 

@@ -62,39 +62,40 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    my ($parent) = @_;
     my $self = new NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
-    bless $self, $type;
+    my $text = new NPB::Parse::Record_Stream($self);
+
+    $self->{'query_frame'} = '';
+    $self->{'sbjct_frame'} = '';
+
+    my $line;
+
+    $line = $text->next_line(1);
+    $line = $text->next_line(1);
+    $line = $text->next_line(1);
+
+    #warn "[$line]\n";
+
+    #query and sbjct frames
+    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*\/\s*(\S+)/) {
+        $self->{'query_frame'} = $1;
+        $self->{'sbjct_frame'} = $2;
+    }
 
     #record paired orientations in MATCH list
-    push @{$parent->{'orient'}->{
+    push @{$self->get_parent(1)->{'orient'}->{
 				 $self->{'query_orient'} .
-				 $self->{'sbjct_orient'}
+                                 $self->{'sbjct_orient'}
 				}}, $self;
-    
-    if (exists $self->{'frame1'}) {
-	#warn "FRAME1 = $self->{'frame1'}";
-	$self->{'query_frame'} = $self->{'frame1'};
-	delete $self->{'frame1'};
-    }
-
-    if (exists $self->{'frame2'}) {
-	#warn "FRAME2 = $self->{'frame2'}";
-	$self->{'sbjct_frame'} = $self->{'frame2'};
-	delete $self->{'frame2'};
-    }
-
-    $self;
+    bless $self, $type;
 }
 
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     $self->SUPER::print_data($indent);
-    printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'} if
-	exists $self->{'query_frame'};
-    printf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'} if
-	exists $self->{'sbjct_frame'};
+    printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'};
+    printf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'};
 }
 
 ###########################################################################
