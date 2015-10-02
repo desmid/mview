@@ -42,10 +42,10 @@ use vars qw(@ISA
 @VERSIONS = (
 	     '2of7' => [
                      'BLASTP',
-		     #'BLASTN',
-		     #'BLASTX',
-		     #'TBLASTN',
-		     #'TBLASTX',
+                     'BLASTN',
+		     'BLASTX',
+		     'TBLASTN',
+		     'TBLASTX',
 		     'PSIBLAST',
 		    ],
 	    );
@@ -121,8 +121,8 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
     'gaps'                   => '-',              #gaps
     '% positives'            => '-',              #ppos
     'query/sbjct frames'     => '-',              #frames
-    'query frame'            => '-',              #qframe
-    'sbjct frame'            => '-',              #sframe
+    'query frame'            => 'query_frame',    #qframe
+    'sbjct frame'            => 'sbjct_frame',    #sframe
     'BTOP'                   => '-',              #btop
     'subject tax ids'        => '-',              #staxids
     'subject sci names'      => '-',              #sscinames
@@ -138,25 +138,25 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
 my $RANK_FIELDS  = [ qw(id expect bits) ];
 my $SUM_FIELDS   = [ qw(id length desc) ];
 my $ALN_FIELDS   = [ qw(expect bits
-       query query_start query_stop
-       sbjct sbjct_start sbjct_stop
-       id_percent mismatch gapopen
-    )];
+                        query query_start query_stop
+                        sbjct sbjct_start sbjct_stop
+                        id_percent
+                   )];
 
 #Extract column headings and return their count and $FIELD_MAP mapping.
-my $save_fields = sub {
+sub save_fields {
     my @tmp = split(/,\s+/, $_[0]);
     my $out = [];
     foreach my $f (@tmp) {
         push @$out, exists $FIELD_MAP->{$f} ? $FIELD_MAP->{$f} : $FIELD_SKIP
     }
     return $out;
-};
+}
 
 #Given a string in 'line' of tab-separated fields named as in 'all', extract
 #those in 'wanted' storing each such key/value into 'hash'; returns number of
 #fields read or -1 on error.
-my $extract_fields = sub {
+sub get_fields {
     my ($line, $all, $wanted, $hash, $debug) = (@_, 0);
     my @list = split("\t", $line);
     warn "[@$all] -> [@$wanted]"  if $debug;
@@ -175,7 +175,7 @@ my $extract_fields = sub {
         $c++;
     }
     return $c;
-};
+}
 
 sub new {
     my $type = shift;
@@ -267,7 +267,7 @@ sub new {
         }
 
         if ($line =~ /^# Fields:\s+(.*)/o) {
-            $self->{'fields'} = &$save_fields($1);
+            $self->{'fields'} = NPB::Parse::Format::BLAST2_OF7::save_fields($1);
             next;
         }
 
@@ -360,11 +360,14 @@ sub new {
             $tmp->{'id'}      = '';
             $tmp->{'bits'}    = '';
             $tmp->{'expect'}  = '';
-            $tmp->{'n'}       = '';
+            $tmp->{'n'}       = '0';  #default
             $tmp->{'summary'} = '';
 
             #extract fields into tmp
-            my $c = $extract_fields->($line, $fields, $RANK_FIELDS, $tmp);
+            my $c = NPB::Parse::Format::BLAST2_OF7::get_fields($line,
+                                                               $fields,
+                                                               $RANK_FIELDS,
+                                                               $tmp);
 
             if ($c < 0) {
                 $self->die("field count mismatch (expect @{[scalar @$fields]}, got $c)\n");
@@ -472,7 +475,8 @@ sub new {
 
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    $extract_fields->($text->next_line(1), $fields, $SUM_FIELDS, $self);
+    NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
+                                               $fields, $SUM_FIELDS, $self);
 
     $self->{'id'} = NPB::Parse::Record::clean_identifier($self->{'id'});
 
@@ -514,7 +518,7 @@ sub new {
     #BLAST2
     $self->{'bits'}         = '';
     $self->{'score'}        = '';
-    $self->{'n'}            = '';
+    $self->{'n'}            = '1';  #default
     $self->{'expect'}       = '';
     $self->{'id_fraction'}  = '';
     $self->{'id_percent'}   = '';
@@ -522,15 +526,11 @@ sub new {
     $self->{'pos_percent'}  = '';
     $self->{'gap_fraction'} = '';
     $self->{'gap_percent'}  = '';
-    #frame?
-
-    #BLAST2 -outfmt 7
-    $self->{'mismatch'}     = '';
-    $self->{'gapopen'}      = '';
 
     #extract fields into self
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    $extract_fields->($text->next_line(1), $fields, $ALN_FIELDS, $self);
+    NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
+                                               $fields, $ALN_FIELDS, $self);
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
@@ -539,14 +539,6 @@ sub new {
         $self->{'sbjct_start'} > $self->{'sbjct_stop'} ? '-' : '+';
 
     $self;#->examine;
-}
-
-sub print_data {
-    my ($self, $indent) = (@_, 0);
-    my $x = ' ' x $indent;
-    $self->SUPER::print_data($indent);
-    printf "$x%20s -> %s\n", 'mismatch',  $self->{'mismatch'};
-    printf "$x%20s -> %s\n", 'gapopen',   $self->{'gapopen'};
 }
 
 

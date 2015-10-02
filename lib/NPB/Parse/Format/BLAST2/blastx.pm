@@ -70,7 +70,7 @@ sub new {
 				 $self->{'query_orient'} .
 				 $self->{'sbjct_orient'}
 				}}, $self;
-    
+
     if (exists $self->{'frame1'}) {
 	#warn "FRAME1 = $self->{'frame1'}";
 	$self->{'query_frame'} = $self->{'frame1'};
