@@ -122,10 +122,15 @@ and nucleotide sequences:</p>
 <div class="section" id="ncbi-blast-family">
 <h2>NCBI BLAST family<a class="headerlink" href="#ncbi-blast-family" title="Permalink to this headline">¶</a></h2>
 <p>Sequence database search programs. See <a class="reference internal" href="blast/rules.html#ref-blast-rules"><em>BLAST HSP processing rules</em></a> for details of
-blast processing by MView.</p>
+<cite>BLAST</cite> processing by MView.</p>
 <div class="section" id="blast">
 <h3>BLAST+<a class="headerlink" href="#blast" title="Permalink to this headline">¶</a></h3>
-<p>MView option: <tt class="docutils literal"><span class="pre">-in</span> <span class="pre">blast</span></tt></p>
+<p>Modern BLAST can generate output in a number of formats; run <cite>blastp -help</cite> to
+see what is available.</p>
+<p>MView can process two of these: the default BLAST output format (also obtained
+with the BLAST command line option <cite>-outfmt 0</cite>) and a commented tabular format
+produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</p>
+<p>MView option: <tt class="docutils literal"><span class="pre">-in</span> <span class="pre">blast</span></tt> (with the default BLAST format)</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -167,8 +172,7 @@ blast processing by MView.</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>In addition, experimental support has been added for BLAST&#8217;s <tt class="docutils literal"><span class="pre">-outfmt</span> <span class="pre">7</span></tt>
-command line option for tabular results:</p>
+<p>MView option: <tt class="docutils literal"><span class="pre">-in</span> <span class="pre">blast</span></tt> (with <cite>-outfmt 7</cite> tabular BLAST format)</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -185,27 +189,65 @@ command line option for tabular results:</p>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
 <td>2.2.28+</td>
-<td>experimental</td>
+<td>ok</td>
+</tr>
+<tr class="row-odd"><td><cite>blastn</cite></td>
+<td>2.2.28+</td>
+<td>ok</td>
+</tr>
+<tr class="row-even"><td><cite>blastx</cite></td>
+<td>2.2.28+</td>
+<td>ok</td>
+</tr>
+<tr class="row-odd"><td><cite>tblastn</cite></td>
+<td>2.2.28+</td>
+<td>ok</td>
+</tr>
+<tr class="row-even"><td><cite>tblastx</cite></td>
+<td>2.2.28+</td>
+<td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>psiblast</cite></td>
 <td>2.2.28+</td>
-<td>experimental</td>
+<td>ok</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
-<p>The <tt class="docutils literal"><span class="pre">-outfmt</span> <span class="pre">7</span></tt> fields recognised by MView are the defaults <tt class="docutils literal"><span class="pre">qseqid</span> <span class="pre">sseqid</span>
-<span class="pre">pident</span> <span class="pre">length</span> <span class="pre">mismatch</span> <span class="pre">gapopen</span> <span class="pre">qstart</span> <span class="pre">qend</span> <span class="pre">sstart</span> <span class="pre">send</span> <span class="pre">evalue</span> <span class="pre">bitscore</span></tt> (or
-<tt class="docutils literal"><span class="pre">std</span></tt>) and additionally <tt class="docutils literal"><span class="pre">qseq</span></tt> and <tt class="docutils literal"><span class="pre">sseq</span></tt> to extract the sequences and
-<tt class="docutils literal"><span class="pre">stitle</span></tt> or <tt class="docutils literal"><span class="pre">salltitles</span></tt> to extract the database hit descriptions.</p>
-<p>A typical minimal set of fields suitable for input to MView would be generated
-with something like:</p>
+<p>The <cite>-outfmt 7</cite> fields or columns recognised by MView are:</p>
+<ul class="simple">
+<li>the <cite>std</cite> defaults (<cite>qseqid</cite>, <cite>sseqid</cite>, <cite>pident</cite>, <cite>length</cite>, <cite>mismatch</cite>,
+<cite>gapopen</cite>, <cite>qstart</cite>, <cite>qend</cite>, <cite>sstart</cite>, <cite>send</cite>, <cite>evalue</cite>, <cite>bitscore</cite>);</li>
+<li><cite>qseq</cite>, <cite>sseq</cite> to report the query and sbjct sequences;</li>
+<li><cite>stitle</cite> or <cite>salltitles</cite> to report the sbjct descriptions;</li>
+<li><cite>qframe</cite> to report the query frame;</li>
+<li><cite>sframe</cite> to report the sbjct frame.</li>
+</ul>
+<p>Suitable strings of field specifiers for input to MView are:</p>
 <blockquote>
-<div><tt class="docutils literal"><span class="pre">blastp</span> <span class="pre">-outfmt</span> <span class="pre">'7</span> <span class="pre">std</span> <span class="pre">qseq</span> <span class="pre">sseq</span> <span class="pre">stitle</span></tt></div></blockquote>
-<p>To see what all these fields do, run <tt class="docutils literal"><span class="pre">blastp</span> <span class="pre">-help</span></tt>. Note: MView will
-silently ignore any fields other than those listed above. The field or column
-ordering does not matter as MView identifies the columns from the embedded
-comment lines made by blast.</p>
+<div><p><cite>blastp   -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
+<p><cite>blastn   -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
+<p><cite>blastx   -outfmt &#8216;7 std qseq sseq stitle qframe&#8217;</cite></p>
+<p><cite>tblastn  -outfmt &#8216;7 std qseq sseq stitle sframe&#8217;</cite></p>
+<p><cite>tblastx  -outfmt &#8216;7 std qseq sseq stitle qframe sframe&#8217;</cite></p>
+<p><cite>psiblast -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
+</div></blockquote>
+<p>MView will silently ignore any fields other than those listed above. The field
+ordering given does not matter as MView identifies this automatically.</p>
+<p>Note: There are some differences in the output (seen in BLAST <cite>2.2.28+</cite>)
+produced by the default BLAST format versus <cite>-outfmt 7</cite>. The latter lacks the
+list of ranked database hits and best scores and their associated fragment
+counts, N. Unfortunately this can obscure interpretation of the results when
+there are many alternative alignments for a given database hit (see
+<a class="reference internal" href="blast/rules.html#ref-blast-rules"><em>BLAST HSP processing rules</em></a>) so that in certain cases the MView output will be
+slightly different; this is most noticeable with <cite>tblastx</cite>.</p>
+<p>Note: A strange behaviour has been seen with <cite>psiblast 2.2.28+</cite>, where the
+first database search produces many more hits than subsequent iterations
+including the final iteration when run using the default output format. Using
+<cite>-outfmt 7</cite> on the exact same search produces more consistent sets of hits.</p>
+<p>Note: At time of writing, another issue arises with BLAST <cite>2.2.31+</cite>, which
+does not recognise the additional <cite>-outfmt 7</cite> field specifiers at all, despite
+their being documented.</p>
 </div>
 <div class="section" id="blast-series-2-2">
 <h3>BLAST series 2.2<a class="headerlink" href="#blast-series-2-2" title="Permalink to this headline">¶</a></h3>
@@ -800,7 +842,7 @@ maintained:</p>
     </div>
     <div class="footer">
         &copy; Copyright 2015, Nigel P. Brown.
-      Last updated on 30 Sep 2015.
+      Last updated on 09 Oct 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>

@@ -12,49 +12,87 @@ NCBI BLAST family
 =================
 
 Sequence database search programs. See :ref:`ref_blast_rules` for details of
-blast processing by MView.
+`BLAST` processing by MView.
 
 
 BLAST+
 ------
 
-MView option: ``-in blast``
+Modern BLAST can generate output in a number of formats; run `blastp -help` to
+see what is available.
+
+MView can process two of these: the default BLAST output format (also obtained
+with the BLAST command line option `-outfmt 0`) and a commented tabular format
+produced with `-outfmt 7`. MView support and testing is as follows.
+
+MView option: ``-in blast`` (with the default BLAST format)
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.2.25+, 2.2.28+, 2.2.31+              ok          
- `blastn`     2.2.25+, 2.2.28+, 2.2.31+              ok          
- `blastx`     2.2.28+, 2.2.31+                       ok          
- `tblastn`    2.2.28+, 2.2.31+                       ok          
- `tblastx`    2.2.28+, 2.2.31+                       ok          
- `psiblast`   2.2.28+, 2.2.31+                       ok          
- ===========  ====================================== ============
-
-In addition, experimental support has been added for BLAST's ``-outfmt 7``
-command line option for tabular results:
-
- ===========  ====================================== ============
- Program      Tested                                 Status      
- ===========  ====================================== ============
- `blastp`     2.2.28+                                experimental
- `psiblast`   2.2.28+                                experimental
+ `blastp`     2.2.25+, 2.2.28+, 2.2.31+              ok
+ `blastn`     2.2.25+, 2.2.28+, 2.2.31+              ok
+ `blastx`     2.2.28+, 2.2.31+                       ok
+ `tblastn`    2.2.28+, 2.2.31+                       ok
+ `tblastx`    2.2.28+, 2.2.31+                       ok
+ `psiblast`   2.2.28+, 2.2.31+                       ok
  ===========  ====================================== ============
 
-The ``-outfmt 7`` fields recognised by MView are the defaults ``qseqid sseqid
-pident length mismatch gapopen qstart qend sstart send evalue bitscore`` (or
-``std``) and additionally ``qseq`` and ``sseq`` to extract the sequences and
-``stitle`` or ``salltitles`` to extract the database hit descriptions.
+MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
 
-A typical minimal set of fields suitable for input to MView would be generated
-with something like:
+ ===========  ====================================== ============
+ Program      Tested                                 Status
+ ===========  ====================================== ============
+ `blastp`     2.2.28+                                ok
+ `blastn`     2.2.28+                                ok
+ `blastx`     2.2.28+                                ok
+ `tblastn`    2.2.28+                                ok
+ `tblastx`    2.2.28+                                ok
+ `psiblast`   2.2.28+                                ok
+ ===========  ====================================== ============
 
-    ``blastp -outfmt '7 std qseq sseq stitle``
+The `-outfmt 7` fields or columns recognised by MView are:
 
-To see what all these fields do, run ``blastp -help``. Note: MView will
-silently ignore any fields other than those listed above. The field or column
-ordering does not matter as MView identifies the columns from the embedded
-comment lines made by blast.
+- the `std` defaults (`qseqid`, `sseqid`, `pident`, `length`, `mismatch`,
+  `gapopen`, `qstart`, `qend`, `sstart`, `send`, `evalue`, `bitscore`);
+- `qseq`, `sseq` to report the query and sbjct sequences;
+- `stitle` or `salltitles` to report the sbjct descriptions;
+- `qframe` to report the query frame;
+- `sframe` to report the sbjct frame.
+
+Suitable strings of field specifiers for input to MView are:
+
+    `blastp   -outfmt '7 std qseq sseq stitle'`
+
+    `blastn   -outfmt '7 std qseq sseq stitle'`
+
+    `blastx   -outfmt '7 std qseq sseq stitle qframe'`
+
+    `tblastn  -outfmt '7 std qseq sseq stitle sframe'`
+
+    `tblastx  -outfmt '7 std qseq sseq stitle qframe sframe'`
+
+    `psiblast -outfmt '7 std qseq sseq stitle'`
+
+MView will silently ignore any fields other than those listed above. The field
+ordering given does not matter as MView identifies this automatically.
+
+Note: There are some differences in the output (seen in BLAST `2.2.28+`)
+produced by the default BLAST format versus `-outfmt 7`. The latter lacks the
+list of ranked database hits and best scores and their associated fragment
+counts, N. Unfortunately this can obscure interpretation of the results when
+there are many alternative alignments for a given database hit (see
+:ref:`ref_blast_rules`) so that in certain cases the MView output will be
+slightly different; this is most noticeable with `tblastx`.
+
+Note: A strange behaviour has been seen with `psiblast 2.2.28+`, where the
+first database search produces many more hits than subsequent iterations
+including the final iteration when run using the default output format. Using
+`-outfmt 7` on the exact same search produces more consistent sets of hits.
+
+Note: At time of writing, another issue arises with BLAST `2.2.31+`, which
+does not recognise the additional `-outfmt 7` field specifiers at all, despite
+their being documented.
 
 
 BLAST series 2.2
@@ -63,15 +101,15 @@ BLAST series 2.2
 MView option: ``-in blast``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.2.5, 2.2.6                           ok          
- `blastn`     2.2.6                                  ok          
- `blastx`     2.2.6                                  ok          
- `tblastn`    2.2.6                                  ok          
- `tblastx`    2.2.6                                  ok          
- `psiblast`   2.2.6                                  ok          
- `phiblast`   2.2.6                                  ok          
+ `blastp`     2.2.5, 2.2.6                           ok
+ `blastn`     2.2.6                                  ok
+ `blastx`     2.2.6                                  ok
+ `tblastn`    2.2.6                                  ok
+ `tblastx`    2.2.6                                  ok
+ `psiblast`   2.2.6                                  ok
+ `phiblast`   2.2.6                                  ok
  ===========  ====================================== ============
 
 
@@ -81,15 +119,15 @@ BLAST series 2.0
 MView option: ``-in blast``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.0.4, 2.0.5, 2.0.9, 2.0.10            ok          
- `blastn`     2.0.4, 2.0.5, 2.0.9, 2.0.14            ok          
- `blastx`     2.0.5, 2.0.9                           ok          
- `tblastn`    2.0.5, 2.0.10                          ok          
- `tblastx`    2.0.5                                  ok          
- `psiblast`   2.0.2, 2.0.4, 2.0.5, 2.0.6, 2.0.10     ok          
- `phiblast`   2.0.9                                  ok          
+ `blastp`     2.0.4, 2.0.5, 2.0.9, 2.0.10            ok
+ `blastn`     2.0.4, 2.0.5, 2.0.9, 2.0.14            ok
+ `blastx`     2.0.5, 2.0.9                           ok
+ `tblastn`    2.0.5, 2.0.10                          ok
+ `tblastx`    2.0.5                                  ok
+ `psiblast`   2.0.2, 2.0.4, 2.0.5, 2.0.6, 2.0.10     ok
+ `phiblast`   2.0.9                                  ok
  ===========  ====================================== ============
 
 
@@ -99,13 +137,13 @@ BLAST series 1.4
 MView option: ``-in blast``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     1.4.7, 1.4.9                           ok          
- `blastn`     1.4.9                                  ok          
- `blastx`     1.4.9                                  ok          
- `tblastn`    1.4.9                                  ok          
- `tblastx`    1.4.9                                  ok          
+ `blastp`     1.4.7, 1.4.9                           ok
+ `blastn`     1.4.9                                  ok
+ `blastx`     1.4.9                                  ok
+ `tblastn`    1.4.9                                  ok
+ `tblastx`    1.4.9                                  ok
  ===========  ====================================== ============
 
 
@@ -123,13 +161,13 @@ WU-BLAST series 2.0
 MView option: ``-in blast``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.0a13, 2.0a19, 2.0                    ok          
- `blastn`     2.0a19, 2.0                            ok          
- `blastx`     2.0a19, 2.0                            ok          
- `tblastn`    2.0a19, 2.0                            ok          
- `tblastx`    2.0a19, 2.0                            ok          
+ `blastp`     2.0a13, 2.0a19, 2.0                    ok
+ `blastn`     2.0a19, 2.0                            ok
+ `blastx`     2.0a19, 2.0                            ok
+ `tblastn`    2.0a19, 2.0                            ok
+ `tblastx`    2.0a19, 2.0                            ok
  ===========  ====================================== ============
 
 
@@ -147,16 +185,16 @@ FASTA series 36
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta`      36.07, 36.3.3, 36.3.6, 36.3.7b         ok          
- `fastx`      36.3.3, 36.3.6, 36.3.7b                ok          
- `fasty`      36.3.6, 36.3.7b                        ok          
- `tfastx`     36.3.3, 36.3.6, 36.3.7b                ok          
- `tfasty`     36.3.3, 36.3.6, 36.3.7b                ok          
- `ssearch`    36.3.3, 36.3.6, 36.3.7b                ok          
- `ggsearch`   36.3.3, 36.3.6, 36.3.7b                ok          
- `glsearch`   36.3.3, 36.3.6, 36.3.7b                ok          
+ `fasta`      36.07, 36.3.3, 36.3.6, 36.3.7b         ok
+ `fastx`      36.3.3, 36.3.6, 36.3.7b                ok
+ `fasty`      36.3.6, 36.3.7b                        ok
+ `tfastx`     36.3.3, 36.3.6, 36.3.7b                ok
+ `tfasty`     36.3.3, 36.3.6, 36.3.7b                ok
+ `ssearch`    36.3.3, 36.3.6, 36.3.7b                ok
+ `ggsearch`   36.3.3, 36.3.6, 36.3.7b                ok
+ `glsearch`   36.3.3, 36.3.6, 36.3.7b                ok
  `fastm`      35.3.5a, 36.3.6, 36.3.7b               experimental
  `fasts`      36.3.6, 36.3.7b                        experimental
  `fastf`      36.3.6, 36.3.7b                        experimental
@@ -172,13 +210,13 @@ FASTA series 35
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta`      35.04                                  ok          
- `tfastx`     35.04                                  ok          
- `ssearch`    35.04                                  ok          
- `ggsearch`   35.04                                  ok          
- `glsearch`   35.04                                  ok          
+ `fasta`      35.04                                  ok
+ `tfastx`     35.04                                  ok
+ `ssearch`    35.04                                  ok
+ `ggsearch`   35.04                                  ok
+ `glsearch`   35.04                                  ok
  ===========  ====================================== ============
 
 
@@ -188,9 +226,9 @@ FASTA series 34
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta34`    34.26.5                                ok          
+ `fasta34`    34.26.5                                ok
  ===========  ====================================== ============
 
 
@@ -200,16 +238,16 @@ FASTA series 3.0 - 3.4
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta`      3.0t76, 3.1t07, 3.2t01, 3.2t05, 3.2t07      
- \            3.2t05, 3.2t07, 3.3t01, 3.3t07, 3.4t23 ok          
- `fastx`      3.4t23                                 ok          
- `fasty`      3.4t23                                 ok          
- `tfasta`     3.4t23                                 ok          
- `tfastx`     3.0t82, 3.4t23                         ok          
- `tfasty`     3.4t23                                 ok          
- `tfastxy`    3.1t07                                 ok          
+ `fasta`      3.0t76, 3.1t07, 3.2t01, 3.2t05, 3.2t07
+ \            3.2t05, 3.2t07, 3.3t01, 3.3t07, 3.4t23 ok
+ `fastx`      3.4t23                                 ok
+ `fasty`      3.4t23                                 ok
+ `tfasta`     3.4t23                                 ok
+ `tfastx`     3.0t82, 3.4t23                         ok
+ `tfasty`     3.4t23                                 ok
+ `tfastxy`    3.1t07                                 ok
  ===========  ====================================== ============
 
 
@@ -219,10 +257,10 @@ FASTA series 2
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta`      2.0u                                   ok          
- `tfastx`     2.0u63                                 ok          
+ `fasta`      2.0u                                   ok
+ `tfastx`     2.0u63                                 ok
  ===========  ====================================== ============
 
 
@@ -232,9 +270,9 @@ FASTA series 1
 MView option: ``-in uvfasta``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `fasta`      1.6c24                                 ok          
+ `fasta`      1.6c24                                 ok
  ===========  ====================================== ============
 
 
@@ -249,9 +287,9 @@ format.
 MView option: ``-in clustal``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `CLUSTAL`    1.60, 1.70, 1.83, 2.1                  ok          
+ `CLUSTAL`    1.60, 1.70, 1.83, 2.1                  ok
  ===========  ====================================== ============
 
 
@@ -264,9 +302,9 @@ sequence and structure homology alignment program.
 MView option: ``-in hssp``
 
  ===========  ====================================== ============
- Program      Tested                                 Status      
+ Program      Tested                                 Status
  ===========  ====================================== ============
- `HSSP`       1.0 1991                               ok          
+ `HSSP`       1.0 1991                               ok
  ===========  ====================================== ============
 
 
@@ -336,7 +374,7 @@ A few other formats were implemented for specific use-cases and are not
 maintained:
 
  =============  =============== ============
- Format         MView option	Status      
+ Format         MView option	Status
  =============  ===============	============
  MIPS-ALN       ``-in mips``	experimental
  MULTAS/MULTAL  ``-in multas``	experimental
