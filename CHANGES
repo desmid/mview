@@ -1,11 +1,13 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.60  2015-10-08
-- Changed HTML output to HTML5: add DOCTYPE html, remove FONT tags.
+Version 1.60  2015-10-09
+- Changed HTML output to HTML5: added DOCTYPE html, removed FONT tags.
 - Added BLAST+ PSIBLAST parser.
 - Added BLAST+ '-outfmt 7' support.
 - Changed BLAST '-hsp discrete' mode to always set HSP count, N = 1.
-- Changed 'plain' output format to not truncate long identifiers.
+- Fixed 'plain' output format to not truncate long identifiers.
+Thanks to Alexey Porollo at CHRF for the BLAST+ and plain format change
+requests.
 
 Version 1.59  2015-07-17 (GitHub)
 - This is a re-release with only documentation changes.
