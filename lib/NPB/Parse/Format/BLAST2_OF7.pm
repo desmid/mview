@@ -225,7 +225,7 @@ sub new {
     while (defined ($line = $text->next_line)) {
 
 	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+	next  if $line =~ /$NULL/o;
 
 	#HEADER block
 	if ($line =~ /$HEADER_START/o) {
@@ -387,7 +387,7 @@ sub new {
 
         my $tmp = {};
 
-        if ($line =~ /$SEARCH_START/) {
+        if ($line =~ /$SEARCH_START/o) {
 
             #BLAST2
             $tmp->{'id'}      = '';
@@ -440,6 +440,12 @@ sub new {
             next;
         }
 
+	#blank line or empty record: ignore
+	next  if $line =~ /$NULL/o;
+
+        #psiblast convergence message: ignore
+        next  if $line =~ /^Search has CONVERGED/o;
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -474,7 +480,7 @@ sub new {
     while (defined ($line = $text->next_line(1))) {
         #warn "[$line]\n";
 
-        if ($line =~ /$SEARCH_START/) {
+        if ($line =~ /$SEARCH_START/o) {
             #create SEARCH::MATCH::ALN
             $self->push_record('ALN', $text->get_offset, $text->get_bytes);
             next;
