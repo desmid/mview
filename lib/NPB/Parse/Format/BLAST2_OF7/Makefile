@@ -1,8 +1,8 @@
 TREE = lib/NPB/Parse/Format/BLAST2_OF7
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = blastp.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

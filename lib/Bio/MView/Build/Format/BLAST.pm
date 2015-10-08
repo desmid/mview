@@ -272,13 +272,13 @@ sub get_hsp_groups {
 #lookup an HSP set in an HSP dictionary, trying various keys based on number
 #of HSPs N, significance or score.
 sub get_ranked_hsps_by_query {
-    my ($self, $hash, $coll, $rkey, $qorient) = @_;
+    my ($self, $hash, $coll, $rkey, $qorient1) = @_;
 
     my $n        = $coll->item($rkey)->get_val('n');
     my $score    = $coll->item($rkey)->get_val($self->{'attr_score'});
-    my $qorient2 = ($qorient eq '+' ? '-' : '+');
-    my $sorient  = $hash->{'.'}->{'sbjct_orient'}; #first ALN orientation hint
-    my $sorient2 = ($sorient eq '+' ? '-' : '+');  #its opposite
+    my $qorient2 = ($qorient1 eq '+' ? '-' : '+');
+    my $sorient1  = $hash->{'.'}->{'sbjct_orient'}; #first ALN orientation hint
+    my $sorient2 = ($sorient1 eq '+' ? '-' : '+');  #its opposite
 
     $n = 1  unless $n;  #no N in ranking
 
@@ -286,7 +286,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_o_n_sig = sub {
         my ($qorient, $n, $sig) = @_;
-        foreach my $sorient ($sorient, $sorient2) {
+        foreach my $sorient ($sorient1, $sorient2) {
             my $key = join("/", $qorient, $sorient, $n, $sig);
             return $hash->{$key}  if exists $hash->{$key};
         }
@@ -317,7 +317,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_o_n_score = sub {
         my ($qorient, $n, $score) = @_;
-        foreach my $sorient ($sorient, $sorient2) {
+        foreach my $sorient ($sorient1, $sorient2) {
             my $key = join("/", $qorient, $sorient, $n, $score);
             return &$follow_sig($qorient, $key)  if exists $hash->{$key};
         }
@@ -326,7 +326,7 @@ sub get_ranked_hsps_by_query {
 
     my $lookup_score = sub {
         my ($qorient, $score) = @_;
-        foreach my $sorient ($sorient, $sorient2) {
+        foreach my $sorient ($sorient1, $sorient2) {
             my $key = join("/", $qorient, $sorient, $score);
             return &$follow_sig($qorient, $key)  if exists $hash->{$key};
         }
@@ -335,31 +335,39 @@ sub get_ranked_hsps_by_query {
 
     my $match;
 
-    warn "KEYS($rkey,$qorient): @{[sort keys %$hash]}\n"  if $D;
+    warn "KEYS($rkey,$qorient1): @{[sort keys %$hash]}\n"  if $D;
 
     #match (n, score) in query orientation?
-    warn "TRY: $qorient $n $score\n"  if $D;
-    $match = &$lookup_o_n_score($qorient, $n, $score);
-    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
-    return $match  if defined $match;
+    warn "TRY: $qorient1/$n/$score\n"  if $D;
+    $match = &$lookup_o_n_score($qorient1, $n, $score);
+    if (defined $match) {
+        warn "MATCH (@{[scalar @$match]})\n"  if $D;
+        return $match;
+    }
 
     #match (n, score) in opposite orientation? skip
-    warn "TRY: $qorient2 $n $score (to skip)\n"  if $D;
+    warn "TRY: $qorient2/$n/$score (to skip)\n"  if $D;
     $match = &$lookup_o_n_score($qorient2, $n, $score);
-    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
-    return []  if defined $match;
+    if (defined $match) {
+        warn "SKIP (@{[scalar @$match]})\n"  if $D;
+        return [];
+    }
 
     #match (score) in query orientation?
-    warn "TRY: $qorient $score\n"  if $D;
-    $match = &$lookup_score($qorient, $score);
-    warn "MATCH (@{[scalar @$match]})\n"  if defined $match and $D;
-    return $match  if defined $match;
+    warn "TRY: $qorient1/$score\n"  if $D;
+    $match = &$lookup_score($qorient1, $score);
+    if (defined $match) {
+        warn "MATCH (@{[scalar @$match]})\n"  if $D;
+        return $match;
+    }
 
     #match (score) in opposite orientation? skip
-    warn "TRY: $qorient2, $score (to skip)\n"  if $D;
+    warn "TRY: $qorient2/$score (to skip)\n"  if $D;
     $match = &$lookup_score($qorient2, $score);
-    warn "SKIP (@{[scalar @$match]})\n"  if defined $match and $D;
-    return []  if defined $match;
+    if (defined $match) {
+        warn "SKIP (@{[scalar @$match]})\n"  if $D;
+        return [];
+    }
 
     warn "<<<< FAILED >>>>\n"  if $D;
     #no match
