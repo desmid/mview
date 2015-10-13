@@ -1,5 +1,8 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
+Version 1.60.1  2015-10-13
+- Fixed syntax error in get_hsp_groups, affects BLAST.
+
 Version 1.60  2015-10-09
 - Changed HTML output to HTML5: added DOCTYPE html, removed FONT tags.
 - Added BLAST+ PSIBLAST parser.

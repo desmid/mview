@@ -4,7 +4,7 @@
 # $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
 my $VERSION  = '1.60';
-my $PATCH    = '';
+my $PATCH    = '1';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";

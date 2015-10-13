@@ -221,7 +221,7 @@ sub get_hsp_groups {
         my (%tmp, $key);
 
         #first ALN has precedence: we use this later for key hints
-        $hash->{'.'} = $aln  if keys $hash < 1;
+        $hash->{'.'} = $aln  if keys %$hash < 1;
 
         #key by significance: can exceed $n if more HSP have the same sig
         %tmp = ( $sig => 1 );               #raw significance value
