@@ -43,12 +43,12 @@ MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
  ===========  ====================================== ============
  Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.2.28+                                ok
- `blastn`     2.2.28+                                ok
- `blastx`     2.2.28+                                ok
- `tblastn`    2.2.28+                                ok
- `tblastx`    2.2.28+                                ok
- `psiblast`   2.2.28+                                ok
+ `blastp`     2.2.28+, 2.2.31+                       ok
+ `blastn`     2.2.28+, 2.2.31+                       ok
+ `blastx`     2.2.28+, 2.2.31+                       ok
+ `tblastn`    2.2.28+, 2.2.31+                       ok
+ `tblastx`    2.2.28+, 2.2.31+                       ok
+ `psiblast`   2.2.28+, 2.2.31+                       ok
  ===========  ====================================== ============
 
 The `-outfmt 7` fields or columns recognised by MView are:
@@ -89,10 +89,6 @@ Note: A strange behaviour has been seen with `psiblast 2.2.28+`, where the
 first database search produces many more hits than subsequent iterations
 including the final iteration when run using the default output format. Using
 `-outfmt 7` on the exact same search produces more consistent sets of hits.
-
-Note: At time of writing, another issue arises with BLAST `2.2.31+`, which
-does not recognise the additional `-outfmt 7` field specifiers at all, despite
-their being documented.
 
 
 BLAST series 2.2
