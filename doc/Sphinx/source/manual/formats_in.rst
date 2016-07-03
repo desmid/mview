@@ -43,12 +43,12 @@ MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
  ===========  ====================================== ============
  Program      Tested                                 Status
  ===========  ====================================== ============
- `blastp`     2.2.28+, 2.2.31+                       ok
- `blastn`     2.2.28+, 2.2.31+                       ok
- `blastx`     2.2.28+, 2.2.31+                       ok
- `tblastn`    2.2.28+, 2.2.31+                       ok
- `tblastx`    2.2.28+, 2.2.31+                       ok
- `psiblast`   2.2.28+, 2.2.31+                       ok
+ `blastp`     2.2.28+, 2.2.31+, 2.3.0+               ok
+ `blastn`     2.2.28+, 2.2.31+, 2.3.0+               ok
+ `blastx`     2.2.28+, 2.2.31+, 2.3.0+               ok
+ `tblastn`    2.2.28+, 2.2.31+, 2.3.0+               ok
+ `tblastx`    2.2.28+, 2.2.31+, 2.3.0+               ok
+ `psiblast`   2.2.28+, 2.2.31+, 2.3.0+               ok
  ===========  ====================================== ============
 
 The `-outfmt 7` fields or columns recognised by MView are:
@@ -60,7 +60,8 @@ The `-outfmt 7` fields or columns recognised by MView are:
 - `qframe` to report the query frame;
 - `sframe` to report the sbjct frame.
 
-Suitable strings of field specifiers for input to MView are:
+When running blast with tabular output, field specifiers suitable for input to
+MView are:
 
     `blastp   -outfmt '7 std qseq sseq stitle'`
 
