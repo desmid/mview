@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2006 Nigel P. Brown
+# Copyright (C) 1997-2016 Nigel P. Brown
 # $Id: Row.pm,v 1.24 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
@@ -63,6 +63,7 @@ sub get_display { $_[0]->{'display'} }
 sub color_special {}
 sub color_by_type {}
 sub color_by_identity {}
+sub color_by_mismatch {}
 sub color_by_consensus_sequence {}
 sub color_by_consensus_group {}
 

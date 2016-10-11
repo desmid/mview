@@ -1,15 +1,15 @@
 #!/usr/bin/env perl
 
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2016 Nigel P. Brown
 # $Id: mview,v 1.79 2015/06/18 20:26:00 npb Exp $
 
-my $VERSION  = '1.60';
-my $PATCH    = '1';
+my $VERSION  = '1.61';
+my $PATCH    = '';
 
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH?".$PATCH":"");
-my $COPYYRS  = "1997-2015";
+my $COPYYRS  = "1997-2016";
 my $PROJPTH  = 'https://desmid.github.io/mview/';
 my $AUTHMAIL = 'biomview@gmail.com';
 
@@ -785,6 +785,8 @@ convert:  sub { __ARGS;
 	      	   __PV = 'any';
 	      } elsif (__OV =~ /^i/i) {
 	      	   __PV = 'identity';
+	      } elsif (__OV =~ /^m/i) {
+	      	   __PV = 'mismatch';
 	      } elsif (__OV =~ /^c/i) {
 	      	   __PV = 'consensus';
 	      } elsif (__OV =~ /^g/i) {

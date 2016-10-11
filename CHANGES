@@ -1,5 +1,11 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
+Version 1.61 2016-10-12
+- Added '-coloring mismatch' mode, which behaves like '-coloring identity',
+    but highlights the mismatches instead using the same colormap. Using
+    this you can see blocks of misalignment and individuate particular
+    misaligned residue types by colour. Requested by Andrew Davis.
+
 Version 1.60.1  2015-10-13
 - Fixed error in get_hsp_groups calling keys(); affects BLAST, but only
   triggered under older versions of perl (seen with 5.10, fine with 5.18).

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2016 Nigel P. Brown
 # $Id: Sequence.pm,v 1.26 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
@@ -94,6 +94,7 @@ sub get_color {
 
     #set transparent(T)/solid(S)
     if (exists $Bio::MView::Align::Colormaps->{$map}->{$c}) {
+
 	$trans = $Bio::MView::Align::Colormaps->{$map}->{$c}->[1];
 	$index = $Bio::MView::Align::Colormaps->{$map}->{$c}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
@@ -313,6 +314,16 @@ sub color_by_type {
 
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);
+    return $self->color_by_identity_body($othr, 0, @_);
+}
+
+sub color_by_mismatch {
+    my ($self, $othr) = (shift, shift);
+    return $self->color_by_identity_body($othr, 1, @_);
+}
+
+sub color_by_identity_body {
+    my ($self, $othr, $invert) = (shift, shift, shift);
     my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
@@ -343,44 +354,33 @@ sub color_by_identity {
 	#white space: no color
 	next    if $self->{'string'}->is_space($c1);
 					 
-	#gap of frameshift: gapcolour
+	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c1)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
 	    next;
 	}
 
-	#same symbol when upcased: use symbol/wildcard color
-	if (uc $c1 eq uc $c2) {
+        @tmp = ();
 
-            @tmp = $self->get_color($c1, $par{'colormap'});
+        my $c3 = '*'; #reporting symbol: default to wildcard
 
-	    if (@tmp) {
-		if ($par{'css1'}) {
-		    push @$color, $i, 'class' => $tmp[1];
-		} else {
-		    push @$color, $i, 'color' => $tmp[0];
-		}
-	    } else {
-		push @$color, $i, 'color' => $par{'symcolor'};
-	    }
+        #compare symbols case-insensitive:
+        if ($invert) { #mismatch coloring mode
+            $c3 = $c1 if uc $c1 ne uc $c2; #different symbol
+        } else { #identity coloring mode
+            $c3 = $c1 if uc $c1 eq uc $c2; #same symbol
+        }
+        @tmp = $self->get_color($c3, $par{'colormap'});
 
-	    next;
-	}
-
-	#different symbol: use contrast colour
-	#push @$color, $i, 'color' => $par{'symcolor'};
-	
-	#different symbol: use wildcard colour
-	@tmp = $self->get_color('*', $par{'colormap'});
-	if (@tmp) {
-	    if ($par{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
-	}
+        if (@tmp) {
+            if ($par{'css1'}) {
+                push @$color, $i, 'class' => $tmp[1];
+            } else {
+                push @$color, $i, 'color' => $tmp[0];
+            }
+        } else { #default color
+            push @$color, $i, 'color' => $par{'symcolor'};
+        }
     }
 
     $self->{'display'}->{'paint'}  = 1;

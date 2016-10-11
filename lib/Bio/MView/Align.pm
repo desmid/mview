@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2016 Nigel P. Brown
 # $Id: Align.pm,v 1.50 2015/06/22 22:27:17 npb Exp $
 
 ######################################################################
@@ -79,6 +79,7 @@ my %Known_Alignment_Color_Schemes =
      'none'       => 1,
      'any'        => 1,
      'identity'   => 1,
+     'mismatch'   => 1,
      'consensus'  => 1,
      'group'      => 1,
     );
@@ -632,6 +633,9 @@ sub header {
     elsif ($self->{'coloring'} eq 'identity' and defined $self->{'ref_id'}) {
 	$s .= "Colored by: identity + property\n";
     }
+    elsif ($self->{'coloring'} eq 'mismatch' and defined $self->{'ref_id'}) {
+	$s .= "Colored by: mismatch + property\n";
+    }
     elsif ($self->{'coloring'} eq 'consensus') {
 	$s .= "Colored by: consensus/$self->{'threshold'}->[0]\% and property\n";
     }
@@ -672,6 +676,17 @@ sub set_color_scheme {
 
     if ($self->{'coloring'} eq 'identity') {
 	$self->color_by_identity($self->{'ref_id'},
+				 'colormap'  => $self->{'colormap'},
+				 'colormap2' => $self->{'colormap2'},
+				 'symcolor'  => $self->{'symcolor'},
+				 'gapcolor'  => $self->{'gapcolor'},
+				 'css1'      => $self->{'css1'},
+				);
+	return $self;
+    }
+
+    if ($self->{'coloring'} eq 'mismatch') {
+	$self->color_by_mismatch($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
 				 'colormap2' => $self->{'colormap2'},
 				 'symcolor'  => $self->{'symcolor'},
@@ -784,6 +799,22 @@ sub color_by_identity {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($ref, @_);
+    }
+    $self;
+}
+
+#propagate colour scheme to row objects
+sub color_by_mismatch {
+    my ($self, $id) = (shift, shift);
+
+    my $ref = $self->item($id);
+    return $self  unless defined $ref;
+
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_mismatch($ref, @_);
     }
     $self;
 }

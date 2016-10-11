@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2013 Nigel P. Brown
+# Copyright (C) 1997-2016 Nigel P. Brown
 # $Id: Consensus.pm,v 1.26 2015/06/14 17:09:03 npb Exp $
 
 ###########################################################################
@@ -688,6 +688,8 @@ sub color_by_identity {
     $self->{'display'}->{'paint'} = 1;
     $self;
 }
+
+sub color_by_mismatch { die "NEVER CALLED\n"; }
 
 #this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
