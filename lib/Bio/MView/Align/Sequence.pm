@@ -10,12 +10,14 @@ use Bio::MView::Align::Row;
 
 use strict;
 use vars qw(@ISA
-	    $Default_PRO_Colormap $Default_DNA_Colormap
+	    $Wildcard_Sym
+            $Default_PRO_Colormap $Default_DNA_Colormap
             $Default_FIND_Colormap $Default_Colormap
 	    %Template);
 
 @ISA = qw(Bio::MView::Align::Row);
 
+$Wildcard_Sym          = '.';     #key for default colouring
 $Default_PRO_Colormap  = 'P1';    #default protein colormap name
 $Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
 $Default_FIND_Colormap = 'FIND';  #default find pattern colormap name
@@ -99,19 +101,19 @@ sub get_color {
 	$index = $Bio::MView::Align::Colormaps->{$map}->{$c}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
 
-	#warn "$c $map\{$c} [$index] [$color] [$trans]\n";
+	#warn "CL $c $map\{$c} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
     }
 
     #wildcard colour
-    if (exists $Bio::MView::Align::Colormaps->{$map}->{'*'}) {
+    if (exists $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}) {
 
-	$trans = $Bio::MView::Align::Colormaps->{$map}->{'*'}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$map}->{'*'}->[0];
+	$trans = $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}->[1];
+	$index = $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
 
-	#warn "$c $map\{'*'} [$index] [$color] [$trans]\n";
+	#warn "WC $c $map\{$Wildcard_Sym} [$index] [$color] [$trans]\n";
 
 	return ($color, "$trans$index");
     }
@@ -124,7 +126,7 @@ sub get_color {
 	$index = $Bio::MView::Align::Palette->[0]->{$map};
         $color = $Bio::MView::Align::Palette->[1]->[$index];
 
-	#warn "$c $map\{$c} [$index] [$color] [$trans]\n";
+	#warn "FD $c $map\{$c} [$index] [$color] [$trans]\n";
 
 	return ($color, "$trans$index");
     }
@@ -314,16 +316,16 @@ sub color_by_type {
 
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);
-    return $self->color_by_identity_body($othr, 0, @_);
+    return $self->color_by_identity_body($othr, 1, @_);
 }
 
 sub color_by_mismatch {
     my ($self, $othr) = (shift, shift);
-    return $self->color_by_identity_body($othr, 1, @_);
+    return $self->color_by_identity_body($othr, 0, @_);
 }
 
 sub color_by_identity_body {
-    my ($self, $othr, $invert) = (shift, shift, shift);
+    my ($self, $othr, $byidentity) = (shift, shift, shift);
     my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
@@ -341,18 +343,19 @@ sub color_by_identity_body {
     $par{'colormap'} = $Default_Colormap
 	unless defined $par{'colormap'};
 
-    my ($color, $end, $i, $c1, $c2, @tmp) = ($self->{'display'}->{'range'});
+    my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+    for (my $i=1; $i<$end; $i++) {
 
-	$c1 = $self->{'string'}->raw($i); $c2 = $othr->{'string'}->raw($i);
+	my $c1 = $self->{'string'}->raw($i);
+        my $c2 = $othr->{'string'}->raw($i);
 
 	#warn "[$i]= $c1 <=> $c2\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($c1);
+	next  if $self->{'string'}->is_space($c1);
 					 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c1)) {
@@ -360,17 +363,16 @@ sub color_by_identity_body {
 	    next;
 	}
 
-        @tmp = ();
+        my @tmp = ();
 
-        my $c3 = '*'; #reporting symbol: default to wildcard
-
-        #compare symbols case-insensitive:
-        if ($invert) { #mismatch coloring mode
-            $c3 = $c1 if uc $c1 ne uc $c2; #different symbol
+        #compare symbols, case-insensitive
+        if ($byidentity) { #mismatch coloring mode
+            @tmp = $self->get_color($c1, $par{'colormap'})
+                if uc $c1 eq uc $c2; #same symbol or symcolor 
         } else { #identity coloring mode
-            $c3 = $c1 if uc $c1 eq uc $c2; #same symbol
+            @tmp = $self->get_color($c1, $par{'colormap'})
+                if uc $c1 ne uc $c2; #different symbol or symcolor 
         }
-        @tmp = $self->get_color($c3, $par{'colormap'});
 
         if (@tmp) {
             if ($par{'css1'}) {

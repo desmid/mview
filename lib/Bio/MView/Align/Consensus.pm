@@ -12,7 +12,7 @@ use strict;
 use vars qw(@ISA
 	    $Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
 	    $Default_PRO_Group $Default_DNA_Group
-	    $Default_Group_Any $Default_Ignore $Group);
+	    $Group_Any $Default_Group_Any $Default_Ignore $Group);
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
@@ -22,8 +22,9 @@ $Default_Colormap     = $Default_PRO_Colormap;
 
 $Default_PRO_Group    = 'P1';     #default consensus scheme name
 $Default_DNA_Group    = 'D1';     #default consensus scheme name
-  				  
-$Default_Group_Any    = '.';      #default symbol for non-consensus
+
+$Group_Any            = '.';      #key for non-consensus group
+$Default_Group_Any    = '.';      #default symbol for non-consensus group
 $Default_Ignore       = '';       #default ignore classes setting
 $Group                = {};       #static hash of consensus schemes
 
@@ -74,14 +75,15 @@ sub load_groupmaps {
 	#save map description?
 	$Group->{$map}->[3] = $de  if $state == 1;
 
-	#ANY symbol
-	if (/^\s*\*\s*=>\s*(\S+|\'[^\']+\')/) {
+	#Group_Any symbol (literal in regexp)
+	if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
 	    $state = 2;
 	    $sym     = $1;
 	    $sym     =~ s/^\'//;
 	    $sym     =~ s/\'$//;
 	    chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
-	    make_group($map, '*', $sym, []);
+	    make_group($map, $Group_Any, $sym, []);
+            next;
 	}
 	
 	#general class membership
@@ -95,9 +97,7 @@ sub load_groupmaps {
 	    $members =~ s/''/ /g;
 	    $members = uc $members;
 	    $members = [ split(//, $members) ];
-
 	    make_group($map, $class, $sym, $members);
-
 	    next;
 	}
 
@@ -108,9 +108,7 @@ sub load_groupmaps {
 	    chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
 	    $members = uc $members;
 	    $members = [ split(//, $members) ];
-
 	    make_group($map, $class, $sym, $members);
-
 	    next;
 	}
 
@@ -120,9 +118,7 @@ sub load_groupmaps {
 	    ($class, $sym, $members) = ($1, $1, $1);
 	    $members = uc $members;
 	    $members = [ split(//, $members) ];
-
 	    make_group($map, $class, $sym, $members);
-
 	    next;
 	}
 
@@ -132,8 +128,8 @@ sub load_groupmaps {
     close $stream;
 
     foreach $map (keys %$Group) {
-	make_group($map, '*', $Default_Group_Any, [])
-	    unless exists $Group->{$map}->[0]->{'*'};
+	make_group($map, $Group_Any, $Default_Group_Any, [])
+	    unless exists $Group->{$map}->[0]->{$Group_Any};
 	make_group($map, '', $Bio::MView::Sequence::Mark_Spc,
 		   [
 		    $Bio::MView::Sequence::Mark_Pad, 
@@ -210,7 +206,7 @@ sub list_groupmaps {
 	    next    if $class eq '';    #gap character
 
 	    #wildcard
-	    if ($class eq '*') {
+	    if ($class eq $Group_Any) {
 		$sym = $p->{$class}->[0];
 		$sym = "'$sym'"    if $sym =~ /\s/;
 		$s .= sprintf "%-12s =>  %-6s\n", $class, $sym;
@@ -299,14 +295,14 @@ sub get_color_type {
     }
     
     #look for wildcard in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{'*'}) {
+    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[0];
+	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
 
-	#warn "$c $mapS\{'*'} [$index] [$color] [$trans]\n";
+	#warn "$c $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
     }
@@ -339,14 +335,14 @@ sub get_color_consensus_sequence {
     }
     
     #lookup wildcard in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{'*'}) {
+    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[0];
+	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
 
-	#warn "$cs/$cg $mapS\{'*'} [$index] [$color] [$trans]\n";
+	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
     }
@@ -391,13 +387,13 @@ sub get_color_consensus_group {
     }
 
     #lookup wildcard in SEQUENCE colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{'*'}) {
+    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)/color from SEQUENCE colormap
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{'*'}->[0];
+	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
 	$color = $Bio::MView::Align::Palette->[1]->[$index];
-	#warn "$cs/$cg $mapS\{'*'} [$index] [$color] [$trans]\n";
+	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
     }
@@ -468,7 +464,7 @@ sub consensus {
 	#iterate over all allowed subsets
 	foreach $class (keys %$group) {
 
-	    next    if $class eq '*'; #wildcard
+	    next    if $class eq $Group_Any; #wildcard
 	    
 	    if ($class ne '') {
 		#non-gap classes: may want to ignore certain classes
@@ -516,10 +512,10 @@ sub consensus {
 
 	if (defined $bstclass) {
 	    if ($bstclass eq '' and $bstscore < 100) {
-		$bstclass = '*' #some non-gaps
+		$bstclass = $Group_Any #some non-gaps
 	    }
 	} else {
-	    $bstclass = '*' #wildcard
+	    $bstclass = $Group_Any #wildcard
 	}
 	#warn "DECIDE [$i] '$bstclass' $bstscore [$group->{$bstclass}->[0]]\n";
 	$consensus .= $group->{$bstclass}->[0];
@@ -689,7 +685,7 @@ sub color_by_identity {
     $self;
 }
 
-sub color_by_mismatch { die "NEVER CALLED\n"; }
+sub color_by_mismatch { die "function undefined\n"; }
 
 #this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
@@ -855,13 +851,13 @@ sub color_by_consensus_group {
 1;
 
 __DATA__
-#label      => symbol  { member list }
+#label       =>  symbol  { member list }
 
 [P1]
 #Protein consensus: conserved physicochemical classes, derived from
 #the Venn diagrams of: Taylor W. R. (1986). The classification of amino acid
 #conservation. J. Theor. Biol. 119:205-218.
-*            =>  .
+.            =>  .
 G            =>  G       { G }
 A            =>  A       { A }
 I            =>  I       { I }
@@ -893,15 +889,16 @@ alcohol      =>  o       { S, T }
 tiny         =>  u       { G, A, S }
 small        =>  s       { G, A, S,   V, T, D, N, P, C }
 turnlike     =>  t       { G, A, S,   H, K, R, D, E, Q, N, T, C }
+stop         =>  *       { * }
 
 [D1]
 #DNA consensus: conserved ring types
-#Ambiguous base R is A or G
-#Ambiguous base Y is C or T or U
-*            =>  .
+#Ambiguous base R is purine: A or G
+#Ambiguous base Y is pyrimidine: C or T or U
+.            =>  .
 A            =>  A       { A }
-G            =>  G       { G }
 C            =>  C       { C }
+G            =>  G       { G }
 T            =>  T       { T }
 U            =>  U       { U }
 purine       =>  r       { A, G,  R }
@@ -909,7 +906,7 @@ pyrimidine   =>  y       { C, T, U,  Y }
 
 [CYS]
 #Protein consensus: conserved cysteines
-*            =>  .
+.            =>  .
 C            =>  C       { C }
 
 

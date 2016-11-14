@@ -6,15 +6,15 @@
 [CYS]
 #Protein consensus: conserved cysteines
 #description =>  symbol  members
-*            =>  .     
+.            =>  .     
 C            =>  C       { C }
 
 [D1]
 #DNA consensus: conserved ring types
-#Ambiguous base R is A or G
-#Ambiguous base Y is C or T or U
+#Ambiguous base R is purine: A or G
+#Ambiguous base Y is pyrimidine: C or T or U
 #description =>  symbol  members
-*            =>  .     
+.            =>  .     
 A            =>  A       { A }
 C            =>  C       { C }
 G            =>  G       { G }
@@ -28,7 +28,7 @@ pyrimidine   =>  y       { C, T, U, Y }
 #the Venn diagrams of: Taylor W. R. (1986). The classification of amino acid
 #conservation. J. Theor. Biol. 119:205-218.
 #description =>  symbol  members
-*            =>  .     
+.            =>  .     
 A            =>  A       { A }
 C            =>  C       { C }
 D            =>  D       { D }
@@ -60,5 +60,6 @@ positive     =>  +       { H, K, R }
 small        =>  s       { A, C, D, G, N, P, S, T, V }
 tiny         =>  u       { A, G, S }
 turnlike     =>  t       { A, C, D, E, G, H, K, N, Q, R, S, T }
+stop         =>  *       { * }
 
 # MView 1.55, Copyright (C) 1997-2013 Nigel P. Brown

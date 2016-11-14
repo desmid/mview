@@ -1,10 +1,16 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.61 2016-10-12
+Version 1.61 2016-11-08
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
-    but highlights the mismatches instead using the same colormap. Using
-    this you can see blocks of misalignment and individuate particular
-    misaligned residue types by colour. Requested by Andrew Davis.
+    but highlights the mismatches instead of the identities. Using this you
+    can see blocks of misalignment and individuate particular misaligned
+    residue types by colour. Requested by Andrew Davis.
+- Changed colormap and consensus group 'mismatch' pattern from '*' to '.':
+    (1) if you use your own colormaps or consensus maps, the wildcard
+    effect in a colormap map is now obtained with . instead of *, and (2)
+    the * character now explicitly matches * in the input sequences
+    (typically a translated stop codon) so these can now be coloured
+    independently like a normal residue.
 
 Version 1.60.1  2015-10-13
 - Fixed error in get_hsp_groups calling keys(); affects BLAST, but only

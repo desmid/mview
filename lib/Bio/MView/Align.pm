@@ -8,11 +8,12 @@ use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
 use strict;
-use vars qw($Colormaps $Palette $Map_Text);
+use vars qw($Colormaps $Palette $Map_Text $Wildcard_Key);
 
-$Colormaps   = {};          #static hash of colormaps
-$Palette     = [{},[]];     #static color palette
-$Map_Text    = '';          #used as special index
+$Colormaps    = {};          #static hash of colormaps
+$Palette      = [{},[]];     #static color palette
+$Map_Text     = '';          #used as special index
+$Wildcard_Key = '.';         #key for default colouring
 
 my $BLOCKSEPARATOR = ':';   #for block search patterns
 
@@ -368,9 +369,10 @@ sub load_colormaps {
 		}
 	    }
 
-	    $Colormaps->{$map}->{$c1} = [$Palette->[0]->{$color},$seethru,$de];
-	    $Colormaps->{$map}->{$c2} = [$Palette->[0]->{$color},$seethru,$de]
-		if defined $c2;
+            #any explicit coloring
+            $Colormaps->{$map}->{$c1} = [$Palette->[0]->{$color},$seethru,$de];
+            $Colormaps->{$map}->{$c2} = [$Palette->[0]->{$color},$seethru,$de]
+                if defined $c2;
 
 	    next;
 	}
@@ -1293,8 +1295,8 @@ color  nardi-orange        :  #ff7f11
 color  nardi-pink          :  #ff11ff
 color  nardi-purple        :  #6611cc
 color  nardi-dull-blue     :  #197fe5
-color  nardi-dark-gray     :  #666666
 color  nardi-light-gray    :  #999999 
+color  nardi-dark-gray     :  #666666
 
 #Kuang Lin's colour neural net derived scheme
 color  lin-A               :  #90fe23
@@ -1319,26 +1321,26 @@ color  lin-Y               :  #e903a8
 color  lin-V               :  #5bfdfd
 
 #block colours
-color  find-A             :  #90fe23
-color  find-B             :  #fe5e2d
-color  find-C             :  #2e3d2d
-color  find-D             :  #00903b
-color  find-E             :  #004baa
-color  find-F             :  #864b00
-color  find-G             :  #3fa201
-color  find-H             :  #10fe68
-color  find-I             :  #b2063b
-color  find-J             :  #04ced9
-color  find-K             :  #4972fe
-color  find-L             :  #c4a100
-color  find-M             :  #2a84dd
-color  find-N             :  #a60ade
-color  find-O             :  #fe61fe
-color  find-P             :  #f7e847
-color  find-Q             :  #fefeb3
-color  find-R             :  #4a007f
-color  find-S             :  #e903a8
-color  find-T             :  #5bfdfd
+color  find-A              :  #90fe23
+color  find-B              :  #fe5e2d
+color  find-C              :  #2e3d2d
+color  find-D              :  #00903b
+color  find-E              :  #004baa
+color  find-F              :  #864b00
+color  find-G              :  #3fa201
+color  find-H              :  #10fe68
+color  find-I              :  #b2063b
+color  find-J              :  #04ced9
+color  find-K              :  #4972fe
+color  find-L              :  #c4a100
+color  find-M              :  #2a84dd
+color  find-N              :  #a60ade
+color  find-O              :  #fe61fe
+color  find-P              :  #f7e847
+color  find-Q              :  #fefeb3
+color  find-R              :  #4a007f
+color  find-S              :  #e903a8
+color  find-T              :  #5bfdfd
 
 
 ######################################################################
@@ -1349,6 +1351,7 @@ color  find-T             :  #5bfdfd
 
 [P1]
 #Protein: highlight amino acid physicochemical properties
+.   ->  dark-gray            #wildcard/mismatch
 Gg  =>  bright-green         #hydrophobic
 Aa  =>  bright-green         #hydrophobic
 Ii  =>  bright-green         #hydrophobic
@@ -1371,12 +1374,13 @@ Ss  =>  dull-blue            #small alcohol
 Tt  =>  dull-blue            #small alcohol
 Bb  =>  dark-gray            #D or N
 Zz  =>  dark-gray            #E or Q
-Xx  ->  dark-gray            #any
+Xx  ->  dark-gray            #unknown
 ?   ->  light-gray           #unknown
-*   ->  dark-gray            #mismatch
+*   =>  black                #stop
 
 [GPCR]
 #Protein: GPCRdb color scheme for Gert Vriend
+.   ->  dark-gray            #wildcard/mismatch
 Gg  =>  orange-brown         #backbone change
 Pp  =>  orange-brown         #backbone change
 Aa  =>  bright-green         #hydrophobic
@@ -1399,31 +1403,32 @@ Tt  =>  dark-green-blue      #small alcohol
 Yy  =>  medium-green-blue    #large hydrophobic
 Ff  =>  cyan                 #large hydrophobic
 Ww  =>  cyan                 #large hydrophobic
-Xx  ->  dark-gray            #any
+Xx  ->  dark-gray            #unknown
 ?   ->  light-gray           #unknown
-*   ->  dark-gray            #mismatch
+*   =>  black                #stop
 
 [CYS]
 #Protein: highlight cysteines
+.   ->  dark-gray            #wildcard/mismatch
 Cc  =>  yellow               #cysteine
-Xx  ->  dark-gray            #any
+Xx  ->  dark-gray            #unknown
 ?   ->  light-gray           #unknown
-*   ->  dark-gray            #mismatch
 
 [CHARGE]
 #Protein: highlight charged amino acids
+.   ->  black                #wildcard/mismatch
 Kk  =>  bright-red           #positive charge
 Rr  =>  bright-red           #positive charge
 Dd  =>  bright-blue          #negative charge
 Ee  =>  bright-blue          #negative charge
 Bb  =>  dark-gray            #D or N
 Zz  =>  dark-gray            #E or Q
-Xx  =>  dark-gray            #any
+Xx  =>  dark-gray            #unknown
 ?   =>  light-gray           #unknown
-*   =>  black                #mismatch
 
 [POLAR1]
 #Protein: highlight charged and polar amino acids
+.   ->  dark-gray            #wildcard/mismatch
 Kk  =>  bright-red           #positive charge
 Rr  =>  bright-red           #positive charge
 Dd  =>  bright-blue          #negative charge
@@ -1435,78 +1440,78 @@ Tt  =>  purple               #charged/polar
 Hh  =>  purple               #charged/polar
 Bb  =>  purple               #D or N
 Zz  =>  purple               #E or Q
-Xx  ->  dark-gray            #any
+Xx  ->  dark-gray            #unknown
 ?   ->  light-gray           #unknown
-*   ->  dark-gray            #mismatch
 
 [D1]
 #DNA: highlight nucleotide types
-Aa  =>  bright-blue          #purine
-Gg  =>  bright-blue          #purine
-Tt  =>  dull-blue            #pyrimidine
-Cc  =>  dull-blue            #pyrimidine
-Uu  =>  dull-blue            #pyrimidine
-Mm  =>  dark-gray            #A or C
-Rr  =>  dark-gray            #A or G
-Ww  =>  dark-gray            #A or T
-Ss  =>  dark-gray            #C or G
-Yy  =>  dark-gray            #C or T
-Kk  =>  dark-gray            #G or T
-Vv  =>  dark-gray            #A or C or G; not T
-Hh  =>  dark-gray            #A or C or T; not G
-Dd  =>  dark-gray            #A or G or T; not C
-Bb  =>  dark-gray            #C or G or T; not A
-Nn  =>  dark-gray            #A or C or G or T
-Xx  ->  dark-gray            #any
+.   ->  dark-gray            #wildcard/mismatch
+Aa  =>  bright-blue          #adenine
+Cc  =>  dull-blue            #cytosine
+Gg  =>  bright-blue          #guanine
+Tt  =>  dull-blue            #thymine
+Uu  =>  dull-blue            #uracil
+Mm  =>  dark-gray            #amino:      A or C
+Rr  =>  dark-gray            #purine:     A or G
+Ww  =>  dark-gray            #weak:       A or T
+Ss  =>  dark-gray            #strong:     C or G
+Yy  =>  dark-gray            #pyrimidine: C or T
+Kk  =>  dark-gray            #keto:       G or T
+Vv  =>  dark-gray            #not T:      A or C or G
+Hh  =>  dark-gray            #not G:      A or C or T
+Dd  =>  dark-gray            #not C:      A or G or T
+Bb  =>  dark-gray            #not A:      C or G or T
+Nn  =>  dark-gray            #any:        A or C or G or T
+Xx  ->  dark-gray            #unknown
 ?   ->  light-gray           #unknown
-*   ->  dark-gray            #mismatch
 
 [D2]
 #DNA: highlight match versus mismatch under consensus coloring schemes
+.   =>  bright-red           #wildcard/mismatch
 Aa  =>  bright-blue          #match
-Bb  =>  bright-blue          #match
 Cc  =>  bright-blue          #match
-Dd  =>  bright-blue          #match
 Gg  =>  bright-blue          #match
-Hh  =>  bright-blue          #match
-Kk  =>  bright-blue          #match
-Mm  =>  bright-blue          #match
-Nn  =>  bright-blue          #match
-Rr  =>  bright-blue          #match
-Ss  =>  bright-blue          #match
 Tt  =>  bright-blue          #match
 Uu  =>  bright-blue          #match
-Vv  =>  bright-blue          #match
+Mm  =>  bright-blue          #match
+Rr  =>  bright-blue          #match
 Ww  =>  bright-blue          #match
-Xx  =>  bright-blue          #match
+Ss  =>  bright-blue          #match
 Yy  =>  bright-blue          #match
+Kk  =>  bright-blue          #match
+Vv  =>  bright-blue          #match
+Hh  =>  bright-blue          #match
+Dd  =>  bright-blue          #match
+Bb  =>  bright-blue          #match
+Nn  =>  bright-blue          #match
+Xx  =>  light-gray           #unknown
 ?   ->  light-gray           #unknown
-*   =>  bright-red           #mismatch
 
 [CLUSTAL_NUC]
 #CLUSTAL-derived colours for nucleotides
+.   =>  clustal-dark-gray    #wildcard/mismatch
 Aa  =>  clustal-red          #match
-Bb  =>  clustal-dark-gray    #match
 Cc  =>  clustal-blue         #match
-Dd  =>  clustal-dark-gray    #match
 Gg  =>  clustal-orange       #match
-Hh  =>  clustal-dark-gray    #match
-Kk  =>  clustal-dark-gray    #match
-Mm  =>  clustal-dark-gray    #match
-Nn  =>  clustal-dark-gray    #match
-Rr  =>  clustal-dark-gray    #match
-Ss  =>  clustal-dark-gray    #match
 Tt  =>  clustal-green        #match
 Uu  =>  clustal-green        #match
-Vv  =>  clustal-dark-gray    #match
+Mm  =>  clustal-dark-gray    #match
+Rr  =>  clustal-dark-gray    #match
 Ww  =>  clustal-dark-gray    #match
-Xx  =>  clustal-dark-gray    #match
+Ss  =>  clustal-dark-gray    #match
 Yy  =>  clustal-dark-gray    #match
+Kk  =>  clustal-dark-gray    #match
+Vv  =>  clustal-dark-gray    #match
+Hh  =>  clustal-dark-gray    #match
+Dd  =>  clustal-dark-gray    #match
+Bb  =>  clustal-dark-gray    #match
+Nn  =>  clustal-dark-gray    #match
+Xx  =>  clustal-light-gray   #unknown
 ?   ->  clustal-light-gray   #unknown
-*   =>  clustal-dark-gray    #mismatch
 
 [PC1]
 #Protein consensus: highlight equivalence class
+.  ->  dark-gray             #unconserved
 a  ->  dark-green            #aromatic
 l  ->  bright-green          #aliphatic
 h  ->  bright-green          #hydrophobic
@@ -1518,17 +1523,17 @@ o  ->  dull-blue             #alcohol
 u  ->  bright-green          #tiny
 s  ->  bright-green          #small
 t  ->  bright-green          #turnlike
-*  ->  dark-gray             #mismatch
 
 [DC1]
 #DNA consensus: highlight ring type
+.  ->  dark-gray             #unconserved
 r  ->  purple                #purine
 y  ->  orange                #pyrimidine
-*  ->  dark-gray             #mismatch
 
 #+ Frederico Nardi
 [NARDI]
 #Protein: highlight amino acid physicochemical properties
+.        =>  nardi-dark-gray    #wildcard/mismatch
 Aa       =>  nardi-dull-blue    #hydrophobic
 Bb       =>  nardi-pink         #D or N
 Cc       =>  nardi-yellow       #cysteine
@@ -1549,42 +1554,44 @@ Ss       =>  nardi-green        #small alcohol
 Tt       =>  nardi-green        #small alcohol
 Vv       =>  nardi-dull-blue    #hydrophobic
 Ww       =>  nardi-dull-blue    #large hydrophobic
-Xx       =>  nardi-dark-gray    #any
 Yy       =>  nardi-cyan         #large hydrophobic
 Zz       =>  nardi-pink         #E or Q
+Xx       =>  nardi-dark-gray    #unknown
 ?        =>  nardi-light-gray   #unknown
-*        =>  nardi-dark-gray    #mismatch
+*        =>  black              #stop
 
 [CLUSTAL]
 #Protein: highlight amino acid physicochemical properties
-Aa       =>  clustal-blue         #hydrophobic
-Bb       =>  clustal-white        #D or N
-Cc       =>  clustal-pink         #hydrophobic
-Dd       =>  clustal-magenta      #negative charge
-Ee       =>  clustal-magenta      #negative charge
-Ff       =>  clustal-blue         #large hydrophobic
-Gg       =>  clustal-orange       #glycine
-Hh       =>  clustal-cyan         #large hydrophobic
-Ii       =>  clustal-blue         #hydrophobic
-Kk       =>  clustal-red          #positive charge
-Ll       =>  clustal-blue         #hydrophobic
-Mm       =>  clustal-blue         #hydrophobic
-Nn       =>  clustal-green        #polar
-Pp       =>  clustal-yellow       #proline
-Qq       =>  clustal-green        #polar
-Rr       =>  clustal-red          #positive charge
-Ss       =>  clustal-green        #small alcohol
-Tt       =>  clustal-green        #small alcohol
-Vv       =>  clustal-blue         #hydrophobic
-Ww       =>  clustal-blue         #large hydrophobic
-Xx       =>  clustal-dark-gray    #any
-Yy       =>  clustal-cyan         #large hydrophobic
-Zz       =>  clustal-white        #E or Q
-?        =>  clustal-light-gray   #unknown
-*        =>  clustal-dark-gray    #mismatch
+.        =>  clustal-dark-gray  #wildcard/mismatch
+Aa       =>  clustal-blue       #hydrophobic
+Bb       =>  clustal-white      #D or N
+Cc       =>  clustal-pink       #hydrophobic
+Dd       =>  clustal-magenta    #negative charge
+Ee       =>  clustal-magenta    #negative charge
+Ff       =>  clustal-blue       #large hydrophobic
+Gg       =>  clustal-orange     #glycine
+Hh       =>  clustal-cyan       #large hydrophobic
+Ii       =>  clustal-blue       #hydrophobic
+Kk       =>  clustal-red        #positive charge
+Ll       =>  clustal-blue       #hydrophobic
+Mm       =>  clustal-blue       #hydrophobic
+Nn       =>  clustal-green      #polar
+Pp       =>  clustal-yellow     #proline
+Qq       =>  clustal-green      #polar
+Rr       =>  clustal-red        #positive charge
+Ss       =>  clustal-green      #small alcohol
+Tt       =>  clustal-green      #small alcohol
+Vv       =>  clustal-blue       #hydrophobic
+Ww       =>  clustal-blue       #large hydrophobic
+Yy       =>  clustal-cyan       #large hydrophobic
+Zz       =>  clustal-white      #E or Q
+Xx       =>  clustal-dark-gray  #unknown
+?        =>  clustal-light-gray #unknown
+*        =>  black              #stop
 
 [CCLUSTAL]
 #Protein consensus: highlight equivalence class
+.        ->  nardi-dark-gray    #unconserved
 +        ->  nardi-red          #positive charge
 -        ->  nardi-pink         #negative charge
 a        ->  nardi-dull-blue    #aromatic
@@ -1596,10 +1603,10 @@ p        ->  nardi-green        #polar
 s        ->  nardi-blue         #small
 t        ->  nardi-blue         #turnlike
 u        ->  nardi-blue         #tiny
-*        ->  nardi-dark-gray    #mismatch
 
 [KXLIN]
 #Kuang Lin's colour neural net derived scheme
+.        ->  dark-gray       #wildcard/mismatch
 Aa       =>  lin-A
 Rr       =>  lin-R
 Nn       =>  lin-N
@@ -1620,11 +1627,11 @@ Tt       =>  lin-T
 Ww       =>  lin-W
 Yy       =>  lin-Y
 Vv       =>  lin-V
-Bb       =>  dark-gray            #D or N
-Zz       =>  dark-gray            #E or Q
-Xx       ->  dark-gray            #any
-?        ->  light-gray           #unknown
-*        ->  dark-gray            #mismatch
+Bb       =>  light-gray      #D or N
+Zz       =>  light-gray      #E or Q
+Xx       ->  light-gray      #unknown
+?        ->  light-gray      #unknown
+*        =>  black           #stop
 
 [FIND]
 #colour successive 'find' pattern blocks
@@ -1648,5 +1655,69 @@ Qq       =>  find-Q
 Rr       =>  find-R
 Ss       =>  find-S
 Tt       =>  find-T
+
+[RED]
+#colour mismatched amino acids
+.        =>  clustal-red     #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[BLUE]
+#colour mismatched amino acids
+.        =>  clustal-blue    #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[GREEN]
+#colour mismatched amino acids
+.        =>  clustal-green   #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[CYAN]
+#colour mismatched amino acids
+.        =>  clustal-cyan    #wildcard/mismatch
+
+[PINK]
+#colour mismatched amino acids
+.        =>  clustal-pink    #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[MAGENTA]
+#colour mismatched amino acids
+.        =>  clustal-magenta #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[YELLOW]
+#colour mismatched amino acids
+.        =>  clustal-yellow  #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[ORANGE]
+#colour mismatched amino acids
+.        =>  clustal-orange  #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
+
+[LIGHTGRAY]
+#colour mismatched amino acids
+.        =>  clustal-light-gray #wildcard/mismatch
+Xx       ->  dark-gray          #unknown
+?        ->  light-gray         #unknown
+
+[DARKGRAY]
+#colour mismatched amino acids
+.        =>  clustal-dark-gray  #wildcard/mismatch
+Xx       ->  dark-gray          #unknown
+?        ->  light-gray         #unknown
+
+[BLACK]
+#colour mismatched amino acids
+.        =>  clustal-black   #wildcard/mismatch
+Xx       ->  dark-gray       #unknown
+?        ->  light-gray      #unknown
 
 ##########################################################################
