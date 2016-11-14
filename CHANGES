@@ -1,6 +1,6 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.61 2016-11-08
+Version 1.61  2016-11-14
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
     but highlights the mismatches instead of the identities. Using this you
     can see blocks of misalignment and individuate particular misaligned
@@ -11,6 +11,8 @@ Version 1.61 2016-11-08
     the * character now explicitly matches * in the input sequences
     (typically a translated stop codon) so these can now be coloured
     independently like a normal residue.
+- Updated to handle BLAST 2.5.0+ change in '-outfmt 7' standard field names
+    ('query /sbjct id' became 'query/sbjct acc.').
 
 Version 1.60.1  2015-10-13
 - Fixed error in get_hsp_groups calling keys(); affects BLAST, but only

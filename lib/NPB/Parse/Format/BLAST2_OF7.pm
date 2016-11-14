@@ -1,6 +1,6 @@
 # -*- perl -*-
-# Copyright (C) 2015 Nigel P. Brown
-# $Id: BLAST2_OF6.pm $
+# Copyright (C) 2015-2016 Nigel P. Brown
+# $Id: BLAST2_OF7.pm $
 
 ###########################################################################
 #
@@ -52,8 +52,10 @@ use vars qw(@ISA
 
 # BLAST -outfmt 7 HEADER format is:
 #
+# Upto blast version 2.4.0+
+#
 #  # PSIBLAST 2.2.28+
-#  # Iteration: 1                  (note: psiblast only)
+#  # Iteration: 1                  [note: psiblast only]
 #  # Query: test
 #  # Database: mito.1000.aa
 #  # Fields: query id, subject id, % identity, alignment length, ...
@@ -61,12 +63,27 @@ use vars qw(@ISA
 # <data>\t<data>\t...
 # <data>\t<data>\t...
 # ...
+
+# From blast version 2.5.0+
+#
+#  # PSIBLAST 2.5.0+
+#  # Iteration: 1                  [note: psiblast only]
+#  # Query: test
+#  # Database: mito.1000.aa
+#  # Fields: query acc., subject acc., % identity, alignment length, ...
+#  # 65 hits found
+# <data>\t<data>\t...
+# <data>\t<data>\t...
+# ...
+
+# followed by
 #
 # default case: single search terminates with:
 #  # BLAST processed 1 queries
 #  <eof>
+
+# psiblast searches repeat then terminate with:
 #
-# psiblast: searches repeat then terminate with:
 #  <blank>
 #  Search has CONVERGED!
 #  # BLAST processed 2 queries
@@ -136,7 +153,8 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
 };
 
 my $MAP_RANK = {
-    'sseqid'     => 'id',
+    'sseqid'     => 'id',    #upto blast 2.4.0+
+    'sacc'       => 'id',    #from blast 2.5.0+
     'evalue'     => 'expect',
     'bitscore'   => 'bits',
     'stitle'     => 'summary',
@@ -144,7 +162,8 @@ my $MAP_RANK = {
 };
 
 my $MAP_SUM = {
-    'sseqid'     => 'id',
+    'sseqid'     => 'id',    #upto blast 2.4.0+
+    'sacc'       => 'id',    #from blast 2.5.0+
     'length'     => 'length',
     'stitle'     => 'desc',
     'salltitles' => 'desc',
@@ -196,7 +215,7 @@ sub get_fields {
         }
         $c++;
     }
-    warn "GF: read $c records\n"  if $debug;
+    warn "GF: read $c fields\n"  if $debug;
     return $c;
 }
 
@@ -407,7 +426,7 @@ sub new {
             }
 
             if ($tmp->{'id'} eq '') {
-                $self->die("blast column 'seqid' is needed to identify hits");
+                $self->die("blast column 'sseqid/sacc' is needed to identify hits");
             }
 
             $tmp->{'summary'} =
