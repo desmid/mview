@@ -11,9 +11,11 @@ Version 1.61  2016-11-14
     the * character now explicitly matches * in the input sequences
     (typically a translated stop codon) so these can now be coloured
     independently like a normal residue.
-- Tested with BLAST 2.4.0+, 2.5.0+, FASTA 36.3.8e.
+- Added colouring by single named colour; added X11 and Web 4.0 colours:
+    list them with 'mview -listcolors'.
 - Updated to handle BLAST 2.5.0+ change in '-outfmt 7' standard field names:
     'query /sbjct id' became 'query/sbjct acc.'
+- Tested with BLAST 2.4.0+, 2.5.0+, FASTA 36.3.8e.
 
 Version 1.60.1  2015-10-13
 - Fixed error in get_hsp_groups calling keys(); affects BLAST, but only

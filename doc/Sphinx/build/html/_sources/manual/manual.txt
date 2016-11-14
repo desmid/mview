@@ -538,7 +538,9 @@ Alignment colouring
 
 There are several basic ways to colour the alignment using the ``-coloring``
 option which takes five modes: ``any``, ``identity``, ``mismatch``,
-``consensus``, ``group``.
+``consensus``, ``group``. These all have default associated colour schemes,
+but you can supply a different one or just a single colour by name (see the
+description for the ``mismatch`` mode for an example).
 
 
 **Mode** ``any``
@@ -603,7 +605,8 @@ recomputed with respect to the new row of interest.
 **Mode** ``mismatch``
 
 Behaves like ``identity`` mode, but colours only those residues that differ
-from the reference sequence (usually the query or first row) with::
+from the reference sequence (the query or first row unless specified
+otherwise) with::
 
   mview ... -coloring mismatch ...
 
@@ -619,11 +622,12 @@ to produce:
   5 KIN31_CAEEL  31.5%  <SPAN CLASS=S14>V</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>T</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S17>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S12>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S12>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S13>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>LL</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>IL</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>PVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>T</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>I</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S17>R</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S8>N</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S13>FF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S14>VA</SPAN> 
   </PRE>
 
-That's using the default protein colourmap and rather difficult to see, so
-let's use a block of plain colour for all mismatched residues using the
-built-in CYAN colourmap::
+**Using a single colour**
 
-  mview ... -coloring mismatch -colormap cyan
+That's using the default protein colourmap and rather difficult to see, so
+let's mark all mismatched residues in red::
+
+  mview ... -coloring mismatch -colormap red
 
 to produce:
 
@@ -631,14 +635,17 @@ to produce:
 
   <PRE>
   1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN> 
-  2 PR2_DROME    35.7%  <SPAN CLASS=S39>ISVN</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>Q</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S39>T</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>E</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S39>I</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S39>QQ</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>V</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S39>SNGN</SPAN><SPAN style="color:#666666">E-----------</SPAN><SPAN CLASS=S39>R</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S39>Q</SPAN><SPAN style="color:#666666">VAIK</SPAN><SPAN CLASS=S39>C</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S39>CRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S39>NPM</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S39>F</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S39>K</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S39>AI</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S39>H</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S39>IEHENIV</SPAN><SPAN style="color:#666666">RL</SPAN><SPAN CLASS=S39>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>VV</SPAN> 
-  3 ITK_HUMAN    32.9%  <SPAN CLASS=S39>LTFVQEI</SPAN><SPAN style="color:#666666">GSG</SPAN><SPAN CLASS=S39>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S39>L</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S39>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S39>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S39>DK</SPAN><SPAN style="color:#666666">VAIK</SPAN><SPAN CLASS=S39>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S39>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S39>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S39>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S39>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S39>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S39>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>V</SPAN><SPAN style="color:#666666">C</SPAN> 
-  4 PTK7_HUMAN   21.2%  <SPAN CLASS=S39>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>QI</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>V</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S39>A</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S39>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S39>XLPKGSMNADGVAL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S39>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S39>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S39>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S39>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S39>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S39>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S39>A</SPAN><SPAN style="color:#666666">IC</SPAN> 
-  5 KIN31_CAEEL  31.5%  <SPAN CLASS=S39>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S39>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S39>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S39>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S39>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S39>NHQPVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S39>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S39>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S39>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S39>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S39>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S39>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S39>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S39>VA</SPAN> 
+  2 PR2_DROME    35.7%  <SPAN CLASS=S2>ISVN</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S2>T</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>I</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>QQ</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S2>SNGN</SPAN><SPAN style="color:#666666">E-----------</SPAN><SPAN CLASS=S2>R</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">VAIK</SPAN><SPAN CLASS=S2>C</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>CRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>NPM</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S2>F</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>AI</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>H</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S2>IEHENIV</SPAN><SPAN style="color:#666666">RL</SPAN><SPAN CLASS=S2>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>VV</SPAN> 
+  3 ITK_HUMAN    32.9%  <SPAN CLASS=S2>LTFVQEI</SPAN><SPAN style="color:#666666">GSG</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>L</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S2>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S2>DK</SPAN><SPAN style="color:#666666">VAIK</SPAN><SPAN CLASS=S2>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S2>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S2>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S2>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S2>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">C</SPAN> 
+  4 PTK7_HUMAN   21.2%  <SPAN CLASS=S2>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>QI</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>XLPKGSMNADGVAL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S2>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S2>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">IC</SPAN> 
+  5 KIN31_CAEEL  31.5%  <SPAN CLASS=S2>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S2>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S2>NHQPVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S2>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S2>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>VA</SPAN> 
   </PRE>
 
-Any colourmap will work and you can also build your own multicoloured
-ones. For example, you might want certain important mismatched residues
+This approach of using a single colour works with any of the coloring modes
+listed above. To see colours and colormaps use ``mview -listcolors``.
+
+You can add new colours or build your own multicoloured specialist
+colourmap. For example, you might want certain important mismatched residues
 showing up in one colour against a ground colour of all the other mismatches
 (see :ref:`ref_colourmaps`).
 

@@ -331,11 +331,12 @@ sub load_colormaps {
 	#palette data: colorname: RGBcode
 	#colorname MUST begin with a letter
 	if (/^\s*colou?r\s+([a-z][-a-z0-9_]*)\s*:\s*(\#[0123456789ABCDEF]{6})/i) {
-	    if (! exists $Palette->[0]->{$1}) {
-		#warn "palette |$1|$2|\n";
-		push @{$Palette->[1]}, $2;
-		$Palette->[0]->{$1} = $#{$Palette->[1]};  #name->index
-		$Palette->[0]->{$#{$Palette->[1]}} = $1;  #index->name
+            my ($clr, $rgb) = (lc $1, lc $2);
+	    if (! exists $Palette->[0]->{$clr}) {
+		#warn "palette: $clr => $rgb\n";
+		push @{$Palette->[1]}, $rgb;
+		$Palette->[0]->{$clr} = $#{$Palette->[1]};  #name->index
+		$Palette->[0]->{$#{$Palette->[1]}} = $clr;  #index->name
 	    }
 	    next;
 	}
@@ -352,13 +353,15 @@ sub load_colormaps {
 	if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
 
 	    ($c1, $c2, $seethru, $color, $de) =
-		($1, $2, ($3 eq '->' ? 'T' : 'S'), $4, (defined $5 ? $5 : ''));
+		($1, $2, ($3 eq '->' ? 'T' : 'S'),
+                 lc $4, (defined $5 ? $5 : ''));
 
 	    $state = 2;
 
 	    #only allow new colors in form of RGB codes
 	    if (! exists $Palette->[0]->{$color}) {
-		if ($color =~ /\#[0123456789ABCDEF]{6}/) {
+		if ($color =~ /\#[0123456789ABCDEF]{6}/i) {
+                    $color = uc $color;
 		    #warn "new color  |$color| (transparency=$seethru)\n";
 		    push @{$Palette->[1]}, $color;
 		    $Palette->[0]->{$color} = $#{$Palette->[1]};  #name->index
@@ -1207,13 +1210,12 @@ sub conservation {
 __DATA__
 
 ######################################################################
-# First some standard colours
-######################################################################
-
+# Original colours with MView
 # Netscape 216 (supposedly) cross-platform colours
 # (other colours may not resolve well on all platforms)
+######################################################################
 
-#Primaries/secondaries (cross-platform colours)
+#Primaries/secondaries (cross-platform)
 color  black               :  #000000
 color  white               :  #ffffff
 color  red                 :  #ff0000
@@ -1223,7 +1225,7 @@ color  cyan                :  #00ffff
 color  magenta             :  #ff00ff
 color  yellow              :  #ffff00
 
-#Miscellaneous (cross-platform colours)
+#Miscellaneous (cross-platform)
 color  purple              :  #6600cc
 color  dull-blue           :  #0099ff
 color  dark-green-blue     :  #33cccc
@@ -1233,6 +1235,7 @@ color  dark-green          :  #009900
 color  bright-green        :  #33cc00
 color  orange              :  #ff3333
 color  orange-brown        :  #cc6600
+color  brown               :  #8B4513
 color  bright-red          :  #cc0000
 color  light-gray          :  #999999
 color  dark-gray           :  #666666
@@ -1255,7 +1258,9 @@ color  gray13              :  #222222
 color  gray14              :  #111111
 color  gray15              :  #000000
 
-#CLUSTALX screen colours (protein + nucleotide)
+###########################################################################
+# CLUSTALX screen colours (protein + nucleotide)
+###########################################################################
 color  clustal-red         :  #e53319
 color  clustal-blue        :  #197fe5
 color  clustal-green       :  #19cc19
@@ -1269,7 +1274,9 @@ color  clustal-light-gray  :  #999999
 color  clustal-dark-gray   :  #666666
 color  clustal-black       :  #000000
 
-#CLUSTALX printing colours (protein + nucleotide)
+###########################################################################
+# CLUSTALX printing colours (protein + nucleotide)
+###########################################################################
 color  clustal-white-print 	:  #ffffff
 color  clustal-yellow-print	:  #ffff00
 color  clustal-violet-print     :  #6619e5
@@ -1285,7 +1292,9 @@ color  clustal-green-print      :  #19cc19
 color  clustal-light-gray-print :  #999999
 color  clustal-dark-gray-print  :  #99b2b2
 
-#Frederico Nardi's suggested colours for CLUSTAL
+###########################################################################
+# Frederico Nardi's suggested colours for CLUSTAL
+###########################################################################
 color  nardi-red           :  #ff1111
 color  nardi-blue          :  #1155ff
 color  nardi-green         :  #11dd11
@@ -1298,7 +1307,9 @@ color  nardi-dull-blue     :  #197fe5
 color  nardi-light-gray    :  #999999 
 color  nardi-dark-gray     :  #666666
 
-#Kuang Lin's colour neural net derived scheme
+###########################################################################
+# Kuang Lin's colour neural net derived scheme
+###########################################################################
 color  lin-A               :  #90fe23
 color  lin-R               :  #fe5e2d
 color  lin-N               :  #2e3d2d
@@ -1320,7 +1331,9 @@ color  lin-W               :  #4a007f
 color  lin-Y               :  #e903a8
 color  lin-V               :  #5bfdfd
 
-#block colours
+###########################################################################
+# Limited set of MView search block colours
+###########################################################################
 color  find-A              :  #90fe23
 color  find-B              :  #fe5e2d
 color  find-C              :  #2e3d2d
@@ -1342,12 +1355,199 @@ color  find-R              :  #4a007f
 color  find-S              :  #e903a8
 color  find-T              :  #5bfdfd
 
+###########################################################################
+# Web 4.01 specification:
+# https://en.wikipedia.org/wiki/Web_colors
+###########################################################################
+color  White    : #FFFFFF
+color  Silver   : #C0C0C0
+color  Gray     : #808080
+color  Black    : #000000
+color  Red      : #FF0000
+color  Maroon   : #800000
+color  Yellow   : #FFFF00
+color  Olive    : #808000
+color  Lime     : #00FF00
+color  Green    : #008000
+color  Aqua     : #00FFFF
+color  Teal     : #008080
+color  Blue     : #0000FF
+color  Navy     : #000080
+color  Fuchsia  : #FF00FF
+color  Purple   : #800080
+
+###########################################################################
+# X11 colours
+# https://en.wikipedia.org/wiki/Web_colors
+###########################################################################
+
+#Pink colors
+color  Pink                 : #FFC0CB
+color  LightPink            : #FFB6C1
+color  HotPink              : #FF69B4
+color  DeepPink             : #FF1493
+color  PaleVioletRed        : #DB7093
+color  MediumVioletRed      : #C71585
+
+#Red colors
+color  LightSalmon          : #FFA07A
+color  Salmon               : #FA8072
+color  DarkSalmon           : #E9967A
+color  LightCoral           : #F08080
+color  IndianRed            : #CD5C5C
+color  Crimson              : #DC143C
+color  FireBrick            : #B22222
+color  DarkRed              : #8B0000
+color  Red                  : #FF0000
+
+#Orange colors
+color  OrangeRed            : #FF4500
+color  Tomato               : #FF6347
+color  Coral                : #FF7F50
+color  DarkOrange           : #FF8C00
+color  Orange               : #FFA500
+
+#Yellow colors
+color  Yellow               : #FFFF00
+color  LightYellow          : #FFFFE0
+color  LemonChiffon         : #FFFACD
+color  LightGoldenrodYellow : #FAFAD2
+color  PapayaWhip           : #FFEFD5
+color  Moccasin             : #FFE4B5
+color  PeachPuff            : #FFDAB9
+color  PaleGoldenrod        : #EEE8AA
+color  Khaki                : #F0E68C
+color  DarkKhaki            : #BDB76B
+color  Gold                 : #FFD700
+
+#Brown colors
+color  Cornsilk             : #FFF8DC
+color  BlanchedAlmond       : #FFEBCD
+color  Bisque               : #FFE4C4
+color  NavajoWhite          : #FFDEAD
+color  Wheat                : #F5DEB3
+color  BurlyWood            : #DEB887
+color  Tan                  : #D2B48C
+color  RosyBrown            : #BC8F8F
+color  SandyBrown           : #F4A460
+color  Goldenrod            : #DAA520
+color  DarkGoldenrod        : #B8860B
+color  Peru                 : #CD853F
+color  Chocolate            : #D2691E
+color  SaddleBrown          : #8B4513
+color  Sienna               : #A0522D
+color  Brown                : #A52A2A
+color  Maroon               : #800000
+
+#Green colors
+color  DarkOliveGreen       : #556B2F
+color  Olive                : #808000
+color  OliveDrab            : #6B8E23
+color  YellowGreen          : #9ACD32
+color  LimeGreen            : #32CD32
+color  Lime                 : #00FF00
+color  LawnGreen            : #7CFC00
+color  Chartreuse           : #7FFF00
+color  GreenYellow          : #ADFF2F
+color  SpringGreen          : #00FF7F
+color  MediumSpringGreen    : #00FA9A
+color  LightGreen           : #90EE90
+color  PaleGreen            : #98FB98
+color  DarkSeaGreen         : #8FBC8F
+color  MediumAquamarine     : #66CDAA
+color  MediumSeaGreen       : #3CB371
+color  SeaGreen             : #2E8B57
+color  ForestGreen          : #228B22
+color  Green                : #008000
+color  DarkGreen            : #006400
+
+#Cyan colors
+color  Aqua                 : #00FFFF
+color  Cyan                 : #00FFFF
+color  LightCyan            : #E0FFFF
+color  PaleTurquoise        : #AFEEEE
+color  Aquamarine           : #7FFFD4
+color  Turquoise            : #40E0D0
+color  MediumTurquoise      : #48D1CC
+color  DarkTurquoise        : #00CED1
+color  LightSeaGreen        : #20B2AA
+color  CadetBlue            : #5F9EA0
+color  DarkCyan             : #008B8B
+color  Teal                 : #008080
+
+#Blue colors
+color  LightSteelBlue       : #B0C4DE
+color  PowderBlue           : #B0E0E6
+color  LightBlue            : #ADD8E6
+color  SkyBlue              : #87CEEB
+color  LightSkyBlue         : #87CEFA
+color  DeepSkyBlue          : #00BFFF
+color  DodgerBlue           : #1E90FF
+color  CornflowerBlue       : #6495ED
+color  SteelBlue            : #4682B4
+color  RoyalBlue            : #4169E1
+color  Blue                 : #0000FF
+color  MediumBlue           : #0000CD
+color  DarkBlue             : #00008B
+color  Navy                 : #000080
+color  MidnightBlue         : #191970
+
+#Purple, violet, and magenta colors
+color  Lavender             : #E6E6FA
+color  Thistle              : #D8BFD8
+color  Plum                 : #DDA0DD
+color  Violet               : #EE82EE
+color  Orchid               : #DA70D6
+color  Fuchsia              : #FF00FF
+color  Magenta              : #FF00FF
+color  MediumOrchid         : #BA55D3
+color  MediumPurple         : #9370DB
+color  BlueViolet           : #8A2BE2
+color  DarkViolet           : #9400D3
+color  DarkOrchid           : #9932CC
+color  DarkMagenta          : #8B008B
+color  Purple               : #800080
+color  Indigo               : #4B0082
+color  DarkSlateBlue        : #483D8B
+color  SlateBlue            : #6A5ACD
+color  MediumSlateBlue      : #7B68EE
+
+#White colors
+color  White                : #FFFFFF
+color  Snow                 : #FFFAFA
+color  Honeydew             : #F0FFF0
+color  MintCream            : #F5FFFA
+color  Azure                : #F0FFFF
+color  AliceBlue            : #F0F8FF
+color  GhostWhite           : #F8F8FF
+color  WhiteSmoke           : #F5F5F5
+color  Seashell             : #FFF5EE
+color  Beige                : #F5F5DC
+color  OldLace              : #FDF5E6
+color  FloralWhite          : #FFFAF0
+color  Ivory                : #FFFFF0
+color  AntiqueWhite         : #FAEBD7
+color  Linen                : #FAF0E6
+color  LavenderBlush        : #FFF0F5
+color  MistyRose            : #FFE4E1
+
+#Gray and black colors
+color  Gainsboro            : #DCDCDC
+color  LightGray            : #D3D3D3
+color  Silver               : #C0C0C0
+color  DarkGray             : #A9A9A9
+color  Gray                 : #808080
+color  DimGray              : #696969
+color  LightSlateGray       : #778899
+color  SlateGray            : #708090
+color  DarkSlateGray        : #2F4F4F
+color  Black                : #000000
 
 ######################################################################
-#now some colour schemes
+# Colourmaps
+#
+# symbol -> colour (RGB hex or colorname)  [#comment]
 ######################################################################
-
-#symbol -> colour (RGB hex or colorname)  [#comment]
 
 [P1]
 #Protein: highlight amino acid physicochemical properties
@@ -1655,69 +1855,5 @@ Qq       =>  find-Q
 Rr       =>  find-R
 Ss       =>  find-S
 Tt       =>  find-T
-
-[RED]
-#colour mismatched amino acids
-.        =>  clustal-red     #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[BLUE]
-#colour mismatched amino acids
-.        =>  clustal-blue    #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[GREEN]
-#colour mismatched amino acids
-.        =>  clustal-green   #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[CYAN]
-#colour mismatched amino acids
-.        =>  clustal-cyan    #wildcard/mismatch
-
-[PINK]
-#colour mismatched amino acids
-.        =>  clustal-pink    #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[MAGENTA]
-#colour mismatched amino acids
-.        =>  clustal-magenta #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[YELLOW]
-#colour mismatched amino acids
-.        =>  clustal-yellow  #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[ORANGE]
-#colour mismatched amino acids
-.        =>  clustal-orange  #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
-
-[LIGHTGRAY]
-#colour mismatched amino acids
-.        =>  clustal-light-gray #wildcard/mismatch
-Xx       ->  dark-gray          #unknown
-?        ->  light-gray         #unknown
-
-[DARKGRAY]
-#colour mismatched amino acids
-.        =>  clustal-dark-gray  #wildcard/mismatch
-Xx       ->  dark-gray          #unknown
-?        ->  light-gray         #unknown
-
-[BLACK]
-#colour mismatched amino acids
-.        =>  clustal-black   #wildcard/mismatch
-Xx       ->  dark-gray       #unknown
-?        ->  light-gray      #unknown
 
 ##########################################################################

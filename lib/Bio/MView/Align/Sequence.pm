@@ -118,8 +118,8 @@ sub get_color {
 	return ($color, "$trans$index");
     }
 
-    #preset colour name in $map, used for string searches
-    #where all matches should be same colour
+    #preset colour name in $map, used for string searches or plain
+    #colouring where all matches should be same colour
     if (exists $Bio::MView::Align::Palette->[0]->{$map}) {
 
 	$trans = 'S';
