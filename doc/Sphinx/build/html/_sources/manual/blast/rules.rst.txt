@@ -25,8 +25,8 @@ command line option ``-hsp``. There are three choices:
 		   alignment row per hit. This is the default behaviour.
 
  ``-hsp discrete`` All HSPs or alignments are selected, but each is assigned
-                   its own row in the resulting stacked alignment. This is way
-                   to view or extract every distinct HSP.
+                   its own row in the resulting stacked alignment. This is the
+                   way to view or extract every distinct HSP.
 
  ``-hsp all``      All HSPs or alignments are selected and tiled into a single
                    alignment row per hit. This is probably not what you want
