@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 2015-2016 Nigel P. Brown
+# Copyright (C) 2015-2017 Nigel P. Brown
 # $Id: BLAST2_OF7.pm $
 
 ###########################################################################
@@ -76,6 +76,18 @@ use vars qw(@ISA
 # <data>\t<data>\t...
 # ...
 
+# From blast version 2.6.0+
+#
+#  # PSIBLAST 2.6.0+
+#  # Iteration: 1                  [note: psiblast only]
+#  # Query: test
+#  # Database: mito.1000.aa
+#  # Fields: query acc.ver, subject acc.ver, % identity, alignment length, ...
+#  # 65 hits found
+# <data>\t<data>\t...
+# <data>\t<data>\t...
+# ...
+
 # followed by
 #
 # default case: single search terminates with:
@@ -106,34 +118,34 @@ my $FIELD_SKIP   = '-';
 my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
     #HEADER comment             blast specifier      #std specifier
     #--------------------------------------------------------------
-    'query id'               => 'qseqid',            #y
+    'query id'               => 'qseqid',            #upto 2.4.0+
     'query gi'               => 'qgi',
-    'query acc.'             => 'qacc',
-    'query acc.ver'          => 'qaccver',
+    'query acc.'             => 'qacc',              #from 2.5.0+
+    'query acc.ver'          => 'qaccver',           #from 2.6.0+
     'query length'           => 'qlen',
-    'subject id'             => 'sseqid',            #y
+    'subject id'             => 'sseqid',            #upto 2.4.0+
     'subject ids'            => 'sallseqid',
     'subject gi'             => 'sgi',
     'subject gis'            => 'sallgi',
-    'subject acc.'           => 'sacc',
-    'subject acc.ver'        => 'saccver',
+    'subject acc.'           => 'sacc',              #from 2.5.0+
+    'subject acc.ver'        => 'saccver',           #from 2.6.0+
     'subject accs.'          => 'sallacc',
     'subject length'         => 'slen',
-    'q. start'               => 'qstart',            #y
-    'q. end'                 => 'qend',              #y
-    's. start'               => 'sstart',            #y
-    's. end'                 => 'send',              #y
+    'q. start'               => 'qstart',            #yes
+    'q. end'                 => 'qend',              #yes
+    's. start'               => 'sstart',            #yes
+    's. end'                 => 'send',              #yes
     'query seq'              => 'qseq',
     'subject seq'            => 'sseq',
-    'evalue'                 => 'evalue',            #y
-    'bit score'              => 'bitscore',          #y
+    'evalue'                 => 'evalue',            #yes
+    'bit score'              => 'bitscore',          #yes
     'score'                  => 'score',
-    'alignment length'       => 'length',            #y
-    '% identity'             => 'pident',            #y
+    'alignment length'       => 'length',            #yes
+    '% identity'             => 'pident',            #yes
     'identical'              => 'nident',
-    'mismatches'             => 'mismatch',          #y
+    'mismatches'             => 'mismatch',          #yes
     'positives'              => 'positive',
-    'gap opens'              => 'gapopen',           #y
+    'gap opens'              => 'gapopen',           #yes
     'gaps'                   => 'gaps',
     '% positives'            => 'ppos',
     'query/sbjct frames'     => 'frames',
@@ -153,8 +165,9 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
 };
 
 my $MAP_RANK = {
-    'sseqid'     => 'id',    #upto blast 2.4.0+
-    'sacc'       => 'id',    #from blast 2.5.0+
+    'sseqid'     => 'id',    #upto 2.4.0+
+    'sacc'       => 'id',    #from 2.5.0+
+    'saccver'    => 'id',    #from 2.6.0+
     'evalue'     => 'expect',
     'bitscore'   => 'bits',
     'stitle'     => 'summary',
@@ -162,8 +175,9 @@ my $MAP_RANK = {
 };
 
 my $MAP_SUM = {
-    'sseqid'     => 'id',    #upto blast 2.4.0+
-    'sacc'       => 'id',    #from blast 2.5.0+
+    'sseqid'     => 'id',    #upto 2.4.0+
+    'sacc'       => 'id',    #from 2.5.0+
+    'saccver'    => 'id',    #from 2.6.0+
     'length'     => 'length',
     'stitle'     => 'desc',
     'salltitles' => 'desc',

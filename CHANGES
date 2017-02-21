@@ -1,5 +1,8 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
+Version 1.62  2017-02-21
+- Updated for BLAST 2.6.0+ with '-outfmt 7' changes.
+
 Version 1.61  2016-11-14
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
     but highlights the mismatches instead of the identities. Using this you
