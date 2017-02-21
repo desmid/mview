@@ -75,8 +75,8 @@ query or first row) thus:
 
 .. math::
 
-  \frac{\mathrm{number of identical residues}}
-       {\mathrm{length of ungapped reference sequence over aligned region}}
+  \frac{\mathrm{number~of~identical~residues}}
+       {\mathrm{length~of~ungapped~reference~sequence~over~aligned~region}}
   \times 100
 
 Still, in the case of BLAST MView output, minor deviations from the

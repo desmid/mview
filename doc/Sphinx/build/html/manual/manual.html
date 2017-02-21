@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manual &mdash; MView</title>
+    <title>Manual &#8212; MView</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,20 +17,21 @@
         VERSION:     '1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="MView" href="../index.html" />
-    <link rel="up" title="Contents" href="../contents.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Input formats" href="formats_in.html" />
     <link rel="prev" title="Introduction" href="intro.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -42,11 +43,11 @@
         <li class="right" >
           <a href="intro.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">MView</a> &raquo;</li>
-          <li><a href="../contents.html" accesskey="U">Contents</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../contents.html" accesskey="U">Contents</a> &#187;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -109,22 +110,21 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="formats_in.html"
                         title="next chapter">Input formats</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/manual/manual.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/manual/manual.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -133,7 +133,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <LINK rel="stylesheet" type="text/css" href="../_static/MView.css"><div class="section" id="manual">
 <h1>Manual<a class="headerlink" href="#manual" title="Permalink to this headline">¶</a></h1>
@@ -141,13 +141,13 @@
 <h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="getting-started">
 <h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h3>
-<p>Given an existing sequence alignment in a file <tt class="docutils literal"><span class="pre">data.dat</span></tt> in FASTA format,
+<p>Given an existing sequence alignment in a file <code class="docutils literal"><span class="pre">data.dat</span></code> in FASTA format,
 the simplest usage might be:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta data.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>Similarly, if the input file contained a CLUSTAL alignment:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in clustal data.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">clustal</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>In either case, the output would be a stacked alignment with extra columns
@@ -163,26 +163,26 @@ Identities normalised by aligned length.
 4 PTK7_HUMAN   21.2%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
 5 KIN31_CAEEL  31.5%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
 </PRE><p>To process the output of a BLAST run use something like:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in blast blastresults.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="n">blastresults</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>while to process the output of a FASTA run (the database search program, not
 the simple FASTA/Pearson data format) use something like:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in uvfasta fastaresults.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">uvfasta</span> <span class="n">fastaresults</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">-in</span></tt> option isn&#8217;t always necessary. If the filename extension, or the
+<p>The <code class="docutils literal"><span class="pre">-in</span></code> option isn&#8217;t always necessary. If the filename extension, or the
 filename itself minus any directory path begins with or contains the first few
-letters of the valid <tt class="docutils literal"><span class="pre">-in</span></tt> options (e.g., <tt class="docutils literal"><span class="pre">mydata.msf</span></tt> or <tt class="docutils literal"><span class="pre">mydata.fasta</span></tt>
-or <tt class="docutils literal"><span class="pre">tfastx_run.dat</span></tt>), MView tries to choose a sensible input format,
+letters of the valid <code class="docutils literal"><span class="pre">-in</span></code> options (e.g., <code class="docutils literal"><span class="pre">mydata.msf</span></code> or <code class="docutils literal"><span class="pre">mydata.fasta</span></code>
+or <code class="docutils literal"><span class="pre">tfastx_run.dat</span></code>), MView tries to choose a sensible input format,
 allowing multiple files in mixed formats to be supplied on the command
-line. The <tt class="docutils literal"><span class="pre">-in</span></tt> option will always override this mechanism but requires that
+line. The <code class="docutils literal"><span class="pre">-in</span></code> option will always override this mechanism but requires that
 all input files be of the same format.</p>
 </div>
 <div class="section" id="attaching-a-ruler">
 <span id="ref-rulers"></span><h3>Attaching a ruler<a class="headerlink" href="#attaching-a-ruler" title="Permalink to this headline">¶</a></h3>
-<p>Add a ruler along the top, with <tt class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></tt>, for example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta -ruler on data.dat
+<p>Add a ruler along the top, with <code class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></code>, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="o">-</span><span class="n">ruler</span> <span class="n">on</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -208,7 +208,7 @@ modulo 3 arithmetic).</p>
 <div class="section" id="changing-the-reference-sequence">
 <span id="ref-reference-row"></span><h3>Changing the reference sequence<a class="headerlink" href="#changing-the-reference-sequence" title="Permalink to this headline">¶</a></h3>
 <p>One can colour and compute identities with respect to a sequence other than
-the first/query sequence using the <tt class="docutils literal"><span class="pre">-reference</span></tt> option. This takes either
+the first/query sequence using the <code class="docutils literal"><span class="pre">-reference</span></code> option. This takes either
 the sequence identifier or an integer argument corresponding to the ranking or
 ordering of a sequence usually shown in the first labelling column of MView
 output. For multiple alignment input formats, sequences are numbered from 1,
@@ -218,7 +218,7 @@ beware.</p>
 <div class="section" id="command-line-options">
 <h3>Command line options<a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
 <p>ALl available options can be listed using:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mview</span> <span class="o">-</span><span class="n">help</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="n">help</span>
 </pre></div>
 </div>
 <p>There are a lot of options, but the main ones are described in this manual.</p>
@@ -229,13 +229,13 @@ beware.</p>
 <div class="section" id="basic-html">
 <h3>Basic HTML<a class="headerlink" href="#basic-html" title="Permalink to this headline">¶</a></h3>
 <p>To add some HTML markup a few extra options are needed, for example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta -html head data.dat &gt; data.html
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span> <span class="o">&gt;</span> <span class="n">data</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 <p>produces a complete page of HTML and you can load this into your Web browser
-with a URL like <tt class="docutils literal"><span class="pre">file:///full/path/to/the/folder/data.html</span></tt>.</p>
+with a URL like <code class="docutils literal"><span class="pre">file:///full/path/to/the/folder/data.html</span></code>.</p>
 <p>To colour all the residues using the default built-in colourmap for proteins:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta -ruler on -html head -coloring any data.dat &gt; data.html
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="o">-</span><span class="n">ruler</span> <span class="n">on</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">coloring</span> <span class="nb">any</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span> <span class="o">&gt;</span> <span class="n">data</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 <p>produces:</p>
@@ -248,8 +248,8 @@ Colored by: property
 3 ITK_HUMAN    32.9%    <SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">IG</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">GLV</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">LG</SPAN><SPAN style="color:#009900">YW</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">VAI</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">GAM</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#666666">---</SPAN><SPAN style="color:#0033ff">EED</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#0033ff">EE</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">VMM</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">P</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">LV</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#009900">Y</SPAN><SPAN style="color:#33cc00">GV</SPAN><SPAN style="color:#ffff00">C</SPAN>
 4 PTK7_HUMAN   21.2%    <SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">IGVG</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">GAVVLA</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">GL</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#666666">-X</SPAN><SPAN style="color:#33cc00">LP</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">GVALVAV</SPAN><SPAN style="color:#cc0000">KK</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">P</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">VL</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">IV</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">LLAI</SPAN><SPAN style="color:#ffff00">C</SPAN>
 5 KIN31_CAEEL  31.5%    <SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#cc0000">KK</SPAN><SPAN style="color:#33cc00">LG</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">GA</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#009900">W</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">LL</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">IL</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">PVLVAV</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">IM</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#33cc00">LM</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">VV</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#009900">FF</SPAN><SPAN style="color:#33cc00">GVA</SPAN>
-</PRE><p>To make the letters stand out use the <tt class="docutils literal"><span class="pre">-bold</span></tt> option:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta -ruler on -html head -bold -coloring any data.dat &gt; data.html
+</PRE><p>To make the letters stand out use the <code class="docutils literal"><span class="pre">-bold</span></code> option:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="o">-</span><span class="n">ruler</span> <span class="n">on</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">bold</span> <span class="o">-</span><span class="n">coloring</span> <span class="nb">any</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span> <span class="o">&gt;</span> <span class="n">data</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 <p>giving:</p>
@@ -262,8 +262,8 @@ Colored by: property
 3 ITK_HUMAN    32.9% <STRONG>  </STRONG> <STRONG><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">IG</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">GLV</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">LG</SPAN><SPAN style="color:#009900">YW</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">VAI</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">GAM</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#666666">---</SPAN><SPAN style="color:#0033ff">EED</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#0033ff">EE</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">VMM</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">P</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">LV</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#009900">Y</SPAN><SPAN style="color:#33cc00">GV</SPAN><SPAN style="color:#ffff00">C</SPAN></STRONG> <STRONG>  </STRONG>
 4 PTK7_HUMAN   21.2% <STRONG>  </STRONG> <STRONG><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">IGVG</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">GAVVLA</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">GL</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#666666">-X</SPAN><SPAN style="color:#33cc00">LP</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">GVALVAV</SPAN><SPAN style="color:#cc0000">KK</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">P</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">VL</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">IV</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">LLAI</SPAN><SPAN style="color:#ffff00">C</SPAN></STRONG> <STRONG>  </STRONG>
 5 KIN31_CAEEL  31.5% <STRONG>  </STRONG> <STRONG><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#cc0000">KK</SPAN><SPAN style="color:#33cc00">LG</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">GA</SPAN><SPAN style="color:#009900">F</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">V</SPAN><SPAN style="color:#009900">W</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">G</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">LL</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">IL</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">PVLVAV</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#0099ff">S</SPAN><SPAN style="color:#33cc00">M</SPAN><SPAN style="color:#0099ff">T</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#6600cc">Q</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">IM</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#0033ff">E</SPAN><SPAN style="color:#33cc00">A</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#33cc00">LM</SPAN><SPAN style="color:#cc0000">R</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">L</SPAN><SPAN style="color:#0033ff">D</SPAN><SPAN style="color:#009900">H</SPAN><SPAN style="color:#33cc00">I</SPAN><SPAN style="color:#6600cc">N</SPAN><SPAN style="color:#33cc00">VV</SPAN><SPAN style="color:#cc0000">K</SPAN><SPAN style="color:#009900">FF</SPAN><SPAN style="color:#33cc00">GVA</SPAN></STRONG> <STRONG>  </STRONG>
-</PRE><p>Or change the colouring to use blocked letters with <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt> instead:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in fasta -ruler on -html head -css on -coloring any data.dat &gt; data.html
+</PRE><p>Or change the colouring to use blocked letters with <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code> instead:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">fasta</span> <span class="o">-</span><span class="n">ruler</span> <span class="n">on</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">css</span> <span class="n">on</span> <span class="o">-</span><span class="n">coloring</span> <span class="nb">any</span> <span class="n">data</span><span class="o">.</span><span class="n">dat</span> <span class="o">&gt;</span> <span class="n">data</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 <p>giving:</p>
@@ -276,13 +276,13 @@ Colored by: property
 3 ITK_HUMAN    32.9%    <SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>IG</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>GLV</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>LG</SPAN><SPAN CLASS=S13>YW</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S8>N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>VAI</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>GAM</SPAN><SPAN CLASS=S9>S</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S12>EED</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>VMM</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>P</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>LV</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S13>Y</SPAN><SPAN CLASS=S14>GV</SPAN><SPAN CLASS=S7>C</SPAN>
 4 PTK7_HUMAN   21.2%    <SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>IGVG</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>GAVVLA</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>GL</SPAN><SPAN CLASS=S9>S</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=T19>X</SPAN><SPAN CLASS=S14>LP</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>GVALVAV</SPAN><SPAN CLASS=S17>KK</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>P</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S12>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>VL</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>IV</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>LLAI</SPAN><SPAN CLASS=S7>C</SPAN>
 5 KIN31_CAEEL  31.5%    <SPAN CLASS=S14>V</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S17>KK</SPAN><SPAN CLASS=S14>LG</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>GA</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S13>W</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>LL</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>IL</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>PVLVAV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>IM</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S14>LM</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>VV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S13>FF</SPAN><SPAN CLASS=S14>GVA</SPAN>
-</PRE><p>You can combine <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt> with <tt class="docutils literal"><span class="pre">-bold</span></tt> to make the blocks and letters even
+</PRE><p>You can combine <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code> with <code class="docutils literal"><span class="pre">-bold</span></code> to make the blocks and letters even
 more prominent.</p>
-<p>If your data are DNA or RNA, add the option <tt class="docutils literal"><span class="pre">-moltype</span> <span class="pre">dna</span></tt> (or <tt class="docutils literal"><span class="pre">rna</span></tt> or
-<tt class="docutils literal"><span class="pre">na</span></tt> for &#8220;nucleic acid&#8221;) to change to the default nucleotide
+<p>If your data are DNA or RNA, add the option <code class="docutils literal"><span class="pre">-moltype</span> <span class="pre">dna</span></code> (or <code class="docutils literal"><span class="pre">rna</span></code> or
+<code class="docutils literal"><span class="pre">na</span></code> for &#8220;nucleic acid&#8221;) to change to the default nucleotide
 colourmap. Here&#8217;s an MView run on some BLASTN data demonstrating some other
 options as well:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in blast -ruler on -html head -css on -coloring identity -moltype dna -top 5 -range 250:310 blastn.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">ruler</span> <span class="n">on</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">css</span> <span class="n">on</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">identity</span> <span class="o">-</span><span class="n">moltype</span> <span class="n">dna</span> <span class="o">-</span><span class="n">top</span> <span class="mi">5</span> <span class="o">-</span><span class="nb">range</span> <span class="mi">250</span><span class="p">:</span><span class="mi">310</span> <span class="n">blastn</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>which (slightly edited to reduce space) produced:</p>
@@ -301,40 +301,40 @@ using the default nucleotide colouring scheme (purines, dark blue;
 pyrimidines, light blue). Notice the lower-cased pairs of thymines near the
 end of sequences 3 and 4, columns 299&#8211;300 indicating where a segment of hit
 sequence has been excised to close a gap in the query (see
-<a class="reference internal" href="faq.html#ref-funny-sequences"><em>Why are some symbols lowercased?</em></a>).</p>
+<a class="reference internal" href="faq.html#ref-funny-sequences"><span class="std std-ref">Why are some symbols lowercased?</span></a>).</p>
 </div>
 <div class="section" id="controlling-the-amount-of-html">
 <h3>Controlling the amount of HTML<a class="headerlink" href="#controlling-the-amount-of-html" title="Permalink to this headline">¶</a></h3>
-<p>There are several values that can be passed to the <tt class="docutils literal"><span class="pre">-html</span></tt> option: <tt class="docutils literal"><span class="pre">head</span></tt>,
-<tt class="docutils literal"><span class="pre">body</span></tt>, <tt class="docutils literal"><span class="pre">data</span></tt>, <tt class="docutils literal"><span class="pre">full</span></tt>, <tt class="docutils literal"><span class="pre">off</span></tt>.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">head</span></tt></p>
-<p>Produces a complete web page. Output includes the style sheet if <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt>
+<p>There are several values that can be passed to the <code class="docutils literal"><span class="pre">-html</span></code> option: <code class="docutils literal"><span class="pre">head</span></code>,
+<code class="docutils literal"><span class="pre">body</span></code>, <code class="docutils literal"><span class="pre">data</span></code>, <code class="docutils literal"><span class="pre">full</span></code>, <code class="docutils literal"><span class="pre">off</span></code>.</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">head</span></code></p>
+<p>Produces a complete web page. Output includes the style sheet if <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code>
 was given. The most common situation.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">body</span></tt></p>
-<p>Produces just the <tt class="docutils literal"><span class="pre">&lt;BODY&gt;&lt;/BODY&gt;</span></tt> part of the web page.  Note: the style
-sheet produced by <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt> will be missing.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">data</span></tt></p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">body</span></code></p>
+<p>Produces just the <code class="docutils literal"><span class="pre">&lt;BODY&gt;&lt;/BODY&gt;</span></code> part of the web page.  Note: the style
+sheet produced by <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code> will be missing.</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">data</span></code></p>
 <p>Produces just the alignment part of the web page. Note: any style sheet
-produced by <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt> will be missing.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">full</span></tt></p>
-<p>Produces a complete web page with the <tt class="docutils literal"><span class="pre">MIME-type</span> <span class="pre">&quot;text/html&quot;</span></tt>, suitable for
-serving directly from a web server. Output includes the style sheet if <tt class="docutils literal"><span class="pre">-css</span>
-<span class="pre">on</span></tt> was given.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">off</span></tt></p>
+produced by <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code> will be missing.</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">full</span></code></p>
+<p>Produces a complete web page with the <code class="docutils literal"><span class="pre">MIME-type</span> <span class="pre">&quot;text/html&quot;</span></code>, suitable for
+serving directly from a web server. Output includes the style sheet if <code class="docutils literal"><span class="pre">-css</span>
+<span class="pre">on</span></code> was given.</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">off</span></code></p>
 <p>Switches off HTML (default).</p>
 </div>
 <div class="section" id="using-an-external-css-style-sheet">
 <h3>Using an external CSS style sheet<a class="headerlink" href="#using-an-external-css-style-sheet" title="Permalink to this headline">¶</a></h3>
-<p>The option <tt class="docutils literal"><span class="pre">-listcss</span></tt> dumps the style sheet to stdout, so you can share that
+<p>The option <code class="docutils literal"><span class="pre">-listcss</span></code> dumps the style sheet to stdout, so you can share that
 across MView invocations from a web server. Each would be of the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -css URL ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="n">css</span> <span class="n">URL</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>where the URL specifies the location of the style sheet as seen by the web
-server (i.e., <tt class="docutils literal"><span class="pre">file:///some/path</span></tt> or <tt class="docutils literal"><span class="pre">http://server/path</span></tt>).</p>
+server (i.e., <code class="docutils literal"><span class="pre">file:///some/path</span></code> or <code class="docutils literal"><span class="pre">http://server/path</span></code>).</p>
 <p>If you build a new colourmap you can load it into MView and save the new CSS
-file. Suppose you have a new colourmap in <tt class="docutils literal"><span class="pre">newcolmap.dat</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -colorfile newcolmap.dat -listcss
+file. Suppose you have a new colourmap in <code class="docutils literal"><span class="pre">newcolmap.dat</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="n">colorfile</span> <span class="n">newcolmap</span><span class="o">.</span><span class="n">dat</span> <span class="o">-</span><span class="n">listcss</span>
 </pre></div>
 </div>
 <p>will dump the new style sheet for use as before.</p>
@@ -344,8 +344,8 @@ file. Suppose you have a new colourmap in <tt class="docutils literal"><span cla
 <span id="ref-consensus-sequences"></span><h2>Consensus sequences<a class="headerlink" href="#consensus-sequences" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="clustal-conservation-line">
 <h3>Clustal conservation line<a class="headerlink" href="#clustal-conservation-line" title="Permalink to this headline">¶</a></h3>
-<p>A Clustal-style conservation line of <tt class="docutils literal"><span class="pre">*:.</span></tt> symbols can be added to any
-alignment (not just one from CLUSTAL itself) using <tt class="docutils literal"><span class="pre">-conservation</span> <span class="pre">on</span></tt>, like
+<p>A Clustal-style conservation line of <code class="docutils literal"><span class="pre">*:.</span></code> symbols can be added to any
+alignment (not just one from CLUSTAL itself) using <code class="docutils literal"><span class="pre">-conservation</span> <span class="pre">on</span></code>, like
 this:</p>
 <PRE>
                          1 [        .         .         .         .         :         .         .         ] 80
@@ -355,24 +355,24 @@ this:</p>
 4 DMDPR2_1-384    25.4%    ISVNKQLGTGEFGIVQQGVWSNGNE------------RIQVAIKCLCRERMQS------------NPMEFLKEAAIMHSI
 5 ITK_HUMAN-620   22.0%    LTFVQEIGSGQFGLVHLGYWLN---------------KDKVAIKTIREGAMS--------------EEDFIEEAEVMMKL
   clustal                        :* * ** :  *                      **:* :                       :  *  ::
-</PRE><p>The symbols are <tt class="docutils literal"><span class="pre">*</span></tt> for full column identity, and <tt class="docutils literal"><span class="pre">:</span></tt> or <tt class="docutils literal"><span class="pre">.</span></tt> for strong
+</PRE><p>The symbols are <code class="docutils literal"><span class="pre">*</span></code> for full column identity, and <code class="docutils literal"><span class="pre">:</span></code> or <code class="docutils literal"><span class="pre">.</span></code> for strong
 and weak amino acid grouping, respectively, as defined in CLUSTAL.</p>
 <p>For DNA or RNA sequences, if the molecule type was set to nucleic acid with
-<tt class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></tt> or <tt class="docutils literal"><span class="pre">dna</span></tt> or <tt class="docutils literal"><span class="pre">rna</span></tt>, then the clustal conservation line will
+<code class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></code> or <code class="docutils literal"><span class="pre">dna</span></code> or <code class="docutils literal"><span class="pre">rna</span></code>, then the clustal conservation line will
 show only the column identities.</p>
 <p>Note: these conservation lines can be generated for any subset of rows
 extracted using the various row filtering options (see
-<a class="reference internal" href="#ref-filtering-rows"><em>Filtering rows</em></a>).</p>
+<a class="reference internal" href="#ref-filtering-rows"><span class="std std-ref">Filtering rows</span></a>).</p>
 </div>
 <div class="section" id="consensus-lines">
 <h3>Consensus lines<a class="headerlink" href="#consensus-lines" title="Permalink to this headline">¶</a></h3>
-<p>Consensus lines can be added beneath the alignment using <tt class="docutils literal"><span class="pre">-consensus</span> <span class="pre">on</span></tt>. By
+<p>Consensus lines can be added beneath the alignment using <code class="docutils literal"><span class="pre">-consensus</span> <span class="pre">on</span></code>. By
 default, this adds four extra lines of consensus sequences computed at various
 thresholds of percentage composition of the columns.</p>
 <p>There are default consensus patterns for protein and nucleotide (either DNA or
 RNA) sequences. MView starts up with the default protein consensus pattern,
 for example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -393,12 +393,12 @@ for example:</p>
 <p>The default consensus mechanism displays consensus lines calculated at four
 levels of identity (100%, 90%, 80%, 70%). This can be changed to show as many
 or as few consensus lines at any level of percent identity between 50 and 100%
-using the <tt class="docutils literal"><span class="pre">-con_threshold</span></tt> option and a comma-separated list of identities:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_threshold 80 ...
+using the <code class="docutils literal"><span class="pre">-con_threshold</span></code> option and a comma-separated list of identities:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">80</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>would give a single consensus line calculated at 80% identity, while:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_threshold 80,65 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">80</span><span class="p">,</span><span class="mi">65</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>would produce two lines at 80% and 65% identity.</p>
@@ -409,7 +409,7 @@ using the <tt class="docutils literal"><span class="pre">-con_threshold</span></
 that share some predefined property. These classes are not mutually exclusive
 and the consensus mechanism will choose the most specific class that
 summarizes a given column at the desired percent identity.</p>
-<p>The default for protein alignments is called <tt class="docutils literal"><span class="pre">P1</span></tt> and is defined by
+<p>The default for protein alignments is called <code class="docutils literal"><span class="pre">P1</span></code> and is defined by
 physicochemical property as follows:</p>
 <PRE>
 <SPAN style="color:#000000">[P1]</SPAN>
@@ -450,11 +450,11 @@ small        =>  s       { A, C, D, G, N, P, S, T, V }
 tiny         =>  u       { A, G, S }
 turnlike     =>  t       { A, C, D, E, G, H, K, N, Q, R, S, T }
 stop         =>  *       { * }
-</PRE><p>The default nucleotide consensus pattern is <tt class="docutils literal"><span class="pre">D1</span></tt> grouping bases by ring type
+</PRE><p>The default nucleotide consensus pattern is <code class="docutils literal"><span class="pre">D1</span></code> grouping bases by ring type
 (purine, pyrimidine). It is selected when any of the nucleotide molecule types
-is set <tt class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></tt> (for &#8220;nucleic acid&#8221;; also <tt class="docutils literal"><span class="pre">dna</span></tt> or <tt class="docutils literal"><span class="pre">rna</span></tt>), for
+is set <code class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></code> (for &#8220;nucleic acid&#8221;; also <code class="docutils literal"><span class="pre">dna</span></code> or <code class="docutils literal"><span class="pre">rna</span></code>), for
 example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -moltype dna ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">moltype</span> <span class="n">dna</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>and has the following definition:</p>
@@ -475,19 +475,19 @@ pyrimidine   =>  y       { C, T, U, Y }
 </PRE></div>
 <div class="section" id="changing-consensus-patterns">
 <span id="ref-changeing-consensus-patterns"></span><h3>Changing consensus patterns<a class="headerlink" href="#changing-consensus-patterns" title="Permalink to this headline">¶</a></h3>
-<p>The available list of built-in patterns can be seen with <tt class="docutils literal"><span class="pre">-listgroups</span></tt>.</p>
-<p>Alternative equivalence classes can be selected using <tt class="docutils literal"><span class="pre">-con_groupmap</span></tt>. For
-example, to select the <tt class="docutils literal"><span class="pre">CYS</span></tt> built-in consensus pattern to show only
+<p>The available list of built-in patterns can be seen with <code class="docutils literal"><span class="pre">-listgroups</span></code>.</p>
+<p>Alternative equivalence classes can be selected using <code class="docutils literal"><span class="pre">-con_groupmap</span></code>. For
+example, to select the <code class="docutils literal"><span class="pre">CYS</span></code> built-in consensus pattern to show only
 conserved cysteines you would use an invocation like:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_groupmap CYS ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_groupmap</span> <span class="n">CYS</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>New groups can be defined in the same format and read in from a file using
-the <tt class="docutils literal"><span class="pre">-groupfile</span></tt> option.</p>
+the <code class="docutils literal"><span class="pre">-groupfile</span></code> option.</p>
 </div>
 <div class="section" id="showing-conserved-symbols-or-conserved-classes">
 <span id="ref-conserved-symbols-or-conserved-classes"></span><h3>Showing conserved symbols or conserved classes<a class="headerlink" href="#showing-conserved-symbols-or-conserved-classes" title="Permalink to this headline">¶</a></h3>
-<p>Two options <tt class="docutils literal"><span class="pre">-con_ignore</span></tt> and <tt class="docutils literal"><span class="pre">-con_gaps</span></tt> can be used to tune the
+<p>Two options <code class="docutils literal"><span class="pre">-con_ignore</span></code> and <code class="docutils literal"><span class="pre">-con_gaps</span></code> can be used to tune the
 consensus lines. Consider the following alignment:</p>
 <PRE>
                         1 [        .         .         .         .         :         .         .         ] 80
@@ -497,7 +497,7 @@ consensus lines. Consider the following alignment:</p>
 4 PTK7_HUMAN     21.2%    IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
 5 KIN31_CAEEL    31.5%    VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
 </PRE><p>The default consensus pattern for proteins, with these options:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_threshold 80 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">80</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>would add this consensus line:</p>
@@ -505,15 +505,15 @@ consensus lines. Consider the following alignment:</p>
   consensus/80%           lphsKplGsGtFGhVhhGhhhs..............hh.VAlKpl+.ts.s....p-hhcEAtlMtplpH.plVpLhGls
 </PRE><p>comprising a mixture of conserved residue classes and residues, whichever is
 more specific.</p>
-<p>If you just want to see the conserved physicochemical classes, use <tt class="docutils literal"><span class="pre">-con_ignore</span> <span class="pre">singleton</span></tt>:</p>
+<p>If you just want to see the conserved physicochemical classes, use <code class="docutils literal"><span class="pre">-con_ignore</span> <span class="pre">singleton</span></code>:</p>
 <PRE>
   consensus/80%           lphs+plusutauhlhhuhhhs..............hh.lul+pl+.ts.s....p-hhc-utlhtplp+.pllplhuls
-</PRE><p>Alternatively, to see just the conserved residues, use <tt class="docutils literal"><span class="pre">-con_ignore</span> <span class="pre">class</span></tt>:</p>
+</PRE><p>Alternatively, to see just the conserved residues, use <code class="docutils literal"><span class="pre">-con_ignore</span> <span class="pre">class</span></code>:</p>
 <PRE>
   consensus/80%           ....K..G.G.FG.V..G.....................VA.K.................EA..M....H...V.L.G..
 </PRE><p>Lastly, the default consensus computation counts gap characters in each
 column, so that gapped regions are diluted and may not show up in the
-consensus. Building on the last example, setting <tt class="docutils literal"><span class="pre">-con_gaps</span> <span class="pre">off</span></tt> prevents
+consensus. Building on the last example, setting <code class="docutils literal"><span class="pre">-con_gaps</span> <span class="pre">off</span></code> prevents
 this:</p>
 <PRE>
   consensus/80%           ....K..G.G.FG.V..G........LPKGSMN......VA.K.........E.......EA..M....H...V.L.G..
@@ -524,22 +524,22 @@ preserve as much of the alignment as possible.</p>
 <p>These options work similarly with nucleotide alignments and with any other
 consensus pattern you choose.</p>
 <p>Note: it is possible to colour the consensus sequences independently of the
-alignment (see <a class="reference internal" href="#ref-consensus-colouring"><em>Consensus colouring</em></a>).</p>
+alignment (see <a class="reference internal" href="#ref-consensus-colouring"><span class="std std-ref">Consensus colouring</span></a>).</p>
 </div>
 </div>
 <div class="section" id="colouring-modes">
 <h2>Colouring modes<a class="headerlink" href="#colouring-modes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="alignment-colouring">
 <span id="ref-alignment-colouring"></span><h3>Alignment colouring<a class="headerlink" href="#alignment-colouring" title="Permalink to this headline">¶</a></h3>
-<p>There are several basic ways to colour the alignment using the <tt class="docutils literal"><span class="pre">-coloring</span></tt>
-option which takes five modes: <tt class="docutils literal"><span class="pre">any</span></tt>, <tt class="docutils literal"><span class="pre">identity</span></tt>, <tt class="docutils literal"><span class="pre">mismatch</span></tt>,
-<tt class="docutils literal"><span class="pre">consensus</span></tt>, <tt class="docutils literal"><span class="pre">group</span></tt>. These all have default associated colour schemes,
+<p>There are several basic ways to colour the alignment using the <code class="docutils literal"><span class="pre">-coloring</span></code>
+option which takes five modes: <code class="docutils literal"><span class="pre">any</span></code>, <code class="docutils literal"><span class="pre">identity</span></code>, <code class="docutils literal"><span class="pre">mismatch</span></code>,
+<code class="docutils literal"><span class="pre">consensus</span></code>, <code class="docutils literal"><span class="pre">group</span></code>. These all have default associated colour schemes,
 but you can supply a different one or just a single colour by name (see the
-description for the <tt class="docutils literal"><span class="pre">mismatch</span></tt> mode for an example).</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">any</span></tt></p>
+description for the <code class="docutils literal"><span class="pre">mismatch</span></code> mode for an example).</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">any</span></code></p>
 <p>The simplest is to colour every residue according to the currently selected
 colourmap:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring any ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="nb">any</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -549,10 +549,10 @@ colourmap:</p>
 3 ITK_HUMAN    32.9%  <SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>IG</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>GLV</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>LG</SPAN><SPAN CLASS=S13>YW</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S8>N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>VAI</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>GAM</SPAN><SPAN CLASS=S9>S</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S12>EED</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>VMM</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>P</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>LV</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S13>Y</SPAN><SPAN CLASS=S14>GV</SPAN><SPAN CLASS=S7>C</SPAN>
 4 PTK7_HUMAN   21.2%  <SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>IGVG</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>GAVVLA</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>GL</SPAN><SPAN CLASS=S9>S</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=T19>X</SPAN><SPAN CLASS=S14>LP</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>GVALVAV</SPAN><SPAN CLASS=S17>KK</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>P</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S12>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>VL</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>IV</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>LLAI</SPAN><SPAN CLASS=S7>C</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN CLASS=S14>V</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S17>KK</SPAN><SPAN CLASS=S14>LG</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>GA</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=S13>W</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>LL</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>IL</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>PVLVAV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=S9>T</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S8>Q</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>IM</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S14>LM</SPAN><SPAN CLASS=S17>R</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S8>N</SPAN><SPAN CLASS=S14>VV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S13>FF</SPAN><SPAN CLASS=S14>GVA</SPAN>
-</PRE><p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">identity</span></tt></p>
+</PRE><p><strong>Mode</strong> <code class="docutils literal"><span class="pre">identity</span></code></p>
 <p>You can colour only those residues that are identical to some reference
 sequence (usually the query or first row) with:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring identity ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">identity</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>to produce:</p>
@@ -563,7 +563,7 @@ sequence (usually the query or first row) with:</p>
 4 PTK7_HUMAN   21.2%  <SPAN CLASS=T19>IREV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>QI</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>V</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>Q</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>A</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T19>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=T19>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN CLASS=T19>V</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>K</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=T19>KPDV</SPAN><SPAN CLASS=S9>S</SPAN><SPAN CLASS=T19>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=T19>EVLQSFDK</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=T19>IKF</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=T19>SQLQHDSIVQ</SPAN><SPAN CLASS=S14>LL</SPAN><SPAN CLASS=T19>A</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=S7>C</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN CLASS=T19>VELT</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>K</SPAN><SPAN CLASS=S14>LG</SPAN><SPAN CLASS=T19>E</SPAN><SPAN CLASS=S14>GA</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T19>W</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=T19>NHQPVL</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN CLASS=T19>V</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>TAKLESMT</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>EQI</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>I</SPAN><SPAN CLASS=T19>MR</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=T19>RL</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=T19>RNL</SPAN><SPAN CLASS=S12>D</SPAN><SPAN CLASS=T19>HIN</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T19>VKFF</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>VA</SPAN>
 </PRE><p>or with respect to another row (let&#8217;s use row 4):</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring identity -ref 4 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">identity</span> <span class="o">-</span><span class="n">ref</span> <span class="mi">4</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>giving:</p>
@@ -575,11 +575,11 @@ sequence (usually the query or first row) with:</p>
 5 KIN31_CAEEL  22.5%  <SPAN CLASS=T19>VELT</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>KL</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>E</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>A</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T19>E</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T19>WKGKLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=T19>NHQPV</SPAN><SPAN CLASS=S14>LVAV</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>TA</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T19>LESMTK</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=T19>QIKEIMR</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=T19>ARL</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=T19>RN</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=T19>D</SPAN><SPAN CLASS=S13>H</SPAN><SPAN CLASS=T19>INV</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T19>KFFGVA</SPAN>
 </PRE><p>in which also you see that the percent identity calculations have been
 recomputed with respect to the new row of interest.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">mismatch</span></tt></p>
-<p>Behaves like <tt class="docutils literal"><span class="pre">identity</span></tt> mode, but colours only those residues that differ
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">mismatch</span></code></p>
+<p>Behaves like <code class="docutils literal"><span class="pre">identity</span></code> mode, but colours only those residues that differ
 from the reference sequence (the query or first row unless specified
 otherwise) with:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring mismatch ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">mismatch</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>to produce:</p>
@@ -592,7 +592,7 @@ otherwise) with:</p>
 </PRE><p><strong>Using a single colour</strong></p>
 <p>That&#8217;s using the default protein colourmap and rather difficult to see, so
 let&#8217;s mark all mismatched residues in red:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring mismatch -colormap red
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">mismatch</span> <span class="o">-</span><span class="n">colormap</span> <span class="n">red</span>
 </pre></div>
 </div>
 <p>to produce:</p>
@@ -603,19 +603,19 @@ let&#8217;s mark all mismatched residues in red:</p>
 4 PTK7_HUMAN   21.2%  <SPAN CLASS=S2>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>QI</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>XLPKGSMNADGVAL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S2>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S2>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">IC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN CLASS=S2>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S2>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S2>NHQPVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S2>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S2>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>VA</SPAN>
 </PRE><p>This approach of using a single colour works with any of the coloring modes
-listed above. To see colours and colormaps use <tt class="docutils literal"><span class="pre">mview</span> <span class="pre">-listcolors</span></tt>.</p>
+listed above. To see colours and colormaps use <code class="docutils literal"><span class="pre">mview</span> <span class="pre">-listcolors</span></code>.</p>
 <p>You can add new colours or build your own multicoloured specialist
 colourmap. For example, you might want certain important mismatched residues
 showing up in one colour against a ground colour of all the other mismatches
-(see <a class="reference internal" href="#ref-colourmaps"><em>Colours</em></a>).</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">consensus</span></tt></p>
+(see <a class="reference internal" href="#ref-colourmaps"><span class="std std-ref">Colours</span></a>).</p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">consensus</span></code></p>
 <p>This mode uses the currently selected alignment colourmap to colour only those
 residues assigned to a consensus class for each column (see
-<a class="reference internal" href="#ref-consensus-sequences"><em>Consensus sequences</em></a>). The consensus threshold defaults to 70% and
-and may be set to another value with the <tt class="docutils literal"><span class="pre">-threshold</span></tt> option. In the
+<a class="reference internal" href="#ref-consensus-sequences"><span class="std std-ref">Consensus sequences</span></a>). The consensus threshold defaults to 70% and
+and may be set to another value with the <code class="docutils literal"><span class="pre">-threshold</span></code> option. In the
 following example we add a single consensus line and set the same threshold
 for both consensus calculations (they are independent) to 90%:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring consensus -threshold 90 ... -consensus on -con_threshold 90 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">consensus</span> <span class="o">-</span><span class="n">threshold</span> <span class="mi">90</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">90</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -629,13 +629,13 @@ for both consensus calculations (they are independent) to 90%:</p>
 </PRE><p>Notice that the coloured columns correspond to the consensus features (i.e.,
 not wildcards or gaps). In each column, the residues that contribute to that
 consensus class have been coloured using the prevailing alignment colourmap
-(see <a class="reference internal" href="#ref-alignment-colouring"><em>Alignment colouring</em></a>), which is the default one used in the
+(see <a class="reference internal" href="#ref-alignment-colouring"><span class="std std-ref">Alignment colouring</span></a>), which is the default one used in the
 other examples in this section.</p>
-<p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">group</span></tt></p>
+<p><strong>Mode</strong> <code class="docutils literal"><span class="pre">group</span></code></p>
 <p>The last mode works like the consensus colouring mode, but gives the residues
 in a column a uniform colour defined for that consensus class (see
-<a class="reference internal" href="#ref-consensus-colouring"><em>Consensus colouring</em></a>):</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring group -threshold 90 ... -consensus on -con_threshold 90 ...
+<a class="reference internal" href="#ref-consensus-colouring"><span class="std std-ref">Consensus colouring</span></a>):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">group</span> <span class="o">-</span><span class="n">threshold</span> <span class="mi">90</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">90</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>yields:</p>
@@ -649,21 +649,21 @@ in a column a uniform colour defined for that consensus class (see
 </PRE><p>As in the last example, the coloured columns correspond to the consensus
 features (i.e., not wildcards or gaps). In each column, the residues that
 contribute to that consensus class have been coloured using a single colour
-defined for that consensus class (see <a class="reference internal" href="#ref-consensus-colouring"><em>Consensus colouring</em></a>), and
+defined for that consensus class (see <a class="reference internal" href="#ref-consensus-colouring"><span class="std std-ref">Consensus colouring</span></a>), and
 conserved residues (at least 90% of a column) are given a solid coloured
 background for emphasis.</p>
-<p>The choice of consensus classes may be changed using the <tt class="docutils literal"><span class="pre">-groupmap</span> <span class="pre">name</span></tt>
-option, where <tt class="docutils literal"><span class="pre">name</span></tt> is the name of a consensus pattern. These can be listed
-using the <tt class="docutils literal"><span class="pre">-listgroups</span></tt> option (see <a class="reference internal" href="#ref-changeing-consensus-patterns"><em>Changing consensus patterns</em></a>).</p>
+<p>The choice of consensus classes may be changed using the <code class="docutils literal"><span class="pre">-groupmap</span> <span class="pre">name</span></code>
+option, where <code class="docutils literal"><span class="pre">name</span></code> is the name of a consensus pattern. These can be listed
+using the <code class="docutils literal"><span class="pre">-listgroups</span></code> option (see <a class="reference internal" href="#ref-changeing-consensus-patterns"><span class="std std-ref">Changing consensus patterns</span></a>).</p>
 <p>Note: it is also possible to colour the consensus sequences themselves
-independently of the alignment (see <a class="reference internal" href="#ref-consensus-colouring"><em>Consensus colouring</em></a>).</p>
+independently of the alignment (see <a class="reference internal" href="#ref-consensus-colouring"><span class="std std-ref">Consensus colouring</span></a>).</p>
 </div>
 <div class="section" id="colouring-only-conserved-residues">
 <h3>Colouring only conserved residues<a class="headerlink" href="#colouring-only-conserved-residues" title="Permalink to this headline">¶</a></h3>
-<p>The colouring of an alignment under the <tt class="docutils literal"><span class="pre">consensus</span></tt> or <tt class="docutils literal"><span class="pre">group</span></tt> colouring
-modes (see <a class="reference internal" href="#ref-alignment-colouring"><em>Alignment colouring</em></a>) can be tuned to ignore the
-consensus classes with <tt class="docutils literal"><span class="pre">-ignore</span> <span class="pre">class</span></tt> for the purposes of colouring:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -coloring group -threshold 90 ... -consensus on -con_threshold 90 ... -ignore class
+<p>The colouring of an alignment under the <code class="docutils literal"><span class="pre">consensus</span></code> or <code class="docutils literal"><span class="pre">group</span></code> colouring
+modes (see <a class="reference internal" href="#ref-alignment-colouring"><span class="std std-ref">Alignment colouring</span></a>) can be tuned to ignore the
+consensus classes with <code class="docutils literal"><span class="pre">-ignore</span> <span class="pre">class</span></code> for the purposes of colouring:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">group</span> <span class="o">-</span><span class="n">threshold</span> <span class="mi">90</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_threshold</span> <span class="mi">90</span> <span class="o">...</span> <span class="o">-</span><span class="n">ignore</span> <span class="k">class</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -680,7 +680,7 @@ alignment by applying the default consensus group colouring scheme to them.</p>
 <div class="section" id="consensus-colouring">
 <span id="ref-consensus-colouring"></span><h3>Consensus colouring<a class="headerlink" href="#consensus-colouring" title="Permalink to this headline">¶</a></h3>
 <p>The consensus lines may be coloured independently of the alignment using the
-<tt class="docutils literal"><span class="pre">-con_coloring</span></tt> option which takes two modes: <tt class="docutils literal"><span class="pre">any</span></tt>, <tt class="docutils literal"><span class="pre">identity</span></tt>.</p>
+<code class="docutils literal"><span class="pre">-con_coloring</span></code> option which takes two modes: <code class="docutils literal"><span class="pre">any</span></code>, <code class="docutils literal"><span class="pre">identity</span></code>.</p>
 <p>Consider the following alignment:</p>
 <PRE>
                         1 [        .         .         .         .         :         .         .         ] 80
@@ -689,10 +689,10 @@ alignment by applying the default consensus group colouring scheme to them.</p>
 3 ITK_HUMAN      32.9%    LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC
 4 PTK7_HUMAN     21.2%    IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
 5 KIN31_CAEEL    31.5%    VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
-</PRE><p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">any</span></tt></p>
+</PRE><p><strong>Mode</strong> <code class="docutils literal"><span class="pre">any</span></code></p>
 <p>The simplest is to colour every consensus symbol according to the currently
 selected consensus colourmap:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_coloring any ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_coloring</span> <span class="nb">any</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>gives:</p>
@@ -701,10 +701,10 @@ selected consensus colourmap:</p>
   consensus/90%          <SPAN CLASS=T14>h</SPAN><SPAN CLASS=T9>p</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=T9>p</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>t</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=T14>u</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>h</SPAN><SPAN style="color:#666666">...................</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=T9>p</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>t</SPAN><SPAN style="color:#666666">........</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>h</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T8>c</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=T14>h</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=T9>pp</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>ls</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>hhuls</SPAN>
   consensus/80%          <SPAN CLASS=T14>l</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>hs</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>s</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>t</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>hhhs</SPAN><SPAN style="color:#666666">..............</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=T17>+</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>ts</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>s</SPAN><SPAN style="color:#666666">....</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T12>-</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN CLASS=T8>c</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=T14>tl</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=T14>t</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>ls</SPAN>
   consensus/70%          <SPAN CLASS=T14>l</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>hs</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>s</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>t</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>hhhs</SPAN><SPAN style="color:#666666">..............</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S17>K</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=T17>+</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>ts</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T14>s</SPAN><SPAN style="color:#666666">....</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T12>-</SPAN><SPAN CLASS=T14>hh</SPAN><SPAN CLASS=T8>c</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN CLASS=T14>tl</SPAN><SPAN CLASS=S14>M</SPAN><SPAN CLASS=T14>t</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=T14>l</SPAN><SPAN CLASS=S14>V</SPAN><SPAN CLASS=T9>p</SPAN><SPAN CLASS=S14>L</SPAN><SPAN CLASS=T14>h</SPAN><SPAN CLASS=S14>G</SPAN><SPAN CLASS=T14>ls</SPAN>
-</PRE><p><strong>Mode</strong> <tt class="docutils literal"><span class="pre">identity</span></tt></p>
+</PRE><p><strong>Mode</strong> <code class="docutils literal"><span class="pre">identity</span></code></p>
 <p>You can colour only those consensus symbols that are identical to some
 reference sequence (usually the query or first row) with:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_coloring identity ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">consensus</span> <span class="n">on</span> <span class="o">-</span><span class="n">con_coloring</span> <span class="n">identity</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>to produce:</p>
@@ -714,10 +714,10 @@ reference sequence (usually the query or first row) with:</p>
   consensus/80%          <SPAN style="color:#000000">lphs</SPAN><SPAN CLASS=S17>K</SPAN><SPAN style="color:#000000">pl</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">s</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">t</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">h</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#000000">hh</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">hhhs</SPAN><SPAN style="color:#666666">..............</SPAN><SPAN style="color:#000000">hh</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN style="color:#000000">l</SPAN><SPAN CLASS=S17>K</SPAN><SPAN style="color:#000000">pl+</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">ts</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">s</SPAN><SPAN style="color:#666666">....</SPAN><SPAN style="color:#000000">p-hhc</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#000000">tl</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#000000">tplp</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">pl</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#000000">p</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#000000">h</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">ls</SPAN>
   consensus/70%          <SPAN style="color:#000000">lphs</SPAN><SPAN CLASS=S17>K</SPAN><SPAN style="color:#000000">pl</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">s</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">t</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">h</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#000000">hh</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">hhhs</SPAN><SPAN style="color:#666666">..............</SPAN><SPAN style="color:#000000">hh</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN style="color:#000000">l</SPAN><SPAN CLASS=S17>K</SPAN><SPAN style="color:#000000">pl+</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">ts</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">s</SPAN><SPAN style="color:#666666">....</SPAN><SPAN style="color:#000000">p-hhc</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#000000">tl</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#000000">tplp</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">.</SPAN><SPAN style="color:#000000">pl</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#000000">p</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#000000">h</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#000000">ls</SPAN>
 </PRE><p><strong>Tuning</strong></p>
-<p>These modes work with the <tt class="docutils literal"><span class="pre">-con_ignore</span></tt> and <tt class="docutils literal"><span class="pre">-con_gaps</span></tt> options to tune
-the consensus symbols displayed (see <a class="reference internal" href="#ref-conserved-symbols-or-conserved-classes"><em>Showing conserved symbols or conserved classes</em></a>). For example, the consensus symbols can be switched off, to leave
+<p>These modes work with the <code class="docutils literal"><span class="pre">-con_ignore</span></code> and <code class="docutils literal"><span class="pre">-con_gaps</span></code> options to tune
+the consensus symbols displayed (see <a class="reference internal" href="#ref-conserved-symbols-or-conserved-classes"><span class="std std-ref">Showing conserved symbols or conserved classes</span></a>). For example, the consensus symbols can be switched off, to leave
 only conserved residues:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -consensus on -con_coloring identity -con_ignore class ...
+<div class="highlight-default"><div class="highlight"><pre><span></span>mview ... -consensus on -con_coloring identity -con_ignore class ...
 </pre></div>
 </div>
 <p>to produce:</p>
@@ -730,11 +730,11 @@ only conserved residues:</p>
 <div class="section" id="finding-and-colouring-patterns-and-motifs">
 <h3>Finding and colouring patterns and motifs<a class="headerlink" href="#finding-and-colouring-patterns-and-motifs" title="Permalink to this headline">¶</a></h3>
 <p>Occurrences of a string or pattern defined by a regular expression can be
-coloured using the <tt class="docutils literal"><span class="pre">-find</span> <span class="pre">'pattern'</span></tt> option. This will cause all instances
+coloured using the <code class="docutils literal"><span class="pre">-find</span> <span class="pre">'pattern'</span></code> option. This will cause all instances
 of the pattern to be highlighted using the user selected colourmap. Patterns
 are case-insensitive.</p>
 <p>1. Patterns may be exact strings:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -html head -css on -find VAIK
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">css</span> <span class="n">on</span> <span class="o">-</span><span class="n">find</span> <span class="n">VAIK</span>
 </pre></div>
 </div>
 <PRE>
@@ -744,7 +744,7 @@ are case-insensitive.</p>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
 </PRE><p>2. Patterns may be regular expressions enclosed in quotes:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -find &#39;VA[IV]K&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VA[IV]K&#39;</span>
 </pre></div>
 </div>
 <PRE>
@@ -754,7 +754,7 @@ are case-insensitive.</p>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
 </PRE><p>3. Patterns are unaffected by gaps in the sequence:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -find &#39;.{4}VA[IV]K&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;.</span><span class="si">{4}</span><span class="s1">VA[IV]K&#39;</span>
 </pre></div>
 </div>
 <PRE>
@@ -766,7 +766,7 @@ are case-insensitive.</p>
 </PRE><p>where you can see that the pattern (any 4 residues followed by V A [I or V] K)
 has been found even though it spans a gap in two rows.</p>
 <p>4. Patterns will find all possible matches including overlapping matches:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -find &#39;.V.&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;.V.&#39;</span>
 </pre></div>
 </div>
 <PRE>
@@ -776,8 +776,8 @@ has been found even though it spans a gap in two rows.</p>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IR</SPAN><SPAN CLASS=S93>EVK</SPAN><SPAN style="color:#666666">QI</SPAN><SPAN CLASS=S93>GVG</SPAN><SPAN style="color:#666666">QFG</SPAN><SPAN CLASS=S93>AVVL</SPAN><SPAN style="color:#666666">AEMTGLS-XLPKGSMNAD</SPAN><SPAN CLASS=S93>GVALVAVK</SPAN><SPAN style="color:#666666">KLKP</SPAN><SPAN CLASS=S93>DVS</SPAN><SPAN style="color:#666666">D-</SPAN><SPAN CLASS=S93>EVL</SPAN><SPAN style="color:#666666">QSFDKEIKFMSQLQHDS</SPAN><SPAN CLASS=S93>IVQ</SPAN><SPAN style="color:#666666">LLAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFG</SPAN><SPAN CLASS=S93>EVW</SPAN><SPAN style="color:#666666">KGKLLKILDA-------NHQ</SPAN><SPAN CLASS=S93>PVLVAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHI</SPAN><SPAN CLASS=S93>NVVK</SPAN><SPAN style="color:#666666">FF</SPAN><SPAN CLASS=S93>GVA</SPAN>
 </PRE><p>where overlapping instances of the pattern merge together.</p>
-<p>5. Multiple alternative patterns are allowed, separated by <tt class="docutils literal"><span class="pre">|</span></tt> characters:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -find &#39;VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L&#39;
+<p>5. Multiple alternative patterns are allowed, separated by <code class="docutils literal"><span class="pre">|</span></code> characters:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
 </pre></div>
 </div>
 <PRE>
@@ -787,8 +787,8 @@ has been found even though it spans a gap in two rows.</p>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S93>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S93>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S93>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S93>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S93>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
 </PRE><p>6. Alternative patterns can be given different colours by changing the
-delimiter from a <tt class="docutils literal"><span class="pre">|</span></tt> to a <tt class="docutils literal"><span class="pre">:</span></tt> character:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -find &#39;VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L&#39;
+delimiter from a <code class="docutils literal"><span class="pre">|</span></code> to a <code class="docutils literal"><span class="pre">:</span></code> character:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L&#39;</span>
 </pre></div>
 </div>
 <PRE>
@@ -797,7 +797,7 @@ delimiter from a <tt class="docutils literal"><span class="pre">|</span></tt> to
 3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S95>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S96>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S97>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S95>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S96>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S97>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S95>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S96>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
-</PRE><p>and <tt class="docutils literal"><span class="pre">|</span></tt> and <tt class="docutils literal"><span class="pre">:</span></tt> delimiters may be combined so that patterns joined by <tt class="docutils literal"><span class="pre">|</span></tt>
+</PRE><p>and <code class="docutils literal"><span class="pre">|</span></code> and <code class="docutils literal"><span class="pre">:</span></code> delimiters may be combined so that patterns joined by <code class="docutils literal"><span class="pre">|</span></code>
 still form a single discrete pattern and will have one colour.</p>
 <p>If you specify more patterns than the number of colours available
 (currently 20) the colours are simply cycled.</p>
@@ -809,14 +809,14 @@ still form a single discrete pattern and will have one colour.</p>
 <h3>Colourmaps<a class="headerlink" href="#colourmaps" title="Permalink to this headline">¶</a></h3>
 <p>There are default colourmaps for protein and nucleotide (either DNA or RNA)
 alignments and consensus lines. MView starts up with the default protein
-colourmap selected, as if you had specified a molecule type with <tt class="docutils literal"><span class="pre">-moltype</span>
-<span class="pre">aa</span></tt> (for &#8220;amino acid&#8221;).</p>
+colourmap selected, as if you had specified a molecule type with <code class="docutils literal"><span class="pre">-moltype</span>
+<span class="pre">aa</span></code> (for &#8220;amino acid&#8221;).</p>
 <p><strong>Alignments</strong></p>
 <p>Colourmaps have names, e.g., the default protein alignment colourmap is called
-<tt class="docutils literal"><span class="pre">P1</span></tt> and the default nucleotide colourmap is <tt class="docutils literal"><span class="pre">D1</span></tt>. Alternative alignment
-colouring colourmaps are explicitly selected using the <tt class="docutils literal"><span class="pre">-colormap</span></tt>
+<code class="docutils literal"><span class="pre">P1</span></code> and the default nucleotide colourmap is <code class="docutils literal"><span class="pre">D1</span></code>. Alternative alignment
+colouring colourmaps are explicitly selected using the <code class="docutils literal"><span class="pre">-colormap</span></code>
 option. For example, another built-in colouring scheme can be specified with
-<tt class="docutils literal"><span class="pre">-colormap</span> <span class="pre">CLUSTAL</span></tt>.</p>
+<code class="docutils literal"><span class="pre">-colormap</span> <span class="pre">CLUSTAL</span></code>.</p>
 <p>Here is the default colormap for proteins:</p>
 <PRE>
 <SPAN style="color:#000000">[P1]</SPAN>
@@ -849,12 +849,12 @@ option. For example, another built-in colouring scheme can be specified with
 <SPAN style="color:#999999">?      </SPAN>  ->  <SPAN style="color:#999999">light-gray          </SPAN> <SPAN style="color:#aa6666">#unknown</SPAN>
 <SPAN style="color:#000000">*      </SPAN>  ->  <SPAN style="color:#000000">black               </SPAN> <SPAN style="color:#aa6666">#stop</SPAN>
 </PRE><p>The default alignment colormap for nucleotide sequences can be selected using
-the <tt class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></tt> (or <tt class="docutils literal"><span class="pre">dna</span></tt> or <tt class="docutils literal"><span class="pre">rna</span></tt>) option:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -moltype na ...
+the <code class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></code> (or <code class="docutils literal"><span class="pre">dna</span></code> or <code class="docutils literal"><span class="pre">rna</span></code>) option:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">moltype</span> <span class="n">na</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>or by specifying:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -colormap D1 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">colormap</span> <span class="n">D1</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>and is defined as:</p>
@@ -884,8 +884,8 @@ the <tt class="docutils literal"><span class="pre">-moltype</span> <span class="
 </PRE><p><strong>Consensus lines</strong></p>
 <p>In addition, the consensus lines optionally displayed below an alignment can
 be coloured, and they have their own consensus colourmaps; the default for
-proteins is <tt class="docutils literal"><span class="pre">PC1</span></tt> and for nucleotides it is <tt class="docutils literal"><span class="pre">DC1</span></tt>. Alternative consensus
-colouring colourmaps are explicitly selected using the <tt class="docutils literal"><span class="pre">-con_colormap</span></tt> option.</p>
+proteins is <code class="docutils literal"><span class="pre">PC1</span></code> and for nucleotides it is <code class="docutils literal"><span class="pre">DC1</span></code>. Alternative consensus
+colouring colourmaps are explicitly selected using the <code class="docutils literal"><span class="pre">-con_colormap</span></code> option.</p>
 <p>Here is the default consensus colormap for proteins:</p>
 <PRE>
 <SPAN style="color:#000000">[PC1]</SPAN>
@@ -904,12 +904,12 @@ colouring colourmaps are explicitly selected using the <tt class="docutils liter
 <SPAN style="color:#33cc00">t      </SPAN>  ->  <SPAN style="color:#33cc00">bright-green        </SPAN> <SPAN style="color:#aa6666">#turnlike</SPAN>
 <SPAN style="color:#33cc00">u      </SPAN>  ->  <SPAN style="color:#33cc00">bright-green        </SPAN> <SPAN style="color:#aa6666">#tiny</SPAN>
 </PRE><p>The default consensus colormap for nucleotide sequences can be selected using
-the <tt class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></tt> (or <tt class="docutils literal"><span class="pre">dna</span></tt> or <tt class="docutils literal"><span class="pre">rna</span></tt>) option:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -moltype na ...
+the <code class="docutils literal"><span class="pre">-moltype</span> <span class="pre">na</span></code> (or <code class="docutils literal"><span class="pre">dna</span></code> or <code class="docutils literal"><span class="pre">rna</span></code>) option:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">moltype</span> <span class="n">na</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>or by specifying:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview ... -con_colormap DC1 ...
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">con_colormap</span> <span class="n">DC1</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>and is defined as:</p>
@@ -924,10 +924,10 @@ the <tt class="docutils literal"><span class="pre">-moltype</span> <span class="
 <div class="section" id="creating-new-colourmaps">
 <h3>Creating new colourmaps<a class="headerlink" href="#creating-new-colourmaps" title="Permalink to this headline">¶</a></h3>
 <p>The built-in colour palette and colourmaps built from it can be listed from
-the command line with <tt class="docutils literal"><span class="pre">-listcolors</span></tt>, and new colour schemes can be loaded
-from a file using the <tt class="docutils literal"><span class="pre">-colorfile</span></tt> option.</p>
+the command line with <code class="docutils literal"><span class="pre">-listcolors</span></code>, and new colour schemes can be loaded
+from a file using the <code class="docutils literal"><span class="pre">-colorfile</span></code> option.</p>
 <p>Predefined colours are defined as in the following short segment of the built
-in colour palette obtained with <tt class="docutils literal"><span class="pre">-listcolors</span> <span class="pre">-html</span> <span class="pre">head</span></tt> to wrap the output
+in colour palette obtained with <code class="docutils literal"><span class="pre">-listcolors</span> <span class="pre">-html</span> <span class="pre">head</span></code> to wrap the output
 in HTML and display the actual colours:</p>
 <PRE>
 <SPAN style="color:#aa6666">#color                     : #RGB</SPAN>
@@ -951,33 +951,33 @@ colourmap, which is used to explain the syntax:</p>
 <SPAN style="color:#666666">Xx     </SPAN>  ->  <SPAN style="color:#666666">dark-gray           </SPAN> <SPAN style="color:#aa6666">#unknown</SPAN>
 <SPAN style="color:#999999">?      </SPAN>  ->  <SPAN style="color:#999999">light-gray          </SPAN> <SPAN style="color:#aa6666">#unknown</SPAN>
 </PRE><p>When writing a new protein/nucleotide colouring scheme, scheme names
-introduced in square brackets (<tt class="docutils literal"><span class="pre">[CYS]</span></tt>, above) are case-insensitive.</p>
-<p>Any line or part of a line beginning with a <tt class="docutils literal"><span class="pre">#</span></tt> character is a comment.</p>
+introduced in square brackets (<code class="docutils literal"><span class="pre">[CYS]</span></code>, above) are case-insensitive.</p>
+<p>Any line or part of a line beginning with a <code class="docutils literal"><span class="pre">#</span></code> character is a comment.</p>
 <p>Colourings are defined one per line by symbol(s) at the left, an arrow, then
 the colour name or RGB code, followed by an optional comment. The symbols at
-the left are case-sensitive, and can be given as single characters <tt class="docutils literal"><span class="pre">X</span></tt> or as
-a character pair like <tt class="docutils literal"><span class="pre">Xx</span></tt>, where we want both upper- and lowercase to have
-the same colour. The special wildcard <tt class="docutils literal"><span class="pre">.</span></tt> symbol sets the base colour to be
+the left are case-sensitive, and can be given as single characters <code class="docutils literal"><span class="pre">X</span></code> or as
+a character pair like <code class="docutils literal"><span class="pre">Xx</span></code>, where we want both upper- and lowercase to have
+the same colour. The special wildcard <code class="docutils literal"><span class="pre">.</span></code> symbol sets the base colour to be
 used for all symbols in the alignment. Other lines define specific colourings
 for sequence symbols of interest. The ordering of lines is not important.</p>
-<p>In the example, <tt class="docutils literal"><span class="pre">C</span></tt> or <tt class="docutils literal"><span class="pre">c</span></tt> will be painted yellow; an explicit <tt class="docutils literal"><span class="pre">X</span></tt> or
-<tt class="docutils literal"><span class="pre">x</span></tt> residue will be dark grey; an explicit unknown residue <tt class="docutils literal"><span class="pre">?</span></tt> will be
-light gray; any other residue will match the <tt class="docutils literal"><span class="pre">.</span></tt> wildcard and be painted
+<p>In the example, <code class="docutils literal"><span class="pre">C</span></code> or <code class="docutils literal"><span class="pre">c</span></code> will be painted yellow; an explicit <code class="docutils literal"><span class="pre">X</span></code> or
+<code class="docutils literal"><span class="pre">x</span></code> residue will be dark grey; an explicit unknown residue <code class="docutils literal"><span class="pre">?</span></code> will be
+light gray; any other residue will match the <code class="docutils literal"><span class="pre">.</span></code> wildcard and be painted
 dark grey.</p>
 <p>A symbol to name mapping can use a predefined colour name (as above) or an
 explicit hexadecimal RGB code like those in the colour palette.</p>
-<p>The arrow separating the symbol(s) from the colour code can be double <tt class="docutils literal"><span class="pre">=&gt;</span></tt>
-or single <tt class="docutils literal"><span class="pre">-&gt;</span></tt> arrows selecting background or foreground colouring:</p>
+<p>The arrow separating the symbol(s) from the colour code can be double <code class="docutils literal"><span class="pre">=&gt;</span></code>
+or single <code class="docutils literal"><span class="pre">-&gt;</span></code> arrows selecting background or foreground colouring:</p>
 <ul class="simple">
 <li>If style sheets are not being used, the choice of arrow is unimportant: the
 supplied colour is used for the foreground, i.e., the output symbol.</li>
-<li>If style sheets are in use with <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt>, then <tt class="docutils literal"><span class="pre">=&gt;</span></tt> means that the
-colour should be applied to the background of the symbol, while <tt class="docutils literal"><span class="pre">-&gt;</span></tt> means
+<li>If style sheets are in use with <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code>, then <code class="docutils literal"><span class="pre">=&gt;</span></code> means that the
+colour should be applied to the background of the symbol, while <code class="docutils literal"><span class="pre">-&gt;</span></code> means
 it should be aplied to the foreground, i.e., the symbol itself.</li>
 </ul>
-<p>So, in the <tt class="docutils literal"><span class="pre">CYS</span></tt> example, the symbols <tt class="docutils literal"><span class="pre">*</span></tt>, <tt class="docutils literal"><span class="pre">?</span></tt>, <tt class="docutils literal"><span class="pre">X</span></tt>, <tt class="docutils literal"><span class="pre">x</span></tt> will be
-coloured in the foreground (i.e., the symbols themselves), and <tt class="docutils literal"><span class="pre">C</span></tt> or <tt class="docutils literal"><span class="pre">c</span></tt>
-will be displayed as coloured symbols unless <tt class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></tt> is set, in which case
+<p>So, in the <code class="docutils literal"><span class="pre">CYS</span></code> example, the symbols <code class="docutils literal"><span class="pre">*</span></code>, <code class="docutils literal"><span class="pre">?</span></code>, <code class="docutils literal"><span class="pre">X</span></code>, <code class="docutils literal"><span class="pre">x</span></code> will be
+coloured in the foreground (i.e., the symbols themselves), and <code class="docutils literal"><span class="pre">C</span></code> or <code class="docutils literal"><span class="pre">c</span></code>
+will be displayed as coloured symbols unless <code class="docutils literal"><span class="pre">-css</span> <span class="pre">on</span></code> is set, in which case
 they will appear as coloured bocks.</p>
 </div>
 </div>
@@ -988,15 +988,15 @@ they will appear as coloured bocks.</p>
 <p>The default layout is a single unbroken horizontal band of alignment - fine if
 scrolling inside Firefox. However, you may prefer to break the alignment into
 vertically stacked panes. For panes, for example, 80 columns wide, set
-<tt class="docutils literal"><span class="pre">-width</span> <span class="pre">80</span></tt>. Widths refer to the alignment, not to the whole displayed
+<code class="docutils literal"><span class="pre">-width</span> <span class="pre">80</span></code>. Widths refer to the alignment, not to the whole displayed
 output.</p>
 </div>
 <div class="section" id="column-ranges">
 <h3>Column ranges<a class="headerlink" href="#column-ranges" title="Permalink to this headline">¶</a></h3>
 <p>It is possible to narrow (or expand) the displayed range of columns of the
-alignment, for example, <tt class="docutils literal"><span class="pre">-range</span> <span class="pre">10:78</span></tt> would select only that column range
-using the numbering scheme reported when <tt class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></tt> is set (see
-<a class="reference internal" href="#ref-rulers"><em>Attaching a ruler</em></a>). Note: the range setting is not related to the sequence
+alignment, for example, <code class="docutils literal"><span class="pre">-range</span> <span class="pre">10:78</span></code> would select only that column range
+using the numbering scheme reported when <code class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></code> is set (see
+<a class="reference internal" href="#ref-rulers"><span class="std std-ref">Attaching a ruler</span></a>). Note: the range setting is not related to the sequence
 position labelling for blast/fasta database search input; it&#8217;s just the
 position along the ruler.</p>
 <p>The order of the numbers is unimportant making it simpler to state interest in
@@ -1008,59 +1008,59 @@ a BLASTN search hit matching the reverse complement of the query strand).</p>
 <p><strong>Showing only the top N rows</strong></p>
 <p>Usually, specifying a limited number of hits to view from a long search
 alignment speeds things up a lot as there&#8217;s less parsing and less formatting
-to be generated, so to get the best 10 hits, use the option <tt class="docutils literal"><span class="pre">-top</span> <span class="pre">10</span></tt>.</p>
+to be generated, so to get the best 10 hits, use the option <code class="docutils literal"><span class="pre">-top</span> <span class="pre">10</span></code>.</p>
 <p><strong>Filtering by percent identity</strong></p>
 <p>You also can squeeze more out of a deep alignment and get a less biased view
-if a threshold on the pairwise sequence identity is set using <tt class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></tt>,
+if a threshold on the pairwise sequence identity is set using <code class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></code>,
 where N is some value between 0 and 100.</p>
-<p>Similarly, <tt class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></tt> will report only those hits above some threshold
+<p>Similarly, <code class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></code> will report only those hits above some threshold
 percent identity; useful for looking for close matches to the query or some
 reference sequence.</p>
 <p><strong>Showing and hiding sets of rows</strong></p>
-<p>Rows can be dropped explicitly using the <tt class="docutils literal"><span class="pre">-hide</span></tt> option. This can be
+<p>Rows can be dropped explicitly using the <code class="docutils literal"><span class="pre">-hide</span></code> option. This can be
 supplied a comma-separated list of row identifiers, rank numbers, rank number
 ranges (1,2,3, 1..3, 1:3 are all equivalent), regular expressions (case
 insensitive, enclosed between // characters) to match against row identifiers,
-or the <tt class="docutils literal"><span class="pre">*</span></tt> symbol meaning all rows.</p>
-<p>Likewise, the <tt class="docutils literal"><span class="pre">-show</span></tt> option specifies a list of rows to keep in the
-alignment. The <tt class="docutils literal"><span class="pre">-show</span></tt> option overrides <tt class="docutils literal"><span class="pre">-hide</span></tt> whenever a row is common
+or the <code class="docutils literal"><span class="pre">*</span></code> symbol meaning all rows.</p>
+<p>Likewise, the <code class="docutils literal"><span class="pre">-show</span></code> option specifies a list of rows to keep in the
+alignment. The <code class="docutils literal"><span class="pre">-show</span></code> option overrides <code class="docutils literal"><span class="pre">-hide</span></code> whenever a row is common
 to both.</p>
 <p>For example, the options:</p>
-<div class="highlight-python"><div class="highlight"><pre>-hide all  -show &#39;2,3,6..10,/^pdb/&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="nb">all</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6..10,/^pdb/&#39;</span>
 </pre></div>
 </div>
 <p>or even:</p>
-<div class="highlight-python"><div class="highlight"><pre>-hide &#39;/.*/&#39;  -show &#39;2,3,6:10,/^pdb/&#39;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="s1">&#39;/.*/&#39;</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6:10,/^pdb/&#39;</span>
 </pre></div>
 </div>
 <p>would hide everything except rows 2, 3, 6 through 10 inclusive, and any hits
 beginning with the string &#8216;pdb&#8217;.</p>
 <p>Note: the currently set reference row is still used for percent identity and
 colouring operations, even though the row may have been dropped from display
-by the <tt class="docutils literal"><span class="pre">-hide</span></tt> list (see <a class="reference internal" href="#ref-reference-row"><em>Changing the reference sequence</em></a>).</p>
+by the <code class="docutils literal"><span class="pre">-hide</span></code> list (see <a class="reference internal" href="#ref-reference-row"><span class="std std-ref">Changing the reference sequence</span></a>).</p>
 <p><strong>Data format specific filters</strong></p>
 <p>Other filters specific to BLASTP, FASTA, etc., input formats allow cutoffs on
 scores or p-values, etc. In particular, it is possible to apply some control
 over the selection of HSPs used in building the MView alignment using the
-<tt class="docutils literal"><span class="pre">-hsp</span></tt> filtering option.</p>
+<code class="docutils literal"><span class="pre">-hsp</span></code> filtering option.</p>
 <p>Some search programs produce DNA strand-directional output (e.g., BLASTN) and
 you can extract or output the results separately. For example, to see just the
 plus strand matches:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in blast -strand p blastn_results.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">strand</span> <span class="n">p</span> <span class="n">blastn_results</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
-<p>The choices are <tt class="docutils literal"><span class="pre">p</span></tt>, <tt class="docutils literal"><span class="pre">m</span></tt>, <tt class="docutils literal"><span class="pre">both</span></tt>.</p>
+<p>The choices are <code class="docutils literal"><span class="pre">p</span></code>, <code class="docutils literal"><span class="pre">m</span></code>, <code class="docutils literal"><span class="pre">both</span></code>.</p>
 <p>Of interest to anyone using PSI-BLAST, you can display alignments for any/all
 iterations of a PSI-BLAST run using, say:</p>
-<div class="highlight-python"><div class="highlight"><pre>mview -in blast -cycle 1,last psiblast_results.dat
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">cycle</span> <span class="mi">1</span><span class="p">,</span><span class="n">last</span> <span class="n">psiblast_results</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>to get just those two iterations. The default is to display only the last
-iteration. If you want all output, use <tt class="docutils literal"><span class="pre">-cycle</span> <span class="pre">all</span></tt>.</p>
+iteration. If you want all output, use <code class="docutils literal"><span class="pre">-cycle</span> <span class="pre">all</span></code>.</p>
 <p><strong>Keeping rows, but ignoring them in calculations</strong></p>
 <p>Another control option can be used to prevent MView from using rows for
 colouring or for calculation of percent identities although these rows will
-still be displayed. Use <tt class="docutils literal"><span class="pre">-nop</span></tt> to specify a list (comma-separated as usual)
+still be displayed. Use <code class="docutils literal"><span class="pre">-nop</span></code> to specify a list (comma-separated as usual)
 of identifiers or row numbers to flag for &#8220;NO Processing&#8221;. This is useful for
 displaying non-alignment data (e.g., secondary structure predictions)
 alongside the alignment.</p>
@@ -1109,7 +1109,7 @@ make that column 0).</p>
 </table>
 </div></blockquote>
 <p>Any of the of the label types can be switched off with an option like
-<tt class="docutils literal"><span class="pre">-label2</span></tt> to remove the descriptions label at column 2, and so on.</p>
+<code class="docutils literal"><span class="pre">-label2</span></code> to remove the descriptions label at column 2, and so on.</p>
 </div>
 </div>
 <div class="section" id="data-formats">
@@ -1133,7 +1133,7 @@ processing. See <a class="reference external" href="formats_out.html">output_for
 </div>
 <div class="section" id="linking-identifiers-to-external-resources">
 <h2>Linking identifiers to external resources<a class="headerlink" href="#linking-identifiers-to-external-resources" title="Permalink to this headline">¶</a></h2>
-<p>Using the <tt class="docutils literal"><span class="pre">-srs</span> <span class="pre">on</span></tt> option with HTML output, it is possible to convert
+<p>Using the <code class="docutils literal"><span class="pre">-srs</span> <span class="pre">on</span></code> option with HTML output, it is possible to convert
 sequence identifiers into links to a sequence database:</p>
 <PRE>
 1 <A HREF="http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val=P00533">sp|P00533.2|EGFR_HUMAN</A>  100.0%    <SPAN CLASS=S37>F</SPAN><SPAN CLASS=S36>K</SPAN><SPAN style="color:#666666">KI</SPAN><SPAN CLASS=S36>K</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S37>L</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S43>G</SPAN><SPAN CLASS=S37>AF</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">T</SPAN><SPAN CLASS=S37>V</SPAN><SPAN style="color:#666666">YK</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S37>W</SPAN><SPAN style="color:#666666">IPEGEK---------VKIP</SPAN><SPAN CLASS=S37>VAI</SPAN><SPAN CLASS=S36>K</SPAN><SPAN CLASS=S41>E</SPAN><SPAN CLASS=S37>L</SPAN><SPAN CLASS=S36>R</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S37>A</SPAN><SPAN style="color:#666666">TSPK-ANK</SPAN><SPAN CLASS=S41>E</SPAN><SPAN CLASS=S37>I</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S41>DE</SPAN><SPAN CLASS=S37>A</SPAN><SPAN style="color:#666666">Y</SPAN><SPAN CLASS=S37>VM</SPAN><SPAN style="color:#666666">A</SPAN><SPAN CLASS=S38>S</SPAN><SPAN CLASS=S37>V</SPAN><SPAN CLASS=S41>D</SPAN><SPAN CLASS=S38>N</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S39>H</SPAN><SPAN CLASS=S37>V</SPAN><SPAN CLASS=S40>C</SPAN><SPAN CLASS=S36>R</SPAN><SPAN CLASS=S37>LL</SPAN><SPAN CLASS=S43>G</SPAN><SPAN CLASS=S37>I</SPAN><SPAN CLASS=S40>C</SPAN>
@@ -1144,12 +1144,12 @@ sequence identifiers into links to a sequence database:</p>
   consensus/90%                     <SPAN style="color:#666666">.......</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S37>F</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S37>V</SPAN><SPAN style="color:#666666">........................</SPAN><SPAN CLASS=S37>VA</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S36>K</SPAN><SPAN style="color:#666666">.................</SPAN><SPAN CLASS=S41>E</SPAN><SPAN style="color:#666666">...</SPAN><SPAN CLASS=S37>M</SPAN><SPAN style="color:#666666">...............</SPAN>
   consensus/80%                     <SPAN style="color:#666666">....</SPAN><SPAN CLASS=S36>K</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S37>F</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S37>V</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">.....................</SPAN><SPAN CLASS=S37>VA</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S36>K</SPAN><SPAN style="color:#666666">.................</SPAN><SPAN CLASS=S41>E</SPAN><SPAN CLASS=S37>A</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S37>M</SPAN><SPAN style="color:#666666">....</SPAN><SPAN CLASS=S39>H</SPAN><SPAN style="color:#666666">...</SPAN><SPAN CLASS=S37>V</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S37>L</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S43>G</SPAN><SPAN style="color:#666666">..</SPAN>
 </PRE><p>The identfiers need to conform to patterns such as:</p>
-<div class="highlight-python"><div class="highlight"><pre>database|accession|identifier
-database:identifier
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">database</span><span class="o">|</span><span class="n">accession</span><span class="o">|</span><span class="n">identifier</span>
+<span class="n">database</span><span class="p">:</span><span class="n">identifier</span>
 </pre></div>
 </div>
 <p>like those produced by the NCBI, EBI or other blast services.</p>
-<p>Links will be constructed if the patterns are listed in the <tt class="docutils literal"><span class="pre">SRS.pm</span></tt>
+<p>Links will be constructed if the patterns are listed in the <code class="docutils literal"><span class="pre">SRS.pm</span></code>
 library, which is part of this software. You can modify and extend this file
 to include more patterns if you know some Perl and the format of the URLs
 needed to access the sequence databases of interest.</p>
@@ -1163,7 +1163,7 @@ complete sets of PSI-BLAST cycles each containing 1000s of hits all at
 once. Use of most filtering options should reduce memory requirements by
 cutting down the number of internal data structures created. Likewise,
 processing each alignment separately will save memory or you can use the
-option <tt class="docutils literal"><span class="pre">-register</span> <span class="pre">off</span></tt> to cause each alignment to be output when ready (by
+option <code class="docutils literal"><span class="pre">-register</span> <span class="pre">off</span></code> to cause each alignment to be output when ready (by
 default all alignments are saved until the end so they can be printed with
 fields in register). Finally, the choice of malloc library compiled into your
 perl may affect memory use.</p>
@@ -1176,7 +1176,7 @@ perl may affect memory use.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1188,14 +1188,14 @@ perl may affect memory use.</p>
         <li class="right" >
           <a href="intro.html" title="Introduction"
              >previous</a> |</li>
-        <li><a href="../index.html">MView</a> &raquo;</li>
-          <li><a href="../contents.html" >Contents</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../contents.html" >Contents</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2015, Nigel P. Brown.
-      Last updated on 14 Nov 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015, Nigel P. Brown.
+      Last updated on 21 Feb 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
 </html>
