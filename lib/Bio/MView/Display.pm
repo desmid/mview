@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2006 Nigel P. Brown
-# $Id: Display.pm,v 1.28 2015/06/14 17:09:03 npb Exp $
 
 ###########################################################################
 =pod
@@ -719,7 +718,6 @@ Subrange format controls are:
 
 =head1 Copyright (C) 1997-2006 Nigel P. Brown.
 
-$Id: Display.pm,v 1.28 2015/06/14 17:09:03 npb Exp $
 
 
 =cut

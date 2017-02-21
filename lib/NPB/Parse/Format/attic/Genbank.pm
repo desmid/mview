@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Genbank.pm,v 1.49 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::Genbank;

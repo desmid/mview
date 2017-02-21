@@ -1,6 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 2015 Nigel P. Brown
-# $Id: tblastx.pm $
+# Copyright (C) 2015-2017 Nigel P. Brown
 
 ###########################################################################
 package NPB::Parse::Format::BLAST2_OF7::tblastx;

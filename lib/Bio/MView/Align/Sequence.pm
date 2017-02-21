@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2016 Nigel P. Brown
-# $Id: Sequence.pm,v 1.26 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Align::Sequence;

@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Any.pm,v 1.12 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Display::Any;

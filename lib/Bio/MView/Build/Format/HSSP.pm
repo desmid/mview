@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: HSSP.pm,v 1.31 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Row::HSSP;

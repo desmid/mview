@@ -1,5 +1,4 @@
-# Copyright (C) 2015 Nigel P. Brown
-# $Id: Header.pm,v 1.1 2015/06/14 17:09:04 npb Exp $
+# Copyright (C) 2015-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Display::Header;

@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 2015 Nigel P. Brown
+# Copyright (C) 2015-2017 Nigel P. Brown
 
 ###########################################################################
 package NPB::Parse::Format::FASTA3X::tfastm;

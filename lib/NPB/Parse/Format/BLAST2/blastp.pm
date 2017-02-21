@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2006 Nigel P. Brown
-# $Id: blastp.pm,v 1.9 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
 package NPB::Parse::Format::BLAST2::blastp;

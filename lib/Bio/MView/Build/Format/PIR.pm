@@ -1,5 +1,4 @@
 # Copyright (C) 1998-2015 Nigel P. Brown
-# $Id: PIR.pm,v 1.10 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::PIR;

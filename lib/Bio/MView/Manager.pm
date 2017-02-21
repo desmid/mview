@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Manager.pm,v 1.57 2015/06/14 17:09:03 npb Exp $
 
 ######################################################################
 package Bio::MView::Manager;

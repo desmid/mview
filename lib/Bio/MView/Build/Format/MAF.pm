@@ -1,5 +1,4 @@
 # Copyright (C) 2013-2015 Nigel P. Brown
-# $Id: MAF.pm,v 1.2 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Row::MAF;

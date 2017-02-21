@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Stream.pm,v 1.9 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
 package NPB::Parse::Stream;

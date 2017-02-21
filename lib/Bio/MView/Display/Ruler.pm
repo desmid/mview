@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2011 Nigel P. Brown
-# $Id: Ruler.pm,v 1.10 2013/09/09 21:31:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Display::Ruler;

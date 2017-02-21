@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2013 Nigel P. Brown
-# $Id: ssearch.pm,v 1.8 2013/09/09 21:31:05 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::FASTA2::ssearch;

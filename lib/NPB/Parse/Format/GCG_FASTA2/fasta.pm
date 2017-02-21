@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2013 Nigel P. Brown
-# $Id: fasta.pm,v 1.10 2013/09/09 21:31:06 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::GCG_FASTA2::fasta;

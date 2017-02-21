@@ -1,5 +1,4 @@
 # Copyright (C) 1997 Christophe Leroy, 1997-2010 Nigel P. Brown
-# $Id: SRS.pm,v 1.22 2011/01/24 22:39:44 npb Exp $
 
 ###########################################################################
 package Bio::SRS;

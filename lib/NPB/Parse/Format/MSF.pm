@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1998-2015 Nigel P. Brown
-# $Id: MSF.pm,v 1.22 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::MSF;

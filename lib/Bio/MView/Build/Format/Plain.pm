@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Plain.pm,v 1.12 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::Plain;

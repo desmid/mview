@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2006 Nigel P. Brown
-# $Id: Regexps.pm,v 1.7 2005/12/12 20:42:48 brown Exp $
 
 ###########################################################################
 # regexps for string matching numerical types

@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1998-2015 Nigel P. Brown
-# $Id: lalign.pm,v 1.5 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 # FASTA2 suite LALIGN pairwise method.

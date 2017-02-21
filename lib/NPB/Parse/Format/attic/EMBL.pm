@@ -1,6 +1,5 @@
 # -*- perl -*-
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: EMBL.pm,v 1.52 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Format::EMBL;

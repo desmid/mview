@@ -1,5 +1,4 @@
 # Copyright (C) 1996-2015 Nigel P. Brown
-# $Id: Substring.pm,v 1.10 2015/01/24 21:22:42 npb Exp $
 
 ###########################################################################
 package NPB::Parse::Substring;

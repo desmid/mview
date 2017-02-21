@@ -1,5 +1,4 @@
 # Copyright (C) 1998-2015 Nigel P. Brown
-# $Id: Pearson.pm,v 1.12 2015/01/24 21:22:42 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Format::Pearson;

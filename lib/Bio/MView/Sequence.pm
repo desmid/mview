@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Sequence.pm,v 1.15 2015/06/14 17:09:03 npb Exp $
 
 ###########################################################################
 package Bio::MView::Sequence;

@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2015 Nigel P. Brown
-# $Id: Convert.pm $
 
 ######################################################################
 package Bio::MView::Convert;

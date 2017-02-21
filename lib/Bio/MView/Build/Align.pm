@@ -1,5 +1,4 @@
 # Copyright (C) 1997-2006 Nigel P. Brown
-# $Id: Align.pm,v 1.12 2015/06/14 17:09:04 npb Exp $
 
 ###########################################################################
 package Bio::MView::Build::Align;
