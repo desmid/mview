@@ -508,14 +508,15 @@ sub build_rows {
     my ($self, $lo, $hi) = @_;
 
     if ($self->{'aligned'}) {  #treat as alignment: common range
-        #warn "range ($lo, $hi)\n";
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
             $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
         }
 
     } else {  #treat as format conversion: each row has own range
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
             my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
             $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
         }
     }
