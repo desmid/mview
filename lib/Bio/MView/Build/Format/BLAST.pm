@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 #
@@ -25,19 +25,20 @@ my %Known_Parameters =
      #name        => [ format       default  ]
 
      #BLAST* display various HSP selections
-     'hsp'        => [ '\S+',       'ranked' ],
+     'hsp'         => [ '\S+',       'ranked' ],
+     'keepinserts' => [ '\d+',              0 ],
 
      #BLAST* (version 1)
-     'maxpval'    => [ $RX_Ureal,   undef    ],
-     'minscore'   => [ $RX_Ureal,   undef    ],
+     'maxpval'     => [ $RX_Ureal,   undef    ],
+     'minscore'    => [ $RX_Ureal,   undef    ],
 
      #BLAST* (version 2)
-     'maxeval'    => [ $RX_Ureal,   undef    ],
-     'minbits'    => [ $RX_Ureal,   undef    ],
-     'cycle'      => [ [],          undef    ],
+     'maxeval'     => [ $RX_Ureal,   undef    ],
+     'minbits'     => [ $RX_Ureal,   undef    ],
+     'cycle'       => [ [],          undef    ],
 
      #BLASTN (version 1, version 2); BLASTX (version 2)
-     'strand'     => [ [],          undef    ],
+     'strand'      => [ [],          undef    ],
 
      #BLASTX/TBLASTX (version 1)
     );
@@ -151,18 +152,20 @@ sub strand {
 #override base class method to process query row differently
 sub build_rows {
     my $self = shift;
-    my ($lo, $hi, $i);
+    my ($lo, $hi) = (0,0);
 
-    #first, compute alignment length from query sequence in row[0]
-    ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
-
-    #warn "range ($lo, $hi)\n";
+    #compute alignment length from query sequence in row[0]
+    if (! $self->{'keepinserts'}) {
+        ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
+    }
+    #warn "BLAST::build_rows range[0] ($lo, $hi)\n";
 
     #query row contains missing query sequence, rather than gaps
     $self->{'index2row'}->[0]->assemble($lo, $hi, $MISSING_QUERY_CHAR);
 
     #assemble sparse sequence strings for all rows
-    for ($i=1; $i < @{$self->{'index2row'}}; $i++) {
+    for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
+        #warn "BLAST::build_rows range[$i] ($lo, $hi)\n";
 	$self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
     }
     $self;

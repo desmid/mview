@@ -158,7 +158,8 @@ sub parse_ranked_hits {
 	    #apply score/significance filter
             next  if $self->skip_hsp($aln);
 
-	    #for gapped alignments
+	    #for gapped alignments: keep sbjct sequence insertions?
+            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -172,6 +173,7 @@ sub parse_ranked_hits {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{$self->{'attr_score'}},
+                    \$uncut,
                 ]);
         }
         #override row data
@@ -217,7 +219,8 @@ sub parse_discrete_hits {
                 $coll->insert($self->record($key2, undef, $sum, $aln), $key2);
 	    }
 
-	    #for gapped alignments
+	    #for gapped alignments: keep sbjct sequence insertions?
+            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -231,6 +234,7 @@ sub parse_discrete_hits {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{$self->{'attr_score'}},
+                    \$uncut,
                 ]);
 
             #override row data
@@ -275,7 +279,8 @@ sub parse_blastpx_all_hits {
             $sig   = $self->lo_sig($sig, $aln);
 	    $n++;
 
-	    #for gapped alignments
+	    #for gapped alignments: keep sbjct sequence insertions?
+            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -289,6 +294,7 @@ sub parse_blastpx_all_hits {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{$self->{'attr_score'}},
+                    \$uncut,
                 ]);
 	}
 	#override row data
@@ -344,7 +350,8 @@ sub parse_tblastnx_all_hits {
                 $coll->insert($self->record($rank, undef, $sum, $aln), $key2);
             }
 
-	    #for gapped alignments
+	    #for gapped alignments: keep sbjct sequence insertions?
+            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -358,6 +365,7 @@ sub parse_tblastnx_all_hits {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                     $aln->{$self->{'attr_score'}},
+                    \$uncut,
                 ]);
 	}
 	#override row data

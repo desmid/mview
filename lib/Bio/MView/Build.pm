@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Build;
@@ -43,19 +43,19 @@ my %Template =
 
 my %Known_Parameters =
     (
-     #name        => [ format,     default   ]
-     'topn'       => [ '\d+',      0         ],
-     'minident'   => [ $RX_Ureal,  0         ],
-     'maxident'   => [ $RX_Ureal,  100       ],
-     'pcid'       => [ '\S+',      'aligned' ],
-     'mode'       => [ '\S+',      'new'     ],
-     'ref_id'     => [ '\S+',      0         ],
-     'skiplist'   => [ [],         []        ],
-     'keeplist'   => [ [],         []        ],
-     'nopslist'   => [ [],         []        ],
-     'range'      => [ [],         []        ],
-     'gap'        => [ '\S',       '+'       ],
-     'showpcid'   => [ '\d+',      1,        ],
+     #name         => [ format,     default   ]
+     'topn'        => [ '\d+',      0         ],
+     'minident'    => [ $RX_Ureal,  0         ],
+     'maxident'    => [ $RX_Ureal,  100       ],
+     'pcid'        => [ '\S+',      'aligned' ],
+     'mode'        => [ '\S+',      'new'     ],
+     'ref_id'      => [ '\S+',      0         ],
+     'skiplist'    => [ [],         []        ],
+     'keeplist'    => [ [],         []        ],
+     'nopslist'    => [ [],         []        ],
+     'range'       => [ [],         []        ],
+     'gap'         => [ '\S',       '+'       ],
+     'showpcid'    => [ '\d+',      1,        ],
     );
 
 my %Known_Identity_Mode =
@@ -407,24 +407,27 @@ sub next {
 sub build_block {
     my $self = shift;
 
-    my $aligned = 1;
-
     my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
 
-    #not a search, so do all rows have same range?
+    #if not a search, do all rows have same range?
+    my $aligned = 1;
     if ($self->isa('Bio::MView::Build::Align')) {
         for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
             my ($lo2, $hi2) = $self->get_range($self->{'index2row'}->[$i]);
             #warn "$self->{'index2row'}->[$i] ($lo2, $hi2)\n";
             $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
         }
+    } else { #it's a search, so do we want sequence insertions?
+        $aligned = 0 if $self->{'keepinserts'};
     }
-
     $self->{'aligned'} = $aligned;
 
-    if (!$aligned and
-        grep {$_ eq $self->{'mode'}} qw(new clustal msf rdb plain)) {
-        warn "Output format is '$self->{'mode'}', but sequence lengths differ - aborting\n";
+    #warn "KEEPINSERTS: $self->{'keepinserts'}\n";
+    #warn "ALIGNED:     $self->{'aligned'}\n";
+
+    if (!$self->{'aligned'} and
+        !grep {$_ eq $self->{'mode'}} qw(fasta pearson pir)) {
+        warn "Sequence lengths must be the same for output format '$self->{'mode'}' - aborting\n";
         return undef;
     }
 
@@ -504,14 +507,15 @@ sub build_rows {
     my ($self, $lo, $hi) = @_;
 
     if ($self->{'aligned'}) {  #treat as alignment: common range
-        #warn "range ($lo, $hi)\n";
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
             $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
         }
 
     } else {  #treat as format conversion: each row has own range
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
             my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
             $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
         }
     }

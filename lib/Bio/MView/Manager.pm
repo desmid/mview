@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Manager;
@@ -44,6 +44,7 @@ my %Template_Build_Param =
      'range'         => undef,
      'gap'           => undef,
      'moltype'       => undef,
+     'keepinserts'   => undef,
      		     
      'ruler'         => undef,
      'alignment'     => undef,

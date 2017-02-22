@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Sequence;
@@ -234,8 +234,10 @@ sub get_fs2 { $_[0]->{'text_fs2'} }
 
 sub set_range {
     my ($self, $lo, $hi) = @_;
-    die "$self: range values in wrong order ($lo, $hi)\n"    if $lo > $hi;
-    ($self->{'lo'}, $self->{'hi'}) = ($lo, $hi);
+    if ($lo != 0 and $hi != 0) {
+        die "$self: range values in wrong order ($lo, $hi)\n"    if $lo > $hi;
+        ($self->{'lo'}, $self->{'hi'}) = ($lo, $hi);
+    }
     $self;
 }
 
@@ -299,18 +301,24 @@ sub insert {
 	die "insert(+) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[1] > $frag->[2];
 
-	$string = ${ $frag->[0] };
+        my ($lo, $hi);
+
+        if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
+            $string = ${ $frag->[-1] };
+            $len = CORE::length $string;
+            $lo = $frag->[1];
+            $hi = $lo + $len - 1;
+        } else {
+            $string = ${ $frag->[0] };
+            $len = CORE::length $string;
+            $lo = $frag->[1];
+            $hi = $frag->[2];
+        }
         #warn "frg(+)=@$frag\n";
-        #warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";
+        #warn "frg(+)=$frag->[1], $frag->[2] => $len [$string]\n";
 
 	$self->encode(\$string);
 	#warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";
-
-	$len = CORE::length $string;
-
-        #update sequence ranges
-        my $lo = $frag->[1];
-	my $hi = $frag->[2];
 
         $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
         $self->{'hi'} = $hi  if $hi > $self->{'hi'} or $self->{'hi'} == 0;
@@ -420,7 +428,7 @@ sub _substr {
 
     $start = $self->{'lo'}  if $start < $self->{'lo'};
     $stop  = $self->{'hi'}  if $stop  > $self->{'hi'};
-    #warn "_substr(+,lo,hi): $start, $stop";
+    #warn "$self _substr(+,lo,hi): $start, $stop";
     #warn "_substr(+,beg,end): $self->{'reflo'}, $self->{'refhi'}";
     $stop++;
 
@@ -518,19 +526,27 @@ sub insert {
 	die "insert(-) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[2] > $frag->[1];
 
-	$string = ${ $frag->[0] };
+        my ($lo, $hi);
+
+        if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
+            $string = ${ $frag->[-1] };
+            $len = CORE::length $string;
+            $lo = $frag->[2];
+            $hi = $lo + $len - 1;
+        } else {
+            $string = ${ $frag->[0] };
+            $len = CORE::length $string;
+            $lo = $frag->[2];
+            $hi = $frag->[1];
+        }
         #warn "frg(-)=@$frag\n";
-        #warn "frg(-)=$frag->[1], $frag->[2] [$string]\n";
+        #warn "frg(-)=$frag->[1], $frag->[2] => $len [$string]\n";
 
 	$self->encode(\$string);
 	#warn "frg(-)=$frag->[1], $frag->[2] [$string]\n";
 
 	$len = CORE::length $string;
 	
-        #update sequence ranges REVERSE
-        my $lo = $frag->[2];
-	my $hi = $frag->[1];
-
         $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
         $self->{'hi'} = $hi  if $hi > $self->{'hi'} or $self->{'hi'} == 0;
 
