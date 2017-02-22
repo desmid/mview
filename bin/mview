@@ -626,6 +626,12 @@ convert:  sub { __ARGS;
 	    }
 	  }
 
+OPTION:   keepinserts
+usage:    "Keep search hit sequence insertions"
+type:     b
+default:  off
+param:
+
 
 ###########################################################################
 [IDENTITY]

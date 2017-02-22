@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Sequence;
@@ -299,7 +299,11 @@ sub insert {
 	die "insert(+) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[1] > $frag->[2];
 
-	$string = ${ $frag->[0] };
+        if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
+            $string = ${ $frag->[-1] };
+        } else {
+            $string = ${ $frag->[0] };
+        }
         #warn "frg(+)=@$frag\n";
         #warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";
 
@@ -518,7 +522,11 @@ sub insert {
 	die "insert(-) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[2] > $frag->[1];
 
-	$string = ${ $frag->[0] };
+        if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
+            $string = ${ $frag->[-1] };
+        } else {
+            $string = ${ $frag->[0] };
+        }
         #warn "frg(-)=@$frag\n";
         #warn "frg(-)=$frag->[1], $frag->[2] [$string]\n";
 

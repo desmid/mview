@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 #
@@ -25,19 +25,20 @@ my %Known_Parameters =
      #name        => [ format       default  ]
 
      #BLAST* display various HSP selections
-     'hsp'        => [ '\S+',       'ranked' ],
+     'hsp'         => [ '\S+',       'ranked' ],
+     'keepinserts' => [ '\d+',              0 ],
 
      #BLAST* (version 1)
-     'maxpval'    => [ $RX_Ureal,   undef    ],
-     'minscore'   => [ $RX_Ureal,   undef    ],
+     'maxpval'     => [ $RX_Ureal,   undef    ],
+     'minscore'    => [ $RX_Ureal,   undef    ],
 
      #BLAST* (version 2)
-     'maxeval'    => [ $RX_Ureal,   undef    ],
-     'minbits'    => [ $RX_Ureal,   undef    ],
-     'cycle'      => [ [],          undef    ],
+     'maxeval'     => [ $RX_Ureal,   undef    ],
+     'minbits'     => [ $RX_Ureal,   undef    ],
+     'cycle'       => [ [],          undef    ],
 
      #BLASTN (version 1, version 2); BLASTX (version 2)
-     'strand'     => [ [],          undef    ],
+     'strand'      => [ [],          undef    ],
 
      #BLASTX/TBLASTX (version 1)
     );
