@@ -56,7 +56,6 @@ my %Known_Parameters =
      'range'       => [ [],         []        ],
      'gap'         => [ '\S',       '+'       ],
      'showpcid'    => [ '\d+',      1,        ],
-     'keepinserts' => [ '\d+',      0,        ],
     );
 
 my %Known_Identity_Mode =
@@ -427,8 +426,8 @@ sub build_block {
     #warn "ALIGNED:     $self->{'aligned'}\n";
 
     if (!$self->{'aligned'} and
-        grep {$_ eq $self->{'mode'}} qw(new clustal msf rdb plain)) {
-        warn "Output format is '$self->{'mode'}', but sequence lengths differ - aborting\n";
+        !grep {$_ eq $self->{'mode'}} qw(fasta pearson pir)) {
+        warn "Sequence lengths must be the same for output format '$self->{'mode'}' - aborting\n";
         return undef;
     }
 

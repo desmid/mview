@@ -152,9 +152,9 @@ sub strand {
 #override base class method to process query row differently
 sub build_rows {
     my $self = shift;
+    my ($lo, $hi) = (0,0);
 
     #compute alignment length from query sequence in row[0]
-    my ($lo, $hi) = (0,0);
     if (! $self->{'keepinserts'}) {
         ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
     }
@@ -165,10 +165,6 @@ sub build_rows {
 
     #assemble sparse sequence strings for all rows
     for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
-        my ($lo, $hi) = (0,0);
-        if (! $self->{'keepinserts'}) {
-            ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
-        }
         #warn "BLAST::build_rows range[$i] ($lo, $hi)\n";
 	$self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
     }

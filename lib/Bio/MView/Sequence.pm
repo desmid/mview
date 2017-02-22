@@ -314,8 +314,8 @@ sub insert {
             $lo = $frag->[1];
             $hi = $frag->[2];
         }
-        warn "frg(+)=@$frag\n";
-        warn "frg(+)=$frag->[1], $frag->[2] => $len [$string]\n";
+        #warn "frg(+)=@$frag\n";
+        #warn "frg(+)=$frag->[1], $frag->[2] => $len [$string]\n";
 
 	$self->encode(\$string);
 	#warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";

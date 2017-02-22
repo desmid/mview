@@ -626,12 +626,6 @@ convert:  sub { __ARGS;
 	    }
 	  }
 
-OPTION:   keepinserts
-usage:    "Keep search hit sequence insertions"
-type:     b
-default:  off
-param:
-
 
 ###########################################################################
 [IDENTITY]
@@ -1259,6 +1253,11 @@ convert:  sub { __ARGS;
 		}
             }
 
+OPTION:   keepinserts
+type:     b
+default:  off
+param:
+
 
 ###########################################################################
 [BLAST1]
@@ -1301,6 +1300,13 @@ usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  both
 
+#generic
+OPTION:   keepinserts
+usage:    "Keep hit sequence insertions"
+type:     b
+default:  off
+param:
+
 
 ###########################################################################
 [BLAST2]
@@ -1331,6 +1337,12 @@ usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  both
 
+#generic
+OPTION:   keepinserts
+usage:    "Keep hit sequence insertions"
+type:     b
+default:  off
+param:
 
 ###########################################################################
 [PSIBLAST]
@@ -1381,6 +1393,13 @@ convert:  sub { __ARGS;
 		}
                 return [ @tmp ];
             }
+
+#generic
+OPTION:   keepinserts
+usage:    "Keep hit sequence insertions"
+type:     b
+default:  off
+param:
 
 
 ###########################################################################
