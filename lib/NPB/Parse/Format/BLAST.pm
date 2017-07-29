@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2017 Nigel P. Brown
 
 ###########################################################################
 #
@@ -137,6 +137,11 @@ my $SCORE_END = "(?:"
     . $NPB::Parse::Format::BLAST2::SCORE_END
     . ")";
 
+#keep state between parses
+my $SAVEPROG = undef;
+my $SAVEVERSION = undef;
+my $SAVEFMT = undef;
+
 #Generic get_entry() and new() constructors for all BLAST style parsers:
 #determine program and version and coerce appropriate subclass.
 
@@ -146,8 +151,7 @@ sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my ($type, $prog, $version) = ('NPB::Parse::Format::BLAST', undef, undef);
-    my ($savefmt, $saveformat, $saveversion) = ('', '', '');
+    my $type = 'NPB::Parse::Format::BLAST';
 
     while (defined ($line = $parent->{'text'}->getline)) {
 
@@ -161,27 +165,24 @@ sub get_entry {
 	last  if $line =~ /$ENTRY_END/o;
 
 	#escape iteration if we've found the BLAST type previously
-	next  if defined $prog and defined $version;
-	
+	next  if defined $SAVEPROG and defined $SAVEVERSION;
+
 	if ($line =~ /$HEADER_START\s+(\d+)/o) {
 
 	    #read major version
-	    $version = $1;
+	    $SAVEVERSION = $1;
 
 	    #reassess version
 	    if ($line =~ /WashU/) {
 		#WashU series is almost identical to NCBI BLAST1
-		$version = 1;
+		$SAVEVERSION = 1;
 	    }
 
 	    #read program name and determine output format
 	    $line =~ /^(\#)?\s*(\S+)/;
-            $savefmt = defined $1 ? '_OF7' : '';
-	    $prog = $2;
+	    $SAVEPROG = uc $2;
+            $SAVEFMT = defined $1 ? '_OF7' : '';
 
-	    $saveformat  = uc $prog;
-	    $saveversion = $version;
-		
 	    next;
 	}
 	
@@ -190,34 +191,28 @@ sub get_entry {
 
     $bytes = $parent->{'text'}->tell - $offset;
 
-    unless (defined $prog and defined $version) {
+    unless (defined $SAVEPROG and defined $SAVEVERSION) {
 	die "get_entry() top-level BLAST parser could not determine program/version\n";
     }
 
-    unless (exists $VERSIONS{$version} and 
-	    grep(/^$prog$/i, @{$VERSIONS{$version}}) > 0) {
-	die "get_entry() parser for program '$prog' version '$version' not implemented\n";
+    unless (exists $VERSIONS{$SAVEVERSION} and
+	    grep(/^$SAVEPROG$/i, @{$VERSIONS{$SAVEVERSION}}) > 0) {
+	die "get_entry() parser for program '$SAVEPROG' version '$SAVEVERSION' not implemented\n";
     }
 
-    if ($prog eq 'PSIBLAST') { # BLAST+
-        $prog = 'blastp';
-        $saveformat = 'blastp';
-    }
-
-    $prog = lc $prog;
-    $version =~ s/-/_/g;
-    $type = "NPB::Parse::Format::BLAST${version}${savefmt}::$prog";
-
-    #warn "prog= $prog  version= $version  type= $type\n";
-
-    ($prog = $type) =~ s/::/\//g; require "$prog.pm";
+    #BLAST+ PSIBLAST handled by BLASTP parser
+    my $parser = $SAVEPROG eq 'PSIBLAST' ? 'blastp' : lc $SAVEPROG;
 
     #package $type defines this constructor and coerces to $type
+    $type = "NPB::Parse::Format::BLAST${SAVEVERSION}${SAVEFMT}::$parser";
 
+    #warn "prog= $SAVEPROG  version= $SAVEVERSION  type= $type\n";
+
+    my $format = $type; $format =~ s/::/\//g; require "$format.pm";
     my $self = $type->new(undef, $parent->{'text'}, $offset, $bytes);
 
-    $self->{'format'}  = $saveformat;
-    $self->{'version'} = $saveversion;
+    $self->{'format'}     = $parser;
+    $self->{'version'}    = $SAVEVERSION;
 
     $self;
 }

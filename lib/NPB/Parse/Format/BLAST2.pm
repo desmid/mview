@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2017 Nigel P. Brown
 
 ###########################################################################
 #
@@ -149,7 +149,7 @@ sub new {
                 $text->scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
                 next;
             }
-            #'Searching' or 'Results' keywords stripped by web server
+            #keywords 'Searching' or 'Results' stripped by web server
             $text->scan_until($SEARCH_END, 'SEARCH');
 	    next;
 	}
