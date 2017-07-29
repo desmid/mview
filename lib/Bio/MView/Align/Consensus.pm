@@ -575,14 +575,14 @@ sub color_by_type {
 	unless defined $par{'gapcolor'};
     $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
 	unless defined $par{'colormap'};
-    $par{'colormap2'}= $Default_Colormap
-	unless defined $par{'colormap2'};
+    $par{'colormapc'}= $Default_Colormap
+	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
     
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
-    #warn "color_by_type($self) 1=$par{'colormap'} 2=$par{'colormap2'}\n";
+    #warn "color_by_type($self) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -602,7 +602,7 @@ sub color_by_type {
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color_type($cg,
 				     $par{'colormap'},
-				     $par{'colormap2'});
+				     $par{'colormapc'});
 	
 	if (@tmp) {
 	    if ($par{'css1'}) {
@@ -634,14 +634,14 @@ sub color_by_identity {
 	unless defined $par{'gapcolor'};
     $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
 	unless defined $par{'colormap'};
-    $par{'colormap2'}= $Default_Colormap
-	unless defined $par{'colormap2'};
+    $par{'colormapc'}= $Default_Colormap
+	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
     
-    #warn "color_by_identity($self, $othr) 1=$par{'colormap'} 2=$par{'colormap2'}\n";
+    #warn "color_by_identity($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -707,14 +707,14 @@ sub color_by_consensus_sequence {
 	unless defined $par{'gapcolor'};
     $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
 	unless defined $par{'colormap'};
-    $par{'colormap2'}= $Default_Colormap
-	unless defined $par{'colormap2'};
+    $par{'colormapc'}= $Default_Colormap
+	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
-    #warn "color_by_consensus_sequence($self, $othr) 1=$par{'colormap'} 2=$par{'colormap2'}\n";
+    #warn "color_by_consensus_sequence($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -741,7 +741,7 @@ sub color_by_consensus_sequence {
 		#colour by sequence symbol
 		@tmp = $self->get_color_consensus_sequence($cs, $cg,
 							   $par{'colormap'},
-							   $par{'colormap2'});
+							   $par{'colormapc'});
 
 		if (@tmp) {
 		    if ($par{'css1'}) {
@@ -787,14 +787,14 @@ sub color_by_consensus_group {
 	unless defined $par{'gapcolor'};
     $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
 	unless defined $par{'colormap'};
-    $par{'colormap2'}= $Default_Colormap
-	unless defined $par{'colormap2'};
+    $par{'colormapc'}= $Default_Colormap
+	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
     
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
-    #warn "color_by_consensus_group($self, $othr) 1=$par{'colormap'} 2=$par{'colormap2'}\n";
+    #warn "color_by_consensus_group($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -822,7 +822,7 @@ sub color_by_consensus_group {
 		#note: both symbols passed; colormaps swapped
 		@tmp = $self->get_color_consensus_group($cs, $cg,
 							$par{'colormap'},
-							$par{'colormap2'});
+							$par{'colormapc'});
 		if (@tmp) {
 		    if ($par{'css1'}) {
 			push @$color, $i, 'class' => $tmp[1];

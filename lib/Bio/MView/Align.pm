@@ -27,7 +27,7 @@ my %Template =
      'tally'      => undef, #column tallies for consensus
      'coloring'   => undef, #coloring mode
      'colormap'   => undef, #name of colormap
-     'colormap2'  => undef, #name of second colormap
+     'colormapc'  => undef, #name of second colormap
      'group'      => undef, #consensus group name
      'ignore'     => undef, #ignore self/non-self classes
      'con_gaps'   => undef, #ignore gaps when computing consensus
@@ -48,7 +48,8 @@ my %Known_Parameter =
      'ref_id'     => [ '(\S+(?:\s*)?)+', undef ],
      'coloring'   => [ '\S+',     'none' ], 
      'colormap'   => [ '\S+',     $Bio::MView::Align::Sequence::Default_Colormap ],
-     'colormap2'  => [ '\S+',     $Bio::MView::Align::Consensus::Default_Colormap ],
+     'colormapc'  => [ '\S+',     $Bio::MView::Align::Consensus::Default_Colormap ],
+     'colormapf'  => [ '\S+',     $Bio::MView::Align::Sequence::Default_FIND_Colormap ],
      'bold'       => [ '[01]',    1 ],
      'css1'       => [ '[01]',    0 ],
      'alncolor'   => [ '\S+',     $Bio::MView::Align::Row::Colour_White ],
@@ -222,6 +223,16 @@ sub set_parameters {
     }
 
     $self;
+}
+
+sub dump_parameters {
+    my $self = shift;
+    my $s = "Bio::MView::Align:\n";
+    foreach my $k (sort keys %$self) {
+        my $v = defined $self->{$k} ? $self->{$k} :'undef';
+        $s .= "$k => $v\n";
+    }
+    return $s;
 }
 
 sub length { $_[0]->{'length'} }
@@ -482,8 +493,7 @@ sub list_colormaps {
 
 sub get_colormap_length {
     my $map = uc shift;
-    die "get_colormap_length(): colormap name unknown\n"
-	unless exists $Colormaps->{$map};
+    return 1  unless exists $Colormaps->{$map};
     my $len = scalar keys %{$Colormaps->{$map}};
     $len--  if defined $Colormaps->{$map}->{''};
     if ($len % 2 != 0) {
@@ -632,23 +642,32 @@ sub header {
     return $s    if $quiet;
 
     if ($self->{'coloring'} eq 'any') {
-	$s .= "Colored by: property\n";
+	$s .= "Colored by: property";
     }
     elsif ($self->{'coloring'} eq 'identity' and defined $self->{'ref_id'}) {
-	$s .= "Colored by: identity + property\n";
+	$s .= "Colored by: identity";
     }
     elsif ($self->{'coloring'} eq 'mismatch' and defined $self->{'ref_id'}) {
-	$s .= "Colored by: mismatch + property\n";
+	$s .= "Colored by: mismatch";
     }
     elsif ($self->{'coloring'} eq 'consensus') {
-	$s .= "Colored by: consensus/$self->{'threshold'}->[0]\% and property\n";
+	$s .= "Colored by: consensus/$self->{'threshold'}->[0]\%";
     }
     elsif ($self->{'coloring'} eq 'group') {
-	$s .= "Colored by: consensus/$self->{'threshold'}->[0]\% and group property\n";
+	$s .= "Colored by: consensus group/$self->{'threshold'}->[0]\%";
     }
-    elsif ($self->{'coloring'} eq 'find') {
-	$s .= "Colored by: search pattern '$self->{'find'}'\n";
+
+    #overlay any find pattern colouring
+    if ($self->{'find'} ne '') {
+        if ($s eq '') {
+            $s .= "Colored by: ";
+        } else {
+            $s .= "; ";
+        }
+        $s .= "search pattern '$self->{'find'}'\n";
     }
+    $s .= "\n"  if $s ne '';
+
     Bio::MView::Display::displaytext($s);
 }
 
@@ -657,85 +676,85 @@ sub set_color_scheme {
 
     $self->set_parameters(@_);
 
-    return $self    if $self->{'coloring'} eq 'none';
+    #warn $self->dump_parameters();
 
     #user-defined colouring?
-
     $self->color_special('colormap'  => $self->{'colormap'},
-			 'colormap2' => $self->{'colormap2'},
+			 'colormapc' => $self->{'colormapc'},
 			 'symcolor'  => $self->{'symcolor'},
 			 'gapcolor'  => $self->{'gapcolor'},
 			 'css1'      => $self->{'css1'},
 			);
 
-    if ($self->{'coloring'} eq 'any') {
+    if ($self->{'coloring'} eq 'none') {
+        ;
+    }
+
+    elsif ($self->{'coloring'} eq 'any') {
 	$self->color_by_type('colormap'  => $self->{'colormap'},
-			     'colormap2' => $self->{'colormap2'},
+			     'colormapc' => $self->{'colormapc'},
 			     'symcolor'  => $self->{'symcolor'},
 			     'gapcolor'  => $self->{'gapcolor'},
 			     'css1'      => $self->{'css1'},
 			    );
-	return $self;
     }
 
-    if ($self->{'coloring'} eq 'identity') {
+    elsif ($self->{'coloring'} eq 'identity') {
 	$self->color_by_identity($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
-				 'colormap2' => $self->{'colormap2'},
+				 'colormapc' => $self->{'colormapc'},
 				 'symcolor'  => $self->{'symcolor'},
 				 'gapcolor'  => $self->{'gapcolor'},
 				 'css1'      => $self->{'css1'},
 				);
-	return $self;
     }
 
-    if ($self->{'coloring'} eq 'mismatch') {
+    elsif ($self->{'coloring'} eq 'mismatch') {
 	$self->color_by_mismatch($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
-				 'colormap2' => $self->{'colormap2'},
+				 'colormapc' => $self->{'colormapc'},
 				 'symcolor'  => $self->{'symcolor'},
 				 'gapcolor'  => $self->{'gapcolor'},
 				 'css1'      => $self->{'css1'},
 				);
-	return $self;
     }
 
-    if ($self->{'coloring'} eq 'consensus') {
+    elsif ($self->{'coloring'} eq 'consensus') {
 	$self->color_by_consensus_sequence('colormap'  => $self->{'colormap'},
-					   'colormap2' => $self->{'colormap2'},
+					   'colormapc' => $self->{'colormapc'},
 					   'group'     => $self->{'group'},
 					   'threshold' => $self->{'threshold'},
 					   'symcolor'  => $self->{'symcolor'},
 					   'gapcolor'  => $self->{'gapcolor'},
 					   'css1'      => $self->{'css1'},
 					  );
-	return $self;
     }
 
-    if ($self->{'coloring'} eq 'group') {
+    elsif ($self->{'coloring'} eq 'group') {
 	$self->color_by_consensus_group('colormap'  => $self->{'colormap'},
-					'colormap2' => $self->{'colormap2'},
+					'colormapc' => $self->{'colormapc'},
 					'group'     => $self->{'group'},
 					'threshold' => $self->{'threshold'},
 					'symcolor'  => $self->{'symcolor'},
 					'gapcolor'  => $self->{'gapcolor'},
 					'css1'      => $self->{'css1'},
 				       );
-	return $self;
     }
 
-    if ($self->{'coloring'} eq 'find') {
-	$self->color_by_find_block('colormap'  => $self->{'colormap'},
-				   'colormap2' => $self->{'colormap2'},
+    else {
+        warn "${self}::set_color_scheme() unknown mode '$self->{'coloring'}'\n";
+    }
+
+    #find overlays anything else
+    if ($self->{'find'} ne '') {
+	$self->color_by_find_block('colormap'  => $self->{'colormapf'},
 				   'symcolor'  => $self->{'symcolor'},
 				   'gapcolor'  => $self->{'gapcolor'},
 				   'css1'      => $self->{'css1'},
 				   'find'      => $self->{'find'},
-			    );
-	return $self;
+            );
     }
-
-    warn "${self}::set_color_scheme() unknown mode '$self->{'coloring'}'\n";
+    return $self;
 
     $self;
 }
@@ -760,6 +779,8 @@ sub color_special {
 sub color_by_find_block {
     my $self = shift;
     my %par = @_;
+
+    #warn $self->dump_parameters();
 
     my $mapsize = get_colormap_length($par{'colormap'});
     my @patterns = split($BLOCKSEPARATOR, $par{find});

@@ -1,10 +1,12 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-02-22
+Version 1.62  2017-07-30
 - Added '-keepinserts on|off' option for use with BLAST output; this forces
   MView to dump blast hits intact without sequence insertions being cut (the
   default behaviour is to cut hit insertions to make the query
   contiguous). Thanks to Andrea Luchetti at Uni. Bologna for this request.
+- Now allows 'find' colouring to be independent of 'alignment' colouring so
+  both can be applied together. Requested by Konstantin Kuleshov.
 - Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
 
 Version 1.61  2016-11-14

@@ -81,6 +81,8 @@ my %Template_Align_Param =
      'con_ignore'    => undef,
      'con_gaps'      => undef,
 		     
+     'fnd_colormap'  => undef,
+
      'css1'          => undef,
      'alncolor'      => undef,
      'labcolor'      => undef,
@@ -235,6 +237,16 @@ sub set_parameters {
     $self;
 }
 
+sub dump_parameters {
+    my $self = shift;
+    my $s = "Bio::MView::Manager:\n";
+    foreach my $k (sort keys %$self) {
+        my $v = defined $self->{$k} ? $self->{$k} :'undef';
+        $s .= "$k => $v\n";
+    }
+    return $s;
+}
+
 #return next entry worth of parse data as in a Bio::MView::Build object 
 #ready for parsing, or undef if no more data.
 sub next {
@@ -305,6 +317,8 @@ sub add_display {
     #    #Universal::vmstat("header added");
     #}
 
+    #warn $self->dump_parameters();
+
     #attach the alignment
     if ($self->{'bp'}->{'alignment'}) {
         $aln->set_color_scheme
@@ -312,7 +326,8 @@ sub add_display {
 	     'ref_id'      => $ref,
 	     'coloring'    => $self->{'ap'}->{'aln_coloring'},
 	     'colormap'    => $self->{'ap'}->{'aln_colormap'},
-	     'colormap2'   => $self->{'ap'}->{'con_colormap'},
+	     'colormapc'   => $self->{'ap'}->{'con_colormap'},
+	     'colormapf'   => $self->{'ap'}->{'fnd_colormap'},
 	     'group'       => $self->{'ap'}->{'aln_groupmap'},
 	     'threshold'   => $self->{'ap'}->{'aln_threshold'},
 	     'ignore'      => $self->{'ap'}->{'aln_ignore'},
@@ -347,7 +362,7 @@ sub add_display {
         $tmp->set_color_scheme(
 			       'coloring'  => $self->{'ap'}->{'con_coloring'},
                                'colormap'  => $self->{'ap'}->{'aln_colormap'},
-                               'colormap2' => $self->{'ap'}->{'con_colormap'},
+                               'colormapc' => $self->{'ap'}->{'con_colormap'},
                                'group'     => $self->{'ap'}->{'con_groupmap'},
                                'threshold' => $self->{'ap'}->{'con_threshold'},
                                'ignore'    => $self->{'ap'}->{'con_ignore'},

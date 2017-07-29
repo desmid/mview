@@ -1188,8 +1188,7 @@ default:  ""
 param:
 action:   sub { __ARGS;
                 if (__OV) {
-		    __PARAM{'aln_coloring'} = 'find';
-		    __PARAM{'aln_colormap'} =
+		    __PARAM{'fnd_colormap'} =
 			Bio::MView::Manager::get_default_find_colormap();
                 }
           }

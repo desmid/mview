@@ -193,6 +193,16 @@ sub _set_parameters {
     $self;
 }
 
+sub dump_parameters {
+    my $self = shift;
+    my $s = "Bio::MView::Build:\n";
+    foreach my $k (sort keys %$self) {
+        my $v = defined $self->{$k} ? $self->{$k} :'undef';
+        $s .= "$k => $v\n";
+    }
+    return $s;
+}
+
 #override if children add extra parameters
 sub known_parameters {{}}
 
