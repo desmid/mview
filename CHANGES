@@ -1,7 +1,11 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-02-21
-- Updated for BLAST 2.6.0+ with '-outfmt 7' changes.
+Version 1.62  2017-02-22
+- Added '-keepinserts on|off' option for use with BLAST output; this forces
+  MView to dump blast hits intact without sequence insertions being cut (the
+  default behaviour is to cut hit insertions to make the query
+  contiguous). Thanks to Andrea Luchetti at Uni. Bologna for this request.
+- Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
 
 Version 1.61  2016-11-14
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
