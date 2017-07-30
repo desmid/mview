@@ -9,6 +9,7 @@ Version 1.62  2017-07-30
   need to be aligned (FASTA, PIR). Note: the default behaviour is to cut
   hit insertions to make the query contiguous. Thanks to Andrea Luchetti at
   Uni. Bologna for this request.
+- Removed obscure '-con_coloring identity' option which contained a bug.
 - Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
 
 Version 1.61  2016-11-14
