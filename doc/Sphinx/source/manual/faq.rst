@@ -9,14 +9,6 @@ Yes - MView extracts and converts results into FASTA, PIR, MSF and CLUSTAL/aln
 formats. See :ref:`ref_output_formats`.
 
 
-Can MView extract or view the separate BLAST alignment or HSPs?
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-Yes - MView normally displays or extracts only the top scoring alignments or
-HSPs for the query. You can get all alignments and/or HSPs using the ``-hsp
-discrete`` option.
-
-
 Does MView work with nucleotide sequences?
 """"""""""""""""""""""""""""""""""""""""""
 
@@ -94,16 +86,48 @@ using the ``-reference`` option, which requires either a row number or a
 sequence identifier.
 
 
+Can MView extract or view the alternative BLAST alignments or HSPs?
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Yes - MView normally displays or extracts only the top scoring alignments or
+HSPs for the query. You can get all alignments and/or HSPs using the ``-hsp
+discrete`` option.
+
+Important: see :ref:`ref_funny_sequences` and :ref:`ref_keepinserts` for
+more information on extracting complete HSPs.
+
+
 .. _ref_funny_sequences:
 
-Why are some symbols lowercased?
-""""""""""""""""""""""""""""""""
+Why are some sequence symbols lowercased?
+"""""""""""""""""""""""""""""""""""""""""
 
 Gapped input (e.g., FASTA, BLAST2, PSI-BLAST) is subject to a further
 processing step when producing the stacked alignment. The query sequence acts
-as a template, but any gaps introduced into the query by a database hit are
-excised to ensure a contiguous query string. The position of the excision in
-the affected hit is marked by lowercasing the pair of boundary symbols.
+as a template, but any insertions in the database hit sequences that would
+introduce a gap in the query are excised to ensure a contiguous query string
+and maintain the stacked alignment. The position of the excision in the
+affected hit is marked by lowercasing the pair of boundary symbols.
+
+It is possible to override this behaviour in a limited fashion with BLAST
+input (see :ref:`ref_keepinserts`).
+
+
+.. _ref_keepinserts:
+
+Can I extract BLAST hits complete with insertions?
+""""""""""""""""""""""""""""""""""""""""""""""""""
+
+If you want to extract BLAST hits without insertions relative to the query
+being excised (see :ref:`ref_funny_sequences`), you can do this with the
+``-keepinserts on`` option.
+
+Note: because the multiple sequence output would no longer be aligned to the
+query, you can only do this in conjunction with one of the unaligned output
+modes: ``-out fasta`` or ``-out pir`` to dump the hits.
+
+Note: filtering using ``-range x:y`` to extract a range of alignment columns
+is silently ignored with ``-keepinserts on``.
 
 
 Why is the query sequence incomplete?

@@ -53,7 +53,6 @@
   <ul>
 <li><a class="reference internal" href="#">Frequently asked questions</a><ul>
 <li><a class="reference internal" href="#can-mview-extract-blast-or-other-output-into-a-fasta-pir-msf-clustal-file">Can MView extract BLAST (or other) output into a FASTA/PIR/MSF/CLUSTAL file?</a></li>
-<li><a class="reference internal" href="#can-mview-extract-or-view-the-separate-blast-alignment-or-hsps">Can MView extract or view the separate BLAST alignment or HSPs?</a></li>
 <li><a class="reference internal" href="#does-mview-work-with-nucleotide-sequences">Does MView work with nucleotide sequences?</a></li>
 <li><a class="reference internal" href="#can-mview-use-clustal-colours">Can MView use CLUSTAL colours?</a></li>
 <li><a class="reference internal" href="#can-mview-process-data-from-a-web-page">Can MView process data from a Web page?</a></li>
@@ -61,7 +60,9 @@
 <li><a class="reference internal" href="#how-can-i-print">How can I print?</a></li>
 <li><a class="reference internal" href="#can-i-edit-the-alignment">Can I edit the alignment?</a></li>
 <li><a class="reference internal" href="#what-do-the-percent-identities-mean">What do the percent identities mean?</a></li>
-<li><a class="reference internal" href="#why-are-some-symbols-lowercased">Why are some symbols lowercased?</a></li>
+<li><a class="reference internal" href="#can-mview-extract-or-view-the-alternative-blast-alignments-or-hsps">Can MView extract or view the alternative BLAST alignments or HSPs?</a></li>
+<li><a class="reference internal" href="#why-are-some-sequence-symbols-lowercased">Why are some sequence symbols lowercased?</a></li>
+<li><a class="reference internal" href="#can-i-extract-blast-hits-complete-with-insertions">Can I extract BLAST hits complete with insertions?</a></li>
 <li><a class="reference internal" href="#why-is-the-query-sequence-incomplete">Why is the query sequence incomplete?</a></li>
 <li><a class="reference internal" href="#how-are-overlapping-blast-hsps-processed">How are overlapping BLAST HSPs processed?</a></li>
 </ul>
@@ -105,12 +106,6 @@
 <h2>Can MView extract BLAST (or other) output into a FASTA/PIR/MSF/CLUSTAL file?<a class="headerlink" href="#can-mview-extract-blast-or-other-output-into-a-fasta-pir-msf-clustal-file" title="Permalink to this headline">¶</a></h2>
 <p>Yes - MView extracts and converts results into FASTA, PIR, MSF and CLUSTAL/aln
 formats. See <a class="reference internal" href="formats_out.html#ref-output-formats"><span class="std std-ref">Output formats</span></a>.</p>
-</div>
-<div class="section" id="can-mview-extract-or-view-the-separate-blast-alignment-or-hsps">
-<h2>Can MView extract or view the separate BLAST alignment or HSPs?<a class="headerlink" href="#can-mview-extract-or-view-the-separate-blast-alignment-or-hsps" title="Permalink to this headline">¶</a></h2>
-<p>Yes - MView normally displays or extracts only the top scoring alignments or
-HSPs for the query. You can get all alignments and/or HSPs using the <code class="docutils literal"><span class="pre">-hsp</span>
-<span class="pre">discrete</span></code> option.</p>
 </div>
 <div class="section" id="does-mview-work-with-nucleotide-sequences">
 <h2>Does MView work with nucleotide sequences?<a class="headerlink" href="#does-mview-work-with-nucleotide-sequences" title="Permalink to this headline">¶</a></h2>
@@ -160,7 +155,7 @@ query or first row) thus:</p>
 \times 100\]</div>
 <p>Still, in the case of BLAST MView output, minor deviations from the
 percentages reported by BLAST are due to (1) different rounding, and (2) the
-way MView assembles a single pseudo-sequence (see <a class="reference internal" href="#ref-funny-sequences"><span class="std std-ref">Why are some symbols lowercased?</span></a>)
+way MView assembles a single pseudo-sequence (see <a class="reference internal" href="#ref-funny-sequences"><span class="std std-ref">Why are some sequence symbols lowercased?</span></a>)
 for a hit composed of multiple HSPs, giving an averaged percent identity. This
 default behaviour above is also obtained using the option <code class="docutils literal"><span class="pre">-pcid</span> <span class="pre">aligned</span></code>.</p>
 <p>Two other calculation possibilities are available: <code class="docutils literal"><span class="pre">-pcid</span> <span class="pre">reference</span></code>
@@ -170,13 +165,35 @@ normalises by the ungapped length of the query or reference sequence, and
 using the <code class="docutils literal"><span class="pre">-reference</span></code> option, which requires either a row number or a
 sequence identifier.</p>
 </div>
-<div class="section" id="why-are-some-symbols-lowercased">
-<span id="ref-funny-sequences"></span><h2>Why are some symbols lowercased?<a class="headerlink" href="#why-are-some-symbols-lowercased" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="can-mview-extract-or-view-the-alternative-blast-alignments-or-hsps">
+<h2>Can MView extract or view the alternative BLAST alignments or HSPs?<a class="headerlink" href="#can-mview-extract-or-view-the-alternative-blast-alignments-or-hsps" title="Permalink to this headline">¶</a></h2>
+<p>Yes - MView normally displays or extracts only the top scoring alignments or
+HSPs for the query. You can get all alignments and/or HSPs using the <code class="docutils literal"><span class="pre">-hsp</span>
+<span class="pre">discrete</span></code> option.</p>
+<p>Important: see <a class="reference internal" href="#ref-funny-sequences"><span class="std std-ref">Why are some sequence symbols lowercased?</span></a> and <a class="reference internal" href="#ref-keepinserts"><span class="std std-ref">Can I extract BLAST hits complete with insertions?</span></a> for
+more information on extracting complete HSPs.</p>
+</div>
+<div class="section" id="why-are-some-sequence-symbols-lowercased">
+<span id="ref-funny-sequences"></span><h2>Why are some sequence symbols lowercased?<a class="headerlink" href="#why-are-some-sequence-symbols-lowercased" title="Permalink to this headline">¶</a></h2>
 <p>Gapped input (e.g., FASTA, BLAST2, PSI-BLAST) is subject to a further
 processing step when producing the stacked alignment. The query sequence acts
-as a template, but any gaps introduced into the query by a database hit are
-excised to ensure a contiguous query string. The position of the excision in
-the affected hit is marked by lowercasing the pair of boundary symbols.</p>
+as a template, but any insertions in the database hit sequences that would
+introduce a gap in the query are excised to ensure a contiguous query string
+and maintain the stacked alignment. The position of the excision in the
+affected hit is marked by lowercasing the pair of boundary symbols.</p>
+<p>It is possible to override this behaviour in a limited fashion with BLAST
+input (see <a class="reference internal" href="#ref-keepinserts"><span class="std std-ref">Can I extract BLAST hits complete with insertions?</span></a>).</p>
+</div>
+<div class="section" id="can-i-extract-blast-hits-complete-with-insertions">
+<span id="ref-keepinserts"></span><h2>Can I extract BLAST hits complete with insertions?<a class="headerlink" href="#can-i-extract-blast-hits-complete-with-insertions" title="Permalink to this headline">¶</a></h2>
+<p>If you want to extract BLAST hits without insertions relative to the query
+being excised (see <a class="reference internal" href="#ref-funny-sequences"><span class="std std-ref">Why are some sequence symbols lowercased?</span></a>), you can do this with the
+<code class="docutils literal"><span class="pre">-keepinserts</span> <span class="pre">on</span></code> option.</p>
+<p>Note: because the multiple sequence output would no longer be aligned to the
+query, you can only do this in conjunction with one of the unaligned output
+modes: <code class="docutils literal"><span class="pre">-out</span> <span class="pre">fasta</span></code> or <code class="docutils literal"><span class="pre">-out</span> <span class="pre">pir</span></code> to dump the hits.</p>
+<p>Note: filtering using <code class="docutils literal"><span class="pre">-range</span> <span class="pre">x:y</span></code> to extract a range of alignment columns
+is silently ignored with <code class="docutils literal"><span class="pre">-keepinserts</span> <span class="pre">on</span></code>.</p>
 </div>
 <div class="section" id="why-is-the-query-sequence-incomplete">
 <h2>Why is the query sequence incomplete?<a class="headerlink" href="#why-is-the-query-sequence-incomplete" title="Permalink to this headline">¶</a></h2>
@@ -233,7 +250,7 @@ option. See <a class="reference internal" href="blast/rules.html#ref-blast-rules
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 21 Feb 2017.
+      Last updated on 30 Jul 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

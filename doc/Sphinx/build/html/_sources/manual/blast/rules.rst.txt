@@ -85,10 +85,15 @@ the following algorithm to choose HSPs to tile.
   HSPs that violate either query or hit sequence ordering. Update the current
   set query and hit midpoints.
 
-**Strip query gaps**
+**Strip query gaps and hit insertions**
 
 + Excise columns in each sequence of a fragment pair to remove query gaps.
-  These are generally marked for display by lowercasing the bounding symbols.
+  These are generally marked for display by lowercasing the bounding
+  symbols.
+
+  This can be prevented using the ``-keepinserts on`` option, but the output
+  will no longer be aligned to the query, so this option is only allowed if
+  dumping to an unaligned output format (FASTA, PIR).
 
 **Tile**
 
@@ -110,7 +115,8 @@ overlapping fragments have:
 
 The ``-hsp discrete`` mode can be used to output each HSP in its own alignment
 row, and will report all HSPs, including the alternative ones with other
-significance scores.
+significance scores. See also the ``-keepinserts on`` option mentioned above
+for preserving insertions.
 
 Lastly, if you need a real sequence alignment, use the information provided by
 MView to choose sequence identifiers then use a proper multiple alignment tool

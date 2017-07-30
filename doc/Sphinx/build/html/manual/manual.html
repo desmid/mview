@@ -79,6 +79,7 @@
 <li><a class="reference internal" href="#colouring-only-conserved-residues">Colouring only conserved residues</a></li>
 <li><a class="reference internal" href="#consensus-colouring">Consensus colouring</a></li>
 <li><a class="reference internal" href="#finding-and-colouring-patterns-and-motifs">Finding and colouring patterns and motifs</a></li>
+<li><a class="reference internal" href="#combining-alignment-and-motif-coloring">Combining alignment and motif coloring</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#colours">Colours</a><ul>
@@ -301,7 +302,7 @@ using the default nucleotide colouring scheme (purines, dark blue;
 pyrimidines, light blue). Notice the lower-cased pairs of thymines near the
 end of sequences 3 and 4, columns 299&#8211;300 indicating where a segment of hit
 sequence has been excised to close a gap in the query (see
-<a class="reference internal" href="faq.html#ref-funny-sequences"><span class="std std-ref">Why are some symbols lowercased?</span></a>).</p>
+<a class="reference internal" href="faq.html#ref-funny-sequences"><span class="std std-ref">Why are some sequence symbols lowercased?</span></a>).</p>
 </div>
 <div class="section" id="controlling-the-amount-of-html">
 <h3>Controlling the amount of HTML<a class="headerlink" href="#controlling-the-amount-of-html" title="Permalink to this headline">¶</a></h3>
@@ -738,9 +739,9 @@ are case-insensitive.</p>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
 4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
 5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
 </PRE><p>2. Patterns may be regular expressions enclosed in quotes:</p>
@@ -748,21 +749,21 @@ are case-insensitive.</p>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
-4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
 </PRE><p>3. Patterns are unaffected by gaps in the sequence:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;.</span><span class="si">{4}</span><span class="s1">VA[IV]K&#39;</span>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------</SPAN><SPAN CLASS=S93>VKIPVAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGN</SPAN><SPAN CLASS=S93>E</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S93>RIQVAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWL</SPAN><SPAN CLASS=S93>N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S93>KDKVAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
-4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNAD</SPAN><SPAN CLASS=S93>GVALVAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NH</SPAN><SPAN CLASS=S93>QPVLVAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------</SPAN><SPAN CLASS=S94>VKIPVAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGN</SPAN><SPAN CLASS=S94>E</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S94>RIQVAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWL</SPAN><SPAN CLASS=S94>N</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S94>KDKVAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNAD</SPAN><SPAN CLASS=S94>GVALVAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NH</SPAN><SPAN CLASS=S94>QPVLVAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
 </PRE><p>where you can see that the pattern (any 4 residues followed by V A [I or V] K)
 has been found even though it spans a gap in two rows.</p>
 <p>4. Patterns will find all possible matches including overlapping matches:</p>
@@ -770,38 +771,53 @@ has been found even though it spans a gap in two rows.</p>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKI</SPAN><SPAN CLASS=S93>KVL</SPAN><SPAN style="color:#666666">GSGAFG</SPAN><SPAN CLASS=S93>TVY</SPAN><SPAN style="color:#666666">KGLWIPEGE</SPAN><SPAN CLASS=S93>K</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S93>VK</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S93>PVA</SPAN><SPAN style="color:#666666">IKELREATSPK-ANKEILDEA</SPAN><SPAN CLASS=S93>YVM</SPAN><SPAN style="color:#666666">A</SPAN><SPAN CLASS=S93>SVD</SPAN><SPAN style="color:#666666">NP</SPAN><SPAN CLASS=S93>HVC</SPAN><SPAN style="color:#666666">RLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">I</SPAN><SPAN CLASS=S93>SVN</SPAN><SPAN style="color:#666666">KQLGTGEFG</SPAN><SPAN CLASS=S93>IVQ</SPAN><SPAN style="color:#666666">Q</SPAN><SPAN CLASS=S93>GVW</SPAN><SPAN style="color:#666666">SNGNE-----------RI</SPAN><SPAN CLASS=S93>QVA</SPAN><SPAN style="color:#666666">IKCLCRERMQS-NPMEFLKEAAIMHSIEHEN</SPAN><SPAN CLASS=S93>IVR</SPAN><SPAN style="color:#666666">LY</SPAN><SPAN CLASS=S93>GVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LT</SPAN><SPAN CLASS=S93>FVQ</SPAN><SPAN style="color:#666666">EIGSGQFG</SPAN><SPAN CLASS=S93>LVH</SPAN><SPAN style="color:#666666">LGYWLN--------------KD</SPAN><SPAN CLASS=S93>KVA</SPAN><SPAN style="color:#666666">IKTIREGAMS---EEDFIEEA</SPAN><SPAN CLASS=S93>EVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S93>LVQ</SPAN><SPAN style="color:#666666">LY</SPAN><SPAN CLASS=S93>GVC</SPAN>
-4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IR</SPAN><SPAN CLASS=S93>EVK</SPAN><SPAN style="color:#666666">QI</SPAN><SPAN CLASS=S93>GVG</SPAN><SPAN style="color:#666666">QFG</SPAN><SPAN CLASS=S93>AVVL</SPAN><SPAN style="color:#666666">AEMTGLS-XLPKGSMNAD</SPAN><SPAN CLASS=S93>GVALVAVK</SPAN><SPAN style="color:#666666">KLKP</SPAN><SPAN CLASS=S93>DVS</SPAN><SPAN style="color:#666666">D-</SPAN><SPAN CLASS=S93>EVL</SPAN><SPAN style="color:#666666">QSFDKEIKFMSQLQHDS</SPAN><SPAN CLASS=S93>IVQ</SPAN><SPAN style="color:#666666">LLAIC</SPAN>
-5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFG</SPAN><SPAN CLASS=S93>EVW</SPAN><SPAN style="color:#666666">KGKLLKILDA-------NHQ</SPAN><SPAN CLASS=S93>PVLVAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHI</SPAN><SPAN CLASS=S93>NVVK</SPAN><SPAN style="color:#666666">FF</SPAN><SPAN CLASS=S93>GVA</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKI</SPAN><SPAN CLASS=S94>KVL</SPAN><SPAN style="color:#666666">GSGAFG</SPAN><SPAN CLASS=S94>TVY</SPAN><SPAN style="color:#666666">KGLWIPEGE</SPAN><SPAN CLASS=S94>K</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S94>VK</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S94>PVA</SPAN><SPAN style="color:#666666">IKELREATSPK-ANKEILDEA</SPAN><SPAN CLASS=S94>YVM</SPAN><SPAN style="color:#666666">A</SPAN><SPAN CLASS=S94>SVD</SPAN><SPAN style="color:#666666">NP</SPAN><SPAN CLASS=S94>HVC</SPAN><SPAN style="color:#666666">RLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">I</SPAN><SPAN CLASS=S94>SVN</SPAN><SPAN style="color:#666666">KQLGTGEFG</SPAN><SPAN CLASS=S94>IVQ</SPAN><SPAN style="color:#666666">Q</SPAN><SPAN CLASS=S94>GVW</SPAN><SPAN style="color:#666666">SNGNE-----------RI</SPAN><SPAN CLASS=S94>QVA</SPAN><SPAN style="color:#666666">IKCLCRERMQS-NPMEFLKEAAIMHSIEHEN</SPAN><SPAN CLASS=S94>IVR</SPAN><SPAN style="color:#666666">LY</SPAN><SPAN CLASS=S94>GVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LT</SPAN><SPAN CLASS=S94>FVQ</SPAN><SPAN style="color:#666666">EIGSGQFG</SPAN><SPAN CLASS=S94>LVH</SPAN><SPAN style="color:#666666">LGYWLN--------------KD</SPAN><SPAN CLASS=S94>KVA</SPAN><SPAN style="color:#666666">IKTIREGAMS---EEDFIEEA</SPAN><SPAN CLASS=S94>EVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S94>LVQ</SPAN><SPAN style="color:#666666">LY</SPAN><SPAN CLASS=S94>GVC</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IR</SPAN><SPAN CLASS=S94>EVK</SPAN><SPAN style="color:#666666">QI</SPAN><SPAN CLASS=S94>GVG</SPAN><SPAN style="color:#666666">QFG</SPAN><SPAN CLASS=S94>AVVL</SPAN><SPAN style="color:#666666">AEMTGLS-XLPKGSMNAD</SPAN><SPAN CLASS=S94>GVALVAVK</SPAN><SPAN style="color:#666666">KLKP</SPAN><SPAN CLASS=S94>DVS</SPAN><SPAN style="color:#666666">D-</SPAN><SPAN CLASS=S94>EVL</SPAN><SPAN style="color:#666666">QSFDKEIKFMSQLQHDS</SPAN><SPAN CLASS=S94>IVQ</SPAN><SPAN style="color:#666666">LLAIC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKKLGEGAFG</SPAN><SPAN CLASS=S94>EVW</SPAN><SPAN style="color:#666666">KGKLLKILDA-------NHQ</SPAN><SPAN CLASS=S94>PVLVAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHI</SPAN><SPAN CLASS=S94>NVVK</SPAN><SPAN style="color:#666666">FF</SPAN><SPAN CLASS=S94>GVA</SPAN>
 </PRE><p>where overlapping instances of the pattern merge together.</p>
 <p>5. Multiple alternative patterns are allowed, separated by <code class="docutils literal"><span class="pre">|</span></code> characters:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S93>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S93>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S93>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S93>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S93>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S93>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S93>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S93>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
-4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S93>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S93>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S93>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
-5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S93>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S93>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S93>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S94>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S94>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S94>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S94>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S94>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S94>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S94>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S94>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S94>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S94>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S94>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S94>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S94>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
 </PRE><p>6. Alternative patterns can be given different colours by changing the
 delimiter from a <code class="docutils literal"><span class="pre">|</span></code> to a <code class="docutils literal"><span class="pre">:</span></code> character:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L&#39;</span>
 </pre></div>
 </div>
 <PRE>
-1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S95>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S96>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S95>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S96>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S97>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
-3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S95>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S93>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S96>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S97>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
-4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S95>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S96>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S97>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
-5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S95>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S96>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S96>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S97>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S96>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S97>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S98>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S96>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S97>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S98>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S96>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S97>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S98>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S96>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S97>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
 </PRE><p>and <code class="docutils literal"><span class="pre">|</span></code> and <code class="docutils literal"><span class="pre">:</span></code> delimiters may be combined so that patterns joined by <code class="docutils literal"><span class="pre">|</span></code>
 still form a single discrete pattern and will have one colour.</p>
 <p>If you specify more patterns than the number of colours available
 (currently 20) the colours are simply cycled.</p>
 </div>
+<div class="section" id="combining-alignment-and-motif-coloring">
+<h3>Combining alignment and motif coloring<a class="headerlink" href="#combining-alignment-and-motif-coloring" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to combine the alignment colouring mode with a motif
+search. For example, this shows mismatches to the query in a light grey
+overlaid with two coloured motifs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">mismatch</span> <span class="o">-</span><span class="n">colormap</span> <span class="n">gray2</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;G.G.FG.V:VA.K&#39;</span>
+</pre></div>
+</div>
+<PRE>
+1 EGFR_HUMAN  100.0%  <SPAN style="color:#666666">FKKIKVL</SPAN><SPAN CLASS=S94>GSGAFGTV</SPAN><SPAN style="color:#666666">YKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    35.7%  <SPAN CLASS=S23>ISVN</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S23>Q</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GTGEFGIV</SPAN><SPAN CLASS=S23>QQ</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S23>V</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S23>SNGN</SPAN><SPAN style="color:#666666">E-----------</SPAN><SPAN CLASS=S23>R</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S23>Q</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S23>C</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S23>CRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S23>NPM</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S23>F</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S23>K</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S23>AI</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S23>H</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S23>IEHENIV</SPAN><SPAN style="color:#666666">RL</SPAN><SPAN CLASS=S23>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S23>VV</SPAN>
+3 ITK_HUMAN    32.9%  <SPAN CLASS=S23>LTFVQEI</SPAN><SPAN CLASS=S94>GSGQFGLV</SPAN><SPAN CLASS=S23>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S23>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S23>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S23>DK</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S23>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S23>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S23>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S23>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S23>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S23>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S23>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S23>V</SPAN><SPAN style="color:#666666">C</SPAN>
+4 PTK7_HUMAN   21.2%  <SPAN CLASS=S23>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S23>QI</SPAN><SPAN CLASS=S94>GVGQFGAV</SPAN><SPAN CLASS=S23>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S23>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S23>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S23>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S23>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S23>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S23>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S23>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S23>A</SPAN><SPAN style="color:#666666">IC</SPAN>
+5 KIN31_CAEEL  31.5%  <SPAN CLASS=S23>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S23>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GEGAFGEV</SPAN><SPAN CLASS=S23>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S23>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S23>NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S23>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S23>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S23>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S23>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S23>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S23>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S23>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S23>VA</SPAN>
+</PRE></div>
 </div>
 <div class="section" id="colours">
 <span id="ref-colourmaps"></span><h2>Colours<a class="headerlink" href="#colours" title="Permalink to this headline">¶</a></h2>
@@ -1194,7 +1210,7 @@ perl may affect memory use.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 21 Feb 2017.
+      Last updated on 30 Jul 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

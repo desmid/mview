@@ -178,10 +178,15 @@ query and hit sequence ordering, appending these to the growing set; discard
 HSPs that violate either query or hit sequence ordering. Update the current
 set query and hit midpoints.</li>
 </ul>
-<p><strong>Strip query gaps</strong></p>
-<ul class="simple">
-<li>Excise columns in each sequence of a fragment pair to remove query gaps.
-These are generally marked for display by lowercasing the bounding symbols.</li>
+<p><strong>Strip query gaps and hit insertions</strong></p>
+<ul>
+<li><p class="first">Excise columns in each sequence of a fragment pair to remove query gaps.
+These are generally marked for display by lowercasing the bounding
+symbols.</p>
+<p>This can be prevented using the <code class="docutils literal"><span class="pre">-keepinserts</span> <span class="pre">on</span></code> option, but the output
+will no longer be aligned to the query, so this option is only allowed if
+dumping to an unaligned output format (FASTA, PIR).</p>
+</li>
 </ul>
 <p><strong>Tile</strong></p>
 <ul class="simple">
@@ -203,7 +208,8 @@ programs if the fragment count N &gt; 1);</li>
 </ul>
 <p>The <code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code> mode can be used to output each HSP in its own alignment
 row, and will report all HSPs, including the alternative ones with other
-significance scores.</p>
+significance scores. See also the <code class="docutils literal"><span class="pre">-keepinserts</span> <span class="pre">on</span></code> option mentioned above
+for preserving insertions.</p>
 <p>Lastly, if you need a real sequence alignment, use the information provided by
 MView to choose sequence identifiers then use a proper multiple alignment tool
 such as CLUSTAL on the original sequences.</p>
@@ -265,7 +271,7 @@ family and program, as follows:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 21 Feb 2017.
+      Last updated on 30 Jul 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

@@ -1301,7 +1301,7 @@ default:  both
 
 #generic
 OPTION:   keepinserts
-usage:    "Keep hit sequence insertions"
+usage:    "Keep hit sequence insertions in unaligned output"
 type:     b
 default:  off
 param:
@@ -1338,7 +1338,7 @@ default:  both
 
 #generic
 OPTION:   keepinserts
-usage:    "Keep hit sequence insertions"
+usage:    "Keep hit sequence insertions in unaligned output"
 type:     b
 default:  off
 param:
@@ -1395,7 +1395,7 @@ convert:  sub { __ARGS;
 
 #generic
 OPTION:   keepinserts
-usage:    "Keep hit sequence insertions"
+usage:    "Keep hit sequence insertions in unaligned output"
 type:     b
 default:  off
 param:
