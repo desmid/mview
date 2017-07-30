@@ -883,8 +883,6 @@ convert:  sub { __ARGS;
 		   __PV = 'none';
 	       } elsif (__OV =~ /^a/i) {
 		   __PV = 'any';
-	       } elsif (__OV =~ /^i/i) {
-		   __PV = 'identity';
 	       } elsif (__OV =~ /^c/i) {
 		   __PV = 'consensus';
 	       } elsif (__OV =~ /^g/i) {

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2016 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Align;
@@ -90,7 +90,6 @@ my %Known_Consensus_Color_Schemes =
      #name
      'none'       => 1,
      'any'        => 1,
-     'identity'   => 1,
     );
 
 #static load the $Colormaps hash.
