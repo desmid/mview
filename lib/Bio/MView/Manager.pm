@@ -97,6 +97,7 @@ my %Template_Align_Param =
      'label4'        => undef,
      'label5'        => undef,
      'label6'        => undef,
+     'label7'        => undef,
 
      'find'          => undef,
     );
@@ -231,8 +232,8 @@ sub set_parameters {
         warn "Bio::MView::Manager: unknown parameter '$key'\n";
     }
     #hack to share certain state
-    if (exists $self->{'ap'}->{'label4'}) {
-	$self->{'bp'}->{'showpcid'} = $self->{'ap'}->{'label4'};
+    if (exists $self->{'ap'}->{'label5'}) {
+	$self->{'bp'}->{'showpcid'} = $self->{'ap'}->{'label5'};
     }
     $self;
 }
@@ -309,13 +310,6 @@ sub add_display {
 	$tmp->append_display($dis);
         #Universal::vmstat("ruler added");
     }
-
-    #2015-05-31: in case we want to control header text separately
-    #} elsif ($self->{'bp'}->{'header'}) {
-    #    $tmp = $aln->build_header($refobj);
-    #    $tmp->append_display($dis);
-    #    #Universal::vmstat("header added");
-    #}
 
     #warn $self->dump_parameters();
 
@@ -409,6 +403,7 @@ sub print {
     $self->{'labwidth4'} = 0;
     $self->{'labwidth5'} = 0;
     $self->{'labwidth6'} = 0;
+    $self->{'labwidth7'} = 0;
 
     #consolidate field widths
     foreach (@{$self->{'display'}}) {
@@ -428,6 +423,8 @@ sub print {
             if $_->[0]->{'labwidth5'} > $self->{'labwidth5'};
         $self->{'labwidth6'} = $_->[0]->{'labwidth6'}
             if $_->[0]->{'labwidth6'} > $self->{'labwidth6'};
+        $self->{'labwidth7'} = $_->[0]->{'labwidth7'}
+            if $_->[0]->{'labwidth7'} > $self->{'labwidth7'};
     }
 
     my $first = 1;
@@ -487,6 +484,7 @@ sub print {
 			 'label4'    => $self->{'ap'}->{'label4'},
 			 'label5'    => $self->{'ap'}->{'label5'},
 			 'label6'    => $self->{'ap'}->{'label6'},
+			 'label7'    => $self->{'ap'}->{'label7'},
 			 'posnwidth' => $self->{'posnwidth'},
 			 'labwidth0' => $self->{'labwidth0'},
 			 'labwidth1' => $self->{'labwidth1'},
@@ -495,6 +493,7 @@ sub print {
 			 'labwidth4' => $self->{'labwidth4'},
 			 'labwidth5' => $self->{'labwidth5'},
 			 'labwidth6' => $self->{'labwidth6'},
+			 'labwidth7' => $self->{'labwidth7'},
 			);
 	if ($self->{'html'}) {
 	    #alignment end

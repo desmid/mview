@@ -2,7 +2,7 @@
 
 # Copyright (C) 1997-2017 Nigel P. Brown
 
-my $VERSION  = '1.62';
+my $VERSION  = '1.62d';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
@@ -578,7 +578,9 @@ convert:  sub { __ARGS;
 		} elsif (__OV =~ /^rd/i) {  #RDB
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
-		    __WARN("unknown output format '-__ON=__OV'.");
+                    __WARN("unknown output format '-__ON=__OV'.");
+                    __WARN("known types are: ", join(",",
+                      Bio::MView::Manager::check_convert_mode), "\n");
 		}
 		__PV;
 	  }
@@ -592,7 +594,7 @@ text:     "Main formatting options:"
 OPTION:   ruler
 usage:    "Show ruler"
 type:     b
-default:  off
+default:  on
 param:
 
 OPTION:   alignment
@@ -1025,19 +1027,25 @@ param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label4
-usage:    "Switch off label {4= percent identity}"
+usage:    "Switch off label {4= percent coverage}"
 default:  0
 param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label5
-usage:    "Switch off label {5= first sequence positions: query}"
+usage:    "Switch off label {5= percent identity}"
 default:  0
 param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
 OPTION:   label6
-usage:    "Switch off label {6= second sequence positions: hit}"
+usage:    "Switch off label {6= first sequence positions: query}"
+default:  0
+param:
+convert:  sub { __ARGS; (__OV ? 0 : 1) }
+
+OPTION:   label7
+usage:    "Switch off label {7= second sequence positions: hit}"
 default:  0
 param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }

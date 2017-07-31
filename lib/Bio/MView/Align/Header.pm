@@ -43,9 +43,10 @@ sub reset_display {
 	 'label1'   => '',
 	 'label2'   => '',
 	 'label3'   => $data,
-	 'label4'   => $pcid,
-	 'label5'   => '',
+	 'label4'   => '',
+	 'label5'   => $pcid,
 	 'label6'   => '',
+	 'label7'   => '',
 	 'range'    => [],
 	 'number'   => 0,
 	};

@@ -67,8 +67,9 @@ sub change_parameters {
     my $self = shift;
     my %opt = ();
     $opt{'label0'} = 0;    #don't report rank
-    $opt{'label4'} = 0;    #don't report %identity
-    $opt{'label5'} = 0;    #don't report sequence positions
+    $opt{'label4'} = 0;    #don't report %coverage
+    $opt{'label5'} = 0;    #don't report %identity
+    $opt{'label6'} = 0;    #don't report sequence positions
     %opt;
 }
 

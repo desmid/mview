@@ -183,7 +183,8 @@ sub rdb {
     $s .= $bld->index2row(0)->rdb_row('attr') . "\n";
     $s .= $bld->index2row(0)->rdb_row('form') . "\n";
     foreach my $rid ($aln->visible_ids) {
-        #warn "[$rid]\n";
+        warn "[$rid]\n";
+        warn $bld->uid2row($rid)->{'label4'};
         $s .= $bld->uid2row($rid)->rdb_row('data', $self->{'pad'},
                                            $self->{'gap'}) . "\n";
     }

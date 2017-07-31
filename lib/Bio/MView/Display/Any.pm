@@ -1,11 +1,10 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Display::Any;
 
 use Bio::MView::Display;
 use Bio::MView::Display::Ruler;
-use Bio::MView::Display::Header;
 
 use strict;
 use vars qw(%Template);
@@ -18,13 +17,14 @@ use vars qw(%Template);
      'stop'    	=> 0,     #stop position of parent sequence
      'string'  	=> undef, #alternative sequence to parent
      'type'    	=> '',    #kind of aligned object
-     'label0'  	=> '',    #first label string
-     'label1'  	=> '',    #second label string
-     'label2'  	=> '',    #third label string
-     'label3'  	=> '',    #fourth label string
-     'label4'  	=> '',    #fifth label string
-     'label5'  	=> '',    #sixth label string
-     'label6'  	=> '',    #seventh label string
+     'label0'  	=> '',    #zeroth label string
+     'label1'  	=> '',    #first label string
+     'label2'  	=> '',    #second label string
+     'label3'  	=> '',    #third label string
+     'label4'  	=> '',    #fourth label string
+     'label5'  	=> '',    #fifth label string
+     'label6'  	=> '',    #sixth label string
+     'label7'  	=> '',    #seventh label string
      'number'  	=> 0,     #marginal numbers flag
      'url'     	=> '',    #URL to associate with label1
      'cursor'  	=> 0,     #current position in display stream, 1-based
@@ -60,6 +60,7 @@ sub new {
     $self->{'label4'}  	= $hash->{'label4'}   if exists $hash->{'label4'};
     $self->{'label5'}  	= $hash->{'label5'}   if exists $hash->{'label5'};
     $self->{'label6'}  	= $hash->{'label6'}   if exists $hash->{'label6'};
+    $self->{'label7'}  	= $hash->{'label7'}   if exists $hash->{'label7'};
     $self->{'number'}  	= $hash->{'number'}   if exists $hash->{'number'};
     $self->{'url'}     	= $hash->{'url'}      if exists $hash->{'url'};
     $self->{'paint'}   	= $hash->{'paint'}    if exists $hash->{'paint'};
@@ -223,6 +224,7 @@ sub label3 { $_[0]->{'label3'} }
 sub label4 { $_[0]->{'label4'} }
 sub label5 { $_[0]->{'label5'} }
 sub label6 { $_[0]->{'label6'} }
+sub label7 { $_[0]->{'label7'} }
 
 sub col { 
     defined $_[0]->{'string'} ?

@@ -638,6 +638,21 @@ sub set_identity {
     }
 }
 
+#ignore id's in remaining arglist
+sub set_coverage {
+    my ($self, $ref) = @_;
+    #warn "Bio::MView::Align::set_coverage(@_)\n";
+
+    $ref = $self->id2row($ref);
+    return  unless defined $ref;
+
+    foreach my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	$r->set_coverage($ref);
+    }
+}
+
 sub header {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
@@ -792,8 +807,10 @@ sub color_special {
 	next  if $self->is_hidden($r->id);
 	next  if $r->{'type'} ne 'special';
 	$r->color_special(@_);
-	$r->set_display('label0'=>'', 'label2'=>'', 'label3'=>'', #not 1
-			'label4'=>'', 'label5'=>'', 'label6'=>'');
+	$r->set_display('label0'=>'', #not 1
+                        'label2'=>'', 'label3'=>'',
+			'label4'=>'', 'label5'=>'',
+                        'label6'=>'', 'label7'=>'');
     }
     $self;
 }
@@ -1042,9 +1059,7 @@ sub prune_identities_gt {
 	#the reference object!
 	if (($val = $row->compute_identity_to($ref, $mode)) <= $limit or
 	    $r->id eq $id) {
-	    
-	    $r->set_display('label4'=>sprintf("%.1f%%", $val));
-	    
+	    $r->set_display('label5'=>sprintf("%.1f%%", $val));
 	    push @obj, $r;
 	}
     }
@@ -1114,11 +1129,13 @@ sub build_consensus_rows {
 						   $self->{'tally'},
 						   $group, $thresh, $ignore);
 	$con->set_display('label0'=>'',
+                          #not 1
 			  'label2'=>'',
 			  'label3'=>'',
 			  'label4'=>'',
 			  'label5'=>'',
 			  'label6'=>'',
+			  'label7'=>'',
 	    );
 	push @obj, $con;
     }

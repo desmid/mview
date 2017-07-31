@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2006 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 =pod
@@ -22,7 +22,8 @@ use vars qw(%Template %Known_Types $Default_Stream
 	    $Default_Overlap $Default_Overlap_Color $Default_Ruler
 	    $Default_HTML $Default_Bold $Default_Label0
 	    $Default_Label1 $Default_Label2 $Default_Label3 $Default_Label4
-	    $Default_Label5 $Default_Label6 $Intercolumn_Space);
+	    $Default_Label5 $Default_Label6 $Default_Label7
+            $Intercolumn_Space);
 
 $Default_Stream        = \*STDOUT;  #output stream
 $Default_Columns       = 80;        #sequence display width
@@ -41,6 +42,7 @@ $Default_Label3        = 1;         #show label3
 $Default_Label4        = 1;         #show label4
 $Default_Label5        = 1;         #show label5
 $Default_Label6        = 1;         #show label6
+$Default_Label7        = 1;         #show label7
 
 $Intercolumn_Space     = ' ';       #space between output column types
 
@@ -52,19 +54,19 @@ $Intercolumn_Space     = ' ';       #space between output column types
      'stop'      => undef, #forward stop position of parent sequence
      'object'    => undef, #ordered list of display objects
      'posnwidth' => 0,     #string width of left/right sequence position
-     'labwidth0' => 0,     #string width of first title block
-     'labwidth1' => 0,     #string width of second title block
-     'labwidth2' => 0,     #string width of third title block
-     'labwidth3' => 0,     #string width of fourth title block
-     'labwidth4' => 0,     #string width of fifth title block
-     'labwidth5' => 0,     #string width of sixth title block
-     'labwidth6' => 0,     #string width of seventh title block
+     'labwidth0' => 0,     #string width of zeroth title block
+     'labwidth1' => 0,     #string width of first title block
+     'labwidth2' => 0,     #string width of second title block
+     'labwidth3' => 0,     #string width of third title block
+     'labwidth4' => 0,     #string width of fourth title block
+     'labwidth5' => 0,     #string width of fifth title block
+     'labwidth6' => 0,     #string width of sixth title block
+     'labwidth7' => 0,     #string width of seventh title block
     );
 
 %Known_Types =
     (
      'Ruler'    => 1,
-     'Header'   => 1,
      'Sequence' => 1,
      'Subrange' => 1,
     );
@@ -122,9 +124,10 @@ sub set_parameters {
 sub append {
     my $self = shift;
     #warn "${self}::append(@_)\n";
-    my ($row, $type, $wide0, $wide1, $wide2, $wide3, $wide4, $wide5, $wide6);
 
-    foreach $row (@_) {
+    #handle data rows
+    foreach my $row (@_) {
+        my $type;
 
 	#check row 'type' exists and is valid
 	if (exists $row->{'type'}) {
@@ -138,6 +141,8 @@ sub append {
 	    next;
 	}
 
+        next  if $type eq 'Ruler';
+
 	#construct row object
 	no strict 'refs';
 	$type = "Bio::MView::Display::$type"->new($self, $row);
@@ -145,23 +150,57 @@ sub append {
 
 	push @{$self->{'object'}}, $type;
 
-	$wide0 = length($type->label0);
-	$wide1 = length($type->label1);
-	$wide2 = length($type->label2);
-	$wide3 = length($type->label3);
-	$wide4 = length($type->label4);
-	$wide5 = length($type->label5);
-	$wide6 = length($type->label6);
+	#warn $type->label0, ",", $type->label1, ",", $type->label2, "\n";
+
+	$self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0));
+	$self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1));
+	$self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2));
+	$self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3));
+	$self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4));
+	$self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5));
+	$self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6));
+	$self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7));
+    }
+
+    #handle header/ruler
+    foreach my $row (@_) {
+        my $type;
+
+	#check row 'type' exists and is valid
+	if (exists $row->{'type'}) {
+	    $type = ucfirst $row->{'type'};
+	} else {
+	    next;
+	}
+	next  unless exists $Known_Types{$type};
+
+        next  if $type ne 'Ruler';
+
+	#construct row object
+	no strict 'refs';
+	$type = "Bio::MView::Display::$type"->new($self, $row);
+	use strict 'refs';
+
+	push @{$self->{'object'}}, $type;
 
 	#warn $type->label0, ",", $type->label1, ",", $type->label2, "\n";
-	
-	$self->{'labwidth0'} = max($self->{'labwidth0'}, $wide0);
-	$self->{'labwidth1'} = max($self->{'labwidth1'}, $wide1);
-	$self->{'labwidth2'} = max($self->{'labwidth2'}, $wide2);
-	$self->{'labwidth3'} = max($self->{'labwidth3'}, $wide3);
-	$self->{'labwidth4'} = max($self->{'labwidth4'}, $wide4);
-	$self->{'labwidth5'} = max($self->{'labwidth5'}, $wide5);
-	$self->{'labwidth6'} = max($self->{'labwidth6'}, $wide6);
+
+	$self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0))
+            if $self->{'labwidth0'};
+	$self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1))
+            if $self->{'labwidth1'};
+	$self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2))
+            if $self->{'labwidth2'};
+	$self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3))
+            if $self->{'labwidth3'};
+	$self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4))
+            if $self->{'labwidth4'};
+	$self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5))
+            if $self->{'labwidth5'};
+	$self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6))
+            if $self->{'labwidth6'};
+	$self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7))
+            if $self->{'labwidth7'};
     }
     #Universal::vmstat("Display::append done");
     $self;
@@ -207,6 +246,7 @@ sub display {
     $par{'label4'} = $Default_Label4           unless exists $par{'label4'};
     $par{'label5'} = $Default_Label5           unless exists $par{'label5'};
     $par{'label6'} = $Default_Label6           unless exists $par{'label6'};
+    $par{'label7'} = $Default_Label7           unless exists $par{'label7'};
 
     $par{'posnwidth'} = $self->{'posnwidth'}   unless exists $par{'posnwidth'};
 
@@ -217,6 +257,7 @@ sub display {
     $par{'labwidth4'} = $self->{'labwidth4'}   unless exists $par{'labwidth4'};
     $par{'labwidth5'} = $self->{'labwidth5'}   unless exists $par{'labwidth5'};
     $par{'labwidth6'} = $self->{'labwidth6'}   unless exists $par{'labwidth6'};
+    $par{'labwidth7'} = $self->{'labwidth7'}   unless exists $par{'labwidth7'};
 
     $par{'html'} = 1    if $par{'bold'};
     if ($par{'html'}) {
@@ -283,7 +324,7 @@ LOOP:
 		#### left ############
 		@tmp = ();
 
-		#first label
+		#label0
 		if ($par{'label0'} and $par{'labwidth0'}) {
 		    $tmp = $o->label0;
 		    if ($tmp =~ /^\d+$/) {
@@ -296,7 +337,7 @@ LOOP:
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#second label
+		#label1
 		if ($par{'label1'} and $par{'labwidth1'}) {
 		    if ($par{'html'} and $o->{'url'}) {
 			push @tmp,
@@ -310,33 +351,39 @@ LOOP:
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#third label
+		#label2
 		if ($par{'label2'} and $par{'labwidth2'}) {
 		    push @tmp, sprintf("%-$par{'labwidth2'}s", $o->label2);
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#fourth label
+		#label3
 		if ($par{'label3'} and $par{'labwidth3'}) {
 		    push @tmp, sprintf("%$par{'labwidth3'}s", $o->label3);
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#fifth label
+		#label4
 		if ($par{'label4'} and $par{'labwidth4'}) {
 		    push @tmp, sprintf("%$par{'labwidth4'}s", $o->label4);
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#sixth label
+		#label5
 		if ($par{'label5'} and $par{'labwidth5'}) {
 		    push @tmp, sprintf("%$par{'labwidth5'}s", $o->label5);
 		    push @tmp, $Intercolumn_Space;
 		}
 
-		#seventh label
+		#label6
 		if ($par{'label6'} and $par{'labwidth6'}) {
 		    push @tmp, sprintf("%$par{'labwidth6'}s", $o->label6);
+		    push @tmp, $Intercolumn_Space;
+		}
+
+		#label7
+		if ($par{'label7'} and $par{'labwidth7'}) {
+		    push @tmp, sprintf("%$par{'labwidth7'}s", $o->label7);
 		    push @tmp, $Intercolumn_Space;
 		}
 
@@ -504,19 +551,21 @@ display item given by the 'type' attribute (see below).
                the display of the parent sequence, some subranges thereof,
                or a simple ruler. Rulers count off 5, 10, 100's.
 
- label0        Optional. First label string of display item.
+ label0        Optional. Zeroth label string of display item.
 
- label1        Optional. Second label string of display item.
+ label1        Optional. First label string of display item.
 
- label2        Optional. Third label string of display item.
+ label2        Optional. Second label string of display item.
 
- label3        Optional. Fourth label string of display item.
+ label3        Optional. Third label string of display item.
 
- label4        Optional. Fifth label string of display item.
+ label4        Optional. Fourth label string of display item.
 
- label5        Optional. Sixth label string of display item.
+ label5        Optional. Fifth label string of display item.
 
- label6        Optional. Seventh label string of display item.
+ label6        Optional. Sixth label string of display item.
+
+ label7        Optional. Seventh label string of display item.
 
  url           Optional. URL to associate with 'label1'.
 

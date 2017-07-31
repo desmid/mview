@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2016 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Sequence;
@@ -388,21 +388,74 @@ sub color_by_identity_body {
     $self;
 }
 
+sub set_coverage {
+    #warn "Bio::MView::Align::Sequence::set_coverage(@_)\n";
+    my ($self, $ref) = @_;
+    my $val = $self->compute_coverage_wrt($ref);
+    $self->set_display('label4'=>sprintf("%.1f%%", $val));
+}
+
+# Compute the percent coverage of a row with respect to a reference row.
+#
+# \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
+#      {\mathrm{length~of~ungapped~reference~row}}
+# \times 100
+#
+sub compute_coverage_wrt {
+    #warn "Bio::MView::Align::Sequence::compute_coverage_wrt(@_)\n";
+    my ($self, $othr) = @_;
+
+    return 0      unless defined $othr;
+    return 100.0  if $self == $othr;  #always 100% coverage of self
+
+    die "${self}::compute_coverage_wrt() length mismatch\n"
+	unless $self->length == $othr->length;
+
+    my ($sc, $oc) = (0, 0);
+    my $end = $self->length +1;
+
+    for (my $i=1; $i<$end; $i++) {
+
+	my $c2 = $othr->{'string'}->raw($i);
+
+	#reference must be a sequence character
+	next  unless $self->{'string'}->is_char($c2);
+
+	my $c1 = $self->{'string'}->raw($i);
+
+	#count sequence characters
+	$sc++  if $self->{'string'}->is_char($c1);
+	$oc++  if $self->{'string'}->is_char($c2);
+    }
+
+    #compute percent coverage
+    return 100.0 * $sc/$oc;
+}
+
 sub set_identity {
     #warn "Bio::MView::Align::Sequence::set_identity(@_)\n";
     my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
-    $self->set_display('label4'=>sprintf("%.1f%%", $val));
+    $self->set_display('label5'=>sprintf("%.1f%%", $val));
 }
 
-#compute percent identity to input reference object. Normalisation
-#depends on the mode argument: 'reference' divides by the reference
-#sequence length,'aligned' by the aligned region length (like blast),
-#and 'hit' by the hit sequence. The last is the same as 'aligned' for
-#blast, but different for multiple alignments like clustal.
+#Compute percent identity to a reference row.
+#Normalisation depends on the mode argument:
+#  'reference' divides by the reference sequence length,
+#  'aligned' divides by the aligned region length (like blast),
+#  'hit' divides by the hit sequence.
+#The last is the same as 'aligned' for blast, but different for
+#multiple alignments like clustal.
+#
+# Default (mode: 'aligned'):
+#
+# \frac{\mathrm{number~of~identical~residues}}
+#      {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
+# \times 100
+#
 sub compute_identity_to {
     #warn "Bio::MView::Align::Sequence::compute_identity_to(@_)\n";
-    my ($self, $othr, $mode) = @_;
+    my ($self, $othr, $mode) = (@_, 'aligned');
 
     return 0      unless defined $othr;
     return 100.0  if $self == $othr;  #always 100% identical to self
@@ -439,22 +492,19 @@ sub compute_identity_to {
     
     #normalise identities
     my $norm = 0;
-    if ($mode eq 'reference') {
-	$norm = $othr->seqlen;
-	#warn "ref norm= $norm\n";
-    } elsif ($mode eq 'aligned') {
+    if ($mode eq 'aligned') {
 	$norm = $len;
-	#warn "aln norm= $norm\n";
+    } elsif ($mode eq 'reference') {
+	$norm = $othr->seqlen;
     } elsif ($mode eq 'hit') {
 	$norm = $self->seqlen;
-	#warn "hit norm= $norm\n";
     }
+    #warn "normalization mode: $mode, value= $norm\n";
     #warn "identity $self->{'id'} = $sum/$norm\n";
 
     return ($sum = 100 * ($sum + 0.0) / $norm)    if $norm > 0;
     return 0;
 }
-
 
 ###########################################################################
 1;
