@@ -58,6 +58,19 @@ No - MView isn't an alignment editor. You could try to copy/paste the output
 into a spreadsheet and process it there, then reload it into MView.
 
 
+What do the coverage percentages mean?
+""""""""""""""""""""""""""""""""""""""
+
+Coverage percent identities reported in each alignment row are calculated with
+respect to the reference sequence (by default, the query or first row) thus:
+
+.. math::
+
+  \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
+       {\mathrm{length~of~ungapped~reference~row}}
+  \times 100
+
+
 What do the percent identities mean?
 """"""""""""""""""""""""""""""""""""
 
@@ -68,7 +81,7 @@ query or first row) thus:
 .. math::
 
   \frac{\mathrm{number~of~identical~residues}}
-       {\mathrm{length~of~ungapped~reference~sequence~over~aligned~region}}
+       {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
   \times 100
 
 Still, in the case of BLAST MView output, minor deviations from the
