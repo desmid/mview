@@ -1,6 +1,6 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-07-30
+Version 1.62  2017-07-31
 - Now allows 'find' colouring independently of 'alignment' colouring so
   both can be applied (formerly 'find' colouring overrode any other).
   Thanks to Konstantin Kuleshov for this request.
@@ -9,7 +9,8 @@ Version 1.62  2017-07-30
   need to be aligned (FASTA, PIR). Note: the default behaviour is to cut
   hit insertions to make the query contiguous. Thanks to Andrea Luchetti at
   Uni. Bologna for this request.
-- Removed obscure '-con_coloring identity' option which contained a bug.
+- Removed obscure '-con_coloring identity' option which contained a bug;
+  added single colour colormap capability to consensus line colouring.
 - Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
 
 Version 1.61  2016-11-14

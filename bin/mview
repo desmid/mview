@@ -883,10 +883,6 @@ convert:  sub { __ARGS;
 		   __PV = 'none';
 	       } elsif (__OV =~ /^a/i) {
 		   __PV = 'any';
-	       } elsif (__OV =~ /^c/i) {
-		   __PV = 'consensus';
-	       } elsif (__OV =~ /^g/i) {
-		   __PV = 'group';
                }
                unless (defined __PV and defined
 		       Bio::MView::Manager::check_consensus_color_scheme(__PV)) {

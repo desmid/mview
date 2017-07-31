@@ -326,7 +326,6 @@ sub add_display {
 	     'ref_id'      => $ref,
 	     'coloring'    => $self->{'ap'}->{'aln_coloring'},
 	     'colormap'    => $self->{'ap'}->{'aln_colormap'},
-	     'colormapc'   => $self->{'ap'}->{'con_colormap'},
 	     'colormapf'   => $self->{'ap'}->{'fnd_colormap'},
 	     'group'       => $self->{'ap'}->{'aln_groupmap'},
 	     'threshold'   => $self->{'ap'}->{'aln_threshold'},
@@ -359,9 +358,8 @@ sub add_display {
                                           $self->{'ap'}->{'con_ignore'},
                                           $self->{'ap'}->{'con_gaps'},
                                          );
-        $tmp->set_color_scheme(
-			       'coloring'  => $self->{'ap'}->{'con_coloring'},
-                               'colormap'  => $self->{'ap'}->{'aln_colormap'},
+        $tmp->set_consensus_color_scheme(
+			       'coloringc' => $self->{'ap'}->{'con_coloring'},
                                'colormapc' => $self->{'ap'}->{'con_colormap'},
                                'group'     => $self->{'ap'}->{'con_groupmap'},
                                'threshold' => $self->{'ap'}->{'con_threshold'},

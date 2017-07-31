@@ -25,9 +25,11 @@ my %Template =
      'cursor'     => -1,    #index2row iterator
      'ref_id'     => undef, #identifier of reference row
      'tally'      => undef, #column tallies for consensus
-     'coloring'   => undef, #coloring mode
-     'colormap'   => undef, #name of colormap
-     'colormapc'  => undef, #name of second colormap
+     'coloring'   => undef, #alignment coloring mode
+     'coloringc'  => undef, #consensus coloring mode
+     'colormap'   => undef, #name of alignment colormap
+     'colormapc'  => undef, #name of consensus colormap
+     'colormapf'  => undef, #name of find colormap
      'group'      => undef, #consensus group name
      'ignore'     => undef, #ignore self/non-self classes
      'con_gaps'   => undef, #ignore gaps when computing consensus
@@ -46,7 +48,8 @@ my %Template =
 my %Known_Parameter = 
     (
      'ref_id'     => [ '(\S+(?:\s*)?)+', undef ],
-     'coloring'   => [ '\S+',     'none' ], 
+     'coloring'   => [ '\S+',     'none' ],
+     'coloringc'  => [ '\S+',     'none' ],
      'colormap'   => [ '\S+',     $Bio::MView::Align::Sequence::Default_Colormap ],
      'colormapc'  => [ '\S+',     $Bio::MView::Align::Consensus::Default_Colormap ],
      'colormapf'  => [ '\S+',     $Bio::MView::Align::Sequence::Default_FIND_Colormap ],
@@ -679,7 +682,6 @@ sub set_color_scheme {
 
     #user-defined colouring?
     $self->color_special('colormap'  => $self->{'colormap'},
-			 'colormapc' => $self->{'colormapc'},
 			 'symcolor'  => $self->{'symcolor'},
 			 'gapcolor'  => $self->{'gapcolor'},
 			 'css1'      => $self->{'css1'},
@@ -691,7 +693,6 @@ sub set_color_scheme {
 
     elsif ($self->{'coloring'} eq 'any') {
 	$self->color_by_type('colormap'  => $self->{'colormap'},
-			     'colormapc' => $self->{'colormapc'},
 			     'symcolor'  => $self->{'symcolor'},
 			     'gapcolor'  => $self->{'gapcolor'},
 			     'css1'      => $self->{'css1'},
@@ -701,7 +702,6 @@ sub set_color_scheme {
     elsif ($self->{'coloring'} eq 'identity') {
 	$self->color_by_identity($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
-				 'colormapc' => $self->{'colormapc'},
 				 'symcolor'  => $self->{'symcolor'},
 				 'gapcolor'  => $self->{'gapcolor'},
 				 'css1'      => $self->{'css1'},
@@ -711,7 +711,6 @@ sub set_color_scheme {
     elsif ($self->{'coloring'} eq 'mismatch') {
 	$self->color_by_mismatch($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
-				 'colormapc' => $self->{'colormapc'},
 				 'symcolor'  => $self->{'symcolor'},
 				 'gapcolor'  => $self->{'gapcolor'},
 				 'css1'      => $self->{'css1'},
@@ -720,23 +719,21 @@ sub set_color_scheme {
 
     elsif ($self->{'coloring'} eq 'consensus') {
 	$self->color_by_consensus_sequence('colormap'  => $self->{'colormap'},
-					   'colormapc' => $self->{'colormapc'},
-					   'group'     => $self->{'group'},
-					   'threshold' => $self->{'threshold'},
 					   'symcolor'  => $self->{'symcolor'},
 					   'gapcolor'  => $self->{'gapcolor'},
 					   'css1'      => $self->{'css1'},
+					   'group'     => $self->{'group'},
+					   'threshold' => $self->{'threshold'},
 					  );
     }
 
     elsif ($self->{'coloring'} eq 'group') {
 	$self->color_by_consensus_group('colormap'  => $self->{'colormap'},
-					'colormapc' => $self->{'colormapc'},
-					'group'     => $self->{'group'},
-					'threshold' => $self->{'threshold'},
 					'symcolor'  => $self->{'symcolor'},
 					'gapcolor'  => $self->{'gapcolor'},
 					'css1'      => $self->{'css1'},
+					'group'     => $self->{'group'},
+					'threshold' => $self->{'threshold'},
 				       );
     }
 
@@ -753,10 +750,37 @@ sub set_color_scheme {
 				   'find'      => $self->{'find'},
             );
     }
-    return $self;
 
-    $self;
+    return $self;
 }
+
+sub set_consensus_color_scheme {
+    my $self = shift;
+
+    $self->set_parameters(@_);
+
+    #warn $self->dump_parameters();
+
+    if ($self->{'coloringc'} eq 'none') {
+        ;
+    }
+
+    elsif ($self->{'coloringc'} eq 'any') {
+	$self->color_by_type('colormap'  => $self->{'colormap'},
+                             'colormapc' => $self->{'colormapc'},
+			     'symcolor'  => $self->{'symcolor'},
+			     'gapcolor'  => $self->{'gapcolor'},
+			     'css1'      => $self->{'css1'},
+			    );
+    }
+
+    else {
+        warn "${self}::set_consensus_color_scheme() unknown mode '$self->{'coloringc'}'\n";
+    }
+
+    return $self;
+}
+
 
 #propagate colour scheme to row objects
 sub color_special {

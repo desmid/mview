@@ -256,15 +256,31 @@ sub get_color_identity { my $self = shift; $self->SUPER::get_color(@_) }
 
 #colours a row of consensus sequence.
 #philosophy:
-#  1. give consensus symbols their own colour.
-#  2. the consensus may be a residue name: use prevailing residue colour.
-#  3. use the prevailing wildcard residue colour.
-#  4. give up.
+#  1. the consensus colormap is just one colour name, use that and ignore CSS.
+#  2. give consensus symbols their own colour.
+#  3. the consensus may be a residue name: use prevailing residue colour.
+#  4. use the prevailing wildcard residue colour.
+#  5. give up.
 sub get_color_type {
     my ($self, $c, $mapS, $mapG) = @_;
     my ($index, $color, $trans);
 
     #warn "get_color_type($self, $c, $mapS, $mapG)\n";
+
+    my @tmp = keys %{$Bio::MView::Align::Colormaps->{$mapG}};
+
+    #colormap is preset colorname
+    if (@tmp < 1) {
+        if (exists $Bio::MView::Align::Palette->[0]->{$mapG}) {
+            $trans = 'T';  #ignore CSS setting
+            $index = $Bio::MView::Align::Palette->[0]->{$mapG};
+            $color = $Bio::MView::Align::Palette->[1]->[$index];
+
+            #warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
+
+            return ($color, "$trans$index");
+        }
+    }
 
     #look in group colormap
     if (exists $Bio::MView::Align::Colormaps->{$mapG}->{$c}) {
@@ -277,7 +293,6 @@ sub get_color_type {
 	#warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
-
     }
 
     #look in sequence colormap
