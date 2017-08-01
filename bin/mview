@@ -2,7 +2,7 @@
 
 # Copyright (C) 1997-2017 Nigel P. Brown
 
-my $VERSION  = '1.62d';
+my $VERSION  = '1.62e';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
@@ -212,7 +212,8 @@ sub rationalise_parameters {
     #ignore HTML if MSF output
     ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'msf';
 
-    #ignore HTML if fasta/pearson output
+    #ignore HTML if pearson/fasta output
+    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'pearson';
     ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'fasta';
 
     #ignore HTML if plain output
