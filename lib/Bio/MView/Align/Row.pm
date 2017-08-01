@@ -6,7 +6,6 @@ package Bio::MView::Align::Row;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Ruler;
-use Bio::MView::Align::Header;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;

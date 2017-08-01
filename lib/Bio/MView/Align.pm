@@ -1074,15 +1074,8 @@ sub build_ruler {
     new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
 }
 
-#generate a new alignment with a header based on this alignment
-sub build_header {
-    my ($self, $refobj) = @_;
-    my $obj = new Bio::MView::Align::Header($self->length, $refobj);
-    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
-}
-
 #generate a new alignment using an existing one but with a line of
-#clustal-style conervation string (*:.)
+#clustal-style conservation string (*:.)
 sub build_conservation_row {
     my ($self, $moltype) = @_;
 
