@@ -96,7 +96,7 @@ sub schema {[
     # use? rdb?  key              label         format   default
     [ 0,   0,    'cycle',         'cycle',      '2N',      ''  ],
     [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
-    [ 3,   3,    'expect',        'E-value',    '9S',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
     [ 4,   4,    'n',             'N',          '2N',      ''  ],
     [ 5,   5,    'query_orient',  'qy',         '2S',      '?' ],
     [ 6,   6,    'sbjct_orient',  'ht',         '2S',      '?' ],
@@ -117,7 +117,7 @@ sub schema {[
     # use? rdb?  key              label         format   default
     [ 0,   1,    'cycle',         'cycle',      '2N',      ''  ],
     [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
-    [ 3,   3,    'expect',        'E-value',    '9S',      ''  ],
+    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
     [ 4,   4,    'n',             'N',          '2N',      ''  ],
     [ 0,   0,    'query_orient',  'qy',         '2S',      '?' ],
     [ 0,   0,    'sbjct_orient',  'ht',         '2S',      '?' ],

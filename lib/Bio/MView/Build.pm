@@ -574,6 +574,25 @@ sub build_base_alignment {
 					  keys %{$self->{'keep_uid'}});
     }
 
+    #compute columnwise data
+    $aln->set_coverage($self->{'ref_row'}->uid)
+        if defined $self->{'ref_row'};
+
+    $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
+	if defined $self->{'ref_row'};
+
+    #copy computed data into build row objects
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+
+	my $brow = $self->{'index2row'}->[$i];
+	my $arow = $aln->item($brow->uid);
+
+	next  unless defined $arow;
+
+        $brow->set_coverage($arow->get_coverage);
+        $brow->set_identity($arow->get_identity);
+    }
+
     # foreach my $r ($aln->all_ids) {
     #     $aln->id2row($r)->seqobj->print;
     # }
@@ -583,49 +602,42 @@ sub build_base_alignment {
 
 sub build_new_alignment {
     my ($self, $aln) = @_;
-    my ($i, $mrow, $arow);
 
-    $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
-	if defined $self->{'ref_row'};
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
 
-    $aln->set_coverage($self->{'ref_row'}->uid)
-	if defined $self->{'ref_row'};
+	my $brow = $self->{'index2row'}->[$i];
 
-    for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
+	next  if exists $self->{'hide_uid'}->{$brow->uid};
 
-	$mrow = $self->{'index2row'}->[$i];
-
-	next  if exists $self->{'hide_uid'}->{$mrow->uid};
-
-	$arow = $aln->item($mrow->uid);
+	my $arow = $aln->item($brow->uid);
 
 	next  unless defined $arow;
 
-	if (exists $self->{'nops_uid'}->{$mrow->uid} or
-	    (defined $mrow->{'type'} and $mrow->{'type'} eq 'special')) {
+	if (exists $self->{'nops_uid'}->{$brow->uid} or
+	    (defined $brow->{'type'} and $brow->{'type'} eq 'special')) {
 	    $arow->set_display('label0' => '',
-			       'label1' => $mrow->cid,
-			       'label2' => $mrow->text,
+			       'label1' => $brow->cid,
+			       'label2' => $brow->text,
 			       'label3' => '',
 			       'label4' => '',
 			       'label5' => '',
-			       'label6' => $mrow->posn1,
-			       'label7' => $mrow->posn2,
-			       'url'    => $mrow->url,
+			       'label6' => $brow->posn1,
+			       'label7' => $brow->posn2,
+			       'url'    => $brow->url,
 		);
 	} else {
 	    #don't change label4 (percent coverage) or label5 (percent
 	    #identity) here as these were already computed above.
-	    $arow->set_display('label0' => $mrow->num,
-			       'label1' => $mrow->cid,
-			       'label2' => $mrow->text,
-			       'label3' => $mrow->data,
-			       #'label4' => '',###
-			       #'label5' => '',###
-			       'label6' => $mrow->posn1,
-			       'label7' => $mrow->posn2,
-			       'url'    => $mrow->url,
-		);
+	    $arow->set_display('label0' => $brow->num,
+                               'label1' => $brow->cid,
+                               'label2' => $brow->text,
+                               'label3' => $brow->data('data'),
+                               #'label4' => '',###
+                               #'label5' => '',###
+                               'label6' => $brow->posn1,
+                               'label7' => $brow->posn2,
+                               'url'    => $brow->url,
+	        );
 	}
     }
     $aln;

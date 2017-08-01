@@ -14,21 +14,12 @@ sub schema {[
     # use? rdb?  key              label         format   default
     [ 1,   1,    'start',         'start',      '8N',       '' ],
     [ 2,   2,    'size',          'size',       '8N',       '' ],
-    [ 3,   3,    'strand',        'strand',     '6S',       '' ],
-    [ 4,   4,    'srcsize',       'srcsize',    '10S',      '' ],
+    [ 3,   3,    'strand',        'str',        '3N',       '' ],
+    [ 4,   4,    'srcsize',       'srcsize',    '10N',      '' ],
     ]
 }
 
-sub pcid { $_[0]->SUPER::pcid_std }
-
-sub head {
-    my $self = shift;
-    my $tmp = $self->{'num'};
-    $self->{'num'} = '';
-    my $s = $self->data;
-    $self->{'num'} = $tmp;
-    $s;
-}
+sub rdb_row { my $self = shift; $self->rdb_row_no_description(@_); }
 
 
 ###########################################################################

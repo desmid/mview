@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Convert;
@@ -98,10 +98,12 @@ sub pearson_row {
     my $desc = sub {
 	my $row = shift;
 	my ($s, $d) = ('');
-	$d = $row->desc;  $s .= " $d"  if $d ne '';
-	$d = $row->data;  $s .= " $d"  if $d ne '';
-	$d = $row->posn1; $s .= " $d"  if $d ne '';
-	$d = $row->posn2; $s .= " $d"  if $d ne '';
+	$d = $row->desc;         $s .= " $d"  if $d ne '';
+	$d = $row->data('data'); $s .= " $d"  if $d ne '';
+	$d = $row->covr;         $s .= " $d"  if $d ne '';
+	$d = $row->pcid;         $s .= " $d"  if $d ne '';
+	$d = $row->posn1;        $s .= " $d"  if $d ne '';
+	$d = $row->posn2;        $s .= " $d"  if $d ne '';
 	$s . "\n";
     };
 
@@ -150,10 +152,12 @@ sub pir_row {
     my $desc = sub {
 	my $row = shift;
 	my ($s, $d) = ('');
-	$d = $row->desc;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->data;  $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->posn1; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->posn2; $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->desc;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->data('data'); $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->covr;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->pcid;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->posn1;        $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->posn2;        $s .= ($s eq '' ? $d : " $d")  if $d ne '';
 	$s = '.'  if $s eq '';
 	$s;
     };
@@ -183,10 +187,9 @@ sub rdb {
     $s .= $bld->index2row(0)->rdb_row('attr') . "\n";
     $s .= $bld->index2row(0)->rdb_row('form') . "\n";
     foreach my $rid ($aln->visible_ids) {
-        warn "[$rid]\n";
-        warn $bld->uid2row($rid)->{'label4'};
-        $s .= $bld->uid2row($rid)->rdb_row('data', $self->{'pad'},
-                                           $self->{'gap'}) . "\n";
+        $s .= $bld->uid2row($rid)->rdb_row(
+            'data', $self->{'pad'}, $self->{'gap'}
+            ) . "\n";
     }
     \$s;
 }

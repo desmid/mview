@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Row;
@@ -56,16 +56,22 @@ sub new {
 sub uniqid { "$_[1]\034/$_[2]" }
 
 #methods returning standard strings for use in generic output modes
-sub rid  { $_[0]->{'rid'} }
-sub uid  { $_[0]->{'uid'} }
-sub cid  { $_[0]->{'cid'} }
-sub num  { $_[0]->{'num'} }
-sub url  { $_[0]->{'url'} }
-sub sob  { $_[0]->{'seq'} }
+sub rid   { $_[0]->{'rid'} }
+sub uid   { $_[0]->{'uid'} }
+sub cid   { $_[0]->{'cid'} }
+sub num   { $_[0]->{'num'} }
+sub url   { $_[0]->{'url'} }
+sub sob   { $_[0]->{'seq'} }
 
-sub desc { $_[0]->{'desc'} }  #row description
+sub desc  { $_[0]->{'desc'} } #row description
 
-sub seq {                    #the sequence
+sub covr  { $_[0]->{'covr'} } #percent coverage
+sub pcid  { $_[0]->{'pcid'} } #percent identity
+
+sub posn1 { '' }              #first sequence range
+sub posn2 { '' }              #second sequence range
+
+sub seq {                     #the sequence
     my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
     return ''  unless defined $self->{'seq'};
     $self->set_pad($pad);
@@ -73,13 +79,20 @@ sub seq {                    #the sequence
     return $self->{'seq'}->string
 }
 
-sub posn1 { '' }              #first sequence range
-sub posn2 { '' }              #second sequence range
-
 sub text {                    #possibly truncated description
     my $w = defined $_[1] ? $_[1] : $DEF_TEXTWIDTH;
     $w = length $_[0]->{'desc'}  if $w > length $_[0]->{'desc'};
     sprintf("%-${w}s", $_[0]->truncate($_[0]->{'desc'}, $w));
+}
+
+sub set_coverage {
+    my ($self, $val) = @_;
+    $self->{'covr'} = $val;
+}
+
+sub set_identity {
+    my ($self, $val) = @_;
+    $self->{'pcid'} = $val;
 }
 
 #convert nucleotide positions to a relative amino acid scale
@@ -176,18 +189,23 @@ sub set_spc { $_[0]->{'seq'}->set_spc($_[1]) }
 
 ###########################################################################
 
-sub schema { die "@{[ref $_[0]]}: no schema found\n" }
+sub schema { [] }  #default schema is empty
+
+#convenience functions for column headers: eliminate eventually
+sub lbl_data { $_[0]->data('attr'); }
+sub lbl_covr { 'cov' }
+sub lbl_pcid { 'pid' }
 
 #save row information following a schema
 sub save_info {
     my $self = shift;
     #warn "save_info: [@_]\n";
 
-    my $schema = eval { $self->schema };
-    return $self  unless defined $schema;
+    my $schema = $self->schema;
+    return $self  unless @$schema;
 
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+        my ($n0, $n1, $name, $label, $format, $default) = @{$schema->[$i]};
         #warn "save: $name\n";
         $self->{'data'}->{$name} = defined $_[$i] ? $_[$i] : $default;
     }
@@ -199,13 +217,13 @@ sub set_val {
     my ($self, $key, $val) = @_;
     #warn "set_val: [$key => $val]\n";
 
-    my $schema = eval { $self->schema };
-    return $self  unless defined $schema;
+    my $schema = $self->schema;
+    return $self  unless @$schema;
 
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+    foreach my $row (@$schema) {
+        my ($n0, $n1, $name, $label, $format, $default) = @$row;
         $self->{'data'}->{$name} = $val, return $self  if $key eq $name;
-        $self->{'data'}->{$name} = $val, return $self  if $key eq $string;
+        $self->{'data'}->{$name} = $val, return $self  if $key eq $label;
     }
     warn "@{[ref $self]}::set_val: unknown attribute '$key'\n";
     $self;
@@ -216,16 +234,14 @@ sub has {
     my ($self, $key) = @_;
     #warn "has: [$key]\n";
 
-    my $schema = eval { $self->schema };
+    my $schema = $self->schema;
 
-    if (! defined $schema) {
-        return exists $self->{$key};
-    }
+    return exists $self->{$key}  unless @$schema;
 
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+    foreach my $row (@$schema) {
+        my ($n0, $n1, $name, $label, $format, $default) = @$row;
         return 1  if $key eq $name;
-        return 1  if $key eq $string;
+        return 1  if $key eq $label;
     }
     0; #no key
 }
@@ -235,87 +251,135 @@ sub get_val {
     my ($self, $key) = @_;
     #warn "get_val: [$key]\n";
 
-    my $schema = eval { $self->schema };
+    my $schema = $self->schema;
 
-    if (! defined $schema) {
+    if (@$schema < 1) {
         return $self->{$key}  if exists $self->{$key};
         return '';
     }
 
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
+    foreach my $row (@$schema) {
+        my ($n0, $n1, $name, $label, $format, $default) = @$row;
         return $self->{'data'}->{$name}  if $key eq $name;
-        return $self->{'data'}->{$name}  if $key eq $string;
+        return $self->{'data'}->{$name}  if $key eq $label;
     }
     warn "@{[ref $self]}::get_val: unknown attribute '$key'\n";
     '';
 }
 
-#return a string of formatted row information following the schema
+#return a concatenated string of formatted schema data
 sub data {
-    my ($self, $delim) = (@_, ' ');
+    my ($self, $mode, $delim) = (@_, ' ');
 
     my $fmtstr = sub {
         my $fmt = shift;
         $fmt =~ /(\d+)(\S)/o;
-        "%$1s";
+        return "%-$1s"  if $2 eq 'S';
+        return "%$1s";
     };
 
-    my $schema = eval { $self->schema };
-    return ''  unless defined $schema;
+    my $schema = $self->schema;
 
     my @tmp = ();
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
-        next  unless $n1 > 0;  #ignore this datum
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$schema) {
+        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+
+        next  unless $n0;  #ignore row
+
         my $fmt = &$fmtstr($format);
-        #warn "data: $name\n";
-        my $data = $self->{'data'}->{$name};
-        push(@tmp, sprintf($fmt, $data)),  next  if $self->num;  #data
-        push(@tmp, sprintf($fmt, $string))                       #header
+        if ($mode eq 'data') {
+            my $data = $self->{'data'}->{$name};
+            #warn "data: $name => [$data]\n";
+            push(@tmp, sprintf($fmt, $data));
+            next;
+        }
+        push(@tmp, sprintf($fmt, $label)),  next  if $mode eq 'attr';
+        push(@tmp, sprintf($fmt, $format)), next  if $mode eq 'form';
     }
-    return join($delim, @tmp);
+    join($delim, @tmp);
 }
 
-#return a list of row information following the schema
-sub rdb_info {
-    my ($self, $mode) = @_;
+#return a list of schema data
+sub rdb_data {
+    my ($self, $mode) = (@_);
 
-    my $schema = eval { $self->schema };
-    return ''  unless defined $schema;
+    my $schema = $self->schema;
 
     my @tmp = ();
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $string, $format, $default) = @{$schema->[$i]};
-        next  unless $n2 > 0;  #ignore this datum
-        my $data = $self->{'data'}->{$name};
-        #warn "rdb: $name\n";
-        push(@tmp, $string), next  if $mode eq 'attr';
+    foreach my $row (sort { $a->[1] <=> $b->[1] } @$schema) {
+        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+
+        next  unless $n1;  #ignore row
+
+        if ($mode eq 'data') {
+            my $data = $self->{'data'}->{$name};
+            #warn "rdb_data: $name => $data\n";
+            push(@tmp, $data);
+            next;
+        }
+        push(@tmp, $label),  next  if $mode eq 'attr';
         push(@tmp, $format), next  if $mode eq 'form';
-        push(@tmp, $data),   next  if $mode eq 'data';
     }
     @tmp;
 }
 
-#column labels used in headers and rulers: wrapper for 'sub data'
-sub head {''}           #row info labels
-sub pcid { '' }         #identity% label
-sub pcid_std { 'id%' }  #standard text for identity% label
-
-#tabulated output: called from Convert
+#tabulated rdb output
 sub rdb_row {
     my ($self, $mode, $pad, $gap) = @_;
-    my @cols;
-    @cols = ('row', 'id', 'desc', 'seq')   if $mode eq 'attr';
-    @cols = ('4N', '30S', '500S', '500S')  if $mode eq 'form';
-    @cols = ($self->num, $self->cid, $self->desc, $self->seq($pad, $gap))
-	if $mode eq 'data';
-
-    my @new = $self->rdb_info($mode);     #subtype has any data?
-    splice(@cols, -1, 0, @new)  if @new;  #insert penultimately
-
+    my @cols = ();
+    if ($mode eq 'data') {
+        @cols = ($self->num, $self->cid, $self->desc, $self->rdb_data($mode),
+                 $self->covr, $self->pcid, $self->seq($pad, $gap));
+    }
+    elsif ($mode eq 'attr') {
+        @cols = ('row', 'id', 'desc', $self->rdb_data($mode),
+                 'cov', 'pid', 'seq');
+    }
+    elsif ($mode eq 'form') {
+        @cols = ('4N', '30S', '500S', $self->rdb_data($mode),
+                 '6N', '6N', '500S');
+    }
     #warn "[@cols]";
-    return join("\t", @cols);
+    join("\t", @cols);
+}
+
+#tabulated rdb output
+sub rdb_row_no_description {
+    my ($self, $mode, $pad, $gap) = @_;
+    my @cols = ();
+    if ($mode eq 'data') {
+        @cols = ($self->num, $self->cid, $self->rdb_data($mode),
+                 $self->covr, $self->pcid, $self->seq($pad, $gap));
+    }
+    elsif ($mode eq 'attr') {
+        @cols = ('row', 'id', $self->rdb_data($mode), 'cov', 'pid', 'seq');
+    }
+    elsif ($mode eq 'form') {
+        @cols = ('4N', '30S', $self->rdb_data($mode), '6N', '6N', '500S');
+    }
+    #warn "[@cols]";
+    join("\t", @cols);
+}
+
+#tabulated rdb output
+sub rdb_row_search {
+    my ($self, $mode, $pad, $gap) = @_;
+    my @cols = ();
+    if ($mode eq 'data') {
+        @cols = ($self->num, $self->cid, $self->desc, $self->rdb_data($mode),
+                 $self->covr, $self->pcid, $self->posn1, $self->posn2,
+                 $self->seq($pad, $gap),);
+    }
+    elsif ($mode eq 'attr') {
+        @cols = ('row', 'id', 'desc', $self->rdb_data($mode), 'cov', 'pid',
+                 'query', 'sbjct', 'seq');
+    }
+    elsif ($mode eq 'form') {
+        @cols = ('4N', '30S', '500S', $self->rdb_data($mode), '6N', '6N',
+                 '15S', '15S', '500S');
+    }
+    #warn "[@cols]";
+    join("\t", @cols);
 }
 
 

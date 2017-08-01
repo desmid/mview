@@ -12,7 +12,7 @@ use vars qw(@ISA);
 
 sub schema {[
     # use? rdb?  key              label         format   default
-    [ 0,   1,    'chain',         'chain',      '1S',       '' ],
+    [ 0,   1,    'chain',         'chain',      '5S',       '' ],
     ]
 }
 

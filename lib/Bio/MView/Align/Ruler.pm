@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Ruler;
@@ -31,25 +31,26 @@ sub length { $_[0]->{'length'} }
 
 sub reset_display {
     my ($self, $refobj) = @_;
-    my ($data, $pcid) = ('', '');
+    my ($data, $covr, $pcid) = ('', '', '');
     if (defined $refobj) {
-	$data = $refobj->head;
-	$pcid = $refobj->pcid;
+        $data = $refobj->lbl_data;
+        $covr = $refobj->lbl_covr;
+        $pcid = $refobj->lbl_pcid;
     }
     $self->{'display'} =
-	{
-	 'type'     => $self->{type},
-	 'label0'   => '',
-	 'label1'   => '',
-	 'label2'   => '',
-	 'label3'   => $data,
-	 'label4'   => '',
-	 'label5'   => $pcid,
-	 'label6'   => '',
-	 'label7'   => '',
-	 'range'    => [],
-	 'number'   => 1,
-	};
+    {
+        'type'     => $self->{type},
+        'range'    => [],
+        'number'   => 1,
+        'label0'   => '',
+        'label1'   => '',
+        'label2'   => '',
+        'label3'   => $data,
+        'label4'   => $covr,
+        'label5'   => $pcid,
+        'label6'   => 'query',
+        'label7'   => 'sbjct',
+    };
     $self;
 }
 

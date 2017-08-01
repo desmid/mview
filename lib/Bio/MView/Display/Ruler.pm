@@ -14,15 +14,6 @@ sub new {
     no strict qw(subs);
     shift;    #discard type
     my $self = new Bio::MView::Display::Any(@_);
-
-    $self->{'label1'} = '';
-    $self->{'label2'} = '';
-    $self->{'label3'} = '';
-    $self->{'label4'} = 'cov';
-    $self->{'label5'} = 'pid';
-    $self->{'label6'} = 'query';
-    $self->{'label7'} = 'sbjct';
-
     return bless $self, Bio::MView::Display::Reverse_Ruler
 	if $self->{'parent'}->{'string'}->is_reversed;
     bless $self, Bio::MView::Display::Forward_Ruler;

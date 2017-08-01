@@ -77,13 +77,12 @@ sub length   { $_[0]->{'string'}->length }
 sub seqlen   { $_[0]->{'string'}->seqlen }
 
 sub reset_display {
-    $_[0]->{'display'} =
-	{
-	 'type'     => 'sequence',
-	 'label1'   => $_[0]->{'id'},
-	 'sequence' => $_[0]->{'string'},
-	 'range'    => [],
-	};
+    $_[0]->{'display'} = {
+        'type'     => 'sequence',
+        'label1'   => $_[0]->{'id'},
+        'sequence' => $_[0]->{'string'},
+        'range'    => [],
+    };
     $_[0];
 }
 
@@ -395,6 +394,14 @@ sub set_coverage {
     $self->set_display('label4'=>sprintf("%.1f%%", $val));
 }
 
+sub get_coverage {
+    if (exists $_[0]->{'display'}->{'label4'} and
+        defined $_[0]->{'display'}->{'label4'}) {
+        return $_[0]->{'display'}->{'label4'};
+    }
+    return '';
+}
+
 # Compute the percent coverage of a row with respect to a reference row.
 #
 # \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
@@ -437,6 +444,14 @@ sub set_identity {
     my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
     $self->set_display('label5'=>sprintf("%.1f%%", $val));
+}
+
+sub get_identity {
+    if (exists $_[0]->{'display'}->{'label5'} and
+        defined $_[0]->{'display'}->{'label5'}) {
+        return $_[0]->{'display'}->{'label5'};
+    }
+    return '';
 }
 
 #Compute percent identity to a reference row.

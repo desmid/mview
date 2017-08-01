@@ -16,6 +16,8 @@ sub schema {[
     ]
 }
 
+sub rdb_row { my $self = shift; $self->rdb_row_no_description(@_); }
+
 
 ###########################################################################
 package Bio::MView::Build::Format::MSF;

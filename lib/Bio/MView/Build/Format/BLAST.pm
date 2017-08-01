@@ -473,6 +473,9 @@ sub assemble {
     $self->SUPER::assemble(@_);
 }
 
+sub rdb_row { my $self = shift; $self->rdb_row_search(@_); }
+
+
 ###########################################################################
 package Bio::MView::Build::Row::BLASTX;
 

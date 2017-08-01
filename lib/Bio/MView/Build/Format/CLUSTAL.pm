@@ -1,10 +1,9 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Format::CLUSTAL;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -31,7 +30,7 @@ sub parse {
 
 	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
+	push @hit, new Bio::MView::Build::Row::CLUSTAL($rank, $id, '', $seq);
     }
     #map { $_->print } @hit;
 
@@ -40,6 +39,19 @@ sub parse {
 
     return \@hit;
 }
+
+
+###########################################################################
+package Bio::MView::Build::Row::CLUSTAL;
+
+use Bio::MView::Build::Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Simple_Row);
+
+sub rdb_row { my $self = shift; $self->rdb_row_no_description(@_); }
 
 
 ###########################################################################

@@ -1,10 +1,9 @@
-# Copyright (C) 1998-2015 Nigel P. Brown
+# Copyright (C) 1998-2017 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -26,7 +25,7 @@ sub parse {
     last  if $self->topn_done($rank);
     next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_query;
-    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
     #no special subtype: use default
     push @hit, $row;
 
@@ -34,7 +33,7 @@ sub parse {
     last  if $self->topn_done($rank);
     next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_align;
-    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
@@ -42,7 +41,7 @@ sub parse {
     last  if $self->topn_done($rank);
     next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_conf;
-    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
     $row->set_subtype('jnet.conf');    #override the default
     push @hit, $row;
 
@@ -50,7 +49,7 @@ sub parse {
     last  if $self->topn_done($rank);
     next  if $self->skip_row($rank, $rank, $id);
     $seq = $aln->get_final;
-    $row = new Bio::MView::Build::Simple_Row($rank, $id, '', $seq);
+    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
     $row->set_subtype('jnet.pred');    #override the default
     push @hit, $row;
 
@@ -87,6 +86,34 @@ sub header {
     my $s = '';
     return $s    if $quiet;
     Bio::MView::Display::displaytext($s);
+}
+
+
+###########################################################################
+package Bio::MView::Build::Row::JNETZ;
+
+use Bio::MView::Build::Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Simple_Row);
+
+#tabulated rdb output
+sub rdb_row {
+    my ($self, $mode, $pad, $gap) = @_;
+    my @cols = ();
+    if ($mode eq 'data') {
+        @cols = ($self->num, $self->cid, $self->seq($pad, $gap));
+    }
+    elsif ($mode eq 'attr') {
+        @cols = ('row', 'id', 'seq');
+    }
+    elsif ($mode eq 'form') {
+        @cols = ('4N', '30S', '500S');
+    }
+    #warn "[@cols]";
+    join("\t", @cols);
 }
 
 
