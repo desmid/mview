@@ -8,8 +8,6 @@ use Bio::MView::Sequence;
 use strict;
 
 my $DEF_TEXTWIDTH = 30;  #default width to truncate 'text' field
-my $DEF_PAD = '-';       #default terminal gap character
-my $DEF_GAP = '-';       #default internal gap character
 
 sub new {
     my $type = shift;
@@ -72,10 +70,8 @@ sub posn1 { '' }              #first sequence range
 sub posn2 { '' }              #second sequence range
 
 sub seq {                     #the sequence
-    my ($self, $pad, $gap) = (@_, $DEF_PAD, $DEF_GAP);
+    my $self = shift;
     return ''  unless defined $self->{'seq'};
-    $self->set_pad($pad);
-    $self->set_gap($gap);
     return $self->{'seq'}->string
 }
 
@@ -182,10 +178,6 @@ sub assemble {
     $self->{'seq'}->set_gap($gap);
     $self;
 }
-
-sub set_pad { $_[0]->{'seq'}->set_pad($_[1]) }
-sub set_gap { $_[0]->{'seq'}->set_gap($_[1]) }
-sub set_spc { $_[0]->{'seq'}->set_spc($_[1]) }
 
 ###########################################################################
 

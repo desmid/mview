@@ -5,9 +5,6 @@ package Bio::MView::Convert;
 
 use strict;
 
-my $DEF_PAD = '-';  #default terminal gap character
-my $DEF_GAP = '-';  #default internal gap character
-
 my %Known_Convert_Mode =
     (
      #name
@@ -35,8 +32,6 @@ sub new {
     $self->{'build'}   = shift;
     $self->{'align'}   = shift;
     $self->{'moltype'} = shift;
-    $self->{'pad'}     = defined $_[0] ? shift : $DEF_PAD;
-    $self->{'gap'}     = defined $_[0] ? shift : $DEF_GAP;
 
     bless $self, $type;
     $self;
@@ -64,7 +59,7 @@ sub plain_row {
     my ($self, $rid, $idw) = @_;
     my $row = $self->{'build'}->uid2row($rid);
     my $title = sprintf("%-${idw}s", substr($row->cid, 0, $idw));
-    my $sequence = $row->seq($self->{'pad'}, $self->{'gap'});
+    my $sequence = $row->seq;
     $title . " " . $sequence . "\n";
 }
 
@@ -99,7 +94,7 @@ sub pearson_row {
 	my $row = shift;
 	my ($s, $d) = ('');
 	$d = $row->desc;         $s .= " $d"  if $d ne '';
-	$d = $row->data('data'); $s .= " $d"  if $d ne '';
+	$d = $row->unf_data('data'); $s .= " $d"  if $d ne '';
 	$d = $row->covr;         $s .= " $d"  if $d ne '';
 	$d = $row->pcid;         $s .= " $d"  if $d ne '';
 	$d = $row->posn1;        $s .= " $d"  if $d ne '';
@@ -108,8 +103,8 @@ sub pearson_row {
     };
 
     my $sequence = sub {
-	my ($row, $pad, $gap) = @_;
-	my $seq = $row->seq($pad, $gap);
+	my $row = shift;
+	my $seq = $row->seq;
 	my $len = length($seq);
 	my $s = '';
 	for (my $i=0; $i<$len; $i+=$PEARSON_SEQ_WIDTH) {
@@ -120,7 +115,7 @@ sub pearson_row {
 
     &$head($row)
         . &$desc($row)
-        . &$sequence($row, $self->{'pad'}, $self->{'gap'});
+        . &$sequence($row);
 }
 
 ###########################################################################
@@ -153,7 +148,7 @@ sub pir_row {
 	my $row = shift;
 	my ($s, $d) = ('');
 	$d = $row->desc;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->data('data'); $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+	$d = $row->unf_data('data'); $s .= ($s eq '' ? $d : " $d")  if $d ne '';
 	$d = $row->covr;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
 	$d = $row->pcid;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
 	$d = $row->posn1;        $s .= ($s eq '' ? $d : " $d")  if $d ne '';
@@ -163,8 +158,8 @@ sub pir_row {
     };
 
     my $sequence = sub {
-	my ($row, $pad, $gap) = @_;
-	my $seq = $row->seq($pad, $gap);
+	my $row = shift;
+	my $seq = $row->seq;
 	my $len = length($seq);
 	my $s = '';
 	for (my $i=0; $i<$len; $i+=$PIR_SEQ_WIDTH) {
@@ -176,7 +171,7 @@ sub pir_row {
 
     &$head($row, $self->{'moltype'})
         . &$desc($row)
-        . &$sequence($row, $self->{'pad'}, $self->{'gap'});
+        . &$sequence($row);
 }
 
 ###########################################################################
@@ -187,17 +182,14 @@ sub rdb {
     $s .= $bld->index2row(0)->rdb_row('attr') . "\n";
     $s .= $bld->index2row(0)->rdb_row('form') . "\n";
     foreach my $rid ($aln->visible_ids) {
-        $s .= $bld->uid2row($rid)->rdb_row(
-            'data', $self->{'pad'}, $self->{'gap'}
-            ) . "\n";
+        my $row = $bld->uid2row($rid);
+        $s .= $bld->uid2row($rid)->rdb_row('data') . "\n";
     }
     \$s;
 }
 
 ###########################################################################
 my $MSF_SEQ_WIDTH = 50;
-my $MSF_PAD = '.';
-my $MSF_GAP = '.';
 
 #return alignment in MSF format
 sub msf {
@@ -244,10 +236,9 @@ sub msf {
     }
     $s .= "\n//\n\n";
 
-    my ($pad, $gap, %seq) = ($self->{'pad'}, $self->{'gap'});
-
+    my %seq;
     foreach my $rid ($aln->visible_ids) {
-        $seq{$rid} = $bld->uid2row($rid)->seq($pad, $gap);
+        $seq{$rid} = $bld->uid2row($rid)->seq;
     }
 
   LOOP:
@@ -303,17 +294,18 @@ sub clustal {
     $s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";
 
     my $w = $CLUSTAL_NAME_WIDTH;
-    my ($pad, $gap) = ($self->{'pad'}, $self->{'gap'});
+
     my @ids = $aln->visible_ids;
-    my %seq = ();
-    my %len = ();
+    my (%seq, %len, $pad, $gap);
 
     foreach my $rid (@ids) {
-        #warn $rid, $bld->uid2row($rid), "\n";
-        $w = length($bld->uid2row($rid)->cid)+1 if
-             length($bld->uid2row($rid)->cid) >= $w;
-        $seq{$rid} = $bld->uid2row($rid)->seq($pad, $gap);
+        my $row = $bld->uid2row($rid);
+        #warn $rid, $row, "\n";
+        $w = length($row->cid)+1  if length($row->cid) >= $w;
+        $seq{$rid} = $row->seq;
         $len{$rid} = 0;
+        $pad = $row->sob->get_pad;
+        $gap = $row->sob->get_gap;
     }
 
   LOOP:
