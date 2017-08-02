@@ -167,7 +167,7 @@ sub parse_ranked_hits {
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
-                    1,
+                    $aln->{$self->{'attr_score'}},
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
@@ -228,7 +228,7 @@ sub parse_discrete_hits {
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
-                    1,
+                    $aln->{$self->{'attr_score'}},
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
@@ -288,7 +288,7 @@ sub parse_blastpx_all_hits {
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
-                    1,
+                    $aln->{$self->{'attr_score'}},
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
@@ -359,7 +359,7 @@ sub parse_tblastnx_all_hits {
                     $aln->{'query'},
                     $aln->{'query_start'},
                     $aln->{'query_stop'},
-                    1,
+                    $aln->{$self->{'attr_score'}},
                 ], [
                     $aln->{'sbjct'},
                     $aln->{'sbjct_start'},
@@ -425,8 +425,10 @@ sub record {
     my $qorient = $self->strand;
     my $sorient = '?';
 
-    if (defined $_[3] and exists $_[3]->{'sbjct_orient'}) {
-        $sorient = $_[3]->{'sbjct_orient'};
+    if (defined $_[3]) {
+        $sorient = $_[3]->{'sbjct_orient'}  if exists $_[3]->{'sbjct_orient'};
+    } else {
+        $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
     push @values, $qorient;  #query orientation
@@ -475,8 +477,10 @@ sub record {
 
     my $sorient = '?';
 
-    if (defined $_[3] and exists $_[3]->{'sbjct_orient'}) {
-        $sorient = $_[3]->{'sbjct_orient'};
+    if (defined $_[3]) {
+        $sorient = $_[3]->{'sbjct_orient'}  if exists $_[3]->{'sbjct_orient'};
+    } else {
+        $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
     push @values, '+';       #query orientation
@@ -503,11 +507,11 @@ sub record {
     my $qorient = $self->strand;
     my $sorient = '?';
 
-    if (defined $_[3] and exists $_[3]->{'query_orient'}) {
-        $qorient = $_[3]->{'query_orient'};
-    }
-    if (defined $_[3] and exists $_[3]->{'sbjct_orient'}) {
-        $sorient = $_[3]->{'sbjct_orient'};
+    if (defined $_[3]) {
+        $qorient = $_[3]->{'query_orient'}  if exists $_[3]->{'query_orient'};
+        $sorient = $_[3]->{'sbjct_orient'}  if exists $_[3]->{'sbjct_orient'};
+    } else {
+        $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
     push @values, $qorient;  #query orientation

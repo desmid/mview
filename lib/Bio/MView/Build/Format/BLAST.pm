@@ -432,38 +432,76 @@ sub posn2 {
     return '';
 }
 
-#fragment sort, called by Row::assemble
+#Sort fragments; called by Row::assemble
+#sub sort { $_[0]->sort_none }
+#sub sort { $_[0]->sort_worst_to_best }
 sub sort { $_[0]->sort_best_to_worst }
 
-# #don't sort fragments; blast lists HSPs by decreasing score, so this would be
-# #good, but the mview fragment collecting algorithm called by get_ranked_hsps()
-# #changes the order.
+# #Don't sort fragments; blast default output lists HSPs by decreasing score,
+# #so this would be good, but the mview fragment collecting algorithm called by
+# #get_ranked_hsps() changes the order.
 # sub sort_none {$_[0]}
 
-# #sort fragments by (1) increasing score, (2) increasing length; used up to MView
-# #version 1.58.1, but inconsistent with NO OVERWRITE policy in Sequence.pm
+# #Sort fragments by (1) increasing score, (2) increasing length; used up to
+# #MView version 1.58.1, but inconsistent with NO OVERWRITE policy in
+# #Sequence.pm
 # sub sort_worst_to_best {
 #     $_[0]->{'frag'} = [
 #         sort {
-#             warn "$b->[7] <=> $a->[7]\n";
-#             my $c = $a->[7] <=> $b->[7];                 #compare score
+#             #warn "$a->[7] <=> $b->[7]\n";
+#             my $c = $a->[7] <=> $b->[7];                       #max score
 #             return $c  if $c != 0;
-#             return length($a->[0]) <=> length($b->[0]);  #compare length
+#             return length(${$a->[0]}) <=> length(${$b->[0]});  #max length
 #         } @{$_[0]->{'frag'}}
 #        ];
 #     $_[0];
 # }
 
-#sort fragments by (1) decreasing score, (2) decreasing length
+#Sort fragments by (1) decreasing score, (2) decreasing length, (3) leftmost
+#start position (arbitrary deal breaker). This is consistent with a best-first
+#painting algorithm with NO OVERWRITE in Sequence.pm. Note: query fragment
+#score is always set to 1 in the parse_* routines.
 sub sort_best_to_worst {
+
+    # warn "Stack Trace:\n";
+    # my $i = 0;
+    # while ( (my @calls = (caller($i++))) ){
+    #     warn $calls[1].":".$calls[2]." in function ".$calls[3]."\n";
+    # }
+
+    # warn "sort:\n";
+    # foreach my $f (@{$_[0]->{'frag'}}) { warn "@$f\n" }
+
     $_[0]->{'frag'} = [
         sort {
-            #warn "$b->[7] <=> $a->[7]\n";
-            my $c = $b->[7] <=> $a->[7];                 #compare score
+            my $c;
+
+            #warn "$a->[7] <=> $b->[7] (score)\n";
+            $c = $b->[7] <=> $a->[7];              #max score
             return $c  if $c != 0;
-            return length($b->[0]) <=> length($a->[0]);  #compare length
+
+            my ($alen, $blen) = (length(${$a->[0]}), length(${$b->[0]}));
+            #warn "$alen <=> $blen (length)\n";
+            $c = $blen <=> $alen;                  #max length
+            return $c  if $c != 0;
+
+            #assume all frags have same orientation - they should have
+            if ($a->[1] < $a->[2]) {               #a is forward
+                #warn "$a->[1] <=> $b->[1] (start, forward)\n";
+                $c = $a->[1] <=> $b->[1];          #min start position
+                return $c;
+            } else {                               #reversed
+                #warn "$b->[1] <=> $a->[1] (start, was reversed)\n";
+                $c = $b->[1] <=> $a->[1];          #max start position
+                return $c;
+            }
+
         } @{$_[0]->{'frag'}}
-	];
+        ];
+
+    # warn "sort: (finished)\n";
+    # foreach my $f (@{$_[0]->{'frag'}}) { warn "@$f\n" }
+
     $_[0];
 }
 
@@ -472,8 +510,6 @@ sub assemble {
     my $self = shift;
     $self->SUPER::assemble(@_);
 }
-
-sub rdb_row { my $self = shift; $self->rdb_row_search(@_); }
 
 
 ###########################################################################
