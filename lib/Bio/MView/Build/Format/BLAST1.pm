@@ -91,7 +91,7 @@ use vars qw(@ISA);
 sub schema {[
     # use? rdb?  key              label         format   default
     [ 1,   1,    'score',         'score',      '5N',      ''  ],
-    [ 2,   2,    'p',             'P(N)',       '9N',      ''  ],
+    [ 2,   2,    'p',             'P(N)',       '8N',      ''  ],
     [ 3,   3,    'n',             'N',          '2N',      ''  ],
     [ 4,   4,    'query_orient',  'qy',         '2S',      '?' ],
     [ 5,   5,    'sbjct_orient',  'ht',         '2S',      '?' ],
@@ -110,7 +110,7 @@ use vars qw(@ISA);
 sub schema {[
     # use? rdb?  key              label         format   default
     [ 1,   1,    'score',         'score',      '5N',      ''  ],
-    [ 2,   2,    'p',             'P(N)',       '9N',      ''  ],
+    [ 2,   2,    'p',             'P(N)',       '8N',      ''  ],
     [ 3,   3,    'n',             'N',          '2N',      ''  ],
     [ 0,   0,    'query_orient',  'qy',         '2S',      '?' ],
     [ 0,   0,    'sbjct_orient',  'ht',         '2S',      '?' ],
