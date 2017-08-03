@@ -627,7 +627,7 @@ sub build_new_alignment {
 			       'url'    => $brow->url,
 		);
 	} else {
-            my $values = [ $brow->fmt_col_values ];
+            my $values = [ $brow->display_column_values ];
 
             #warn "\n[@$values]\n";
 

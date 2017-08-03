@@ -33,7 +33,7 @@ sub reset_display {
     my ($self, $refobj) = @_;
 
     my $labels = ['', '', '', '', '', '', '', ''];
-    $labels = [ $refobj->fmt_col_labels ]  if defined $refobj;
+    $labels = [ $refobj->display_column_labels ]  if defined $refobj;
 
     $self->{'display'} =
     {

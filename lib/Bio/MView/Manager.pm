@@ -294,7 +294,7 @@ sub add_display {
     my $refobj = $bld->get_row($self->{'bp'}->{'ref_id'});
 
     #collect all the column labels
-    $self->{'labelwidths'} = [ $refobj->unf_col_widths ];
+    $self->{'labelwidths'} = [ $refobj->display_column_widths ];
 
     #allow the Build instance to override the normal parameter
     #settings and to substitute specialised handlers for
