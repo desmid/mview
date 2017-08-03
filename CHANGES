@@ -1,85 +1,139 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-08-03
-- Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
-- New column reporting percent coverage of hits with respect to reference
-  sequence. Thanks to Konstantin Kuleshov for this request. WARNING!
-  BACKWARDS INCOMPATIBILITY: the additional data column is inserted as
-  label4 before the percent identity column, so label numbers 4 through 6
-  are now 5 through 7.
-- New '-keepinserts on|off' option for BLAST to preserve hit insertions
-  relative to the query for output formats that don't need to be aligned
-  (fasta, pir). Note: the default behaviour is to cut hit insertions to
-  make the query contiguous. Thanks to Andrea Luchetti at Uni. Bologna for
-  this request.
-- Added percent coverage, percent identity to (clustal, fasta, msf, pir,
-  plain, rdb) output format converters.
-- Added blast/fasta search row number to (clustal, fasta, msf, pir, plain,
-  rdb) output format converters.
+Version 1.62  2017-08-04
+
+Changes:
+
+- Added new column reporting percent coverage of hits with respect to
+  reference sequence. Thanks to Konstantin Kuleshov for this request.
+  WARNING! COMMAND LINE OPTIONS BACKWARDS INCOMPATIBILITY: the additional
+  data column is inserted as label4 before the percent identity column, so
+  label numbers 4 through 6 are now 5 through 7.
+
+- Added new '-keepinserts on|off' option for BLAST to preserve hit
+  insertions relative to the query. This is useful when dumping a search to
+  an unaligned output format (fasta, pir) and the full length HSPs are
+  needed. Note: the default behaviour is to cut hit insertions to make the
+  query contiguous. Thanks to Andrea Luchetti at Uni. Bologna for this
+  request.
+
 - Added/moved column header information to ruler line in default and html
-  output modes; changed default behaviour to display ruler.
+  output modes; changed default behaviour to display ruler (-ruler on is
+  now the default).
+
+Colouring:
+
 - Changed colouring to allow 'find' colouring independently of 'alignment'
   colouring, so both can be applied (formerly 'find' colouring overrode any
   other). Thanks to Konstantin Kuleshov for this request.
+
 - Added single colour colormap capability to consensus line colouring.
-- Removed obscure '-con_coloring identity' option.
-- Fixed bug in output format conversions (clustal, fasta, msf, pir, plain,
-  rdb) that replaced unknown 'X' residues in blast query with normal gaps.
+
+- Removed obscure and buggy '-con_coloring identity' option.
+
+Input formats:
+
+- Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
+
+Output formats (clustal, fasta, msf, pir, plain, rdb):
+
+- Added percent coverage, percent identity to output format converters.
+
+- Added tab-separation between data fields in description lines in format
+  converters.
+
+- Added search row number to output format converters as a prefix to the
+  sequence identifier:
+
+     0:test                     (query row)
+     8:emb|AL021726|DMC171E4    (search hit 8) or
+     8.2:emb|AL021726|DMC171E4  (search hit 8, discrete HSP 2).
+
+- rdb output mode now reports search query as row 0 (was empty before).
+
+Bugs fixed:
+
+- Fixed bug in output format conversions that replaced unknown 'X' residues
+  in blast query with normal gaps.
 
 Version 1.61  2016-11-14
+
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
-    but highlights the mismatches instead of the identities. Using this you
-    can see blocks of misalignment and individuate particular misaligned
-    residue types by colour. Requested by Andrew Davis.
+  but highlights the mismatches instead of the identities. Using this you
+  can see blocks of misalignment and individuate particular misaligned
+  residue types by colour. Requested by Andrew Davis.
+
 - Changed colormap and consensus group 'mismatch' pattern from '*' to '.':
-    (1) if you use your own colormaps or consensus maps, the wildcard
-    effect in a colormap map is now obtained with . instead of *, and (2)
-    the * character now explicitly matches * in the input sequences
-    (typically a translated stop codon) so these can now be coloured
-    independently like a normal residue.
+  (1) if you use your own colormaps or consensus maps, the wildcard
+  effect in a colormap map is now obtained with . instead of *, and (2)
+  the * character now explicitly matches * in the input sequences
+  (typically a translated stop codon) so these can now be coloured
+  independently like a normal residue.
+
 - Added colouring by single named colour; added X11 and Web 4.0 colours:
-    list them with 'mview -listcolors'.
+  list them with 'mview -listcolors'.
+
 - Updated to handle BLAST 2.5.0+ change in '-outfmt 7' standard field names:
-    'query /sbjct id' became 'query/sbjct acc.'
+  'query /sbjct id' became 'query/sbjct acc.'
+
 - Tested with BLAST 2.4.0+, 2.5.0+, FASTA 36.3.8e.
 
 Version 1.60.1  2015-10-13
+
 - Fixed error in get_hsp_groups calling keys(); affects BLAST, but only
   triggered under older versions of perl (seen with 5.10, fine with 5.18).
 
 Version 1.60  2015-10-09
+
 - Changed HTML output to HTML5: added DOCTYPE html, removed FONT tags.
+
 - Added BLAST+ PSIBLAST parser.
+
 - Added BLAST+ '-outfmt 7' support.
+
 - Changed BLAST '-hsp discrete' mode to always set HSP count, N = 1.
+
 - Fixed 'plain' output format to not truncate long identifiers.
-Thanks to Alexey Porollo at CHRF for the BLAST+ and plain format change
-requests.
+
+  Thanks to Alexey Porollo at CHRF for the BLAST+ and plain format change
+  requests.
 
 Version 1.59  2015-07-17 (GitHub)
+
 - This is a re-release with only documentation changes.
+
 - Code base moved to GitHub.
 
 Version 1.59  2015-07-06 (SourceForge)
+
 - Improved algorithm for assembly of alternative search alignment fragments
-    with stricter constraints on selection of fragments that maintain query
-    and hit sequence orderings; affects all BLAST and FASTA searches when
-    the number of search result fragments is greater than 1.
+  with stricter constraints on selection of fragments that maintain query
+  and hit sequence orderings; affects all BLAST and FASTA searches when
+  the number of search result fragments is greater than 1.
+
 - Changed BLAST scoring information to report number of HSPs, best score
-    and significance for the HSPs used in the assembly, rather than those
-    stated in the parsed BLAST ranking; affects all BLAST searches.
+  and significance for the HSPs used in the assembly, rather than those
+  stated in the parsed BLAST ranking; affects all BLAST searches.
+
 - Updated FASTA parsers to recognise '>--' alternative alignments.
+
 - Added FASTA family support for TFASTM, TFASTF, TFASTS (experimental).
+
 - Modified code to work on Windows: fixed problems with filepaths
-    containing backslashes; added low-level handling of line endings to
-    allow UNIX (LF) and Windows/DOS (CRLF) data files to be read on either
-    system. Tested with Strawberry Perl 5.22.0.1 64bit under Wine.
+  containing backslashes; added low-level handling of line endings to
+  allow UNIX (LF) and Windows/DOS (CRLF) data files to be read on either
+  system. Tested with Strawberry Perl 5.22.0.1 64bit under Wine.
+
 - Fixed bug in CLUSTAL conservation line that sometimes miscalculated
-    column positions; affects BLAST and FASTA searches.
+  column positions; affects BLAST and FASTA searches.
+
 - Fixed bug in PIR output that inserted wrong terminal gap character.
+
 - Fixed bug in percent identity calculation: now case-insensitive and
-    treats unknown 'X' characters as mismatches.
+  treats unknown 'X' characters as mismatches.
+
 - Fixed bug in FASTA/Pearson parser that could skip description field.
+
 - Major refactoring of components and discontinued CVS on SourceForge.
 
 Version 1.58  2015-06-14

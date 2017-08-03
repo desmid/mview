@@ -2,7 +2,7 @@
 
 # Copyright (C) 1997-2017 Nigel P. Brown
 
-my $VERSION  = '1.62e';
+my $VERSION  = '1.62f';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
