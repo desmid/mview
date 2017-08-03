@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2017 Nigel P. Brown
 
 ######################################################################
 package Universal;
@@ -138,6 +138,13 @@ sub vmstat {
 	CORE::warn sprintf "VMEM=%8gk  $s\n", $ps[22] / 1024;
     } else {
 	CORE::warn sprintf "VMEM=?  $s\n";
+    }
+}
+
+sub stacktrace {
+    warn "Stack Trace:\n"; my $i = 1;
+    while ( (my @calls = (caller($i++))) ){
+        warn $calls[1] . ":" . $calls[2] . " in function " . $calls[3] . "\n";
     }
 }
 

@@ -463,12 +463,6 @@ sub sort { $_[0]->sort_best_to_worst }
 #score is always set to 1 in the parse_* routines.
 sub sort_best_to_worst {
 
-    # warn "Stack Trace:\n";
-    # my $i = 0;
-    # while ( (my @calls = (caller($i++))) ){
-    #     warn $calls[1].":".$calls[2]." in function ".$calls[3]."\n";
-    # }
-
     # warn "sort:\n";
     # foreach my $f (@{$_[0]->{'frag'}}) { warn "@$f\n" }
 
