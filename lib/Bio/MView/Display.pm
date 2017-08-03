@@ -303,9 +303,6 @@ sub display {
 	}
     }
 
-    #how wide is the left header block?
-    my $headerleftwidth = 0;
-
     #iterate over display rows
 LOOP:
     {
@@ -406,18 +403,6 @@ LOOP:
 		push @tmp, $Intercolumn_Space;
 
 		push @left, @tmp;
-
-                #extra padding if this left block is shorter than the
-                #longest seen
-                my $leftwidth = 0;
-                $leftwidth += $_ for map(length, @left);
-
-                if ($headerleftwidth == 0) {  #first pass
-                    $headerleftwidth = $leftwidth;
-                } else {
-                    my $extra = $headerleftwidth - $leftwidth;
-                    push @left, ' ' x $extra  if $extra > 0;
-                }
 
 		#### middle ############
 		@tmp = ();

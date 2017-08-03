@@ -4,7 +4,6 @@
 package Bio::MView::Build::Format::MULTAS;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -89,7 +88,8 @@ sub parse {
 
 	#warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Simple_Row($rank+1, $id, $desc, $seq);
+	push @hit, new Bio::MView::Build::Row::MULTAS($rank+1, $id, $desc,
+                                                      $seq);
     }
     #map { $_->print } @hit;
 
@@ -98,6 +98,19 @@ sub parse {
 
     return \@hit;
 }
+
+
+###########################################################################
+package Bio::MView::Build::Row::MULTAS;
+
+use Bio::MView::Build::Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Simple_Row);
+
+sub ignore_columns { ['posn1', 'posn2']; }
 
 
 ###########################################################################

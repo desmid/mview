@@ -99,22 +99,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Simple_Row);
 
-#tabulated rdb output
-sub rdb_row {
-    my ($self, $mode, $pad, $gap) = @_;
-    my @cols = ();
-    if ($mode eq 'data') {
-        @cols = ($self->num, $self->cid, $self->seq($pad, $gap));
-    }
-    elsif ($mode eq 'attr') {
-        @cols = ('row', 'id', 'seq');
-    }
-    elsif ($mode eq 'form') {
-        @cols = ('4N', '30S', '500S');
-    }
-    #warn "[@cols]";
-    join("\t", @cols);
-}
+sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 
 
 ###########################################################################

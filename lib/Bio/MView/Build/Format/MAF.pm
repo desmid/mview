@@ -19,7 +19,7 @@ sub schema {[
     ]
 }
 
-sub rdb_row { my $self = shift; $self->rdb_row_no_description(@_); }
+sub ignore_columns { ['desc', 'posn1', 'posn2']; }
 
 
 ###########################################################################

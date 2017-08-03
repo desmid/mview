@@ -626,17 +626,20 @@ sub build_new_alignment {
 			       'url'    => $brow->url,
 		);
 	} else {
-	    #don't change label4 (percent coverage) or label5 (percent
-	    #identity) here as these were already computed above.
-	    $arow->set_display('label0' => $brow->num,
-                               'label1' => $brow->cid,
-                               'label2' => $brow->text,
-                               'label3' => $brow->data('data'),
-                               #'label4' => '',###
-                               #'label5' => '',###
-                               'label6' => $brow->posn1,
-                               'label7' => $brow->posn2,
-                               'url'    => $brow->url,
+            my $values = [ $brow->fmt_col_values ];
+
+            #warn "\n[@$values]\n";
+
+            $arow->set_display(
+                'label0' => $values->[0],
+                'label1' => $values->[1],
+                'label2' => $values->[2],
+                'label3' => $values->[3],
+                'label4' => $values->[4],
+                'label5' => $values->[5],
+                'label6' => $values->[6],
+                'label7' => $values->[7],
+                'url'    => $brow->url,
 	        );
 	}
     }

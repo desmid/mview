@@ -51,7 +51,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Simple_Row);
 
-sub rdb_row { my $self = shift; $self->rdb_row_no_description(@_); }
+sub ignore_columns { ['desc', 'posn1', 'posn2']; }
 
 
 ###########################################################################

@@ -31,26 +31,25 @@ sub length { $_[0]->{'length'} }
 
 sub reset_display {
     my ($self, $refobj) = @_;
-    my ($data, $covr, $pcid) = ('', '', '');
-    if (defined $refobj) {
-        $data = $refobj->lbl_data;
-        $covr = $refobj->lbl_covr;
-        $pcid = $refobj->lbl_pcid;
-    }
+
+    my $labels = ['', '', '', '', '', '', '', ''];
+    $labels = [ $refobj->fmt_col_labels ]  if defined $refobj;
+
     $self->{'display'} =
     {
-        'type'     => $self->{type},
-        'range'    => [],
-        'number'   => 1,
-        'label0'   => '',
-        'label1'   => '',
-        'label2'   => '',
-        'label3'   => $data,
-        'label4'   => $covr,
-        'label5'   => $pcid,
-        'label6'   => 'query',
-        'label7'   => 'sbjct',
+        'type'   => $self->{type},
+        'range'  => [],
+        'number' => 1,
+        'label0' => $labels->[0],
+        'label1' => $labels->[1],
+        'label2' => $labels->[2],
+        'label3' => $labels->[3],
+        'label4' => $labels->[4],
+        'label5' => $labels->[5],
+        'label6' => $labels->[6],
+        'label7' => $labels->[7],
     };
+
     $self;
 }
 

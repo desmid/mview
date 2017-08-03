@@ -4,7 +4,6 @@
 package Bio::MView::Build::Format::MIPS;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -32,7 +31,7 @@ sub parse {
 	$des = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id};
 	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Simple_Row($rank, $id, $des, $seq);
+	push @hit, new Bio::MView::Build::Row::MIPS($rank, $id, $des, $seq);
     }
     #map { $_->print } @hit;
 
@@ -41,6 +40,19 @@ sub parse {
 
     return \@hit;
 }
+
+
+###########################################################################
+package Bio::MView::Build::Row::MIPS;
+
+use Bio::MView::Build::Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Simple_Row);
+
+sub ignore_columns { ['posn1', 'posn2']; }
 
 
 ###########################################################################

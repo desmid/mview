@@ -181,12 +181,60 @@ sub assemble {
 
 ###########################################################################
 
-sub schema { [] }  #default schema is empty
+my $DIS_SCHEMA = [
+    # unf ukey       label
+    [ 1,  'num',     '',       ],
+    [ 2,  'cid',     '',       ],
+    [ 3,  'text',    '',       ], #use truncated text
+    [ 4,  '_data_',  '',       ],
+    [ 5,  'covr',    'cov',    ],
+    [ 6,  'pcid',    'pid',    ],
+    [ 7,  'posn1',   'query',  ],
+    [ 8,  'posn2',   'sbjct',  ],
+    [ 0,  'seq',     '',       ], #don't fetch sequence
+    ];
 
-#convenience functions for column headers: eliminate eventually
-sub lbl_data { $_[0]->data('attr'); }
-sub lbl_covr { 'cov' }
-sub lbl_pcid { 'pid' }
+my $UNF_SCHEMA = [
+    # unf ukey       label
+    [ 1,  'num',     'row',    ],
+    [ 2,  'cid',     'id',     ],
+    [ 3,  'desc',    'desc',   ],
+    [ 4,  '_data_',  '',       ],
+    [ 5,  'covr',    'cov',    ],
+    [ 6,  'pcid',    'pid',    ],
+    [ 7,  'posn1',   'query',  ],
+    [ 8,  'posn2',   'sbjct',  ],
+    [ 9,  'seq',     '',       ],
+    ];
+
+my $FMT_SCHEMA = [
+    # fmt fkey       label      format
+    [ 1,  'num',     '',        '4N'   ],
+    [ 2,  'cid',     '',        '30S'  ],
+    [ 3,  'text',    '',        '50S'  ], #use truncated text
+    [ 4,  '_data_',  '',        ''     ],
+    [ 5,  'covr',    'cov',     '6N'   ],
+    [ 6,  'pcid',    'pid',     '6N'   ],
+    [ 7,  'posn1',   'query',   '15S'  ],
+    [ 8,  'posn2',   'sbjct',   '15S'  ],
+    [ 9,  'seq',     '',        '500S' ],
+    ];
+
+my $RDB_SCHEMA = [
+    # rdb  rkey       label      format
+    [ 1,   'num',     'row',     '4N'   ],
+    [ 2,   'cid',     'id',      '30S'  ],
+    [ 3,   'desc',    'desc',    '500S' ],
+    [ 4,   '_data_',  '',        ''     ],
+    [ 5,   'covr',    'cov',     '6N'   ],
+    [ 6,   'pcid',    'pid',     '6N'   ],
+    [ 7,   'posn1',   'query',   '15S'  ],
+    [ 8,   'posn2',   'sbjct',   '15S'  ],
+    [ 9,   'seq',     'seq',     '500S' ],
+    ];
+
+sub schema { [] }          #default is empty
+sub ignore_columns { [] }  #default is empty
 
 #save row information following a schema
 sub save_info {
@@ -197,7 +245,7 @@ sub save_info {
     return $self  unless @$schema;
 
     for (my $i=0; $i<@$schema; $i++) {
-        my ($n0, $n1, $name, $label, $format, $default) = @{$schema->[$i]};
+        my ($n1, $n2, $name, $label, $format, $default) = @{$schema->[$i]};
         #warn "save: $name\n";
         $self->{'data'}->{$name} = defined $_[$i] ? $_[$i] : $default;
     }
@@ -213,7 +261,7 @@ sub set_val {
     return $self  unless @$schema;
 
     foreach my $row (@$schema) {
-        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
         $self->{'data'}->{$name} = $val, return $self  if $key eq $name;
         $self->{'data'}->{$name} = $val, return $self  if $key eq $label;
     }
@@ -231,7 +279,7 @@ sub has {
     return exists $self->{$key}  unless @$schema;
 
     foreach my $row (@$schema) {
-        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
         return 1  if $key eq $name;
         return 1  if $key eq $label;
     }
@@ -251,7 +299,7 @@ sub get_val {
     }
 
     foreach my $row (@$schema) {
-        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
         return $self->{'data'}->{$name}  if $key eq $name;
         return $self->{'data'}->{$name}  if $key eq $label;
     }
@@ -259,12 +307,15 @@ sub get_val {
     '';
 }
 
-#return a concatenated string of formatted schema data
-sub data {
+######################################################################
+#return a concatenated string of formatted schema data suitable for
+#screen display
+sub fmt_data {
     my ($self, $mode, $delim) = (@_, ' ');
 
     my $fmtstr = sub {
         my $fmt = shift;
+        return "%s"  unless $fmt;
         $fmt =~ /(\d+)(\S)/o;
         return "%-$1s"  if $2 eq 'S';
         return "%$1s";
@@ -274,24 +325,50 @@ sub data {
 
     my @tmp = ();
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$schema) {
-        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
 
-        next  unless $n0;  #ignore row
+        next  unless $n1;  #ignore row
 
         my $fmt = &$fmtstr($format);
+
         if ($mode eq 'data') {
             my $data = $self->{'data'}->{$name};
-            #warn "data: $name => [$data]\n";
+            #warn "fmt_data: $name => [$data]\n";
             push(@tmp, sprintf($fmt, $data));
             next;
         }
         push(@tmp, sprintf($fmt, $label)),  next  if $mode eq 'attr';
-        push(@tmp, sprintf($fmt, $format)), next  if $mode eq 'form';
+        push(@tmp, $format),                next  if $mode eq 'form';
     }
     join($delim, @tmp);
 }
 
-#return a list of schema data
+#return a concatenated string of unformatted schema data suitable for
+#simple output formats
+sub unf_data {
+    my ($self, $mode, $delim) = (@_, ' ');
+
+    my $schema = $self->schema;
+
+    my @tmp = ();
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$schema) {
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
+
+        next  unless $n1;  #ignore row
+
+        if ($mode eq 'data') {
+            my $data = $self->{'data'}->{$name};
+            #warn "unf_data: $name => [$data]\n";
+            push @tmp, $data;
+            next;
+        }
+        push(@tmp, $label),  next  if $mode eq 'attr';
+        push(@tmp, $format), next  if $mode eq 'form';
+    }
+    join($delim, @tmp);
+}
+
+#return a list of unformatted schema data for rdb tab-separated columns
 sub rdb_data {
     my ($self, $mode) = (@_);
 
@@ -299,9 +376,9 @@ sub rdb_data {
 
     my @tmp = ();
     foreach my $row (sort { $a->[1] <=> $b->[1] } @$schema) {
-        my ($n0, $n1, $name, $label, $format, $default) = @$row;
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
 
-        next  unless $n1;  #ignore row
+        next  unless $n2;  #ignore row
 
         if ($mode eq 'data') {
             my $data = $self->{'data'}->{$name};
@@ -315,63 +392,262 @@ sub rdb_data {
     @tmp;
 }
 
-#tabulated rdb output
+######################################################################
+#one single column item, unformatted
+sub unf_row_body {
+    my ($self, $mode, $row) = @_;
+    my ($n, $key, $label) = @$row;
+    my $data;
+    if ($mode eq 'data') {
+        if ($key eq '_data_') {
+            $data = [ $self->unf_data($mode) ];
+            #warn "unf_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $self->$key;
+            #warn "unf_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    elsif ($mode eq 'attr') {
+        if ($key eq '_data_') {
+            $data = [ $self->unf_data($mode) ];
+            #warn "unf_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $label;
+            #warn "unf_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    ();
+}
+
+#one single column item, formatted
+sub fmt_row_body {
+    my ($self, $mode, $row) = @_;
+    my ($n, $key, $label, $format) = @$row;
+
+    my $fmtstr = sub {
+        my $fmt = shift;
+        return "%s"  unless $fmt;
+        $fmt =~ /(\d+)(\S)/o;
+        return "%-$1s"  if $2 eq 'S';
+        return "%$1s";
+    };
+
+    my $fmt = &$fmtstr($format);
+    my $data;
+
+    if ($mode eq 'data') {
+        if ($key eq '_data_') {
+            $data = [ $self->fmt_data($mode) ];
+            #warn "fmt_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = sprintf($fmt, $self->$key);
+            #warn "fmt_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    elsif ($mode eq 'attr') {
+        if ($key eq '_data_') {
+            $data = [ $self->fmt_data($mode) ];
+            #warn "fmt_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = sprintf($fmt, $label);
+            #warn "fmt_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    elsif ($mode eq 'form') {
+        if ($key eq '_data_') {
+            $data = [ $self->fmt_data($mode) ];
+            #warn "fmt_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $format;
+        }
+        #warn "fmt_row: $key => [$data]\n";
+        return $data;
+    }
+    ();
+}
+
+#one single column item, unformatted for rdb
+sub rdb_row_body {
+    my ($self, $mode, $row) = @_;
+    my ($n, $key, $label, $format) = @$row;
+    my $data;
+    if ($mode eq 'data') {
+        if ($key eq '_data_') {
+            $data = [ $self->rdb_data($mode) ];
+            #warn "rdb_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $self->$key;
+            #warn "rdb_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    elsif ($mode eq 'attr') {
+        if ($key eq '_data_') {
+            $data = [ $self->rdb_data($mode) ];
+            #warn "rdb_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $label;
+            #warn "rdb_row: $key => [$data]\n";
+            return $data;
+        }
+    }
+    elsif ($mode eq 'form') {
+        if ($key eq '_data_') {
+            $data = [ $self->rdb_data($mode) ];
+            #warn "rdb_row: $key => [$data]\n";
+            return @$data;
+        } else {
+            $data = $format;
+        }
+        #warn "rdb_row: $key => [$data]\n";
+        return $data;
+    }
+    ();
+}
+
+######################################################################
+# #row of items as string, formatted
+# sub fmt_row {
+#     my ($self, $mode) = @_;
+#     my @cols = ();
+#     my $ignore = $self->ignore_columns;
+#     #warn @$ignore;
+#     foreach my $row (sort { $a->[0] <=> $b->[0] } @$FMT_SCHEMA) {
+#         my ($n, $key, $label, $format) = @$row;
+#         next  unless $n;                       #ignore row
+#         next if grep { $key eq $_ } @$ignore;  #ignore row
+#         push @cols, $self->fmt_row_body($mode, $row);
+#     }
+#     #warn "fmt_row: [@cols]\n";
+#     join("\t", @cols);
+# }
+
+#row of items as string, unformatted
+sub unf_row {
+    my ($self, $mode) = @_;
+    my @cols = ();
+    my $ignore = $self->ignore_columns;
+    #warn @$ignore;
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$UNF_SCHEMA) {
+        my ($n, $key, $label) = @$row;
+        next  unless $n;                       #ignore row
+        next if grep { $key eq $_ } @$ignore;  #ignore row
+        push @cols, $self->unf_row_body($mode, $row);
+    }
+    #warn "unf_row: [@cols]\n";
+    @cols;
+}
+
+#row of items as string, unformatted, tab-separated for rdb
 sub rdb_row {
-    my ($self, $mode, $pad, $gap) = @_;
+    my ($self, $mode) = @_;
     my @cols = ();
-    if ($mode eq 'data') {
-        @cols = ($self->num, $self->cid, $self->desc, $self->rdb_data($mode),
-                 $self->covr, $self->pcid, $self->seq($pad, $gap));
+    my $ignore = $self->ignore_columns;
+    #warn @$ignore;
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$RDB_SCHEMA) {
+        my ($n, $key, $label, $format) = @$row;
+        next  unless $n;                       #ignore row
+        next if grep { $key eq $_ } @$ignore;  #ignore row
+        push @cols, $self->rdb_row_body($mode, $row);
     }
-    elsif ($mode eq 'attr') {
-        @cols = ('row', 'id', 'desc', $self->rdb_data($mode),
-                 'cov', 'pid', 'seq');
-    }
-    elsif ($mode eq 'form') {
-        @cols = ('4N', '30S', '500S', $self->rdb_data($mode),
-                 '6N', '6N', '500S');
-    }
-    #warn "[@cols]";
+    #warn "rdb_row: [@cols]\n";
     join("\t", @cols);
 }
 
-#tabulated rdb output
-sub rdb_row_no_description {
-    my ($self, $mode, $pad, $gap) = @_;
+######################################################################
+#array of column widths for formatted columns
+sub unf_col_widths {
+    my $self = shift;
     my @cols = ();
-    if ($mode eq 'data') {
-        @cols = ($self->num, $self->cid, $self->rdb_data($mode),
-                 $self->covr, $self->pcid, $self->seq($pad, $gap));
+    my $ignore = $self->ignore_columns;
+    #warn @$ignore;
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
+        my ($n, $key, $label) = @$row;
+        next  unless $n;                        #ignore row
+
+        if (grep { $key eq $_ } @$ignore) {     #zero width
+            #warn "$key / ignore\n";
+            push @cols, 0;
+            next;
+        }
+
+        my @item = (); push @item, $self->unf_row_body('attr', $row);
+        if (@item) {
+            #warn "$key = $item[0]\n" if @item; #non-zero width
+            push @cols, length($item[0]);
+        } else {
+            push @cols, 0;                      #zero-width _data_
+        }
     }
-    elsif ($mode eq 'attr') {
-        @cols = ('row', 'id', $self->rdb_data($mode), 'cov', 'pid', 'seq');
-    }
-    elsif ($mode eq 'form') {
-        @cols = ('4N', '30S', $self->rdb_data($mode), '6N', '6N', '500S');
-    }
-    #warn "[@cols]";
-    join("\t", @cols);
+    #warn "unf_row: [@cols]\n";
+    @cols;
 }
 
-#tabulated rdb output
-sub rdb_row_search {
-    my ($self, $mode, $pad, $gap) = @_;
+#array of column labels for formatted columns
+sub fmt_col_labels {
+    my $self = shift;
     my @cols = ();
-    if ($mode eq 'data') {
-        @cols = ($self->num, $self->cid, $self->desc, $self->rdb_data($mode),
-                 $self->covr, $self->pcid, $self->posn1, $self->posn2,
-                 $self->seq($pad, $gap),);
+    my $ignore = $self->ignore_columns;
+    #warn @$ignore;
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
+        my ($n, $key, $label) = @$row;
+        next  unless $n;                        #ignore row
+
+        if (grep { $key eq $_ } @$ignore) {     #zero width
+            #warn "$key / ignore\n";
+            push @cols, '';
+            next;
+        }
+
+        my @item = (); push @item, $self->fmt_row_body('attr', $row);
+        if (@item) {
+            #warn "$key = $item[0]\n" if @item; #non-zero width
+            push @cols, $item[0];
+        } else {
+            push @cols, '';                     #zero-width _data_
+        }
     }
-    elsif ($mode eq 'attr') {
-        @cols = ('row', 'id', 'desc', $self->rdb_data($mode), 'cov', 'pid',
-                 'query', 'sbjct', 'seq');
+    #warn "unf_row: [@cols]\n";
+    @cols;
+}
+
+#array of column values for formatted columns
+sub fmt_col_values {
+    my $self = shift;
+    my @cols = ();
+    my $ignore = $self->ignore_columns;
+    #warn @$ignore;
+    foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
+        my ($n, $key, $label) = @$row;
+        next  unless $n;                        #ignore row
+
+        if (grep { $key eq $_ } @$ignore) {     #zero width
+            #warn "$key / ignore\n";
+            push @cols, '';
+            next;
+        }
+
+        my @item = (); push @item, $self->fmt_row_body('data', $row);
+        if (@item) {
+            #warn "$key = $item[0]\n" if @item; #non-zero width
+            push @cols, $item[0];
+        } else {
+            push @cols, '';                     #zero-width _data_
+        }
     }
-    elsif ($mode eq 'form') {
-        @cols = ('4N', '30S', '500S', $self->rdb_data($mode), '6N', '6N',
-                 '15S', '15S', '500S');
-    }
-    #warn "[@cols]";
-    join("\t", @cols);
+    #warn "unf_row: [@cols]\n";
+    @cols;
 }
 
 

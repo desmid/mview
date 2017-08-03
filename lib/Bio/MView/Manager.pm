@@ -294,6 +294,9 @@ sub add_display {
     my $ref    = $bld->get_row_id($self->{'bp'}->{'ref_id'});
     my $refobj = $bld->get_row($self->{'bp'}->{'ref_id'});
 
+    #collect all the column labels
+    $self->{'labelwidths'} = [ $refobj->unf_col_widths ];
+
     #allow the Build instance to override the normal parameter
     #settings and to substitute specialised handlers for
     #'peculiar' alignments, eg., sequence versus secondary structure.
@@ -396,14 +399,30 @@ sub print {
     my ($self, $stm) = (@_, \*STDOUT);
 
     $self->{'posnwidth'} = 0;
-    $self->{'labwidth0'} = 0;
-    $self->{'labwidth1'} = 0;
-    $self->{'labwidth2'} = 0;
-    $self->{'labwidth3'} = 0;
-    $self->{'labwidth4'} = 0;
-    $self->{'labwidth5'} = 0;
-    $self->{'labwidth6'} = 0;
-    $self->{'labwidth7'} = 0;
+
+    # warn join(',', @{$self->{'labelwidths'}}), "\n";
+
+    #minimum column widths
+    $self->{'labwidth0'} = $self->{'labelwidths'}[0];
+    $self->{'labwidth1'} = $self->{'labelwidths'}[1];
+    $self->{'labwidth2'} = $self->{'labelwidths'}[2];
+    $self->{'labwidth3'} = $self->{'labelwidths'}[3];
+    $self->{'labwidth4'} = $self->{'labelwidths'}[4];
+    $self->{'labwidth5'} = $self->{'labelwidths'}[5];
+    $self->{'labwidth6'} = $self->{'labelwidths'}[6];
+    $self->{'labwidth7'} = $self->{'labelwidths'}[7];
+
+    # warn
+    #     "PW ", $self->{'posnwidth'},
+    #     "  L0 ", $self->{'labwidth0'},
+    #     "  L1 ", $self->{'labwidth1'},
+    #     "  L2 ", $self->{'labwidth2'},
+    #     "  L3 ", $self->{'labwidth3'},
+    #     "  L4 ", $self->{'labwidth4'},
+    #     "  L5 ", $self->{'labwidth5'},
+    #     "  L6 ", $self->{'labwidth6'},
+    #     "  L7 ", $self->{'labwidth7'},
+    #     "\n"   ;
 
     #consolidate field widths
     foreach (@{$self->{'display'}}) {
@@ -426,6 +445,18 @@ sub print {
         $self->{'labwidth7'} = $_->[0]->{'labwidth7'}
             if $_->[0]->{'labwidth7'} > $self->{'labwidth7'};
     }
+
+    # warn
+    #     "PW ", $self->{'posnwidth'},
+    #     "  L0 ", $self->{'labwidth0'},
+    #     "  L1 ", $self->{'labwidth1'},
+    #     "  L2 ", $self->{'labwidth2'},
+    #     "  L3 ", $self->{'labwidth3'},
+    #     "  L4 ", $self->{'labwidth4'},
+    #     "  L5 ", $self->{'labwidth5'},
+    #     "  L6 ", $self->{'labwidth6'},
+    #     "  L7 ", $self->{'labwidth7'},
+    #     "\n"   ;
 
     my $first = 1;
     #output

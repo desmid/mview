@@ -4,7 +4,6 @@
 package Bio::MView::Build::Format::PIR;
 
 use Bio::MView::Build::Align;
-use Bio::MView::Build::Row;
 
 use strict;
 use vars qw(@ISA);
@@ -29,10 +28,10 @@ sub parse {
 
 	#warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Simple_Row($rank,
-                                                     $rec->{'id'},
-                                                     $rec->{'desc'},
-                                                     $rec->{'seq'},
+	push @hit, new Bio::MView::Build::Row::PIR($rank,
+                                                   $rec->{'id'},
+                                                   $rec->{'desc'},
+                                                   $rec->{'seq'},
             );
     }
     #map { $_->print } @hit;
@@ -42,6 +41,19 @@ sub parse {
 
     return \@hit;
 }
+
+
+###########################################################################
+package Bio::MView::Build::Row::PIR;
+
+use Bio::MView::Build::Row;
+
+use strict;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Build::Simple_Row);
+
+sub ignore_columns { ['posn1', 'posn2']; }
 
 
 ###########################################################################

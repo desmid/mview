@@ -16,6 +16,8 @@ sub schema {[
     ]
 }
 
+sub ignore_columns { ['posn1', 'posn2']; }
+
 
 ###########################################################################
 package Bio::MView::Build::Format::HSSP;
