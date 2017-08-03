@@ -12,10 +12,12 @@ Version 1.62  2017-08-03
   (fasta, pir). Note: the default behaviour is to cut hit insertions to
   make the query contiguous. Thanks to Andrea Luchetti at Uni. Bologna for
   this request.
-- Added percent coverage, percent identity to output format converters
-  (clustal, fasta, msf, pir, plain, rdb).
-- Added corresponding column header information to ruler line and changed
-  default behaviour to display ruler.
+- Added percent coverage, percent identity to (clustal, fasta, msf, pir,
+  plain, rdb) output format converters.
+- Added blast/fasta search row number to (clustal, fasta, msf, pir, plain,
+  rdb) output format converters.
+- Added/moved column header information to ruler line in default and html
+  output modes; changed default behaviour to display ruler.
 - Changed colouring to allow 'find' colouring independently of 'alignment'
   colouring, so both can be applied (formerly 'find' colouring overrode any
   other). Thanks to Konstantin Kuleshov for this request.

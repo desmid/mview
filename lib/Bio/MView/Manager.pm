@@ -167,8 +167,7 @@ sub parse {
 
             if ($self->{'bp'}->{'mode'} ne 'new') {
                 my $conv = new Bio::MView::Convert($bld, $aln,
-                                                   $self->{'bp'}->{'moltype'},
-                                                   '-', '-');
+                                                   $self->{'bp'}->{'moltype'});
                 my $s;
 
                 $s = $conv->plain    if $self->{'bp'}->{'mode'} eq 'plain';

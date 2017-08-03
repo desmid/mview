@@ -58,6 +58,7 @@ sub rid   { $_[0]->{'rid'} }
 sub uid   { $_[0]->{'uid'} }
 sub cid   { $_[0]->{'cid'} }
 sub num   { $_[0]->{'num'} }
+sub num0  { $_[0]->{'num'} ne '' ? $_[0]->{'num'} : '0' }
 sub url   { $_[0]->{'url'} }
 sub sob   { $_[0]->{'seq'} }
 
@@ -222,7 +223,7 @@ my $FMT_SCHEMA = [
 
 my $RDB_SCHEMA = [
     # rdb  rkey       label      format
-    [ 1,   'num',     'row',     '4N'   ],
+    [ 1,   'num0',    'row',     '4N'   ], #don't convert zero to ''
     [ 2,   'cid',     'id',      '30S'  ],
     [ 3,   'desc',    'desc',    '500S' ],
     [ 4,   '_data_',  '',        ''     ],
