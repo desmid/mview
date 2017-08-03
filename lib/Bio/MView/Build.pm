@@ -574,12 +574,13 @@ sub build_base_alignment {
 					  keys %{$self->{'keep_uid'}});
     }
 
-    #compute columnwise data
-    $aln->set_coverage($self->{'ref_row'}->uid)
-        if defined $self->{'ref_row'};
-
-    $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
-	if defined $self->{'ref_row'};
+    unless ($self->{'keepinserts'}) {
+        #compute columnwise data
+        $aln->set_coverage($self->{'ref_row'}->uid)
+            if defined $self->{'ref_row'};
+        $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
+            if defined $self->{'ref_row'};
+    }
 
     #copy computed data into build row objects
     for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
