@@ -6,6 +6,7 @@ package Bio::MView::Convert;
 use strict;
 
 my $ROW_NUMBER_DELIM = ':';
+my $ROW_DATA_DELIM   = "\t";
 
 my %Known_Convert_Mode =
     (
@@ -101,13 +102,7 @@ sub pearson_row {
     };
 
     my $desc = sub {
-	my ($s, $d) = ('');
-	$d = $row->desc;         $s .= " $d"  if $d ne '';
-	$d = $row->unf_data('data'); $s .= " $d"  if $d ne '';
-	$d = $row->covr;         $s .= " $d"  if $d ne '';
-	$d = $row->pcid;         $s .= " $d"  if $d ne '';
-	$d = $row->posn1;        $s .= " $d"  if $d ne '';
-	$d = $row->posn2;        $s .= " $d"  if $d ne '';
+        my $s = $row->row_as_string($ROW_DATA_DELIM, ['num', 'cid', 'seq']);
 	$s . "\n";
     };
 
@@ -121,7 +116,7 @@ sub pearson_row {
 	$s;
     };
 
-    &$head . &$desc . &$sequence;
+    join($ROW_DATA_DELIM, (&$head, &$desc)) . &$sequence;
 }
 
 ###########################################################################
@@ -148,13 +143,7 @@ sub pir_row {
     };
 
     my $desc = sub {
-	my ($s, $d) = ('');
-	$d = $row->desc;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->unf_data('data'); $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->covr;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->pcid;         $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->posn1;        $s .= ($s eq '' ? $d : " $d")  if $d ne '';
-	$d = $row->posn2;        $s .= ($s eq '' ? $d : " $d")  if $d ne '';
+        my $s = $row->row_as_string($ROW_DATA_DELIM, ['num', 'cid', 'seq']);
 	$s = '.'  if $s eq '';
 	$s;
     };
@@ -178,11 +167,11 @@ sub pir_row {
 sub rdb {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
-    $s .= $bld->index2row(0)->rdb_row('attr') . "\n";
-    $s .= $bld->index2row(0)->rdb_row('form') . "\n";
+    $s .= $bld->index2row(0)->row_as_rdb_string('attr') . "\n";
+    $s .= $bld->index2row(0)->row_as_rdb_string('form') . "\n";
     foreach my $rid ($aln->visible_ids) {
         my $row = $bld->uid2row($rid);
-        $s .= $row->rdb_row('data') . "\n";
+        $s .= $row->row_as_rdb_string('data') . "\n";
     }
     \$s;
 }
