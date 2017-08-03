@@ -11,7 +11,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build);
 
 #there's a query sequence to account for an extra row
-sub has_query {1}
+sub is_search {1}
 
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;

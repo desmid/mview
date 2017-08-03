@@ -156,7 +156,7 @@ sub set_parameters {
     $self->{'aligned'} = 0;
 
     #how many expected rows of alignment
-    $self->{'show'} = $self->{'topn'} + $self->has_query;
+    $self->{'show'} = $self->{'topn'} + $self->is_search;
     $self;
 }
 
@@ -207,9 +207,9 @@ sub dump_parameters {
 sub known_parameters {{}}
 
 #override if children have an extra query sequence (children of Build::Search)
-sub has_query {0}
+sub is_search {0}
 
-#override if children need to do something special after during creation
+#override if children need to do something special during creation
 sub initialise_child {
     $_[0]->{scheduler} = new Bio::MView::Build::Scheduler;
     $_[0];
