@@ -1,24 +1,28 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-07-31
-- Now allows 'find' colouring independently of 'alignment' colouring so
-  both can be applied (formerly 'find' colouring overrode any other).
-  Thanks to Konstantin Kuleshov for this request.
-- Added column reporting percent coverage of hits with respect to reference
+Version 1.62  2017-08-03
+- Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
+- New column reporting percent coverage of hits with respect to reference
   sequence. Thanks to Konstantin Kuleshov for this request. WARNING!
   BACKWARDS INCOMPATIBILITY: the additional data column is inserted as
   label4 before the percent identity column, so label numbers 4 through 6
   are now 5 through 7.
-- Added column header information to ruler line and changed default
-  behaviour to display ruler.
-- Added '-keepinserts on|off' option for BLAST to preserve hit insertions
-  relative to the query; only works for MView output formats that don't
-  need to be aligned (FASTA, PIR). Note: the default behaviour is to cut
-  hit insertions to make the query contiguous. Thanks to Andrea Luchetti at
-  Uni. Bologna for this request.
-- Removed obscure '-con_coloring identity' option which contained a bug.
+- New '-keepinserts on|off' option for BLAST to preserve hit insertions
+  relative to the query for output formats that don't need to be aligned
+  (fasta, pir). Note: the default behaviour is to cut hit insertions to
+  make the query contiguous. Thanks to Andrea Luchetti at Uni. Bologna for
+  this request.
+- Added percent coverage, percent identity to output format converters
+  (clustal, fasta, msf, pir, plain, rdb).
+- Added corresponding column header information to ruler line and changed
+  default behaviour to display ruler.
+- Changed colouring to allow 'find' colouring independently of 'alignment'
+  colouring, so both can be applied (formerly 'find' colouring overrode any
+  other). Thanks to Konstantin Kuleshov for this request.
 - Added single colour colormap capability to consensus line colouring.
-- Updated to handle BLAST 2.6.0+ '-outfmt 7' changes.
+- Removed obscure '-con_coloring identity' option.
+- Fixed bug in output format conversions (clustal, fasta, msf, pir, plain,
+  rdb) that replaced unknown 'X' residues in blast query with normal gaps.
 
 Version 1.61  2016-11-14
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
