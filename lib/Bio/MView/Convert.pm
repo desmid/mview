@@ -6,7 +6,7 @@ package Bio::MView::Convert;
 use strict;
 
 my $ROW_NUMBER_DELIM = ':';
-my $ROW_DATA_DELIM   = "\t";
+my $ROW_DATA_DELIM   = ' ';
 
 my %Known_Convert_Mode =
     (

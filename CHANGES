@@ -39,9 +39,6 @@ Output formats (clustal, fasta, msf, pir, plain, rdb):
 
 - Added percent coverage, percent identity to output format converters.
 
-- Added tab-separation between data fields in description lines in format
-  converters.
-
 - Added search row number to output format converters as a prefix to the
   sequence identifier:
 
