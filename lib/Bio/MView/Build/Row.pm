@@ -402,22 +402,22 @@ sub schema_item_unformatted {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_unformatted_string($mode) ];
-            #warn "unf_row: $key => [$data]\n";
+            #warn "schema_item_unformatted: $key => [@$data]\n";
             return @$data;
         } else {
             $data = $self->$key;
-            #warn "unf_row: $key => [$data]\n";
+            #warn "schema_item_unformatted: $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_unformatted_string($mode) ];
-            #warn "unf_row: $key => [$data]\n";
+            #warn "schema_item_unformatted: $key => [@$data]\n";
             return @$data;
         } else {
             $data = $label;
-            #warn "unf_row: $key => [$data]\n";
+            #warn "schema_item_unformatted: $key => [$data]\n";
             return $data;
         }
     }
@@ -443,34 +443,34 @@ sub schema_item_formatted {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "fmt_row: $key => [$data]\n";
+            #warn "schema_item_formatted: $key => [$data]\n";
             return @$data;
         } else {
             $data = sprintf($fmt, $self->$key);
-            #warn "fmt_row: $key => [$data]\n";
+            #warn "schema_item_formatted: $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "fmt_row: $key => [$data]\n";
+            #warn "schema_item_formatted: $key => [$data]\n";
             return @$data;
         } else {
             $data = sprintf($fmt, $label);
-            #warn "fmt_row: $key => [$data]\n";
+            #warn "schema_item_formatted: $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'form') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "fmt_row: $key => [$data]\n";
+            #warn "schema_item_formatted: $key => [$data]\n";
             return @$data;
         } else {
             $data = $format;
         }
-        #warn "fmt_row: $key => [$data]\n";
+        #warn "schema_item_formatted: $key => [$data]\n";
         return $data;
     }
     ();
@@ -484,34 +484,34 @@ sub schema_item_as_rdb_list {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "rdb_row: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list: $key => [$data]\n";
             return @$data;
         } else {
             $data = $self->$key;
-            #warn "rdb_row: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list: $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "rdb_row: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list: $key => [$data]\n";
             return @$data;
         } else {
             $data = $label;
-            #warn "rdb_row: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list: $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'form') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "rdb_row: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list: $key => [$data]\n";
             return @$data;
         } else {
             $data = $format;
         }
-        #warn "rdb_row: $key => [$data]\n";
+        #warn "schema_item_as_rdb_list: $key => [$data]\n";
         return $data;
     }
     ();
@@ -545,9 +545,10 @@ sub row_as_string {
         my ($n, $key, $label, $format) = @$row;
         next  unless $n;                       #ignore row
         next if grep { $key eq $_ } @$ignore;  #ignore row
-        push @cols, $self->schema_item_as_rdb_list('data', $row);
+        my @tmp = $self->schema_item_as_rdb_list('data', $row);
+        push @cols, grep { $_ ne '' } @tmp;    #strip empty strings
     }
-    #warn "row_as_string: [@cols]\n";
+    #warn "row_as_string: [@cols]\n\n";
     join($delim, @cols);
 }
 
