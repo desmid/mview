@@ -634,7 +634,71 @@ sub color_by_type {
     $self;
 }
 
-sub color_by_identity { die "function undefined\n"; }
+sub color_by_identity {
+    my ($self, $othr) = (shift, shift);    #ignore second arg
+    my %par = @_;
+
+    #overkill!
+    return unless $self->{'type'} eq 'consensus';
+
+    $par{'css1'}     = 0
+       unless defined $par{'css1'};
+    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
+       unless defined $par{'symcolor'};
+    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
+       unless defined $par{'gapcolor'};
+    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
+       unless defined $par{'colormap'};
+    $par{'colormapc'}= $Default_Colormap
+       unless defined $par{'colormapc'};
+
+    my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    #warn "color_by_identity($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+       $cg = $self->{'string'}->raw($i);
+
+       #white space: no colour
+       next    if $self->{'string'}->is_space($cg);
+
+       #gap: gapcolour
+       if ($self->{'string'}->is_non_char($cg)) {
+           push @$color, $i, 'color' => $par{'gapcolor'};
+           next;
+       }
+
+       #consensus group symbol is singleton: choose colour
+       if (exists $Group->{$self->{'group'}}->[2]->{$cg}) {
+           if (keys %{$Group->{$self->{'group'}}->[2]->{$cg}} == 1) {
+
+               #refer to reference colormap NOT the consensus colormap
+               @tmp = $self->get_color_identity($cg, $par{'colormap'});
+
+               if (@tmp) {
+                   if ($par{'css1'}) {
+                       push @$color, $i, 'class' => $tmp[1];
+                   } else {
+                       push @$color, $i, 'color' => $tmp[0];
+                   }
+               } else {
+                   push @$color, $i, 'color' => $par{'symcolor'};
+               }
+
+               next;
+           }
+       }
+
+       #symbol not in consensus group: use contrast colour
+       push @$color, $i, 'color' => $par{'symcolor'};
+    }
+
+    $self->{'display'}->{'paint'} = 1;
+    $self;
+}
 
 sub color_by_mismatch { die "function undefined\n"; }
 

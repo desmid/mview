@@ -354,8 +354,11 @@ sub add_display {
                                           $self->{'ap'}->{'con_ignore'},
                                           $self->{'ap'}->{'con_gaps'},
                                          );
+
         $tmp->set_consensus_color_scheme(
+                               $aln, $ref,
 			       'coloringc' => $self->{'ap'}->{'con_coloring'},
+                               'colormap'  => $self->{'ap'}->{'aln_colormap'},
                                'colormapc' => $self->{'ap'}->{'con_colormap'},
                                'group'     => $self->{'ap'}->{'con_groupmap'},
                                'threshold' => $self->{'ap'}->{'con_threshold'},

@@ -392,13 +392,12 @@ sub check_format {
         return 'FASTA'    if $_ =~ /uvf/i;
         return 'FASTA'    if $_ =~ /tfast/i;
         return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
-	return FASTA(@_)  if $_ =~ /fasta/i;
+	return FASTA(@_)  if $_ =~ /fa/i;
         return 'Pearson'  if $_ =~ /pear/i;
     }
 
     #unknown format
-    $_[0] = $_[0] eq $SCRATCH ? "from standard input" : "of '$_[0]'";
-    warn "$PROG: can't determine format $_[0] - aborting\n";
+    warn "$PROG: can't determine format - aborting\n";
     cleanup();
     exit 1;
 }
@@ -890,9 +889,7 @@ convert:  sub { __ARGS;
 	       } elsif (__OV =~ /^a/i) {
 		   __PV = 'any';
 	       } elsif (__OV =~ /^i/i) {
-                   __WARN("coloring scheme was removed '-__ON=__OV'");
-               } else {
-		   __WARN("bad option '-__ON=__OV'");
+                   __PV = 'identity';
                }
                unless (defined __PV and defined
 		       Bio::MView::Manager::check_consensus_color_scheme(__PV)) {

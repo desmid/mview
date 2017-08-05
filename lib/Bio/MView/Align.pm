@@ -93,6 +93,7 @@ my %Known_Consensus_Color_Schemes =
      #name
      'none'       => 1,
      'any'        => 1,
+     'identity'   => 1,
     );
 
 #static load the $Colormaps hash.
@@ -715,6 +716,7 @@ sub set_color_scheme {
     }
 
     elsif ($self->{'coloring'} eq 'identity') {
+        warn $self->{'colormap'};
 	$self->color_by_identity($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
 				 'symcolor'  => $self->{'symcolor'},
@@ -770,7 +772,7 @@ sub set_color_scheme {
 }
 
 sub set_consensus_color_scheme {
-    my $self = shift;
+    my ($self, $aln, $ref) = (shift, shift, shift);
 
     $self->set_parameters(@_);
 
@@ -786,6 +788,16 @@ sub set_consensus_color_scheme {
 			     'symcolor'  => $self->{'symcolor'},
 			     'gapcolor'  => $self->{'gapcolor'},
 			     'css1'      => $self->{'css1'},
+			    );
+    }
+
+    elsif ($self->{'coloringc'} eq 'identity') {
+	$self->color_consensus_by_identity($aln, $ref,
+                                 'colormap'  => $self->{'colormap'},
+                                 'colormapc' => $self->{'colormapc'},
+			         'symcolor'  => $self->{'symcolor'},
+			         'gapcolor'  => $self->{'gapcolor'},
+			         'css1'      => $self->{'css1'},
 			    );
     }
 
@@ -937,6 +949,22 @@ sub color_by_consensus_group {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_group($r, @_);
+    }
+    $self;
+}
+
+#propagate colour scheme to row objects
+sub color_consensus_by_identity {
+    my ($self, $aln, $id) = (shift, shift, shift);
+
+    my $ref = $aln->item($id);
+    return $self  unless defined $ref;
+
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_identity($ref, @_);
     }
     $self;
 }

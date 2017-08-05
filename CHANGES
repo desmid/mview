@@ -6,9 +6,9 @@ Changes:
 
 - Added new column reporting percent coverage of hits with respect to
   reference sequence. Thanks to Konstantin Kuleshov for this request.
-  WARNING! COMMAND LINE OPTIONS BACKWARDS INCOMPATIBILITY: the additional
-  data column is inserted as label4 before the percent identity column, so
-  label numbers 4 through 6 are now 5 through 7.
+  WARNING! BACKWARDS INCOMPATIBILITY: the additional data column is
+  inserted as label4 before the percent identity column, so label numbers 4
+  through 6 are now 5 through 7.
 
 - Added new '-keepinserts on|off' option for BLAST to preserve hit
   insertions relative to the query. This is useful when dumping a search to
@@ -28,8 +28,6 @@ Colouring:
   other). Thanks to Konstantin Kuleshov for this request.
 
 - Added single colour colormap capability to consensus line colouring.
-
-- Removed obscure '-con_coloring identity' option.
 
 Input formats:
 
