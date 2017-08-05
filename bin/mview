@@ -2,7 +2,7 @@
 
 # Copyright (C) 1997-2017 Nigel P. Brown
 
-my $VERSION  = '1.62f';
+my $VERSION  = '1.62';
 my $PATCH    = '';
 
 my $PROJECT  = 'MView';
@@ -58,7 +58,8 @@ my ($VERB_NULL, $VERB_FILE, $VERB_ARGV, $VERB_FORM, $VERB_OPTS) = (0,1,2,4,8);
 my ($stm, $com, $opt, $par) = (\*STDOUT);
 
 ###########################################################################
-$SIG{'INT'} = sub { warn "$PROG: exiting on interrupt\n"; &cleanup(); exit 1 };
+$SIG{'INT'} =
+    sub { warn "$PROG: interrupted - aborting.\n"; &cleanup(); exit 1 };
 
 $com = new Getopt($PROG, \*DATA)->getoptions(\@ARGV);
 $opt = $com->get_option_hash;
@@ -122,7 +123,8 @@ if ($opt->{'listgroups'}) {
 #read from stdin?
 unless (@ARGV or $opt->{'noparse'}) {
     warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
-    open(TMP, ">$SCRATCH") or die "$PROG: nothing on stdin - exiting!\n";
+    open(TMP, ">$SCRATCH") or
+        die "$PROG: can't save to temporary file - aborting.\n";
     while (<>) { print TMP }
     close TMP;
     push @ARGV, $SCRATCH;
@@ -395,7 +397,8 @@ sub check_format {
     }
 
     #unknown format
-    warn "$PROG: can't determine format of '$_[0]'\n";
+    $_[0] = $_[0] eq $SCRATCH ? "from standard input" : "of '$_[0]'";
+    warn "$PROG: can't determine format $_[0] - aborting\n";
     cleanup();
     exit 1;
 }
@@ -579,9 +582,9 @@ convert:  sub { __ARGS;
 		} elsif (__OV =~ /^rd/i) {  #RDB
 		    __PV = 'rdb'; __OPTION{'pre'} = 0;
 		} else {
-                    __WARN("unknown output format '-__ON=__OV'.");
+                    __WARN("bad option '-__ON=__OV'");
                     __WARN("known types are: ", join(",",
-                      Bio::MView::Manager::check_convert_mode), "\n");
+                      Bio::MView::Manager::check_convert_mode));
 		}
 		__PV;
 	  }
@@ -644,9 +647,9 @@ convert:  sub { __ARGS;
 		return 'reference' if __OV =~ /^r/;
 		return 'aligned'   if __OV =~ /^a/;
 	        return 'hit'       if __OV =~ /^h/;
-		__WARN("bad setting '-__ON=__OV'.");
+		__WARN("bad option '-__ON=__OV'");
 		__WARN("known percent identity methods are: ", join(",",
-		Bio::MView::Manager::check_identity_mode), "\n");
+		Bio::MView::Manager::check_identity_mode));
 	      }
 
 OPTION:   reference
@@ -678,7 +681,7 @@ default:  100
 param:
 convert:  sub { __ARGS;
 		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
+		    __WARN("bad option '-__ON=__OV', want range 0..100");
 		}
 		__OV;
 	  }
@@ -690,7 +693,7 @@ default:  0
 param:
 convert:  sub { __ARGS;
 		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad setting '-__ON=__OV', want range 0..100.");
+		    __WARN("bad option '-__ON=__OV', want range 0..100");
 		}
 		__OV;
 	  }
@@ -720,13 +723,13 @@ convert:  sub { __ARGS;
             if (__OV ne 'all') {
 		@tmp = split(/:/, __OV);
 		if (@tmp != 2) {
-		    __WARN("bad range setting '-__ON=__OV', want M:N.");
+		    __WARN("bad range setting '-__ON=__OV', want M:N");
 		} else {
 		    __TEST('i', __ON, $tmp[0]);
 		    __TEST('i', __ON, $tmp[1]);
 		    #ignore range order, but check for negative values
 		    if ($tmp[0] < 1 or $tmp[1] < 1) {
-			__WARN("bad range setting '-__ON=__OV', want M:N.");
+			__WARN("bad range setting '-__ON=__OV', want M:N");
 		    }
 		}
             }
@@ -756,9 +759,9 @@ convert:  sub { __ARGS;
               }
               unless (defined __PV and defined
 	      	       Bio::MView::Manager::check_molecule_type(__PV)) {
-	      	   __WARN("unknown molecule type '-__ON=__OV'.");
-	      	   __WARN("known types are: ", join(",",
-	      	     Bio::MView::Manager::check_molecule_type), "\n");
+	      	   __WARN("bad option '-__ON=__OV'");
+	      	   __WARN("known molecule types are: ", join(",",
+	      	     Bio::MView::Manager::check_molecule_type));
 	      }
 	      (__PARAM{'def_aln_colormap'},
 	       __PARAM{'def_con_colormap'}) =
@@ -796,9 +799,9 @@ convert:  sub { __ARGS;
               }
               unless (defined __PV and defined
 	      	       Bio::MView::Manager::check_alignment_color_scheme(__PV)) {
-	      	   __WARN("unknown coloring scheme '-__ON=__OV'.");
+	      	   __WARN("bad option '-__ON=__OV'");
 	      	   __WARN("known color schemes are: ", join(",",
-	      	   Bio::MView::Manager::check_alignment_color_scheme), "\n");
+	      	   Bio::MView::Manager::check_alignment_color_scheme));
 	      }
               __PV;
           }
@@ -815,9 +818,9 @@ convert:  sub { __ARGS;
               }
               __PV = Bio::MView::Manager::check_colormap(__PV);
               unless (defined __PV) {
-                  __WARN("unknown colormap '-__ON=__OV'.");
-		  __WARN("known maps are: ", join(",",
-			 Bio::MView::Manager::check_colormap), "\n");
+                  __WARN("bad option '-__ON=__OV'");
+		  __WARN("known colormaps are: ", join(",",
+			 Bio::MView::Manager::check_colormap));
               }
 	      __DELETE_PARAM('def_aln_colormap');
               __PV;
@@ -835,9 +838,9 @@ convert:  sub { __ARGS;
               }
               __PV = Bio::MView::Manager::check_groupmap(__PV);
               unless (defined __PV) {
-                  __WARN("unknown groupmap '-__ON=__OV'.");
-		  __WARN("known maps are: ", join(",",
-			 Bio::MView::Manager::check_groupmap), "\n");
+                  __WARN("bad option '-__ON=__OV'");
+		  __WARN("known group maps are: ", join(",",
+			 Bio::MView::Manager::check_groupmap));
               }
               __DELETE_PARAM('def_aln_groupmap');
               __PV;
@@ -850,7 +853,7 @@ default:  70
 param:    aln_threshold
 convert:  sub { __ARGS;
               if (__OV < 50 or __OV > 100) {
-                  __WARN("bad value for '-__ON=__OV' must be in range 50..100.");
+                  __WARN("bad value for '-__ON=__OV' must be in range 50..100");
               }
               [ __OV ];
           }
@@ -863,9 +866,9 @@ param:    aln_ignore
 convert:  sub { __ARGS;
             __PV = Bio::MView::Manager::check_ignore_class(__OV);
             if (!defined __PV) {
-              __WARN("unknown alignment ignore mode '-__ON=__OV'.");
+              __WARN("bad option '-__ON=__OV'");
               __WARN("known ignore classes are: ", join(",",
-                     Bio::MView::Manager::check_ignore_class), "\n");
+                     Bio::MView::Manager::check_ignore_class));
             }
             __PV;
           }
@@ -886,12 +889,15 @@ convert:  sub { __ARGS;
 		   __PV = 'none';
 	       } elsif (__OV =~ /^a/i) {
 		   __PV = 'any';
+	       } elsif (__OV =~ /^i/i) {
+                   __WARN("coloring scheme was removed '-__ON=__OV'");
+               } else {
+		   __WARN("bad option '-__ON=__OV'");
                }
                unless (defined __PV and defined
 		       Bio::MView::Manager::check_consensus_color_scheme(__PV)) {
-		  __WARN("unknown coloring scheme '-__ON=__OV'.");
 		  __WARN("known color schemes are: ", join(",",
-			 Bio::MView::Manager::check_consensus_color_scheme), "\n");
+			 Bio::MView::Manager::check_consensus_color_scheme));
 	       }
                __PV;
           }
@@ -909,9 +915,9 @@ convert:  sub { __ARGS;
               __PV = __PARAM{'def_con_colormap'} unless defined __OV;
               __PV = Bio::MView::Manager::check_colormap(__PV);
               unless (defined __PV) {
-                  __WARN("unknown colormap '-__ON=__OV'.");
-		  __WARN("known maps are: ", join(",",
-			 Bio::MView::Manager::check_colormap), "\n");
+                  __WARN("bad option '-__ON=__OV'");
+		  __WARN("known consensus colomaps are: ", join(",",
+			 Bio::MView::Manager::check_colormap));
               }
               __DELETE_PARAM('def_con_colormap');
               __PV;
@@ -929,9 +935,9 @@ convert:  sub { __ARGS;
               }
               __PV = Bio::MView::Manager::check_groupmap(__PV);
               unless (defined __PV) {
-                  __WARN("unknown groupmap '-__ON=__OV'.");
-		  __WARN("known maps are: ", join(",",
-			 Bio::MView::Manager::check_groupmap), "\n");
+                  __WARN("bad option '-__ON=__OV'");
+		  __WARN("known consensus group maps are: ", join(",",
+			 Bio::MView::Manager::check_groupmap));
               }
               __DELETE_PARAM('def_con_groupmap');
               __PV;
@@ -946,7 +952,7 @@ convert:  sub { __ARGS;
               local $_;
               foreach (@{__PV}) {
                 if ($_ < 50 or $_ > 100) {
-                  __WARN("bad range for '-__ON=$_' must be in range 50..100.");
+                  __WARN("bad range for '-__ON=$_' must be in range 50..100");
                 }
               }
               __PV;
@@ -960,9 +966,9 @@ param:    con_ignore
 convert:  sub { __ARGS;
             __PV = Bio::MView::Manager::check_ignore_class(__OV);
             if (!defined __PV) {
-              __WARN("unknown consensus ignore mode '-__ON=__OV'.");
-              __WARN("known ignore classes are: ", join(",",
-                     Bio::MView::Manager::check_ignore_class), "\n");
+              __WARN("bad option '-__ON=__OV'");
+              __WARN("known consensus ignore classes are: ", join(",",
+                     Bio::MView::Manager::check_ignore_class));
             }
             __PV;
           }
@@ -1088,7 +1094,7 @@ convert:  sub { __ARGS;
 		    __OPTION{__ON} = 0;
 		    return 0;
 		}
-		__WARN ("unknown setting '-__ON=__OV'");
+		__WARN ("bad option '-__ON=__OV'");
 	    }
 
 OPTION:   title
@@ -1179,7 +1185,7 @@ action:   sub { __ARGS;
 		} elsif (__OV eq 'on') {
 		    return $Bio::SRS::Type = 1;
 		} else {
-		    __WARN("bad SRS setting, want {off,on}.");
+		    __WARN("bad SRS setting, want {off,on}");
 		}
 		return $Bio::SRS::Type = 1;    #default
 	    }
@@ -1207,9 +1213,9 @@ convert:  sub { __ARGS;
 		return 'all'      if __OV =~ /^a/;
 		return 'discrete' if __OV =~ /^d/;
 	        return 'ranked'   if __OV =~ /^r/;
-		__WARN("bad setting '-__ON=__OV'.");
+		__WARN("bad option '-__ON=__OV'");
 		__WARN("known hsp methods are: ", join(",",
-		Bio::MView::Manager::check_hsp_tiling), "\n");
+		Bio::MView::Manager::check_hsp_tiling));
 	      }
 
 OPTION:   maxeval
@@ -1219,7 +1225,7 @@ param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
-		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
+		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
 		__OV;
 	  }
 
@@ -1230,7 +1236,7 @@ param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
-		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
+		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
 		__OV;
 	  }
 
@@ -1250,7 +1256,7 @@ convert:  sub { __ARGS;
 		    } elsif ($_ eq '*') {
 			return [];
 		    } else {
-			__WARN("bad value for '-__ON=$_' choose from '{p,m,both,*}'");
+			__WARN("bad value for '-__ON=$_', choose from '{p,m,both,*}'");
 		    }
 		}
             }
@@ -1280,7 +1286,7 @@ param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
-		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
+		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
 		__OV;
 	  }
 
@@ -1292,7 +1298,7 @@ param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
-		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
+		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
 		__OV;
 	  }
 
@@ -1390,7 +1396,7 @@ convert:  sub { __ARGS;
 		    } elsif (/^\d+$/) {
 			push @tmp, $_;
 		    } else {
-			__WARN("bad value for '-__ON=$_' choose from '{1..N,first,last,all,*}'");
+			__WARN("bad value for '-__ON=$_', choose from '{1..N,first,last,all,*}'");
 		    }
 		}
                 return [ @tmp ];
@@ -1417,7 +1423,7 @@ param:
 convert:  sub { __ARGS;
 		return undef    if __OV eq 'unlimited';
 		__TEST('f', __ON, __OV);
-		__WARN("bad setting '-__ON=__OV', want > 0.") if __OV < 0;
+		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
 		__OV;
 	  }
 
@@ -1485,7 +1491,7 @@ convert:  sub { __ARGS;
 		    } elsif (/^\d+$/) {
 			push @tmp, $_;
 		    } else {
-			__WARN("bad value for '-__ON=$_' choose from '{1..N,first,last,all,*}'");
+			__WARN("bad value for '-__ON=$_', choose from '{1..N,first,last,all,*}'");
 		    }
 		}
                 return [ @tmp ];

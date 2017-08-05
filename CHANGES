@@ -1,6 +1,6 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version 1.62  2017-08-04
+Version 1.62  2017-08-06
 
 Changes:
 
@@ -29,7 +29,7 @@ Colouring:
 
 - Added single colour colormap capability to consensus line colouring.
 
-- Removed obscure and buggy '-con_coloring identity' option.
+- Removed obscure '-con_coloring identity' option.
 
 Input formats:
 
@@ -43,15 +43,15 @@ Output formats (clustal, fasta, msf, pir, plain, rdb):
   sequence identifier:
 
      0:test                     (query row)
-     8:emb|AL021726|DMC171E4    (search hit 8) or
+     8:emb|AL021726|DMC171E4    (search hit 8)
      8.2:emb|AL021726|DMC171E4  (search hit 8, discrete HSP 2).
 
 - rdb output mode now reports search query as row 0 (was empty before).
 
 Bugs fixed:
 
-- Fixed bug in output format conversions that replaced unknown 'X' residues
-  in blast query with normal gaps.
+- Fixed bug in output format converters that replaced unknown 'X' residues
+  in blast query with gaps.
 
 Version 1.61  2016-11-14
 
