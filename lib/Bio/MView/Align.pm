@@ -228,6 +228,15 @@ sub set_parameters {
     $self;
 }
 
+sub get_parameters {
+    my $self = shift;
+    my @tmp = ();
+    foreach my $k (keys %Known_Parameter) {
+        push @tmp, $k, $self->{$k};
+    }
+    return @tmp;
+}
+
 sub dump_parameters {
     my $self = shift;
     my $s = "Bio::MView::Align:\n";
@@ -716,7 +725,6 @@ sub set_color_scheme {
     }
 
     elsif ($self->{'coloring'} eq 'identity') {
-        warn $self->{'colormap'};
 	$self->color_by_identity($self->{'ref_id'},
 				 'colormap'  => $self->{'colormap'},
 				 'symcolor'  => $self->{'symcolor'},
@@ -1010,15 +1018,9 @@ sub do_gc {
     $self;
 }
 
-#compute effective all pairwise alignment and keep only those sequences
-#with $min <= pairwise identity <= $max; also keep any sequences with id's
-#supplied as remaining arguments. The mode argument determines which
-#sequence length is used to normalise: 'reference', 'aligned', 'hit'.
-sub prune_all_identities {
-    my ($self, $mode, $min, $max, $topn) = (shift, shift, shift, shift, shift);
-    my (@obj, %keep, $ref, $row);
-
-    @obj = ();
+sub prune_identities {
+    my ($self, $refid, $mode, $min, $max, $topn) = (shift, shift, shift, shift,
+                                                    shift, shift);
     $min = 0    if $min < 0;
     $max = 100  if $max > 100;
 
@@ -1026,71 +1028,38 @@ sub prune_all_identities {
     return $self  unless $min > 0 or $max < 100;
     #return $self  if $min > $max;  #silly combination
 
-    #ensure no replicates in keep list
+    #ensure no replicates in show list
+    my %show;
     foreach my $i (@_) {
-	$ref = $self->id2row($i);
-	$keep{$ref} = $ref  if defined $ref;
+	my $ref = $self->id2row($i);
+	$show{$ref} = $ref  if defined $ref;
     }
 
-    #prime keep list
-    @obj = ();
+    #the reference row
+    my $ref = $self->item($refid);
+    return $self  unless defined $ref;
 
-    #compare all rows not on keep list against latter and add thereto if
-    #sufficiently dissimilar
+    #prime show list
+    my @obj = ();
+
     foreach my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 
 	#enforce limit on number of rows
 	last  if $topn > 0 and @obj == $topn;
 
-	if (exists $keep{$r}) {
+	if (exists $show{$r}) {
 	    push @obj, $r;
 	    next;
 	}
 
-	foreach $ref (@obj) {
-	    my $pcid = $r->compute_identity_to($ref, $mode);
-	    #store object if %identity satisfies cutoff for all kept hits
-	    if ($pcid < $min or $pcid > $max) {
-		$r = 0;
-		last;
-	    }
-	}
-	
-	if ($r) {
-	    #warn "passed ", $r->id, "\n";
-	    push @obj, $r;
-	}
-
-	#warn join(" ", map { $_->id } @obj), "\n";
+	#store object if %identity satisfies cutoff
+        my $pcid = $r->compute_identity_to($ref, $mode);
+        next  if $pcid < $min or $pcid > $max;
+        #warn $r->id, " $pcid\n";
+        push @obj, $r;
     }
-
-    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
-}
-
-#generate a new alignment from an existing one with extra information
-#showing %identities and identical symbols with respect to some supplied
-#identifier. only keep lines with %identity to reference <= $limit.
-sub prune_identities_gt {
-    my ($self, $id, $limit, $mode) = @_;
-    my ($ref, @obj, $row, $val);
-    
-    $ref = $self->item($id);
-    return  $self unless defined $ref;
-
-    @obj = ();
-
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
-
-	#store object if %identity satisfies cutoff OR if the object was
-	#the reference object!
-	if (($val = $row->compute_identity_to($ref, $mode)) <= $limit or
-	    $r->id eq $id) {
-	    $r->set_display('label5'=>sprintf("%.1f%%", $val));
-	    push @obj, $r;
-	}
-    }
+    #warn join(" ", map { $_->id } @obj), "\n";
 
     new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
 }
@@ -1127,7 +1096,7 @@ sub build_conservation_row {
 #consensus sequences at specified percent thresholds
 sub build_consensus_rows {
     my ($self, $group, $threshold, $ignore, $con_gaps) = @_;
-    
+
     $self->set_parameters('group' => $group, 'ignore' => $ignore,
 			  'con_gaps' => $con_gaps);
 
@@ -1140,7 +1109,6 @@ sub build_consensus_rows {
     }
 
     my @obj = ();
-    
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
@@ -1219,7 +1187,7 @@ sub conservation {
 	for my $group (@$values) { $dict->{$group} = 0 }
 	$dict;
     };
-    
+
     my $addcons = sub {
 	my ($dict, $char) = @_;
 	for my $group (keys %$dict) {

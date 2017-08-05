@@ -21,10 +21,14 @@ Changes:
   output modes; changed default behaviour to display ruler (-ruler on is
   now the default).
 
+- Changed percent identity filtering from all pairwise comparisons to
+  simple pairwise comparison with reference row. WARNING! BACKWARDS
+  INCOMPATIBILITY: changes meaning of '-minident' and '-maxident' options.
+
 Colouring:
 
-- Changed colouring to allow 'find' colouring independently of 'alignment'
-  colouring, so both can be applied (formerly 'find' colouring overrode any
+- Changed to allow 'find' colouring independently of 'alignment' colouring,
+  so both can be applied (formerly 'find' colouring overrode any
   other). Thanks to Konstantin Kuleshov for this request.
 
 - Added single colour colormap capability to consensus line colouring.

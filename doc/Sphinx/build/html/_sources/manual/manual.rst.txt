@@ -1381,13 +1381,13 @@ to be generated, so to get the best 10 hits, use the option ``-top 10``.
 
 **Filtering by percent identity**
 
-You also can squeeze more out of a deep alignment and get a less biased view
-if a threshold on the pairwise sequence identity is set using ``-maxident N``,
-where N is some value between 0 and 100.
+The ``-minident N`` option will report only those hits above some threshold
+percent identity N compared to the reference row; useful for looking for close
+matches to the query or other reference sequence.
 
-Similarly, ``-minident N`` will report only those hits above some threshold
-percent identity; useful for looking for close matches to the query or some
-reference sequence.
+Similarly, you can exclude the strong matches using ``-maxident N``.
+
+Both options can be combined.
 
 **Showing and hiding sets of rows**
 

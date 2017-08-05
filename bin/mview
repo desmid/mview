@@ -635,7 +635,7 @@ convert:  sub { __ARGS;
 ###########################################################################
 [IDENTITY]
 
-text: "Percent identity calculations"
+text: "Percent identity calculations:"
 
 OPTION:   pcid
 usage:    "Compute percent identities with respect to __CHOOSE(Bio::MView::Manager::check_identity_mode)"
@@ -674,7 +674,7 @@ convert:  sub { __ARGS;
 	  }
 
 OPTION:   maxident
-usage:    "Only report sequences with percent identity <= N"
+usage:    "Only report sequences with percent identity <= N compared to reference"
 type:     f
 default:  100
 param:
@@ -686,7 +686,7 @@ convert:  sub { __ARGS;
 	  }
 
 OPTION:   minident
-usage:    "Only report sequences with percent identity >= N"
+usage:    "Only report sequences with percent identity >= N compared to reference"
 type:     f
 default:  0
 param:

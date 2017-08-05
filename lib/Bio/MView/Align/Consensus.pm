@@ -24,7 +24,7 @@ $Default_DNA_Group    = 'D1';     #default consensus scheme name
 
 $Group_Any            = '.';      #key for non-consensus group
 $Default_Group_Any    = '.';      #default symbol for non-consensus group
-$Default_Ignore       = '';       #default ignore classes setting
+$Default_Ignore       = 'none';   #default ignore classes setting
 $Group                = {};       #static hash of consensus schemes
 
 

@@ -1172,12 +1172,11 @@ a BLASTN search hit matching the reverse complement of the query strand).</p>
 alignment speeds things up a lot as there&#8217;s less parsing and less formatting
 to be generated, so to get the best 10 hits, use the option <code class="docutils literal"><span class="pre">-top</span> <span class="pre">10</span></code>.</p>
 <p><strong>Filtering by percent identity</strong></p>
-<p>You also can squeeze more out of a deep alignment and get a less biased view
-if a threshold on the pairwise sequence identity is set using <code class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></code>,
-where N is some value between 0 and 100.</p>
-<p>Similarly, <code class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></code> will report only those hits above some threshold
-percent identity; useful for looking for close matches to the query or some
-reference sequence.</p>
+<p>The <code class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></code> option will report only those hits above some threshold
+percent identity N compared to the reference row; useful for looking for close
+matches to the query or other reference sequence.</p>
+<p>Similarly, you can exclude the strong matches using <code class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></code>.</p>
+<p>Both options can be combined.</p>
 <p><strong>Showing and hiding sets of rows</strong></p>
 <p>Rows can be dropped explicitly using the <code class="docutils literal"><span class="pre">-hide</span></code> option. This can be
 supplied a comma-separated list of row identifiers, rank numbers, rank number
@@ -1362,7 +1361,7 @@ perl may affect memory use.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 05 Aug 2017.
+      Last updated on 06 Aug 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

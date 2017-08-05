@@ -360,10 +360,10 @@ sub header {
 	$s .= "Pairwise identity limits: $self->{'minident'}-$self->{'maxident'}%";
 	$s .= " normalised by $self->{'pcid'} length.\n";
     } elsif ($self->{'minident'} > 0) {
-	$s .= "Minimum pairwise identity: $self->{'minident'}%";
+	$s .= "Minimum identity: $self->{'minident'}%";
 	$s .= " normalised by $self->{'pcid'} length.\n";
     } elsif ($self->{'maxident'} < 100) {
-	$s .= "Maximum pairwise identity: $self->{'maxident'}%";
+	$s .= "Maximum identity: $self->{'maxident'}%";
 	$s .= " normalised by $self->{'pcid'} length.\n";
     } elsif ($self->{'showpcid'}) {
 	$s .= "Identities normalised by $self->{'pcid'} length.\n";
@@ -388,7 +388,7 @@ sub next {
 
     #drop old data structures: GC *before* next assignment!
     $self->{'align'} = $self->{'index2row'} = undef;
-    
+
     #extract an array of row objects
     $self->{'index2row'} = $self->parse;
     #Universal::vmstat("Build->next(parse) done");
@@ -467,7 +467,7 @@ sub build_indices {
     foreach $i (@{$self->{'index2row'}}) {
 	$self->{'uid2row'}->{$i->uid} = $i;
     }
-    
+
     #get the reference row handle, if any
     if (@id = $self->map_id($self->{'ref_id'})) {
 	$self->{'ref_row'} = $id[0];
@@ -496,7 +496,7 @@ sub build_indices {
     #any previous invisibility set by discard list.
     $self->{'keep_uid'}->{$self->{'ref_row'}->uid} = 1
 	if defined $self->{'ref_row'};
-    
+
     #hash the nopslist: the 'uid' key is used so that the
     #underlying Align class can recognise rows. don't override any previous
     #visibility set by discard list.
@@ -565,21 +565,25 @@ sub build_base_alignment {
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
 			 'hidehash' => $self->{'hide_uid'});
 
-    #filter alignment based on pairwise %identity, if requested
-    if ($self->{'minident'} > 0 or $self->{'maxident'} < 100) {
-	$aln = $aln->prune_all_identities($self->{'pcid'},
-					  $self->{'minident'},
-					  $self->{'maxident'},
-					  $self->{'show'},
-					  keys %{$self->{'keep_uid'}});
+    #filter alignment based on %identity to reference
+    if (($self->{'minident'} > 0 or $self->{'maxident'} < 100)
+        and defined $self->{'ref_row'}) {
+        my $tmp = $aln->prune_identities($self->{'ref_row'}->uid,
+                                         $self->{'pcid'},
+                                         $self->{'minident'},
+                                         $self->{'maxident'},
+                                         $self->{'show'},
+                                         keys %{$self->{'keep_uid'}});
+        $tmp->set_parameters($aln->get_parameters);
+        $aln = $tmp;
     }
 
+    #compute columnwise data for aligned output
     unless ($self->{'keepinserts'}) {
-        #compute columnwise data
-        $aln->set_coverage($self->{'ref_row'}->uid)
-            if defined $self->{'ref_row'};
-        $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'})
-            if defined $self->{'ref_row'};
+        if (defined $self->{'ref_row'}) {
+            $aln->set_coverage($self->{'ref_row'}->uid);
+            $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'});
+        }
     }
 
     #copy computed data into build row objects
@@ -658,7 +662,7 @@ sub strip_query_gaps {
 
     #no gaps in query
     return    if index($$query, '-') < 0;
-    
+
     #iterate over query frag symbols
     while ( ($i = index($$query, '-')) >= 0 ) {
 	
