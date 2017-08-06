@@ -316,24 +316,27 @@ sub add_display {
     #warn $self->dump_parameters();
 
     #attach the alignment
+    #if ($self->{'bp'}->{'alignment'} && $self->{'html'}) {
     if ($self->{'bp'}->{'alignment'}) {
-        $aln->set_color_scheme
-	    (
-	     'ref_id'      => $ref,
-	     'coloring'    => $self->{'ap'}->{'aln_coloring'},
-	     'colormap'    => $self->{'ap'}->{'aln_colormap'},
-	     'colormapf'   => $self->{'ap'}->{'fnd_colormap'},
-	     'group'       => $self->{'ap'}->{'aln_groupmap'},
-	     'threshold'   => $self->{'ap'}->{'aln_threshold'},
-	     'ignore'      => $self->{'ap'}->{'aln_ignore'},
-	     'con_gaps'    => $self->{'ap'}->{'con_gaps'},
-	     'css1'        => $self->{'ap'}->{'css1'},
-	     'alncolor'    => $self->{'ap'}->{'alncolor'},
-	     'labcolor'    => $self->{'ap'}->{'labcolor'},
-	     'symcolor'    => $self->{'ap'}->{'symcolor'},
-	     'gapcolor'    => $self->{'ap'}->{'gapcolor'},
-	     'find'        => $self->{'ap'}->{'find'},
-	    );
+        if ($self->{'html'}) {
+            $aln->set_color_scheme
+                (
+                 'ref_id'      => $ref,
+                 'coloring'    => $self->{'ap'}->{'aln_coloring'},
+                 'colormap'    => $self->{'ap'}->{'aln_colormap'},
+                 'colormapf'   => $self->{'ap'}->{'fnd_colormap'},
+                 'group'       => $self->{'ap'}->{'aln_groupmap'},
+                 'threshold'   => $self->{'ap'}->{'aln_threshold'},
+                 'ignore'      => $self->{'ap'}->{'aln_ignore'},
+                 'con_gaps'    => $self->{'ap'}->{'con_gaps'},
+                 'css1'        => $self->{'ap'}->{'css1'},
+                 'alncolor'    => $self->{'ap'}->{'alncolor'},
+                 'labcolor'    => $self->{'ap'}->{'labcolor'},
+                 'symcolor'    => $self->{'ap'}->{'symcolor'},
+                 'gapcolor'    => $self->{'ap'}->{'gapcolor'},
+                 'find'        => $self->{'ap'}->{'find'},
+                );
+        }
         #Universal::vmstat("set_color_scheme done");
 	$aln->append_display($dis, $self->gc_flag);
         #Universal::vmstat("alignment added");

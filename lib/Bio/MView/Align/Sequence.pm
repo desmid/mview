@@ -132,6 +132,45 @@ sub get_color {
     return 0;    #no match
 }
 
+sub color_none {
+    my $self = shift;
+    my %par = @_;
+
+    return  unless $self->{'type'} eq 'sequence';
+
+    $par{'css1'}     = 0
+	unless defined $par{'css1'};
+    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
+	unless defined $par{'symcolor'};
+    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
+	unless defined $par{'gapcolor'};
+
+    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+	$c = $self->{'string'}->raw($i);
+
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next    if $self->{'string'}->is_space($c);
+
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    next;
+	}
+
+        push @$color, $i, 'color' => $par{'symcolor'};
+    }
+
+    $self->{'display'}->{'paint'}  = 1;
+    $self;
+}
+
 sub color_special {
     my $self = shift;
     my %par = @_;

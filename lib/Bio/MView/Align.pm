@@ -713,7 +713,10 @@ sub set_color_scheme {
 			);
 
     if ($self->{'coloring'} eq 'none') {
-        ;
+        $self->color_none('symcolor'  => $self->{'symcolor'},
+                          'gapcolor'  => $self->{'gapcolor'},
+                          'css1'      => $self->{'css1'},
+                         );
     }
 
     elsif ($self->{'coloring'} eq 'any') {
@@ -836,25 +839,14 @@ sub color_special {
 }
 
 #propagate colour scheme to row objects
-sub color_by_find_block {
+sub color_none {
     my $self = shift;
-    my %par = @_;
-
-    #warn $self->dump_parameters();
-
-    my $mapsize = get_colormap_length($par{'colormap'});
-    my @patterns = split($BLOCKSEPARATOR, $par{find});
-    if (@patterns > $mapsize) {
-	warn "recycling colormap '$par{colormap}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
-    }
-    push @_, 'mapsize'  => $mapsize;
-    push @_, 'patterns' => [@patterns];
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block(@_);
+	$r->color_none(@_);
     }
     $self;
 }
@@ -957,6 +949,30 @@ sub color_by_consensus_group {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_group($r, @_);
+    }
+    $self;
+}
+
+#propagate colour scheme to row objects
+sub color_by_find_block {
+    my $self = shift;
+    my %par = @_;
+
+    #warn $self->dump_parameters();
+
+    my $mapsize = get_colormap_length($par{'colormap'});
+    my @patterns = split($BLOCKSEPARATOR, $par{find});
+    if (@patterns > $mapsize) {
+	warn "recycling colormap '$par{colormap}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
+    }
+    push @_, 'mapsize'  => $mapsize;
+    push @_, 'patterns' => [@patterns];
+
+    for my $r (@{$self->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $self->is_nop($r->id);
+	next  if $self->is_hidden($r->id);
+	$r->color_by_find_block(@_);
     }
     $self;
 }
