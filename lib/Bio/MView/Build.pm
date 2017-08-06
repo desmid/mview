@@ -155,8 +155,9 @@ sub set_parameters {
 
     $self->{'aligned'} = 0;
 
-    #how many expected rows of alignment
-    $self->{'show'} = $self->{'topn'} + $self->is_search;
+    #how many expected rows of alignment to show (1 more if search)
+    $self->{'show'} = $self->{'topn'};
+    $self->{'show'} += $self->is_search  if $self->{'topn'} > 0;
     $self;
 }
 

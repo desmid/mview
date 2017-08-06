@@ -1047,8 +1047,8 @@ sub prune_identities {
     #ensure no replicates in show list
     my %show;
     foreach my $i (@_) {
-	my $ref = $self->id2row($i);
-	$show{$ref} = $ref  if defined $ref;
+	my $j = $self->id2row($i);
+	$show{$j} = $j  if defined $j;
     }
 
     #the reference row
@@ -1072,7 +1072,6 @@ sub prune_identities {
 	#store object if %identity satisfies cutoff
         my $pcid = $r->compute_identity_to($ref, $mode);
         next  if $pcid < $min or $pcid > $max;
-        #warn $r->id, " $pcid\n";
         push @obj, $r;
     }
     #warn join(" ", map { $_->id } @obj), "\n";

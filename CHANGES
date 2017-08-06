@@ -58,6 +58,8 @@ Bugs fixed:
 - Fixed bug in propagation of symcolor and gapcolor options in the absence
   of an explicit coloring scheme.
 
+- Fixed bug in minident/maxident truncating search listings.
+
 Version 1.61  2016-11-14
 
 - Added '-coloring mismatch' mode, which behaves like '-coloring identity',
