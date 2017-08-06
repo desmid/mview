@@ -361,7 +361,7 @@ sub header {
 	$s .= ": " . $self->{'ref_row'}->cid . "\n";
     }
     if ($self->{'minident'} > 0 and $self->{'maxident'} < 100) {
-	$s .= "Pairwise identity limits: $self->{'minident'}-$self->{'maxident'}%";
+	$s .= "Identity limits: $self->{'minident'}-$self->{'maxident'}%";
 	$s .= " normalised by $self->{'pcid'} length.\n";
     } elsif ($self->{'minident'} > 0) {
 	$s .= "Minimum identity: $self->{'minident'}%";
