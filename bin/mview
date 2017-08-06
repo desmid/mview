@@ -304,6 +304,7 @@ sub html_head {
     if ($o->{'html'} & $HTML_BODY) {
         print $stm "<BODY style=\"background-color:$o->{'pagecolor'}; color:$o->{'textcolor'}";
         unless ($o->{'html'} & $HTML_CSS) {
+            #ignored in HTML5
             print $stm "; a:link:$o->{'linkcolor'}; a:active:$o->{'alinkcolor'}; a:visited:$o->{'vlinkcolor'}";
         }
         print $stm "\">\n";
