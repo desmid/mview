@@ -538,7 +538,6 @@ action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-show'") if 
 OPTION:   disc
 action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-hide'") if defined __OV; }
 
-
 ###########################################################################
 [FORMATS]
 
@@ -586,7 +585,6 @@ convert:  sub { __ARGS;
 		__PV;
 	  }
 
-
 ###########################################################################
 [CONTENT]
 
@@ -629,11 +627,10 @@ convert:  sub { __ARGS;
 	    }
 	  }
 
-
 ###########################################################################
 [IDENTITY]
 
-text: "Percent identity calculations:"
+text: "Percent identity calculations and filters:"
 
 OPTION:   pcid
 usage:    "Compute percent identities with respect to __CHOOSE(Bio::MView::Manager::check_identity_mode)"
@@ -655,20 +652,16 @@ type:     s
 default:  query
 param:    ref_id
 
-
-###########################################################################
-[FILTER]
-
-text:     "General row/column filters:"
-
-OPTION:   top
-usage:    "Report top N hits"
-type:     s
-default:  all
-param:    topn
+OPTION:   minident
+usage:    "Only report sequences with percent identity >= N compared to reference"
+type:     f
+default:  0
+param:
 convert:  sub { __ARGS;
-            return 0    if __OV eq 'all';
-	    return __TEST('i', __ON, __OV);
+		if (__OV < 0 or __OV > 100) {
+		    __WARN("bad option '-__ON=__OV', want range 0..100");
+		}
+		__OV;
 	  }
 
 OPTION:   maxident
@@ -683,16 +676,19 @@ convert:  sub { __ARGS;
 		__OV;
 	  }
 
-OPTION:   minident
-usage:    "Only report sequences with percent identity >= N compared to reference"
-type:     f
-default:  0
-param:
+###########################################################################
+[FILTER]
+
+text:     "General row/column filters:"
+
+OPTION:   top
+usage:    "Report top N hits"
+type:     s
+default:  all
+param:    topn
 convert:  sub { __ARGS;
-		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad option '-__ON=__OV', want range 0..100");
-		}
-		__OV;
+            return 0    if __OV eq 'all';
+	    return __TEST('i', __ON, __OV);
 	  }
 
 OPTION:   show
@@ -733,7 +729,6 @@ convert:  sub { __ARGS;
 	    return [ @tmp ];
 	  }
 
-
 ###########################################################################
 [MOLTYPE]
 
@@ -768,7 +763,6 @@ convert:  sub { __ARGS;
               __PARAM{'moltype'} = __PV;
               __PV;
           }
-
 
 ###########################################################################
 [ALN]
@@ -870,7 +864,6 @@ convert:  sub { __ARGS;
             __PV;
           }
 
-
 ###########################################################################
 [CON]
 
@@ -968,6 +961,11 @@ convert:  sub { __ARGS;
             __PV;
           }
 
+OPTION:   con_gaps
+usage:    "Count gaps during consensus computations if set to 'on'"
+type:     b
+default:  on
+param:
 
 ###########################################################################
 [PATTERNS]
@@ -987,39 +985,9 @@ action:   sub { __ARGS;
           }
 
 ###########################################################################
-[HYBRID]
-
-text:     "Hybrid alignment and consensus:"
-
-OPTION:   con_gaps
-usage:    "Count gaps during consensus computations if set to 'on'"
-type:     b
-default:  on
-param:
-
-
-###########################################################################
-[MAPS]
-
-text:     "User defined colormap and consensus group definition:"
-
-OPTION:   colorfile
-usage:    "Load more colormaps from file"
-
-OPTION:   groupfile
-usage:    "Load more groupmaps from file"
-
-
-###########################################################################
 [GENERALFORMAT]
 
 text:     "Miscellaneous formatting:"
-
-OPTION:   gap
-usage:    "Use this gap character"
-type:     s
-default:  -
-param:
 
 OPTION:   label0
 usage:    "Switch off label {0= row number}"
@@ -1069,6 +1037,12 @@ default:  0
 param:
 convert:  sub { __ARGS; (__OV ? 0 : 1) }
 
+OPTION:   gap
+usage:    "Use this gap character"
+type:     s
+default:  -
+param:
+
 OPTION:   register
 usage:    "Output multi-pass alignments with columns in register"
 type:     b
@@ -1109,6 +1083,27 @@ convert:  sub { __ARGS;
 		__WARN ("bad option '-__ON=__OV'");
 	    }
 
+OPTION:   bold
+usage:    "Use bold emphasis for coloring sequence symbols"
+default:  0
+param:
+convert:  sub { __ARGS; __OV > 0 ? 1 : 0 }
+
+OPTION:   css
+usage:    "Use Cascading Style Sheets {off,on,URL}"
+type:     s
+default:  off
+param:    css1
+convert:  sub { __ARGS;
+		#supplied style sheet URL
+		return 1    if __OV =~ /^(?:file|http):/i;
+		if (__OV ne 'on' and __OV ne 'off' and __OV ne '0' and __OV ne '1') {
+		    __WARN("bad value for '-__ON=__OV' want {on,off,URL} or {0,1,URL}");
+		}
+		return 1    if __OV eq 'on' or __OV eq '1';
+		return 0;
+          }
+
 OPTION:   title
 usage:    "Page title string"
 type:     s
@@ -1123,24 +1118,6 @@ OPTION:   textcolor
 usage:    "Page text color"
 type:     s
 default:  black
-
-OPTION:   linkcolor
-usage:    "Link color"
-type:     s
-default:  blue
-param:
-
-OPTION:   alinkcolor
-usage:    "Active link color"
-type:     s
-default:  red
-param:
-
-OPTION:   vlinkcolor
-usage:    "Visited link color"
-type:     s
-default:  purple
-param:
 
 OPTION:   alncolor
 usage:    "Alignment background color"
@@ -1166,29 +1143,13 @@ type:     s
 default:  #666666
 param:
 
-OPTION:   css
-usage:    "Use Cascading Style Sheets {off,on,URL}"
-type:     s
-default:  off
-param:    css1
-convert:  sub { __ARGS;
-		#supplied style sheet URL
-		return 1    if __OV =~ /^(?:file|http):/i;
-		if (__OV ne 'on' and __OV ne 'off' and __OV ne '0' and __OV ne '1') {
-		    __WARN("bad value for '-__ON=__OV' want {on,off,URL} or {0,1,URL}");
-		}
-		return 1    if __OV eq 'on' or __OV eq '1';
-		return 0;
-          }
+###########################################################################
+[SRSLINKS]
 
-OPTION:   bold
-usage:    "Use bold emphasis for coloring sequence symbols"
-default:  0
-param:
-convert:  sub { __ARGS; __OV > 0 ? 1 : 0 }
+text:     "Database links:"
 
 OPTION:   srs
-usage:    "Try to use SRS links {off,on}"
+usage:    "Try to use sequence database links {off,on}"
 type:     s
 default:  off
 action:   sub { __ARGS;
@@ -1201,6 +1162,24 @@ action:   sub { __ARGS;
 		}
 		return $Bio::SRS::Type = 1;    #default
 	    }
+
+OPTION:   linkcolor
+usage:    "Link color"
+type:     s
+default:  blue
+param:
+
+OPTION:   alinkcolor
+usage:    "Active link color"
+type:     s
+default:  red
+param:
+
+OPTION:   vlinkcolor
+usage:    "Visited link color"
+type:     s
+default:  purple
+param:
 
 ###########################################################################
 [GENERICBLAST]
@@ -1266,11 +1245,10 @@ type:     b
 default:  off
 param:
 
-
 ###########################################################################
 [BLAST1]
 
-text:     "NCBI BLAST (series 1):"
+text:     "NCBI BLAST (series 1), WashU-BLAST:"
 
 #generic
 OPTION:   hsp
@@ -1315,11 +1293,10 @@ type:     b
 default:  off
 param:
 
-
 ###########################################################################
 [BLAST2]
 
-text:     "NCBI BLAST (series 2), NCBI BLAST+, WashU-BLAST:"
+text:     "NCBI BLAST (series 2), BLAST+:"
 
 #generic
 OPTION:   hsp
@@ -1409,7 +1386,6 @@ type:     b
 default:  off
 param:
 
-
 ###########################################################################
 [FASTA]
 
@@ -1432,7 +1408,6 @@ OPTION:   strand
 usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  both
-
 
 ###########################################################################
 [HSSP]
@@ -1463,7 +1438,6 @@ convert:  sub { __ARGS;
 		}
                 return [ @tmp ];
             }
-
 
 ###########################################################################
 [MAF]
@@ -1497,7 +1471,6 @@ convert:  sub { __ARGS;
                 return [ @tmp ];
             }
 
-
 ###########################################################################
 [MULTAL]
 
@@ -1508,6 +1481,17 @@ OPTION:   block
 usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
 default:  first
+
+###########################################################################
+[MAPS]
+
+text:     "User defined colormap and consensus group definition:"
+
+OPTION:   colorfile
+usage:    "Load more colormaps from file"
+
+OPTION:   groupfile
+usage:    "Load more groupmaps from file"
 
 ###########################################################################
 [HELP]
@@ -1525,6 +1509,5 @@ usage:    "Print listing of known consensus groups"
 
 OPTION:   listcss
 usage:    "Print style sheet"
-
 
 ###########################################################################
