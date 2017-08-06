@@ -263,15 +263,17 @@ sub html_head {
     if ($o->{'html'} & $HTML_HTML) {
         my $s = "$DOCMETA\n";
 
-	#want STYLE?
-	if ($o->{'html'} & $HTML_CSS) {
-	    #link styles
-	    $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-	    $s .= "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
-	    $s .= "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
-	    $s .= "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
-	    $s .= "-->\n</STYLE>\n";
+        #link styles
+        if ($o->{'srs'} eq 'on') {
+            $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+            $s .= "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
+            $s .= "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
+            $s .= "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
+            $s .= "-->\n</STYLE>\n";
+        }
 
+	#want colour definitions?
+	if ($o->{'html'} & $HTML_CSS) {
 	    #alignment styles
 	    if ($o->{'css'} =~ /^(?:file|http):/i) {
 		#link to style sheet
@@ -302,12 +304,7 @@ sub html_head {
 
     #want BODY?
     if ($o->{'html'} & $HTML_BODY) {
-        print $stm "<BODY style=\"background-color:$o->{'pagecolor'}; color:$o->{'textcolor'}";
-        unless ($o->{'html'} & $HTML_CSS) {
-            #ignored in HTML5
-            print $stm "; a:link:$o->{'linkcolor'}; a:active:$o->{'alinkcolor'}; a:visited:$o->{'vlinkcolor'}";
-        }
-        print $stm "\">\n";
+        print $stm "<BODY style=\"background-color:$o->{'pagecolor'}; color:$o->{'textcolor'}\">\n";
     }
 
     #want TITLE? (in document)
