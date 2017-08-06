@@ -972,6 +972,23 @@ convert:  sub { __ARGS;
 
 
 ###########################################################################
+[PATTERNS]
+
+text:     "Motif colouring:"
+
+OPTION:   find
+usage:    "Find and highlight exact string or simple regular expression or ':' delimited set of patterns"
+type:     s
+default:  ""
+param:
+action:   sub { __ARGS;
+                if (__OV) {
+		    __PARAM{'fnd_colormap'} =
+			Bio::MView::Manager::get_default_find_colormap();
+                }
+          }
+
+###########################################################################
 [HYBRID]
 
 text:     "Hybrid alignment and consensus:"
@@ -1186,18 +1203,6 @@ action:   sub { __ARGS;
 		}
 		return $Bio::SRS::Type = 1;    #default
 	    }
-
-OPTION:   find
-usage:    "Find and highlight exact string or simple regular expression or ':' delimited set of patterns"
-type:     s
-default:  ""
-param:
-action:   sub { __ARGS;
-                if (__OV) {
-		    __PARAM{'fnd_colormap'} =
-			Bio::MView::Manager::get_default_find_colormap();
-                }
-          }
 
 ###########################################################################
 [GENERICBLAST]
