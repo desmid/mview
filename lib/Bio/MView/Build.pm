@@ -37,6 +37,8 @@ my %Template =
      'nops_uid'    => undef,   #hashed version of 'nopslist'  by Row->uid
      'hide_uid'    => undef,   #hashed merge of 'disc/keep/nops/' by Row->uid
 
+     'keepinserts' => undef,   #keep sequence inserts in searches
+
      'range'       => undef,   #display lower/upper bounds (sequence numbering)
      'gap'         => undef,   #output sequence gap character
     );
@@ -54,8 +56,9 @@ my %Known_Parameters =
      'keeplist'    => [ [],         []        ],
      'nopslist'    => [ [],         []        ],
      'range'       => [ [],         []        ],
+     'keepinserts' => [ '\d+',      0         ],
      'gap'         => [ '\S',       '+'       ],
-     'showpcid'    => [ '\d+',      1,        ],
+     'showpcid'    => [ '\d+',      1         ],
     );
 
 my %Known_Identity_Mode =
@@ -429,7 +432,7 @@ sub build_block {
             $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
         }
     } else { #it's a search, so do we want sequence insertions?
-        $aligned = 0 if $self->{'keepinserts'};
+        $aligned = 0  if $self->{'keepinserts'};
     }
     $self->{'aligned'} = $aligned;
 
