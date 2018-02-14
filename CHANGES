@@ -1,5 +1,13 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
+Branch: opt
+
+- move lib/Getopt.pm into lib/Bio
+- minor refactoring
+- change templating
+
+
+
 Version 1.62  2017-08-06
 
 Changes:

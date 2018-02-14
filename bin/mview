@@ -1,14 +1,16 @@
 #!/usr/bin/env perl
 
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
+###########################################################################
+# Release information
+###########################################################################
 my $VERSION  = '1.62';
-my $PATCH    = '';
-
+my $PATCH    = '1';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH?".$PATCH":"");
-my $COPYYRS  = "1997-2017";
+my $COPYYRS  = "1997-2018";
 my $PROJPTH  = 'https://desmid.github.io/mview/';
 my $AUTHMAIL = 'biomview@gmail.com';
 
@@ -19,7 +21,7 @@ $^W=1;
 BEGIN {$::COMPILE_ERROR=0}  #catch compile time method call failure
 
 use lib '/home/brown/HOME/work/MView/dev/lib';
-use Getopt;
+use Bio::Getopt;
 use Bio::MView::Manager;
 use strict;
 
@@ -61,12 +63,13 @@ my ($stm, $com, $opt, $par) = (\*STDOUT);
 $SIG{'INT'} =
     sub { warn "$PROG: interrupted - aborting.\n"; &cleanup(); exit 1 };
 
-$com = new Getopt($PROG, \*DATA)->getoptions(\@ARGV);
+$com = new Bio::Getopt($PROG, \*DATA);
+$com->parse_options(\@ARGV);
 $opt = $com->get_option_hash;
 $par = $com->get_parameter_hash;
 rationalise_parameters($opt, $par);
-dump_options($opt, $par)      if $opt->{'verbose'} & $VERB_OPTS;
-usage($com, $opt, $par, 0)    if $opt->{'help'};
+dump_options($com)  if $opt->{'verbose'} & $VERB_OPTS;
+usage($com, $opt, $par, 0)  if $opt->{'help'};
 
 #CSS listing request: no alignment, no HTML
 if ($opt->{'listcss'}) {
@@ -84,7 +87,7 @@ html_head($opt, $par, $stm);
 
 #echo command line?
 if ($opt->{'verbose'} & $VERB_ARGV) {
-    my $s = $com->argv_string;
+    my $s = $com->dump_argv;
     $s =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
     if ($opt->{'html'}) {
 	print $stm "<H4>command line:</H4>\n<CODE>";
@@ -337,13 +340,14 @@ sub check_format {
 	return $guess;
     }
 
-    return map { lc $_ } sort keys %KNOWN_FORMAT    unless @_;
+    return map { lc $_ } sort keys %KNOWN_FORMAT  unless @_;
 
     my ($base, $ext) = ($_[0], '');
     ($base, $ext) = Universal::fileparts($_[0])  if $_[1] eq 'file';
     #warn "($base, $ext)";
 
-    foreach ($ext) {  #final extension starts with:
+    #switch: extension starts with:
+    foreach ($ext) {
 	return 'CLUSTAL'  if $_ =~ /^aln/i;
 	return 'CLUSTAL'  if $_ =~ /^clu/i;
 	return 'HSSP'     if $_ =~ /^hss/i;
@@ -367,8 +371,8 @@ sub check_format {
 	return 'FASTA'    if $_ =~ /^ss/i;
 	return FASTA(@_)  if $_ =~ /^fa/i;
     }
-
-    foreach ($base) {  #basename contains:
+    #fall through, switch: basename contains:
+    foreach ($base) {
         return 'CLUSTAL'  if $_ =~ /aln/i;
         return 'CLUSTAL'  if $_ =~ /clu/i;
         return 'HSSP'     if $_ =~ /hssp/i;
@@ -393,8 +397,7 @@ sub check_format {
 	return FASTA(@_)  if $_ =~ /fa/i;
         return 'Pearson'  if $_ =~ /pear/i;
     }
-
-    #unknown format
+    #fall through, unknown format
     warn "$PROG: can't determine format - aborting\n";
     cleanup();
     exit 1;
@@ -405,7 +408,7 @@ sub usage {
     $opt->{'title'} = 'MView command line options';
     html_head($opt, $par, $stm);
     print $stm "<HR><PRE>\n"       if $opt->{'html'};
-    $com->usage($stm);
+    print $stm $com->usage($stm);
     print $stm "</PRE><HR>\n"      if $opt->{'html'};
     print $stm copyright($opt);
     html_foot($opt, $par, $stm);
@@ -413,11 +416,9 @@ sub usage {
 }
 
 sub dump_options {
-    my ($opt, $par) = @_;
-    warn "Input options:\n";
-    map { warn sprintf("%-25s => %s\n", $_, (defined $opt->{$_}?$opt->{$_}:'undef')) } sort keys %$opt;
-    warn "\nPassed parameters:\n";
-    map { warn sprintf("%-25s => %s\n", $_, (defined $par->{$_}?$par->{$_}:'undef')) } sort keys %$par;
+    my $com = shift;
+    warn "Input options:\n"       . $com->dump_options();
+    warn "\nPassed parameters:\n" . $com->dump_parameters();
     warn "\n";
 }
 
@@ -453,7 +454,7 @@ sub copyright {
 ###########################################################################
 __DATA__
 
-text:     "usage: __PROG [options] [file...]\n\n
+text:     "usage: <PROG> [options] [file...]\n\n
 Option names and parameter values can generally be abbreviated. Alternative\n
 parameter values are listed in braces {}, followed by the default value in\n
 square brackets [].\n\n
@@ -470,30 +471,30 @@ contains whitespace or a wildcard that might be expanded by the shell\n"
 #force @ARGV to be examined for '-help' first.
 OPTION:   help
 default:  0
-action:   sub { __ARGS; __OPTION{__ON} = 1    if __OV }
+action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listcolors' first.
 OPTION:   listcolors
 default:  0
-action:   sub { __ARGS; __OPTION{__ON} = 1    if __OV }
+action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listgroups' first.
 OPTION:   listgroups
 default:  0
-action:   sub { __ARGS; __OPTION{__ON} = 1    if __OV }
+action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listcss' first.
 OPTION:   listcss
 default:  0
-action:   sub { __ARGS; __OPTION{__ON} = 1    if __OV }
+action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-colorfile' first.
 OPTION:   colorfile
 type:     s
-action:   sub { __ARGS;
+action:   sub { <ARGS>;
               local *TMP;
-              if (defined __OV) {
-                  open(TMP, "< __OV") or CORE::die "__PROG: can't open colormap file '__OV'\n";
+              if (defined <OVAL>) {
+                  open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open colormap file '<OVAL>'\n";
                   Bio::MView::Manager::load_colormaps(\*TMP);
                   close TMP;
               }
@@ -502,10 +503,10 @@ action:   sub { __ARGS;
 #force @ARGV to be examined for '-groupfile' first.
 OPTION:   groupfile
 type:     s
-action:   sub { __ARGS;
+action:   sub { <ARGS>;
               local *TMP;
-              if (defined __OV) {
-                  open(TMP, "< __OV") or CORE::die "__PROG: can't open consensus group file '__OV'\n";
+              if (defined <OVAL>) {
+                  open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open consensus group file '<OVAL>'\n";
                   Bio::MView::Manager::load_groupmaps(\*TMP);
                   close TMP;
               }
@@ -513,13 +514,13 @@ action:   sub { __ARGS;
 
 #set the default colormaps and groupmaps (assume protein)
 OPTION:   aa
-action:   sub { __ARGS;
-		(__PARAM{'def_aln_colormap'},
-                 __PARAM{'def_con_colormap'}) =
-		   Bio::MView::Manager::get_default_colormaps('aa');
-		__PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-		  Bio::MView::Manager::get_default_groupmap('aa');
-                __PARAM{'moltype'} = 'aa';
+action:   sub { <ARGS>;
+                (<PARAM>{'def_aln_colormap'},
+                 <PARAM>{'def_con_colormap'}) =
+                   Bio::MView::Manager::get_default_colormaps('aa');
+                <PARAM>{'def_aln_groupmap'} = <PARAM>{'def_con_groupmap'} =
+                  Bio::MView::Manager::get_default_groupmap('aa');
+                <PARAM>{'moltype'} = 'aa';
                 return 0;
           }
 
@@ -530,13 +531,13 @@ default:  0
 
 #obsolete options: report fact to user
 OPTION:   dna
-action:   sub { __ARGS; __WARN("obsolete option '-__ON' replaced by '-moltype dna'") if defined __OV; }
+action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' replaced by '-moltype dna'") if defined <OVAL>; }
 
 OPTION:   keep
-action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-show'") if defined __OV; }
+action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-show'") if defined <OVAL>; }
 
 OPTION:   disc
-action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-hide'") if defined __OV; }
+action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-hide'") if defined <OVAL>; }
 
 ###########################################################################
 [FORMATS]
@@ -544,46 +545,37 @@ action:   sub { __ARGS; __WARN("obsolete option '-__ON' renamed as '-hide'") if 
 text:     "Input/output formats:"
 
 OPTION:   in
-usage:    "Input __CHOOSE(main::check_format)"
+usage:    "Input <CHOOSE>(main::check_format)"
 type:     s
-action:   sub { __ARGS;
-		return __OPTION{__ON} = main::check_format(__OV, 'par')
-		    if defined __OV;
-		return;
-	  }
+action:   sub { <ARGS>;
+                return <OPTION>{<ONAME>} = main::check_format(<OVAL>, 'par')
+                    if defined <OVAL>;
+                return undef;
+          }
 
 OPTION:   out
-usage:    "Output __CHOOSE(Bio::MView::Manager::check_convert_mode)"
+usage:    "Output <CHOOSE>(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 param:    mode
-convert:  sub { __ARGS;
-		__OPTION{'pre'} = 1;
-		if (__OV =~ /^n/i) {        #default
-		    __PV = 'new'; __OPTION{'pre'} = 0;
-                } elsif (__OV =~ /^pl/i) {  #plain
-		    __PV = 'plain';
-		} elsif (__OV =~ /^fa/i) {  #Pearson/FASTA
-		    __PV = 'pearson';
-		} elsif (__OV =~ /^pe/i) {  #Pearson/FASTA
-		    __PV = 'pearson';
-		} elsif (__OV =~ /^pi/i) {  #PIR
-		    __PV = 'pir';
-		} elsif (__OV =~ /^ms/i) {  #MSF
-		    __PV = 'msf';
-		} elsif (__OV =~ /^cl/i) {  #CLUSTAL/aln
-		    __PV = 'clustal';
-		} elsif (__OV =~ /^al/i) {  #CLUSTAL/aln
-		    __PV = 'clustal';
-		} elsif (__OV =~ /^rd/i) {  #RDB
-		    __PV = 'rdb'; __OPTION{'pre'} = 0;
-		} else {
-                    __WARN("bad option '-__ON=__OV'");
-                    __WARN("known types are: ", join(",",
+convert:  sub { <ARGS>;
+                <OPTION>{'pre'} = 1;
+                if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new'; <OPTION>{'pre'} = 0; }
+                elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain'; }
+                elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson'; }
+                elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson'; }
+                elsif (<OVAL> =~ /^pi/i) { <PVAL> = 'pir'; }
+                elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf'; }
+                elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal'; }
+                elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal'; }
+                elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb'; <OPTION>{'pre'} = 0; }
+                else {
+                    <WARN>("bad option '-<ONAME>=<OVAL>'");
+                    <WARN>("known types are: ", join(",",
                       Bio::MView::Manager::check_convert_mode));
-		}
-		__PV;
-	  }
+                }
+                <PVAL>;
+          }
 
 ###########################################################################
 [CONTENT]
@@ -619,13 +611,10 @@ usage:    "Paginate alignment in blocks of N columns {N,flat}"
 type:     s
 default:  flat
 param:
-convert:  sub { __ARGS;
-            if (__OV eq 'flat') {
-              return 0;
-	    } else {
-              return __TEST('i', __ON, __OV);
-	    }
-	  }
+convert:  sub { <ARGS>;
+            if (<OVAL> eq 'flat') { return 0; }
+            else                  { return <TEST>('i', <ONAME>, <OVAL>); }
+          }
 
 ###########################################################################
 [IDENTITY]
@@ -633,18 +622,18 @@ convert:  sub { __ARGS;
 text: "Percent identity calculations and filters:"
 
 OPTION:   pcid
-usage:    "Compute percent identities with respect to __CHOOSE(Bio::MView::Manager::check_identity_mode)"
+usage:    "Compute percent identities with respect to <CHOOSE>(Bio::MView::Manager::check_identity_mode)"
 type:     s
 default:  'aligned'
 param:
-convert:  sub { __ARGS;
-		return 'reference' if __OV =~ /^r/;
-		return 'aligned'   if __OV =~ /^a/;
-	        return 'hit'       if __OV =~ /^h/;
-		__WARN("bad option '-__ON=__OV'");
-		__WARN("known percent identity methods are: ", join(",",
-		Bio::MView::Manager::check_identity_mode));
-	      }
+convert:  sub { <ARGS>;
+                return 'reference' if <OVAL> =~ /^r/;
+                return 'aligned'   if <OVAL> =~ /^a/;
+                return 'hit'       if <OVAL> =~ /^h/;
+                <WARN>("bad option '-<ONAME>=<OVAL>'");
+                <WARN>("known percent identity methods are: ", join(",",
+                Bio::MView::Manager::check_identity_mode));
+              }
 
 OPTION:   reference
 usage:    "Use row N or row identifier as %identity reference"
@@ -657,24 +646,24 @@ usage:    "Only report sequences with percent identity >= N compared to referenc
 type:     f
 default:  0
 param:
-convert:  sub { __ARGS;
-		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad option '-__ON=__OV', want range 0..100");
-		}
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                if (<OVAL> < 0 or <OVAL> > 100) {
+                    <WARN>("bad option '-<ONAME>=<OVAL>', want range 0..100");
+                }
+                <OVAL>;
+          }
 
 OPTION:   maxident
 usage:    "Only report sequences with percent identity <= N compared to reference"
 type:     f
 default:  100
 param:
-convert:  sub { __ARGS;
-		if (__OV < 0 or __OV > 100) {
-		    __WARN("bad option '-__ON=__OV', want range 0..100");
-		}
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                if (<OVAL> < 0 or <OVAL> > 100) {
+                    <WARN>("bad option '-<ONAME>=<OVAL>', want range 0..100");
+                }
+                <OVAL>;
+          }
 
 ###########################################################################
 [FILTER]
@@ -686,10 +675,10 @@ usage:    "Report top N hits"
 type:     s
 default:  all
 param:    topn
-convert:  sub { __ARGS;
-            return 0    if __OV eq 'all';
-	    return __TEST('i', __ON, __OV);
-	  }
+convert:  sub { <ARGS>;
+            return 0    if <OVAL> eq 'all';
+            return <TEST>('i', <ONAME>, <OVAL>);
+          }
 
 OPTION:   show
 usage:    "Keep rows 1..N or identifiers"
@@ -711,23 +700,23 @@ usage:    "Display column range M:N as numbered by ruler"
 type:     s
 default:  all
 param:
-convert:  sub { __ARGS;
+convert:  sub { <ARGS>;
             my @tmp = ();
-            if (__OV ne 'all') {
-		@tmp = split(/:/, __OV);
-		if (@tmp != 2) {
-		    __WARN("bad range setting '-__ON=__OV', want M:N");
-		} else {
-		    __TEST('i', __ON, $tmp[0]);
-		    __TEST('i', __ON, $tmp[1]);
-		    #ignore range order, but check for negative values
-		    if ($tmp[0] < 1 or $tmp[1] < 1) {
-			__WARN("bad range setting '-__ON=__OV', want M:N");
-		    }
-		}
+            if (<OVAL> ne 'all') {
+                @tmp = split(/:/, <OVAL>);
+                if (@tmp != 2) {
+                    <WARN>("bad range setting '-<ONAME>=<OVAL>', want M:N");
+                } else {
+                    <TEST>('i', <ONAME>, $tmp[0]);
+                    <TEST>('i', <ONAME>, $tmp[1]);
+                    #ignore range order, but check for negative values
+                    if ($tmp[0] < 1 or $tmp[1] < 1) {
+                        <WARN>("bad range setting '-<ONAME>=<OVAL>', want M:N");
+                    }
+                }
             }
-	    return [ @tmp ];
-	  }
+            return [ @tmp ];
+          }
 
 ###########################################################################
 [MOLTYPE]
@@ -735,33 +724,28 @@ convert:  sub { __ARGS;
 text:     "Molecule type:"
 
 OPTION:   moltype
-usage:    "Affects coloring and format converions __CHOOSE(Bio::MView::Manager::check_molecule_type)"
+usage:    "Affects coloring and format converions <CHOOSE>(Bio::MView::Manager::check_molecule_type)"
 type:     s
 default:  aa
 param:    moltype
-convert:  sub { __ARGS;
-              if (__OV =~ /^aa/i) {
-	      	   __PV = 'aa';
-	      } elsif (__OV =~ /^na/i) {
-	      	   __PV = 'na';
-	      } elsif (__OV =~ /^dna/i) {
-	      	   __PV = 'dna';
-	      } elsif (__OV =~ /^rna/i) {
-	      	   __PV = 'rna';
+convert:  sub { <ARGS>;
+              if    (<OVAL> =~ /^aa/i)  { <PVAL> = 'aa';  }
+              elsif (<OVAL> =~ /^na/i)  { <PVAL> = 'na';  }
+              elsif (<OVAL> =~ /^dna/i) { <PVAL> = 'dna'; }
+              elsif (<OVAL> =~ /^rna/i) { <PVAL> = 'rna'; }
+              unless (defined <PVAL> and defined
+                       Bio::MView::Manager::check_molecule_type(<PVAL>)) {
+                   <WARN>("bad option '-<ONAME>=<OVAL>'");
+                   <WARN>("known molecule types are: ", join(",",
+                     Bio::MView::Manager::check_molecule_type));
               }
-              unless (defined __PV and defined
-	      	       Bio::MView::Manager::check_molecule_type(__PV)) {
-	      	   __WARN("bad option '-__ON=__OV'");
-	      	   __WARN("known molecule types are: ", join(",",
-	      	     Bio::MView::Manager::check_molecule_type));
-	      }
-	      (__PARAM{'def_aln_colormap'},
-	       __PARAM{'def_con_colormap'}) =
-	    	   Bio::MView::Manager::get_default_colormaps(__PV);
-	      __PARAM{'def_aln_groupmap'} = __PARAM{'def_con_groupmap'} =
-	    	 Bio::MView::Manager::get_default_groupmap(__OV);
-              __PARAM{'moltype'} = __PV;
-              __PV;
+              (<PARAM>{'def_aln_colormap'},
+               <PARAM>{'def_con_colormap'}) =
+                   Bio::MView::Manager::get_default_colormaps(<PVAL>);
+              <PARAM>{'def_aln_groupmap'} = <PARAM>{'def_con_groupmap'} =
+                 Bio::MView::Manager::get_default_groupmap(<OVAL>);
+              <PARAM>{'moltype'} = <PVAL>;
+              <PVAL>;
           }
 
 ###########################################################################
@@ -770,71 +754,58 @@ convert:  sub { __ARGS;
 text:     "Alignment coloring:"
 
 OPTION:   coloring
-usage:    "Basic style of coloring __CHOOSE(Bio::MView::Manager::check_alignment_color_scheme)"
+usage:    "Basic style of coloring <CHOOSE>(Bio::MView::Manager::check_alignment_color_scheme)"
 type:     s
 default:  none
 param:    aln_coloring
-convert:  sub { __ARGS;
-              if (__OV =~ /^n/i) {
-	      	   __PV = 'none';
-	      } elsif (__OV =~ /^a/i) {
-	      	   __PV = 'any';
-	      } elsif (__OV =~ /^i/i) {
-	      	   __PV = 'identity';
-	      } elsif (__OV =~ /^m/i) {
-	      	   __PV = 'mismatch';
-	      } elsif (__OV =~ /^c/i) {
-	      	   __PV = 'consensus';
-	      } elsif (__OV =~ /^g/i) {
-	      	   __PV = 'group';
+convert:  sub { <ARGS>;
+              if    (<OVAL> =~ /^n/i) { <PVAL> = 'none';      }
+              elsif (<OVAL> =~ /^a/i) { <PVAL> = 'any';       }
+              elsif (<OVAL> =~ /^i/i) { <PVAL> = 'identity';  }
+              elsif (<OVAL> =~ /^m/i) { <PVAL> = 'mismatch';  }
+              elsif (<OVAL> =~ /^c/i) { <PVAL> = 'consensus'; }
+              elsif (<OVAL> =~ /^g/i) { <PVAL> = 'group';     }
+              unless (defined <PVAL> and defined
+                       Bio::MView::Manager::check_alignment_color_scheme(<PVAL>)) {
+                   <WARN>("bad option '-<ONAME>=<OVAL>'");
+                   <WARN>("known color schemes are: ", join(",",
+                   Bio::MView::Manager::check_alignment_color_scheme));
               }
-              unless (defined __PV and defined
-	      	       Bio::MView::Manager::check_alignment_color_scheme(__PV)) {
-	      	   __WARN("bad option '-__ON=__OV'");
-	      	   __WARN("known color schemes are: ", join(",",
-	      	   Bio::MView::Manager::check_alignment_color_scheme));
-	      }
-              __PV;
+              <PVAL>;
           }
 
 OPTION:   colormap
 usage:    "Name of colormap to use"
 type:     s
 param:    aln_colormap
-convert:  sub { __ARGS;
-              if (defined __OV) {
-                  __PV = __OV;
-              } else {
-                  __PV = __PARAM{'def_aln_colormap'};
+convert:  sub { <ARGS>;
+              if (defined <OVAL>) { <PVAL> = <OVAL>; }
+              else                { <PVAL> = <PARAM>{'def_aln_colormap'}; }
+              <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
+              unless (defined <PVAL>) {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known colormaps are: ", join(",",
+                         Bio::MView::Manager::check_colormap));
               }
-              __PV = Bio::MView::Manager::check_colormap(__PV);
-              unless (defined __PV) {
-                  __WARN("bad option '-__ON=__OV'");
-		  __WARN("known colormaps are: ", join(",",
-			 Bio::MView::Manager::check_colormap));
-              }
-	      __DELETE_PARAM('def_aln_colormap');
-              __PV;
+              <DELETE_PARAM>('def_aln_colormap');
+              <PVAL>;
           }
 
 OPTION:   groupmap
 usage:    "Name of groupmap to use if coloring by consensus"
 type:     s
 param:    aln_groupmap
-convert:  sub { __ARGS;
-              if (defined __OV) {
-                  __PV = __OV;
-              } else {
-                  __PV = __PARAM{'def_aln_groupmap'};
+convert:  sub { <ARGS>;
+              if (defined <OVAL>) { <PVAL> = <OVAL>; }
+              else                { <PVAL> = <PARAM>{'def_aln_groupmap'}; }
+              <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
+              unless (defined <PVAL>) {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known group maps are: ", join(",",
+                         Bio::MView::Manager::check_groupmap));
               }
-              __PV = Bio::MView::Manager::check_groupmap(__PV);
-              unless (defined __PV) {
-                  __WARN("bad option '-__ON=__OV'");
-		  __WARN("known group maps are: ", join(",",
-			 Bio::MView::Manager::check_groupmap));
-              }
-              __DELETE_PARAM('def_aln_groupmap');
-              __PV;
+              <DELETE_PARAM>('def_aln_groupmap');
+              <PVAL>;
           }
 
 OPTION:   threshold
@@ -842,26 +813,26 @@ usage:    "Threshold percentage for consensus coloring"
 type:     f
 default:  70
 param:    aln_threshold
-convert:  sub { __ARGS;
-              if (__OV < 50 or __OV > 100) {
-                  __WARN("bad value for '-__ON=__OV' must be in range 50..100");
+convert:  sub { <ARGS>;
+              if (<OVAL> < 50 or <OVAL> > 100) {
+                  <WARN>("bad value for '-<ONAME>=<OVAL>' must be in range 50..100");
               }
-              [ __OV ];
+              [ <OVAL> ];
           }
 
 OPTION:   ignore
-usage:    "Ignore singleton or class groups __CHOOSE(Bio::MView::Manager::check_ignore_class)"
+usage:    "Ignore singleton or class groups <CHOOSE>(Bio::MView::Manager::check_ignore_class)"
 type:     s
 default:  none
 param:    aln_ignore
-convert:  sub { __ARGS;
-            __PV = Bio::MView::Manager::check_ignore_class(__OV);
-            if (!defined __PV) {
-              __WARN("bad option '-__ON=__OV'");
-              __WARN("known ignore classes are: ", join(",",
+convert:  sub { <ARGS>;
+            <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
+            if (!defined <PVAL>) {
+              <WARN>("bad option '-<ONAME>=<OVAL>'");
+              <WARN>("known ignore classes are: ", join(",",
                      Bio::MView::Manager::check_ignore_class));
             }
-            __PV;
+            <PVAL>;
           }
 
 ###########################################################################
@@ -870,65 +841,61 @@ convert:  sub { __ARGS;
 text:     "Consensus coloring:"
 
 OPTION:   con_coloring
-usage:    "Basic style of coloring __CHOOSE(Bio::MView::Manager::check_consensus_color_scheme)"
+usage:    "Basic style of coloring <CHOOSE>(Bio::MView::Manager::check_consensus_color_scheme)"
 type:     s
 default:  none
 param:    con_coloring
-convert:  sub { __ARGS;
-	       if (__OV =~ /^n/i) {
-		   __PV = 'none';
-	       } elsif (__OV =~ /^a/i) {
-		   __PV = 'any';
-	       } elsif (__OV =~ /^i/i) {
-                   __PV = 'identity';
+convert:  sub { <ARGS>;
+               if    (<OVAL> =~ /^n/i) { <PVAL> = 'none';     }
+               elsif (<OVAL> =~ /^a/i) { <PVAL> = 'any';      }
+               elsif (<OVAL> =~ /^i/i) { <PVAL> = 'identity'; }
+               unless (defined <PVAL> and defined
+                       Bio::MView::Manager::check_consensus_color_scheme(<PVAL>)) {
+                  <WARN>("known color schemes are: ", join(",",
+                         Bio::MView::Manager::check_consensus_color_scheme));
                }
-               unless (defined __PV and defined
-		       Bio::MView::Manager::check_consensus_color_scheme(__PV)) {
-		  __WARN("known color schemes are: ", join(",",
-			 Bio::MView::Manager::check_consensus_color_scheme));
-	       }
-               __PV;
+               <PVAL>;
           }
 
 OPTION:   con_colormap
 usage:    "Name of colormap to use"
 type:     s
 param:    con_colormap
-convert:  sub { __ARGS;
-              if (defined __OV) {
-                  __PV = __OV;
+convert:  sub { <ARGS>;
+              if (defined <OVAL>) {
+                  <PVAL> = <OVAL>;
               } else {
-                  __PV = __PARAM{'def_con_colormap'};
+                  <PVAL> = <PARAM>{'def_con_colormap'};
               }
-              __PV = __PARAM{'def_con_colormap'} unless defined __OV;
-              __PV = Bio::MView::Manager::check_colormap(__PV);
-              unless (defined __PV) {
-                  __WARN("bad option '-__ON=__OV'");
-		  __WARN("known consensus colomaps are: ", join(",",
-			 Bio::MView::Manager::check_colormap));
+              <PVAL> = <PARAM>{'def_con_colormap'} unless defined <OVAL>;
+              <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
+              unless (defined <PVAL>) {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known consensus colomaps are: ", join(",",
+                         Bio::MView::Manager::check_colormap));
               }
-              __DELETE_PARAM('def_con_colormap');
-              __PV;
+              <DELETE_PARAM>('def_con_colormap');
+              <PVAL>;
           }
 
 OPTION:   con_groupmap
 usage:    "Name of groupmap to use if coloring by consensus"
 type:     s
 param:    con_groupmap
-convert:  sub { __ARGS;
-              if (defined __OV) {
-                  __PV = __OV;
+convert:  sub { <ARGS>;
+              if (defined <OVAL>) {
+                  <PVAL> = <OVAL>;
               } else {
-                  __PV = __PARAM{'def_con_groupmap'};
+                  <PVAL> = <PARAM>{'def_con_groupmap'};
               }
-              __PV = Bio::MView::Manager::check_groupmap(__PV);
-              unless (defined __PV) {
-                  __WARN("bad option '-__ON=__OV'");
-		  __WARN("known consensus group maps are: ", join(",",
-			 Bio::MView::Manager::check_groupmap));
+              <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
+              unless (defined <PVAL>) {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known consensus group maps are: ", join(",",
+                         Bio::MView::Manager::check_groupmap));
               }
-              __DELETE_PARAM('def_con_groupmap');
-              __PV;
+              <DELETE_PARAM>('def_con_groupmap');
+              <PVAL>;
           }
 
 OPTION:   con_threshold
@@ -936,29 +903,29 @@ usage:    "Consensus line thresholds"
 type:     @f
 default:  '100,90,80,70'
 param:    con_threshold
-convert:  sub { __ARGS;
+convert:  sub { <ARGS>;
               local $_;
-              foreach (@{__PV}) {
+              foreach (@{<PVAL>}) {
                 if ($_ < 50 or $_ > 100) {
-                  __WARN("bad range for '-__ON=$_' must be in range 50..100");
+                  <WARN>("bad range for '-<ONAME>=$_' must be in range 50..100");
                 }
               }
-              __PV;
+              <PVAL>;
           }
 
 OPTION:   con_ignore
-usage:    "Ignore singleton or class groups __CHOOSE(Bio::MView::Manager::check_ignore_class)"
+usage:    "Ignore singleton or class groups <CHOOSE>(Bio::MView::Manager::check_ignore_class)"
 type:     s
 default:  none
 param:    con_ignore
-convert:  sub { __ARGS;
-            __PV = Bio::MView::Manager::check_ignore_class(__OV);
-            if (!defined __PV) {
-              __WARN("bad option '-__ON=__OV'");
-              __WARN("known consensus ignore classes are: ", join(",",
+convert:  sub { <ARGS>;
+            <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
+            if (!defined <PVAL>) {
+              <WARN>("bad option '-<ONAME>=<OVAL>'");
+              <WARN>("known consensus ignore classes are: ", join(",",
                      Bio::MView::Manager::check_ignore_class));
             }
-            __PV;
+            <PVAL>;
           }
 
 OPTION:   con_gaps
@@ -977,10 +944,10 @@ usage:    "Find and highlight exact string or simple regular expression or ':' d
 type:     s
 default:  ""
 param:
-action:   sub { __ARGS;
-                if (__OV) {
-		    __PARAM{'fnd_colormap'} =
-			Bio::MView::Manager::get_default_find_colormap();
+action:   sub { <ARGS>;
+                if (<OVAL>) {
+                    <PARAM>{'fnd_colormap'} =
+                        Bio::MView::Manager::get_default_find_colormap();
                 }
           }
 
@@ -993,49 +960,49 @@ OPTION:   label0
 usage:    "Switch off label {0= row number}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label1
 usage:    "Switch off label {1= identifier}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label2
 usage:    "Switch off label {2= description}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label3
 usage:    "Switch off label {3= scores}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label4
 usage:    "Switch off label {4= percent coverage}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label5
 usage:    "Switch off label {5= percent identity}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label6
 usage:    "Switch off label {6= first sequence positions: query}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   label7
 usage:    "Switch off label {7= second sequence positions: hit}"
 default:  0
 param:
-convert:  sub { __ARGS; (__OV ? 0 : 1) }
+convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
 OPTION:   gap
 usage:    "Use this gap character"
@@ -1059,49 +1026,34 @@ usage:    "Controls amount of HTML markup {head,body,data,full,off}"
 type:     s
 default:  off
 param:
-convert:  sub { __ARGS;
-		if (__OV =~ /^full/i) {
-		    __OPTION{__ON} = (16|8|4|2|1);
-		    return 1;
-		}
-		if (__OV =~ /^head/i) {
-		    __OPTION{__ON} = (8|4|2|1);
-		    return 1;
-		}
-		if (__OV =~ /^body/i) {
-		    __OPTION{__ON} = (4|2|1);
-		    return 1;
-		}
-		if (__OV =~ /^data/i) {
-		    __OPTION{__ON} = (1);
-		    return 1;
-		}
-		if (__OV =~ /^off/i) {
-		    __OPTION{__ON} = 0;
-		    return 0;
-		}
-		__WARN ("bad option '-__ON=__OV'");
-	    }
+convert:  sub { <ARGS>;
+                if (<OVAL> =~ /^full/i) { <OPTION>{<ONAME>} = (16|8|4|2|1); return 1; }
+                if (<OVAL> =~ /^head/i) { <OPTION>{<ONAME>} = (8|4|2|1); return 1; }
+                if (<OVAL> =~ /^body/i) { <OPTION>{<ONAME>} = (4|2|1); return 1; }
+                if (<OVAL> =~ /^data/i) { <OPTION>{<ONAME>} = (1); return 1; }
+                if (<OVAL> =~ /^off/i)  { <OPTION>{<ONAME>} = 0; return 0; }
+                <WARN> ("bad option '-<ONAME>=<OVAL>'");
+            }
 
 OPTION:   bold
 usage:    "Use bold emphasis for coloring sequence symbols"
 default:  0
 param:
-convert:  sub { __ARGS; __OV > 0 ? 1 : 0 }
+convert:  sub { <ARGS>; <OVAL> > 0 ? 1 : 0 }
 
 OPTION:   css
 usage:    "Use Cascading Style Sheets {off,on,URL}"
 type:     s
 default:  off
 param:    css1
-convert:  sub { __ARGS;
-		#supplied style sheet URL
-		return 1    if __OV =~ /^(?:file|http):/i;
-		if (__OV ne 'on' and __OV ne 'off' and __OV ne '0' and __OV ne '1') {
-		    __WARN("bad value for '-__ON=__OV' want {on,off,URL} or {0,1,URL}");
-		}
-		return 1    if __OV eq 'on' or __OV eq '1';
-		return 0;
+convert:  sub { <ARGS>;
+                #supplied style sheet URL
+                return 1  if <OVAL> =~ /^(?:file|http):/i;
+                if (<OVAL> ne 'on' and <OVAL> ne 'off' and <OVAL> ne '0' and <OVAL> ne '1') {
+                    <WARN>("bad value for '-<ONAME>=<OVAL>' want {on,off,URL} or {0,1,URL}");
+                }
+                return 1  if <OVAL> eq 'on' or <OVAL> eq '1';
+                return 0;
           }
 
 OPTION:   title
@@ -1152,16 +1104,14 @@ OPTION:   srs
 usage:    "Try to use sequence database links {off,on}"
 type:     s
 default:  off
-action:   sub { __ARGS;
-		if (__OV eq 'off') {
-		    return $Bio::SRS::Type = 0;
-		} elsif (__OV eq 'on') {
-		    return $Bio::SRS::Type = 1;
-		} else {
-		    __WARN("bad SRS setting, want {off,on}");
-		}
-		return $Bio::SRS::Type = 1;    #default
-	    }
+action:   sub { <ARGS>;
+                if    (<OVAL> eq 'off') { return $Bio::SRS::Type = 0; }
+                elsif (<OVAL> eq 'on')  { return $Bio::SRS::Type = 1; }
+                else {
+                    <WARN>("bad SRS setting, want {off,on}");
+                }
+                return $Bio::SRS::Type = 1;    #default
+            }
 
 OPTION:   linkcolor
 usage:    "Link color"
@@ -1188,56 +1138,52 @@ OPTION:   hsp
 type:     s
 default:  ranked
 param:
-convert:  sub { __ARGS;
-		return 'all'      if __OV =~ /^a/;
-		return 'discrete' if __OV =~ /^d/;
-	        return 'ranked'   if __OV =~ /^r/;
-		__WARN("bad option '-__ON=__OV'");
-		__WARN("known hsp methods are: ", join(",",
-		Bio::MView::Manager::check_hsp_tiling));
-	      }
+convert:  sub { <ARGS>;
+                return 'all'       if <OVAL> =~ /^a/;
+                return 'discrete'  if <OVAL> =~ /^d/;
+                return 'ranked'    if <OVAL> =~ /^r/;
+                <WARN>("bad option '-<ONAME>=<OVAL>'");
+                <WARN>("known hsp methods are: ", join(",",
+                Bio::MView::Manager::check_hsp_tiling));
+              }
 
 OPTION:   maxeval
 type:     s
 default:  unlimited
 param:
-convert:  sub { __ARGS;
-		return undef    if __OV eq 'unlimited';
-		__TEST('f', __ON, __OV);
-		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                return undef    if <OVAL> eq 'unlimited';
+                <TEST>('f', <ONAME>, <OVAL>);
+                <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
+                <OVAL>;
+          }
 
 OPTION:   minbits
 type:     s
 default:  unlimited
 param:
-convert:  sub { __ARGS;
-		return undef    if __OV eq 'unlimited';
-		__TEST('f', __ON, __OV);
-		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                return undef    if <OVAL> eq 'unlimited';
+                <TEST>('f', <ONAME>, <OVAL>);
+                <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
+                <OVAL>;
+          }
 
 OPTION:   strand
 type:     @s
 default:  both
 param:
-convert:  sub { __ARGS;
-		local $_;
-		foreach (@{__PV}) {
-		    if (lc $_ eq 'p') {
-			return ['+'];
-		    } elsif (lc $_ eq 'm') {
-			return ['-'];
-		    } elsif (lc $_ eq 'both') {
-			return [];
-		    } elsif ($_ eq '*') {
-			return [];
-		    } else {
-			__WARN("bad value for '-__ON=$_', choose from '{p,m,both,*}'");
-		    }
-		}
+convert:  sub { <ARGS>;
+                local $_;
+                foreach (@{<PVAL>}) {
+                    if    (lc $_ eq 'p')    { return ['+']; }
+                    elsif (lc $_ eq 'm')    { return ['-']; }
+                    elsif (lc $_ eq 'both') { return [];    }
+                    elsif ($_ eq '*')       { return [];    }
+                    else {
+                        <WARN>("bad value for '-<ONAME>=$_', choose from '{p,m,both,*}'");
+                    }
+                }
             }
 
 OPTION:   keepinserts
@@ -1252,7 +1198,7 @@ text:     "NCBI BLAST (series 1), WashU-BLAST:"
 
 #generic
 OPTION:   hsp
-usage:    "HSP tiling method __CHOOSE(Bio::MView::Manager::check_hsp_tiling)"
+usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
 type:     s
 default:  ranked
 
@@ -1261,24 +1207,24 @@ usage:    "Ignore hits with p-value greater than N"
 type:     s
 default:  unlimited
 param:
-convert:  sub { __ARGS;
-		return undef    if __OV eq 'unlimited';
-		__TEST('f', __ON, __OV);
-		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                return undef    if <OVAL> eq 'unlimited';
+                <TEST>('f', <ONAME>, <OVAL>);
+                <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
+                <OVAL>;
+          }
 
 OPTION:   minscore
 usage:    "Ignore hits with score less than N"
 type:     s
 default:  unlimited
 param:
-convert:  sub { __ARGS;
-		return undef    if __OV eq 'unlimited';
-		__TEST('f', __ON, __OV);
-		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                return undef    if <OVAL> eq 'unlimited';
+                <TEST>('f', <ONAME>, <OVAL>);
+                <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
+                <OVAL>;
+          }
 
 #generic
 OPTION:   strand
@@ -1300,7 +1246,7 @@ text:     "NCBI BLAST (series 2), BLAST+:"
 
 #generic
 OPTION:   hsp
-usage:    "HSP tiling method __CHOOSE(Bio::MView::Manager::check_hsp_tiling)"
+usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
 type:     s
 default:  ranked
 
@@ -1336,7 +1282,7 @@ text:     "NCBI PSI-BLAST:"
 
 #generic
 OPTION:   hsp
-usage:    "HSP tiling method __CHOOSE(Bio::MView::Manager::check_hsp_tiling)"
+usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
 type:     s
 default:  ranked
 
@@ -1357,25 +1303,18 @@ usage:    "Process the N'th cycle of a multipass search {1..N,first,last,all,*}"
 type:     @s
 default:  last
 param:
-convert:  sub { __ARGS;
-		local $_; my @tmp=();
-		foreach (@{__PV}) {
-		    if ($_ eq 'first') {
-			push @tmp, 1;
-		    } elsif ($_ eq 'last') {
-			push @tmp, 0;
-		    } elsif ($_ eq 'all') {
-			@tmp = ();
-			last;
-		    } elsif ($_ eq '*') {
-			@tmp = ();
-			last;
-		    } elsif (/^\d+$/) {
-			push @tmp, $_;
-		    } else {
-			__WARN("bad value for '-__ON=$_', choose from '{1..N,first,last,all,*}'");
-		    }
-		}
+convert:  sub { <ARGS>;
+                local $_; my @tmp=();
+                foreach (@{<PVAL>}) {
+                    if    ($_ eq 'first') { push @tmp, 1;    }
+                    elsif ($_ eq 'last')  { push @tmp, 0;    }
+                    elsif ($_ eq 'all')   { @tmp = (); last; }
+                    elsif ($_ eq '*')     { @tmp = (); last; }
+                    elsif (/^\d+$/)       { push @tmp, $_;   }
+                    else {
+                        <WARN>("bad value for '-<ONAME>=$_', choose from '{1..N,first,last,all,*}'");
+                    }
+                }
                 return [ @tmp ];
             }
 
@@ -1396,12 +1335,12 @@ usage:    "Ignore hits with opt score less than N"
 type:     s
 default:  unlimited
 param:
-convert:  sub { __ARGS;
-		return undef    if __OV eq 'unlimited';
-		__TEST('f', __ON, __OV);
-		__WARN("bad option '-__ON=__OV', want > 0") if __OV < 0;
-		__OV;
-	  }
+convert:  sub { <ARGS>;
+                return undef    if <OVAL> eq 'unlimited';
+                <TEST>('f', <ONAME>, <OVAL>);
+                <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
+                <OVAL>;
+          }
 
 #generic
 OPTION:   strand
@@ -1419,23 +1358,15 @@ usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
 type:     @s
 default:  *
 param:
-convert:  sub { __ARGS;
-		local $_; my @tmp=();
-		foreach (@{__PV}) {
-		    if ($_ eq 'first') {
-			push @tmp, 1;
-		    } elsif ($_ eq 'last') {
-			push @tmp, 0;
-		    } elsif ($_ eq 'all') {
-			@tmp = ();
-			last;
-		    } elsif ($_ eq '*') {
-			@tmp = ();
-			last;
-		    } else {
-			push @tmp, $_;
-		    }
-		}
+convert:  sub { <ARGS>;
+                local $_; my @tmp=();
+                foreach (@{<PVAL>}) {
+                    if    ($_ eq 'first') { push @tmp, 1;    }
+                    elsif ($_ eq 'last')  { push @tmp, 0;    }
+                    elsif ($_ eq 'all')   { @tmp = (); last; }
+                    elsif ($_ eq '*')     { @tmp = (); last; }
+                    else                  { push @tmp, $_;   }
+                }
                 return [ @tmp ];
             }
 
@@ -1449,25 +1380,18 @@ usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
 default:  first
 param:
-convert:  sub { __ARGS;
-		local $_; my @tmp=();
-		foreach (@{__PV}) {
-		    if ($_ eq 'first') {
-			push @tmp, 1;
-		    } elsif ($_ eq 'last') {
-			push @tmp, 0;
-		    } elsif ($_ eq 'all') {
-			@tmp = ();
-			last;
-		    } elsif ($_ eq '*') {
-			@tmp = ();
-			last;
-		    } elsif (/^\d+$/) {
-			push @tmp, $_;
-		    } else {
-			__WARN("bad value for '-__ON=$_', choose from '{1..N,first,last,all,*}'");
-		    }
-		}
+convert:  sub { <ARGS>;
+                local $_; my @tmp=();
+                foreach (@{<PVAL>}) {
+                    if    ($_ eq 'first') { push @tmp, 1;    }
+                    elsif ($_ eq 'last')  { push @tmp, 0;    }
+                    elsif ($_ eq 'all')   { @tmp = (); last; }
+                    elsif ($_ eq '*')     { @tmp = (); last; }
+                    elsif (/^\d+$/)       { push @tmp, $_;   }
+                    else {
+                        <WARN>("bad value for '-<ONAME>=$_', choose from '{1..N,first,last,all,*}'");
+                    }
+                }
                 return [ @tmp ];
             }
 

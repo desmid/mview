@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 1999-2015 Nigel P. Brown
+# Copyright (C) 1999-2018 Nigel P. Brown
 
 ###########################################################################
 # 
@@ -13,7 +13,7 @@
 #   function to set the parameter. 
 # 
 ###########################################################################
-package Getopt::Class;
+package Bio::Getopt::Class;
 
 use Getopt::Long;
 use NPB::Parse::Regexps;
@@ -175,12 +175,12 @@ sub param_value {
     $v;
 }
 
-sub getoptions {
+sub get_options {
     my $self = shift;
     my ($caller, $opt, $par) = @_;
     my (@tmp, $o, $ov, $p, $pv);
 
-    return    if (@tmp = _build_options($self->{'option'}->[1])) < 1;
+    return    if (@tmp = build_options($self->{'option'}->[1])) < 1;
 
     GetOptions($opt, @tmp);
 
@@ -305,7 +305,7 @@ sub test_type {
     if ($type eq 'b') {
 	return $self->expand_toggle($o, $v);
     }
-    CORE::die "Getopt::Class::test_type() unknown type '$type'\n";
+    CORE::die "Bio::Getopt::Class::test_type() unknown type '$type'\n";
 }
 
 sub expand_integer_list {
@@ -407,7 +407,7 @@ sub expand_toggle {
     return 0;
 }
 
-sub _build_options {
+sub build_options {
     my $opt = shift;
     my @opt = ();
     local $_;
@@ -422,7 +422,11 @@ sub _build_options {
     @opt;
 }
 
-sub _load_options {
+
+###########################################################################
+package Bio::Getopt::OptionLoader;
+
+sub load_options {
     my ($scope, $prog, $stm) = @_;
     my ($tmp, $class, $name, $option);
     my $text = '';
@@ -453,11 +457,11 @@ sub _load_options {
 	if (/^\s*\[\s*([a-z0-9]+)\s*\]/i) {
 	    $name = $1;
 	    if (! exists $class{$name}) {
-		$class = new Getopt::Class($prog, [], 1);
+		$class = new Bio::Getopt::Class($prog, [], 1);
 		$class{$name} = $class;
 		push @class, $name;
 	    } else {
-		CORE::die "Getopt::Class::_load_options() class duplication for '$name'\n";
+		CORE::die "Bio::Getopt::Class::load_options() class duplication for '$name'\n";
 	    }
 	    next;
 	}
@@ -531,7 +535,7 @@ sub _load_options {
 	    redo;
 	}
 
-	CORE::die "Getopt::Class::_load_options() unrecognised line: [$_]";
+	CORE::die "Bio::Getopt::Class::load_options() unrecognised line: [$_]";
     }
     ($text, \@class, \%class);
 }
@@ -586,7 +590,7 @@ sub _scan_subroutine {
     #warn "SUB: ($tmp)\n";
 
     $tmp = eval $tmp;
-    CORE::die "Getopt::Class::_load_options() bad sub definition '$option':\n$@"    if $@;
+    CORE::die "Bio::Getopt::Class::load_options() bad sub definition '$option':\n$@"    if $@;
 
     ($tmp, $line);
 }
@@ -601,12 +605,12 @@ sub _strip_quotes {
 sub _process_macros {
     my ($prog, $text, $string) = @_;
 
-    #__PROG macro
-    $text =~ s/__PROG/$prog/g;
+    #PROG macro
+    $text =~ s/<PROG>/$prog/g;
 
     if ($string) {
-	#__CHOOSE() macro
-	if ($text =~ /__CHOOSE\((.*)\)/) {
+	#CHOOSE() macro
+	if ($text =~ /<CHOOSE>\((.*)\)/) {
 	    my ($repl, $sig, @tmp);
 	    $sig = $SIG{'__WARN__'};
 	    $SIG{'__WARN__'} = sub {};
@@ -617,167 +621,149 @@ sub _process_macros {
 		$repl = join(",", @tmp);
 	    }
 	    $SIG{'__WARN__'} = $sig;
-	    $text =~ s/__CHOOSE\((.*)\)/\{$repl\}/g;
+	    $text =~ s/<CHOOSE>\((.*)\)/\{$repl\}/g;
 	}
     } else {
-	#__ARGS macro
-	$text =~ s/__ARGS/my (\$getopt,\$class,\$on,\$ov,\$pn,\$pv)=\@_;/g;
+	#ARGS macro
+	$text =~ s/<ARGS>/my (\$getopt,\$class,\$on,\$ov,\$pn,\$pv)=\@_;/g;
 
-	#__GETOPT macro
-	$text =~ s/__GETOPT/\$getopt/g;
+	#GETOPT macro
+	$text =~ s/<GETOPT>/\$getopt/g;
 
-	#__CLASS macro
-	$text =~ s/__CLASS/\$class/g;
+	#CLASS macro
+	$text =~ s/<CLASS>/\$class/g;
 
-	#__OPTION macro
-	$text =~ s/__OPTION/\$getopt->{'option'}->/g;
+	#OPTION macro
+	$text =~ s/<OPTION>/\$getopt->{'option'}->/g;
 	
-	#__PARAM macro
-	$text =~ s/__PARAM/\$getopt->{'param'}->/g;
+	#PARAM macro
+	$text =~ s/<PARAM>/\$getopt->{'param'}->/g;
 	
-	#__DELETE_OPTION macro
-	$text =~ s/__DELETE_OPTION/\$getopt->delete_option/g;
+	#DELETE_OPTION macro
+	$text =~ s/<DELETE_OPTION>/\$getopt->delete_option/g;
 	
-	#__DELETE_PARAM macro
-	$text =~ s/__DELETE_PARAM/\$getopt->delete_parameter/g;
+	#DELETE_PARAM macro
+	$text =~ s/<DELETE_PARAM>/\$getopt->delete_parameter/g;
 	
-	#__TEST macro
-	$text =~ s/__TEST/\$class->test_type/g;
+	#TEST macro
+	$text =~ s/<TEST>/\$class->test_type/g;
 
-	#__WARN macro
-	$text =~ s/__WARN/\$class->warn/g;
+	#WARN macro
+	$text =~ s/<WARN>/\$class->warn/g;
 
-	#__USAGE macro
-	$text =~ s/__USAGE/\$getopt->usage/g;
+	#USAGE macro
+	$text =~ s/<USAGE>/\$getopt->usage/g;
 	
-	#__ON macro (option name)
-	$text =~ s/__ON/\$on/g;
+	#ONAME macro (option name)
+	$text =~ s/<ONAME>/\$on/g;
 
-	#__OV macro (option value)
-	$text =~ s/__OV/\$ov/g;
+	#OVAL macro (option value)
+	$text =~ s/<OVAL>/\$ov/g;
 
-	#__PN macro (parameter name)
-	$text =~ s/__PN/\$pn/g;
+	#PNAME macro (parameter name)
+	$text =~ s/<PNAME>/\$pn/g;
 
-	#__PV macro (parameter value)
-	$text =~ s/__PV/\$pv/g;
+	#PVAL macro (parameter value)
+	$text =~ s/<PVAL>/\$pv/g;
     }
     $text;
 }
 
 
 ###########################################################################
-package Getopt;
+package Bio::Getopt;
 
 use strict;
 
 sub new {
-    my $type = shift;
-    my ($prog, $stm) = @_;
+    my ($type, $prog, $stm) = @_;
     my $self = {};
-    local $_;
 
+    $self->{'prog'}   = $prog;
+    $self->{'argv'}   = [];
+    $self->{'option'} = {};
+    $self->{'param'}  = {};
     (
      $self->{'text'},
      $self->{'order'},
      $self->{'class'},
-    ) = Getopt::Class::_load_options((caller)[0], $prog, $stm);
-    $self->{'prog'}   = $prog;
-    $self->{'option'} = {};
-    $self->{'param'}  = {};
-    $self->{'argv'}   = [];
-	
-    foreach (keys %{$self->{'class'}}) {
-	$self->{'class'}->{$_}->init;
+    ) = Bio::Getopt::OptionLoader::load_options((caller)[0], $prog, $stm);
+
+    foreach my $cls (keys %{$self->{'class'}}) {
+	$self->{'class'}->{$cls}->init;
     }
 
     bless $self, $type;
 }
 
 sub usage {
-    my ($self, $stm) = (@_, \*STDERR);
-    my ($c, $k);
-    print $stm "$self->{'text'}\n"    if defined $self->{'text'};
-    foreach $c (@{$self->{'order'}}) {
-	#print $stm "[$c]\n", $self->{'class'}->{$c}->usage;
-	print $stm $self->{'class'}->{$c}->usage;
+    my $self = shift;
+    my $s = '';
+    $s .= "$self->{'text'}\n"  if defined $self->{'text'};
+    foreach my $cls (@{$self->{'order'}}) {
+	$s .= $self->{'class'}->{$cls}->usage;
     }
-    $self;
+    $s;
 }
 
-sub getoptions {
+sub parse_options {
     my ($self, $argv, $stm) = (@_, \*STDERR);
     my @tmp = ();
     my $error = 0;
-    local $_;
 
     #save input ARGV for posterity
     push @{$self->{'argv'}}, @$argv;
 
-    foreach $_ (@{$self->{'order'}}) {
-	if ($self->{'class'}->{$_}->getoptions($self, $self->{'option'}, 
-					       $self->{'param'})) {
-	    print $stm $self->{'class'}->{$_}->errors;
+    #process options in specified class order
+    foreach my $cls (@{$self->{'order'}}) {
+	if ($self->{'class'}->{$cls}->get_options($self, $self->{'option'}, 
+                                                  $self->{'param'})) {
+	    print $stm $self->{'class'}->{$cls}->errors;
 	    $error++;
 	}
     }
-    #warn "remaining1 ARGV: @ARGV\n";
-    foreach (@ARGV) {
-	if (/^--?\S/) {
-	    CORE::warn "$self->{'prog'}: unknown or badly formed option '$_'\n";
+
+    #error if any remaining options
+    foreach my $arg (@ARGV) {
+	if ($arg =~ /^--?\S/) {
+	    print $stm "$self->{'prog'}: unknown option '$arg'\n";
 	    $error++;
 	} else {
-	    push @tmp, $_;
+	    push @tmp, $arg;
 	}
     }
     CORE::die "$self->{'prog'}: aborting.\n"  if $error;
+
     @ARGV = @tmp;
-    #warn "remaining2 ARGV: @ARGV\n";
     $self;
 }
 
-sub get_option_hash { $_[0]->{'option'} }
-
-sub delete_option {
-    my $self = shift;
-    local $_;
-    foreach (@_) {
-	delete $self->{'option'}->{$_}    if exists $self->{'option'}->{$_};
+sub _delete_item {
+    my ($self, $label) = (shift, shift);
+    foreach my $key (@_) {
+	delete $self->{$label}->{$key}  if exists $self->{$label}->{$key};
     }
     $self;
 }
 
-sub argv { @{$_[0]->{'argv'}} }
-sub argv_string { join(" ", @{$_[0]->{'argv'}}) }
-
-sub print_options {
-    my ($self, $stm) = (@_, \*STDERR);
-    local $_;
-    print $stm "Option list:\n";
-    map { print $stm "$_ => @{[defined $self->{'option'}{$_} ?
-        $self->{'option'}{$_} : 'undef']}\n" } sort keys %{$self->{'option'}};
-    $self;
+sub _dump_items {
+    my ($self, $label) = @_;
+    my @tmp = map { sprintf("%-25s => %s\n", $_,
+                            defined $self->{$label}->{$_} ?
+                            $self->{$label}->{$_} : 'undef')
+    } sort keys %{$self->{$label}};
+    join('', @tmp);
 }
 
+sub get_option_hash    { $_[0]->{'option'} }
 sub get_parameter_hash { $_[0]->{'param'} }
 
-sub delete_parameter {
-    my $self = shift;
-    local $_;
-    foreach (@_) {
-	delete $self->{'param'}->{$_}    if exists $self->{'param'}->{$_};
-    }
-    $self;
-}
+sub delete_option    { my $self = shift; $self->_delete_item('option', @_); }
+sub delete_parameter { my $self = shift; $self->_delete_item('param',  @_); }
 
-sub print_parameters {
-    my ($self, $stm) = (@_, \*STDERR);
-    local $_;
-    print $stm "Parameter list:\n";
-    map { print $stm "$_ => @{[defined $self->{'param'}{$_} ?
-        $self->{'param'}{$_} : 'undef']}\n" } sort keys %{$self->{'param'}};
-    $self;
-}
+sub dump_argv        { join(" ", @{$_[0]->{'argv'}}) }
+sub dump_options     { my $self = shift; $self->_dump_items('option', @_); }
+sub dump_parameters  { my $self = shift; $self->_dump_items('param',  @_); }
 
 
 ###########################################################################
