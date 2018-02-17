@@ -34,7 +34,6 @@ my %Template =
      'param'   => undef,
      'convert' => undef,
      'action'  => undef,
-     'print'   => undef,
     );
 
 sub new {
@@ -44,7 +43,8 @@ sub new {
 
     $self->{'prog'}   = $prog;
     $self->{'name'}   = $name;
-    $self->{'option'} = [];
+    $self->{'text'}   = undef;
+    $self->{'option'} = {};
     $self->{'order'}  = [];
     $self->{'errors'} = [];
 
@@ -65,11 +65,10 @@ sub new {
 
 sub init {
     my $self = shift;
-    my ($key, $field);
-    foreach $key (keys %{$self->{'option'}->[1]}) {
-	foreach $field (keys %Template) {
-	    $self->{'option'}->[1]{$key}->{$field} = $Template{$field}
-	        if ! exists $self->{'option'}->[1]{$key}->{$field};
+    foreach my $o (keys %{$self->{'option'}}) {
+	foreach my $val (keys %Template) {
+	    $self->{'option'}->{$o}->{$val} = $Template{$val}
+	        if ! exists $self->{'option'}->{$o}->{$val};
 	}
     }
     $self;
@@ -77,20 +76,20 @@ sub init {
 
 sub set_text {
     my ($self, $text) = @_;
-    $self->{'option'}->[0] = $text;
+    $self->{'text'} = $text;
     $self;
 }
 
 sub set_generic {
     my ($self, $option) = @_;
-    $self->{'option'}->[1]->{$option} = { 'generic' => 1 };
+    $self->{'option'}->{$option} = { 'generic' => 1 };
     push @{$self->{'order'}}, $option;
     $self;
 }
 
 sub set_option {
     my ($self, $option) = @_;
-    $self->{'option'}->[1]->{$option} = { 'name' => $option };
+    $self->{'option'}->{$option} = { 'name' => $option };
     push @{$self->{'order'}}, $option;
     $self;
 }
@@ -98,7 +97,7 @@ sub set_option {
 sub set_option_keyval {
     my ($self, $option, $key, $val) = @_;
     #warn "($option, $key, $val)\n";
-    $self->{'option'}->[1]->{$option}->{$key} = $val;
+    $self->{'option'}->{$option}->{$key} = $val;
     $self;
 }
 
@@ -121,8 +120,8 @@ sub usage {
     return '' if $self->{'name'} eq '.';  #silent
 
     foreach my $o (@{$self->{'order'}}) {
-        my $item = $self->{'option'}->[1]->{$o};
-        $item = $generic->{'option'}->[1]->{$o} if exists $item->{'generic'};
+        my $item = $self->{'option'}->{$o};
+        $item = $generic->{'option'}->{$o} if exists $item->{'generic'};
         if (defined $item->{'usage'}) {
             push @list, $item;
             next;
@@ -133,8 +132,8 @@ sub usage {
 
     my $s = '';
 
-    if (defined $self->{'option'}->[0] and $self->{'option'}->[0]) {
-        $s = $self->{'option'}->[0] . "\n";
+    if (defined $self->{'text'} and $self->{'text'}) {
+        $s = $self->{'text'} . "\n";
     }
     
     foreach my $item (@list) {
@@ -182,7 +181,7 @@ sub param_value {
     my $self = shift;
     my ($o, $v) = @_; #warn "($o, $v)\n";
     return "'undef'"  unless defined $v;
-    if (ref $v or $self->{'option'}->[1]{$o}->{'type'} =~ /@/) {
+    if (ref $v or $self->{'option'}->{$o}->{'type'} =~ /@/) {
 	$v = "[" . join(",", @$v) . "]"  #assume it's a list
     }
     return $v;
@@ -193,7 +192,7 @@ sub get_options {
     my ($caller, $opt, $par) = @_;
     my (@tmp, $o, $ov, $p, $pv);
 
-    return  if (@tmp = build_options($self->{'option'}->[1])) < 1;
+    return  if (@tmp = build_options($self->{'option'})) < 1;
 
     GetOptions($opt, @tmp);
 
@@ -202,7 +201,7 @@ sub get_options {
 OPTION:
     foreach $o (@{$self->{'order'}}) {
 
-        my $item = $self->{'option'}->[1]->{$o};
+        my $item = $self->{'option'}->{$o};
 
         next  if $item->{'generic'};  #let the [.] group deal with it
 
@@ -413,10 +412,11 @@ package Bio::Getopt::OptionLoader;
 
 sub load_options {
     my ($scope, $prog, $stm) = @_;
-    my ($tmp, $class, $name, $option);
     my $text = '';
     my @order = ();
     my %class;
+
+    my ($tmp, $class, $name, $option);
     local $_;
 
     while (<$stm>) {
