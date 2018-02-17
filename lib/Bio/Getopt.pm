@@ -119,6 +119,7 @@ sub usage {
 
     return '' if $self->{'name'} eq '.';  #silent
 
+    #lookup the option in this class, or in the generic class
     foreach my $o (@{$self->{'order'}}) {
         my $item = $self->{'option'}->{$o};
         $item = $generic->{'option'}->{$o} if exists $item->{'generic'};
@@ -209,35 +210,29 @@ OPTION:
         $ov = $opt->{$o}  if defined $opt->{$o};  #command line
 
 	$p = $item->{'param'};                    #explicit name
-	$p = $o    unless defined $p;             #use option name
+	$p = $o  unless defined $p;               #use option name
 	
-	#simple type tests and parameter conversion
+	#type tests and simple parameter conversion
 	$pv = $self->test_type($item->{'type'}, $o, $ov);
-
-        #warn "option:$o\nparam:$p\novalue:@{[(defined $ov?$ov:'undef')]}\npvalue:@{[(defined $pv?$pv:'undef')]}\n\n";
 
 	next OPTION  if @{$self->{'errors'}};
 
-	#special parameter conversion, if any
+	#convert: special parameter conversion
         if (defined $item->{'convert'} and ref $item->{'convert'} eq 'CODE') {
-            #use conversion function
             $pv = &{$item->{'convert'}}($caller, $self, $o, $ov, $p, $pv);
-            #warn "CONV($p): $pv\n"  if defined $pv;
 	}
 
 	next OPTION  if @{$self->{'errors'}};
 
-	#action: perform associated action, if any
+	#action: perform special action
 	if (defined $item->{'action'} and ref $item->{'action'} eq 'CODE') {
 	    &{$item->{'action'}}($caller, $self, $o, $ov, $p, $pv);
-	    #warn "ACTN($o): $ov\n"  if defined $ov;
 	}
 	
 	next OPTION  if @{$self->{'errors'}};
 
 	#overwrite option and parameter values
-	$opt->{$o} = $ov;
-	$par->{$p} = $pv;
+	$opt->{$o} = $ov; $par->{$p} = $pv;
 
 	if ($DEBUG) {
 	    $ov = $self->option_value($o, $ov);
@@ -518,14 +513,6 @@ sub load_options {
 	    redo;
 	}
 	
-	#class.option.PRINT
-	if (/^\s*(print)\s*:\s*(.*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    ($tmp, $_) = _scan_subroutine($scope, $prog, $stm, "$name.$option", $2);
-	    $class->set_option_keyval($option, $1, $tmp);
-	    redo;
-	}
-
 	CORE::die "Bio::Getopt::Class::load_options() unrecognised line: [$_]";
     }
     ($text, \@order, \%class);
@@ -568,12 +555,12 @@ sub _scan_subroutine {
     $line = ''    unless defined $line;
     #warn "($stm, $line, $tmp)";
     if ($line =~ /^\s*(sub.*)/) {
-        $tmp = "$1\n";                                #first line
+        $tmp = "$1\n";                                  #first line
     }
     while ($line = <$stm>) {    
-        last if $line =~ /^\s*(?:text|option|generic|usage|type|default|param|convert|action|print)\s*:/i;                            #next option
-        last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i; #next class
-        $tmp .= $line;                                #middle lines
+        last if $line =~ /^\s*(?:text|option|generic|usage|type|default|param|convert|action)\s*:/i;                                    #next option
+        last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i;  #next class
+        $tmp .= $line;                                  #middle lines
     }
 
     #warn "SUB: ($tmp)\n";
@@ -629,9 +616,6 @@ sub _process_macros {
 	
 	#PARAM macro
 	$text =~ s/<PARAM>/\$getopt->{'param'}->/g;
-	
-	#DELETE_OPTION macro
-	$text =~ s/<DELETE_OPTION>/\$getopt->delete_option/g;
 	
 	#DELETE_PARAM macro
 	$text =~ s/<DELETE_PARAM>/\$getopt->delete_parameter/g;
@@ -737,24 +721,11 @@ sub _delete_item {
     $self;
 }
 
-sub _dump_items {
-    my ($self, $label) = @_;
-    my @tmp = map { sprintf("%-25s => %s\n", $_,
-                            defined $self->{$label}->{$_} ?
-                            $self->{$label}->{$_} : 'undef')
-    } sort keys %{$self->{$label}};
-    join('', @tmp);
-}
+sub get_parameters { $_[0]->{'param'} }
 
-sub get_option_hash    { $_[0]->{'option'} }
-sub get_parameter_hash { $_[0]->{'param'} }
-
-sub delete_option    { my $self = shift; $self->_delete_item('option', @_); }
 sub delete_parameter { my $self = shift; $self->_delete_item('param',  @_); }
 
-sub dump_argv        { join(" ", @{$_[0]->{'argv'}}) }
-sub dump_options     { my $self = shift; $self->_dump_items('option', @_); }
-sub dump_parameters  { my $self = shift; $self->_dump_items('param',  @_); }
+sub dump_argv { join(" ", @{$_[0]->{'argv'}}) }
 
 
 ###########################################################################

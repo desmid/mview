@@ -65,9 +65,9 @@ $SIG{'INT'} =
 
 $com = new Bio::Getopt($PROG, \*DATA);
 $com->parse_options(\@ARGV);
-$par = $com->get_parameter_hash;
+$par = $com->get_parameters;
 rationalise_parameters($par);
-dump_options($com)  if $par->{'verbose'} & $VERB_OPTS;
+dump_parameters($par)  if $par->{'verbose'} & $VERB_OPTS;
 usage($com, $par, 0)  if $par->{'help'};
 
 #CSS listing request: no alignment, no HTML
@@ -410,10 +410,15 @@ sub usage {
     exit $exit  if defined $exit;
 }
 
-sub dump_options {
-    my $com = shift;
-    warn "Input options:\n"       . $com->dump_options();
-    warn "\nPassed parameters:\n" . $com->dump_parameters();
+sub dump_parameters {
+    my $par = shift;
+    warn "\nProcessed parameters:\n";
+    foreach my $k (sort keys %$par) {
+        my $v = 'undef';
+        $v = $par->{$k}  if defined $par->{$k};
+        $v = "[" . join(",", @$v) . "]"  if ref $v eq 'ARRAY';
+        warn sprintf("%20s => %s\n", $k, $v);
+    }
     warn "\n";
 }
 
