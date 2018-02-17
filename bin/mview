@@ -83,7 +83,7 @@ if ($par->{'listcss'}) {
     exit 0;
 }
 
-html_head($par, $stm);
+print $stm html_head($par);
 
 #echo command line?
 if ($par->{'verbose'} & $VERB_ARGV) {
@@ -109,7 +109,7 @@ if ($par->{'listcolors'}) {
     print $stm Bio::MView::Manager::list_colormaps($par->{'html'});
     print $stm "</PRE><HR>\n"      if $par->{'html'};
     print $stm copyright($par);
-    html_foot($par, $stm);
+    print $stm html_foot($par);
     exit 0;
 }
 
@@ -119,7 +119,7 @@ if ($par->{'listgroups'}) {
     print $stm Bio::MView::Manager::list_groupmaps($par->{'html'});
     print $stm "</PRE><HR>\n"      if $par->{'html'};
     print $stm copyright($par);
-    html_foot($par, $stm);
+    print $stm html_foot($par);
     exit 0;
 }
 
@@ -142,7 +142,7 @@ if (mview($opt, $par, $stm, @ARGV)) {
     print $s  if $par->{'html'} != $HTML_DATA;
     warn $s;
 }
-html_foot($par, $stm);
+print $stm html_foot($par);
 
 #Universal::vmstat("FINISHED.");
 
@@ -241,29 +241,31 @@ sub rationalise_parameters {
 }
 
 sub html_head {
-    my ($p, $stm) = (@_, *STDOUT);
+    my $p = shift;
 
     #warn "HTML=$p->{'html'}\n";
 
     return  unless $p->{'html'};
     return  if $p->{'html'} == $HTML_DATA;
 
+    my $s = '';
+
     #want MIME type?
     if ($p->{'html'} & $HTML_MIME) {
-	print $stm "Content-Type: text/html\n\n";
+	$s .= "Content-Type: text/html\n\n";
     }
 
     #want HTML HEAD?
     if ($p->{'html'} & $HTML_HTML) {
-        my $s = "$DOCMETA\n";
+        my $t = "$DOCMETA\n";
 
         #link styles
         if ($p->{'srs'}) {
-            $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-            $s .= "A:link{background:transparent;color:$p->{'linkcolor'}}\n";
-            $s .= "A:active{background:transparent;color:$p->{'alinkcolor'}}\n";
-            $s .= "A:visited{background:transparent;color:$p->{'vlinkcolor'}}\n";
-            $s .= "-->\n</STYLE>\n";
+            $t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+            $t .= "A:link{background:transparent;color:$p->{'linkcolor'}}\n";
+            $t .= "A:active{background:transparent;color:$p->{'alinkcolor'}}\n";
+            $t .= "A:visited{background:transparent;color:$p->{'vlinkcolor'}}\n";
+            $t .= "-->\n</STYLE>\n";
         }
 
 	#want colour definitions?
@@ -271,48 +273,52 @@ sub html_head {
 	    #alignment styles
 	    if ($p->{'css1'} =~ /^(?:file|http):/i) {
 		#link to style sheet
-	        $s .= "<LINK REL=STYLESHEET HREF=\"$p->{'css1'}\">\n";
+	        $t .= "<LINK REL=STYLESHEET HREF=\"$p->{'css1'}\">\n";
 	    } else {
 		#style sheet in situ
-		$s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-		$s .= Bio::MView::Align::list_css1_colormaps
+		$t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+		$t .= Bio::MView::Align::list_css1_colormaps
 		    ('alncolor' => $p->{'alncolor'},
 		     'labcolor' => $p->{'labcolor'},
 		     'symcolor' => $p->{'symcolor'},
 		     'gapcolor' => $p->{'gapcolor'},
 		    );
-		$s .= "-->\n</STYLE>\n";
+		$t .= "-->\n</STYLE>\n";
 	    }
 	}
 
         #page TITLE
         if (defined $p->{'title'} and $p->{'title'} ne "") {
-            $s .= "<TITLE>$p->{'title'}</TITLE>\n";
+            $t .= "<TITLE>$p->{'title'}</TITLE>\n";
         } else {
-            $s .= "<TITLE>MView</TITLE>\n";
+            $t .= "<TITLE>MView</TITLE>\n";
         }
 
-        print $stm "$DOCTYPE\n<HTML>\n";
-        print $stm "<HEAD>\n$s</HEAD>\n"  if $s;
+        $s .= "$DOCTYPE\n<HTML>\n";
+        $s .= "<HEAD>\n$t</HEAD>\n"  if $t;
     }
 
     #want BODY?
     if ($p->{'html'} & $HTML_BODY) {
-        print $stm "<BODY style=\"background-color:$p->{'pagecolor'}; color:$p->{'textcolor'}\">\n";
+        $s .= "<BODY style=\"background-color:$p->{'pagecolor'}; color:$p->{'textcolor'}\">\n";
     }
 
     #want TITLE? (in document)
     if (defined $p->{'title'} and $p->{'title'} ne "") {
-	print $stm "<H4>$p->{'title'}</H4>\n";
+	$s .= "<H4>$p->{'title'}</H4>\n";
     }
+
+    $s;
 }
 
 sub html_foot {
-    my ($p, $stm) = (@_, *STDOUT);
+    my $p = shift;
     return  unless $p->{'html'};
     return  if $p->{'html'} == $HTML_DATA;
-    print $stm "</BODY>\n"  if $p->{'html'} & $HTML_BODY;
-    print $stm "</HTML>\n"  if $p->{'html'} & $HTML_HTML;
+    my $s = '';
+    $s .= "</BODY>\n"  if $p->{'html'} & $HTML_BODY;
+    $s .= "</HTML>\n"  if $p->{'html'} & $HTML_HTML;
+    $s;
 }
 
 sub check_format {
@@ -397,9 +403,9 @@ sub check_format {
 sub usage {
     my ($com, $par, $exit, $stm) = (@_, *STDOUT);
     $par->{'title'} = 'MView command line options';
-    html_head($par, $stm);
+    print $stm html_head($par);
     print $stm "<HR><PRE>\n"   if $par->{'html'};
-    print $stm $com->usage($stm);
+    print $stm $com->usage;
     print $stm "</PRE><HR>\n"  if $par->{'html'};
     print $stm copyright($par);
     html_foot($par, $stm);
