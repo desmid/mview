@@ -18,7 +18,10 @@
 # action:    function, for side effects only.
 # 
 ###########################################################################
-package Bio::Getopt::Class;
+$Bio::Getopt::GENERIC_GROUP = '.';
+
+###########################################################################
+package Bio::Getopt::Group;
 
 use Getopt::Long;
 use NPB::Parse::Regexps;
@@ -66,9 +69,9 @@ sub new {
 sub init {
     my $self = shift;
     foreach my $o (keys %{$self->{'option'}}) {
+        my $item = $self->{'option'}->{$o};
 	foreach my $val (keys %Template) {
-	    $self->{'option'}->{$o}->{$val} = $Template{$val}
-	        if ! exists $self->{'option'}->{$o}->{$val};
+	    $item->{$val} = $Template{$val} if !exists $item->{$val};
 	}
     }
     $self;
@@ -117,9 +120,9 @@ sub usage {
     my ($self, $generic) = (shift, shift);
     my @list = ();
 
-    return ''  if $self->{'name'} eq '.';  #silent
+    return ''  if $self->{'name'} eq $Bio::Getopt::GENERIC_GROUP;  #silent
 
-    #lookup the option in this class, or in the generic class
+    #lookup the option in this group, or in the generic group
     foreach my $o (@{$self->{'order'}}) {
         my $item = $self->{'option'}->{$o};
         $item = $generic->{'option'}->{$o} if exists $item->{'generic'};
@@ -193,7 +196,7 @@ sub get_options {
     my ($caller, $opt, $par) = @_;
     my (@tmp, $o, $ov, $p, $pv);
 
-    return  if (@tmp = build_options($self->{'option'})) < 1;
+    return  if (@tmp = $self->build_options) < 1;
 
     GetOptions($opt, @tmp);
 
@@ -284,7 +287,7 @@ sub test_type {
     if ($type eq 'b') {
 	return $self->expand_toggle($o, $v);
     }
-    CORE::die "Bio::Getopt::Class::test_type() unknown type '$type'\n";
+    CORE::die "Bio::Getopt::Group::test_type() unknown type '$type'\n";
 }
 
 sub expand_integer_list {
@@ -387,18 +390,18 @@ sub expand_toggle {
 }
 
 sub build_options {
-    my $opt = shift;
-    my @opt = ();
-    local $_;
-    foreach (keys %$opt) {
-	if (!defined $opt->{$_}->{'type'} or $opt->{$_}->{'type'} eq '') {
-	    push @opt, $_;
+    my $self = shift;
+    my @tmp = ();
+    foreach my $o (keys %{$self->{'option'}}) {
+        my $item = $self->{'option'}->{$o};
+	if (!defined $item->{'type'} or $item->{'type'} eq '') {
+	    push @tmp, $o;
 	} else {
-	    push @opt, "$_=s";
+	    push @tmp, "$o=s";
 	}
     }
-    #warn "OPT: @opt\n";
-    @opt;
+    #warn "OPT: @tmp\n";
+    @tmp;
 }
 
 
@@ -411,9 +414,9 @@ sub load_options {
     my ($scope, $prog, $stm) = @_;
     my $text = '';
     my @order = ();
-    my %class;
+    my %group;
 
-    my ($tmp, $class, $name, $option);
+    my ($tmp, $group, $name, $option);
     local $_;
 
     while (<$stm>) {
@@ -423,104 +426,104 @@ sub load_options {
 	next  if /^\s*\#/;  #hash comment
 
 	#HEADER
-	if (!defined $class and /^\s*header\s*:\s*(.*)/i) {
+	if (!defined $group and /^\s*header\s*:\s*(.*)/i) {
 	    #warn "#header($1)\n";
-	    ($text, $_) = _scan_quoted_text($prog, $stm, $1);
+	    ($text, $_) = scan_quoted_text($prog, $stm, $1);
 	    redo;
 	}
 	
-	#CLASS
+	#GROUP
 	if (/^\s*\[\s*([._a-z0-9]+)\s*\]/i) {
 	    $name = uc $1;
-            #allow classname to recur
-	    if (! exists $class{$name}) {
-		$class = new Bio::Getopt::Class($prog, $name, 1);
-		$class{$name} = $class;
-                #warn "consct: $name, $class\n";
+            #allow groupname to recur
+	    if (! exists $group{$name}) {
+		$group = new Bio::Getopt::Group($prog, $name, 1);
+		$group{$name} = $group;
+                #warn "consct: $name, $group\n";
 		push @order, $name;
                 next;
 	    }
-            $class = $class{$name};
-            #warn "extend: $name, $class\n";
+            $group = $group{$name};
+            #warn "extend: $name, $group\n";
 	    next;
 	}
 
-	#class.HEADER
+	#group.HEADER
 	if (/^\s*header\s*:\s*(.*)/i) {
-	    #warn "#class.header($1)\n";
-	    ($tmp, $_) = _scan_quoted_text($prog, $stm, $1);
-	    $class->set_text($tmp);
+	    #warn "#group.header($1)\n";
+	    ($tmp, $_) = scan_quoted_text($prog, $stm, $1);
+	    $group->set_text($tmp);
 	    redo;
 	}
 	
-	#class.OPTION
+	#group.OPTION
 	if (/^\s*option\s*:\s*(\S+)/i) {
-	    #warn "#class.option($1)\n";
-	    $option = _strip_quotes($1);
-            $class->set_option($option);
+	    #warn "#group.option($1)\n";
+	    $option = strip_quotes($1);
+            $group->set_option($option);
 	    next;
 	}
 	
-	#class.GENERIC
+	#group.GENERIC
 	if (/^\s*generic\s*:\s*(\S+)/i) {
-	    #warn "#class.generic($1)\n";
-	    $option = _strip_quotes($1);
-            $class->set_generic($option);
+	    #warn "#group.generic($1)\n";
+	    $option = strip_quotes($1);
+            $group->set_generic($option);
 	    next;
 	}
 	
-	#class.option.TYPE
+	#group.option.TYPE
 	if (/^\s*(type)\s*:\s*(\S+)/i) {
-	    #warn "#class.option.$1($2)\n";
-            $class->set_option_keyval($option, $1, _strip_quotes($2));
+	    #warn "#group.option.$1($2)\n";
+            $group->set_option_keyval($option, $1, strip_quotes($2));
 	    next;
 	}
 	
-	#class.option.DEFAULT
+	#group.option.DEFAULT
 	if (/^\s*(default)\s*:\s*(.*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    $class->set_option_keyval($option, $1, _strip_quotes($2));
+	    #warn "#group.option.$1($2)\n";
+	    $group->set_option_keyval($option, $1, strip_quotes($2));
 	    next;
 	}
 	
-	#class.option.USAGE
+	#group.option.USAGE
 	if (/^\s*(usage)\s*:\s*(.*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    ($tmp, $_) = _scan_quoted_text($prog, $stm, $2);
-	    $class->set_option_keyval($option, $1, $tmp);
+	    #warn "#group.option.$1($2)\n";
+	    ($tmp, $_) = scan_quoted_text($prog, $stm, $2);
+	    $group->set_option_keyval($option, $1, $tmp);
 	    redo;
 	}
 	
-	#class.option.PARAM
+	#group.option.PARAM
 	if (/^\s*(param)\s*:\s*(\S*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    $class->set_option_keyval($option, $1, _strip_quotes($2));
+	    #warn "#group.option.$1($2)\n";
+	    $group->set_option_keyval($option, $1, strip_quotes($2));
 	    next;
 	}
 	
-	#class.option.CONVERT
+	#group.option.CONVERT
 	if (/^\s*(convert)\s*:\s*(.*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    ($tmp, $_) = _scan_subroutine($scope, $prog, $stm, "$name.$option", $2);
-	    $class->set_option_keyval($option, $1, $tmp);
+	    #warn "#group.option.$1($2)\n";
+	    ($tmp, $_) = scan_subroutine($scope, $prog, $stm, "$name.$option", $2);
+	    $group->set_option_keyval($option, $1, $tmp);
 	    redo;
 	}
 	
-	#class.option.ACTION
+	#group.option.ACTION
 	if (/^\s*(action)\s*:\s*(.*)/i) {
-	    #warn "#class.option.$1($2)\n";
-	    ($tmp, $_) = _scan_subroutine($scope, $prog, $stm, "$name.$option", $2);
-	    $class->set_option_keyval($option, $1, $tmp);
+	    #warn "#group.option.$1($2)\n";
+	    ($tmp, $_) = scan_subroutine($scope, $prog, $stm, "$name.$option", $2);
+	    $group->set_option_keyval($option, $1, $tmp);
 	    redo;
 	}
 	
-	CORE::die "Bio::Getopt::Class::load_options() unrecognised line: [$_]";
+	CORE::die "Bio::Getopt::Group::load_options() unrecognised line: [$_]";
     }
 
-    ($text, \@order, \%class);
+    ($text, \@order, \%group);
 }
 
-sub _scan_quoted_text {
+sub scan_quoted_text {
     my ($prog, $stm, $line, $text) = (shift, shift, shift, '');
     $line = ''    unless defined $line;
     #warn "($stm, $line, $text)";
@@ -532,7 +535,7 @@ sub _scan_quoted_text {
 	$text = $1;                                     #first line
 	while ($line = <$stm>) {
 	    last    if $line =~ /^\s*\S+\s*:/;          #next option
-	    last    if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]i/; #next class
+	    last    if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]i/; #next group
 	    chomp $line;
 	    if ($line =~ /(.*[\"\'])\s*$/) {            #last line
 		$text .= $1;
@@ -546,12 +549,12 @@ sub _scan_quoted_text {
     $text =~ s/^[\"\']//;       #strip leading quote
     $text =~ s/[\"\']$//;       #strip trailing quote
     $text =~ s/\\n/\n/g;        #translate newlines
-    $text = _process_macros($prog, $text, 1);
+    $text = process_macros($prog, $text, 1);
     #warn "TXT: ($text)\n"; 
     ($text, $line);
 }
 
-sub _scan_subroutine {
+sub scan_subroutine {
     my ($scope, $prog, $stm, $option, $line) = @_;
     my $tmp = '';
     $line = ''    unless defined $line;
@@ -561,28 +564,28 @@ sub _scan_subroutine {
     }
     while ($line = <$stm>) {    
         last if $line =~ /^\s*(?:header|option|generic|usage|type|default|param|convert|action)\s*:/i;                                  #next option
-        last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i;  #next class
+        last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i;  #next group
         $tmp .= $line;                                  #middle lines
     }
 
     #warn "SUB: ($tmp)\n";
-    $tmp = _process_macros($prog, $tmp, 0);
+    $tmp = process_macros($prog, $tmp, 0);
     #warn "SUB: ($tmp)\n";
 
     $tmp = eval $tmp;
-    CORE::die "Bio::Getopt::Class::load_options() bad subroutine definition '$option':\n$@"    if $@;
+    CORE::die "Bio::Getopt::Group::load_options() bad subroutine definition '$option':\n$@"    if $@;
 
     ($tmp, $line);
 }
 
-sub _strip_quotes {
+sub strip_quotes {
     my $txt = shift;
     $txt =~ s/^[\"\']//;
     $txt =~ s/[\"\']$//;
     $txt;
 }
 
-sub _process_macros {
+sub process_macros {
     my ($prog, $text, $string) = @_;
 
     #PROG macro
@@ -605,13 +608,13 @@ sub _process_macros {
 	}
     } else {
 	#ARGS macro
-	$text =~ s/<ARGS>/my (\$getopt,\$class,\$on,\$ov,\$pn,\$pv)=\@_;/g;
+	$text =~ s/<ARGS>/my (\$getopt,\$group,\$on,\$ov,\$pn,\$pv)=\@_;/g;
 
 	#GETOPT macro
 	$text =~ s/<GETOPT>/\$getopt/g;
 
-	#CLASS macro
-	$text =~ s/<CLASS>/\$class/g;
+	#GROUP macro
+	$text =~ s/<GROUP>/\$group/g;
 
 	#OPTION macro
 	$text =~ s/<OPTION>/\$getopt->{'option'}->/g;
@@ -623,10 +626,10 @@ sub _process_macros {
 	$text =~ s/<DELETE_PARAM>/\$getopt->delete_parameter/g;
 	
 	#TEST macro
-	$text =~ s/<TEST>/\$class->test_type/g;
+	$text =~ s/<TEST>/\$group->test_type/g;
 
 	#WARN macro
-	$text =~ s/<WARN>/\$class->warn/g;
+	$text =~ s/<WARN>/\$group->warn/g;
 
 	#USAGE macro
 	$text =~ s/<USAGE>/\$getopt->usage/g;
@@ -663,11 +666,11 @@ sub new {
     (
      $self->{'text'},
      $self->{'order'},
-     $self->{'class'},
+     $self->{'group'},
     ) = Bio::Getopt::OptionLoader::load_options((caller)[0], $prog, $stm);
 
-    foreach my $cls (keys %{$self->{'class'}}) {
-	$self->{'class'}->{$cls}->init;
+    foreach my $cls (keys %{$self->{'group'}}) {
+	$self->{'group'}->{$cls}->init;
     }
 
     bless $self, $type;
@@ -677,8 +680,9 @@ sub usage {
     my $self = shift;
     my $s = '';
     $s .= "$self->{'text'}\n"  if defined $self->{'text'};
+    my $generic = $self->{'group'}->{$Bio::Getopt::GENERIC_GROUP};
     foreach my $cls (@{$self->{'order'}}) {
-	$s .= $self->{'class'}->{$cls}->usage($self->{'class'}->{'.'});
+	$s .= $self->{'group'}->{$cls}->usage($generic);
     }
     $s;
 }
@@ -691,11 +695,11 @@ sub parse_options {
     #save input ARGV for posterity
     push @{$self->{'argv'}}, @$argv;
 
-    #process options in specified class order
+    #process options in specified group order
     foreach my $cls (@{$self->{'order'}}) {
-	if ($self->{'class'}->{$cls}->get_options($self, $self->{'option'}, 
+	if ($self->{'group'}->{$cls}->get_options($self, $self->{'option'}, 
                                                   $self->{'param'})) {
-	    print $stm $self->{'class'}->{$cls}->errors;
+	    print $stm $self->{'group'}->{$cls}->errors;
 	    $error++;
 	}
     }
