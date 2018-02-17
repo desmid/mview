@@ -469,19 +469,15 @@ contains whitespace or a wildcard that might be expanded by the shell\n"
 
 #force @ARGV to be examined for '-help' first.
 option:   help
-default:  0
 
 #force @ARGV to be examined for '-listcolors' first.
 option:   listcolors
-default:  0
 
 #force @ARGV to be examined for '-listgroups' first.
 option:   listgroups
-default:  0
 
 #force @ARGV to be examined for '-listcss' first.
 option:   listcss
-default:  0
 
 #force @ARGV to be examined for '-colorfile' first.
 option:   colorfile
