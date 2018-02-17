@@ -29,13 +29,9 @@ my %Template =
      'bp'            => undef,
      'ap'            => undef,
      #misc options
-     'aa'            => undef, #obsolete
-     'dna'           => undef, #obsolete
      'in'            => undef,
      'title'         => undef,
      'help'          => undef,
-     'disc'          => undef,
-     'keep'          => undef,
      'srs'           => undef,
      'verbose'       => undef,
      'colorfile'     => undef,

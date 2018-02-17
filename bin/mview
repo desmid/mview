@@ -502,31 +502,10 @@ action:   sub { <ARGS>;
               }
           }
 
-#set the default colormaps and groupmaps (assume protein)
-option:   aa
-action:   sub { <ARGS>;
-                (<PARAM>{'def_aln_colormap'},
-                 <PARAM>{'def_con_colormap'}) =
-                   Bio::MView::Manager::get_default_colormaps('aa');
-                <PARAM>{'def_aln_groupmap'} = <PARAM>{'def_con_groupmap'} =
-                  Bio::MView::Manager::get_default_groupmap('aa');
-                <PARAM>{'moltype'} = 'aa';
-          }
-
 #verbosity level, normally 0 to keep quiet
 option:   verbose
 type:     i
 default:  0
-
-#obsolete options: report fact to user
-option:   dna
-action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' replaced by '-moltype dna'") if defined <OVAL>; }
-
-option:   keep
-action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-show'") if defined <OVAL>; }
-
-option:   disc
-action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-hide'") if defined <OVAL>; }
 
 ###########################################################################
 [FORMATS]
