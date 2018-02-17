@@ -60,66 +60,59 @@ my ($VERB_NULL, $VERB_FILE, $VERB_ARGV, $VERB_FORM, $VERB_OPTS) = (0,1,2,4,8);
 my ($stm, $com, $par) = (\*STDOUT);
 
 ###########################################################################
-$SIG{'INT'} =
-    sub { warn "$PROG: interrupted - aborting.\n"; &cleanup(); exit 1 };
+sub cleanup { unlink "$SCRATCH"  if -f "$SCRATCH" }
 
+$SIG{'INT'} = sub {
+    warn "$PROG: interrupted - aborting.\n";
+    cleanup();
+    exit 1;
+};
+
+#parse default options and command line
 $com = new Bio::Getopt($PROG, \*DATA);
 $com->parse_options(\@ARGV);
 $par = $com->get_parameters;
 rationalise_parameters($par);
+
 dump_parameters($par)  if $par->{'verbose'} & $VERB_OPTS;
-usage($com, $par, 0)  if $par->{'help'};
 
-#CSS listing request: no alignment, no HTML
+#usage message and exit
+if ($par->{'help'}) {
+    print $stm usage($com, $par);
+    exit 0;
+}
+
+#dump css and exit
 if ($par->{'listcss'}) {
-    #http://www.w3.org/TR/REC-CSS1#containment-in-html
-    print $stm Bio::MView::Manager::list_css(
-	'alncolor' => $par->{'alncolor'},
-	'labcolor' => $par->{'labcolor'},
-	'symcolor' => $par->{'symcolor'},
-	'gapcolor' => $par->{'gapcolor'},
-	);
+    print $stm list_css();
     exit 0;
 }
 
-print $stm html_head($par);
-
-#echo command line?
-if ($par->{'verbose'} & $VERB_ARGV) {
-    my $s = $com->dump_argv;
-    $s =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
-    if ($par->{'html'}) {
-	print $stm "<H4>command line:</H4>\n<CODE>";
-	print $stm "$PROG $s";
-	print $stm "</CODE>\n<H4>produced:</H4>\n";
-    } else {
-	print $stm "command line:\n";
-	print $stm "$PROG $s\n";
-	print $stm "produced:\n\n";
-    }
-}
-
-#leading copyright?
-print $stm copyright($par)  if $par->{'mode'} eq 'rdb';
-
-#colormap listing request: no alignment
+#dump colormaps and exit
 if ($par->{'listcolors'}) {
-    print $stm "<HR><PRE>\n"       if $par->{'html'};
-    print $stm Bio::MView::Manager::list_colormaps($par->{'html'});
-    print $stm "</PRE><HR>\n"      if $par->{'html'};
-    print $stm copyright($par);
-    print $stm html_foot($par);
+    print $stm list_colormaps($par);
     exit 0;
 }
 
-#groupmap listing request: no alignment
+#dump groupmaps and exit
 if ($par->{'listgroups'}) {
-    print $stm "<HR><PRE>\n"       if $par->{'html'};
-    print $stm Bio::MView::Manager::list_groupmaps($par->{'html'});
-    print $stm "</PRE><HR>\n"      if $par->{'html'};
-    print $stm copyright($par);
-    print $stm html_foot($par);
+    print $stm list_groupmaps($par);
     exit 0;
+}
+
+#html header
+if ($par->{'html'}) {
+    print $stm html_head($par);
+}
+
+#verbose mode: echo command line
+if ($par->{'verbose'} & $VERB_ARGV) {
+    print $stm command_line($com, $par);
+}
+
+#rdb mode: leading copyright
+if ($par->{'mode'} eq 'rdb') {
+    print $stm copyright($par);
 }
 
 #read from stdin?
@@ -132,21 +125,30 @@ unless (@ARGV or $par->{'noparse'}) {
     push @ARGV, $SCRATCH;
 }
 
-#do the real work
-if (mview($par, $stm, @ARGV)) {
-    print $stm copyright($par)  if $par->{'html'} != $HTML_DATA and
-        $par->{'mode'} =~ /^new/;
+#run mview and count alignments
+my $count = mview($par, $stm, @ARGV);
+
+if ($count) {
+    #got something
+    if ($par->{'html'} != $HTML_DATA and $par->{'mode'} =~ /^new/) {
+        print $stm copyright($par);
+    }
 } else {
     my $s = "$PROG: no alignments found\n";
     print $s  if $par->{'html'} != $HTML_DATA;
     warn $s;
 }
-print $stm html_foot($par);
+
+#html footer
+if ($par->{'html'}) {
+    print $stm html_foot($par);
+}
 
 #Universal::vmstat("FINISHED.");
 
 cleanup();
 
+exit 0;
 
 ###########################################################################
 sub mview {
@@ -187,7 +189,7 @@ sub mview {
 
 	print $stm "</PRE>\n"  if $par->{'pre'};
     }
-    #Universal::vmstat("Manager constructor done");
+    #Universal::vmstat("Manager constructor one");
 
     #colormap/groupmap listing request: no alignment
     return 0  if $par->{'noparse'};
@@ -200,94 +202,192 @@ sub mview {
     return $mgr->alignment_count;
 }
 
-sub cleanup { unlink "$SCRATCH"    if -f "$SCRATCH" }
-
 sub rationalise_parameters {
-    my $p = shift;
+    my $par = shift;
 
-    $p->{'html'} = 0  if $p->{'mode'} eq 'rdb';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'clustal';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'pir';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'msf';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'pearson';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'fasta';
-    $p->{'html'} = 0  if $p->{'mode'} eq 'plain';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'rdb';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'clustal';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'pir';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'msf';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'pearson';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'fasta';
+    $par->{'html'} = 0  if $par->{'mode'} eq 'plain';
 
-    if ($p->{'html'}) {
+    if ($par->{'html'}) {
         #ignore style sheets if css is unset
-        unless ($p->{'css1'}) {
-            $p->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
+        unless ($par->{'css1'}) {
+            $par->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
         }       
     } else {
         #ignore style sheets
-        $p->{'css1'} = 0;
+        $par->{'css1'} = 0;
 
         #switch off preformatted flag
-        $p->{'pre'} = 0;
+        $par->{'pre'} = 0;
 
         #ignore coloring if HTML is off!
-        $p->{'aln_coloring'} = 'none';
-        $p->{'con_coloring'} = 'none';
+        $par->{'aln_coloring'} = 'none';
+        $par->{'con_coloring'} = 'none';
     }
 
     #switch off parsing if color/groupmap listing requested
-    if ($p->{'listcolors'} or $p->{'listgroups'}) {
-	$p->{'noparse'} = 1;
+    if ($par->{'listcolors'} or $par->{'listgroups'}) {
+	$par->{'noparse'} = 1;
     } else {
-	$p->{'noparse'} = 0;
+	$par->{'noparse'} = 0;
     }
 }
 
+sub usage {
+    my ($com, $par) = @_;
+    $par->{'title'} = 'MView command line options';
+    my $data = $com->usage();
+    my $s = '';
+    if ($par->{'html'}) {
+        $s .= html_head($par);
+        $s .= "<HR><PRE>\n$data</PRE><HR>\n";
+        $s .= copyright($par);
+        $s .= html_foot($par);
+    } else {
+        $s .= $data;
+        $s .= copyright($par);
+    }
+    $s;
+}
+
+sub list_css {
+    #http://www.w3.org/TR/REC-CSS1#containment-in-html
+    my $s = Bio::MView::Manager::list_css(
+	'alncolor' => $par->{'alncolor'}, 'labcolor' => $par->{'labcolor'},
+	'symcolor' => $par->{'symcolor'}, 'gapcolor' => $par->{'gapcolor'},
+	);
+    $s;
+}
+
+sub list_colormaps {
+    my $par = shift;
+    my $data = Bio::MView::Manager::list_colormaps($par->{'html'});
+    my $s = '';
+    if ($par->{'html'}) {
+        $s .= html_head($par);
+        $s .= "<HR><PRE>\n$data</PRE><HR>\n";
+        $s .= copyright($par);
+        $s .= html_foot($par);
+    } else {
+        $s .= $data;
+        $s .= copyright($par);
+    }
+    $s;
+}
+
+sub list_groupmaps {
+    my $par = shift;
+    my $data = Bio::MView::Manager::list_groupmaps($par->{'html'});
+    my $s = '';
+    if ($par->{'html'}) {
+        $s .= html_head($par);
+        $s .= "<HR><PRE>\n$data</PRE><HR>\n";
+        $s .= copyright($par);
+        $s .= html_foot($par);
+    } else {
+        $s .= $data;
+        $s .= copyright($par);
+    }
+    $s;
+}
+
+sub command_line {
+    my ($com, $par) = @_;
+    my $data = $com->dump_argv;
+    $data =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
+    my $s = '';
+    if ($par->{'html'}) {
+	$s .= "<H4>command line:</H4>\n<CODE>";
+	$s .= "$PROG $data";
+	$s .= "</CODE>\n<H4>produced:</H4>\n";
+    } else {
+	$s .= "command line:\n";
+	$s .= "$PROG $data\n";
+	$s .= "produced:\n\n";
+    }
+    $s
+}
+
+sub copyright {
+    my $par = shift;
+    my $s = '';
+    no strict;
+
+    if ($par->{'mode'} eq 'rdb') {    #rdb files
+        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
+	$s .= "# $INVOKE\n";
+	return $s;
+    }
+
+    if ($par->{'html'}) {    #any HTML
+        $s .= "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
+        $s .= "$VERSION, Copyright \&copy; ";
+        $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
+        $s .= "</SMALL></P>\n";
+	return $s;
+    }
+
+    if ($par->{'noparse'}) {    #listcolor/listgroups without HTML
+        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
+	return $s;
+    }
+
+    $s = "\n$PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n\n";
+    $s;
+}
+
 sub html_head {
-    my $p = shift;
+    my $par = shift;
 
-    #warn "HTML=$p->{'html'}\n";
-
-    return  unless $p->{'html'};
-    return  if $p->{'html'} == $HTML_DATA;
+    return ''  if $par->{'html'} == $HTML_DATA;
 
     my $s = '';
 
     #want MIME type?
-    if ($p->{'html'} & $HTML_MIME) {
+    if ($par->{'html'} & $HTML_MIME) {
 	$s .= "Content-Type: text/html\n\n";
     }
 
     #want HTML HEAD?
-    if ($p->{'html'} & $HTML_HTML) {
+    if ($par->{'html'} & $HTML_HTML) {
         my $t = "$DOCMETA\n";
 
         #link styles
-        if ($p->{'srs'}) {
+        if ($par->{'srs'}) {
             $t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-            $t .= "A:link{background:transparent;color:$p->{'linkcolor'}}\n";
-            $t .= "A:active{background:transparent;color:$p->{'alinkcolor'}}\n";
-            $t .= "A:visited{background:transparent;color:$p->{'vlinkcolor'}}\n";
+            $t .= "A:link{background:transparent;color:$par->{'linkcolor'}}\n";
+            $t .= "A:active{background:transparent;color:$par->{'alinkcolor'}}\n";
+            $t .= "A:visited{background:transparent;color:$par->{'vlinkcolor'}}\n";
             $t .= "-->\n</STYLE>\n";
         }
 
 	#want colour definitions?
-	if ($p->{'html'} & $HTML_CSS) {
+	if ($par->{'html'} & $HTML_CSS) {
 	    #alignment styles
-	    if ($p->{'css1'} =~ /^(?:file|http):/i) {
+	    if ($par->{'css1'} =~ /^(?:file|http):/i) {
 		#link to style sheet
-	        $t .= "<LINK REL=STYLESHEET HREF=\"$p->{'css1'}\">\n";
+	        $t .= "<LINK REL=STYLESHEET HREF=\"$par->{'css1'}\">\n";
 	    } else {
 		#style sheet in situ
 		$t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
 		$t .= Bio::MView::Align::list_css1_colormaps
-		    ('alncolor' => $p->{'alncolor'},
-		     'labcolor' => $p->{'labcolor'},
-		     'symcolor' => $p->{'symcolor'},
-		     'gapcolor' => $p->{'gapcolor'},
+		    ('alncolor' => $par->{'alncolor'},
+		     'labcolor' => $par->{'labcolor'},
+		     'symcolor' => $par->{'symcolor'},
+		     'gapcolor' => $par->{'gapcolor'},
 		    );
 		$t .= "-->\n</STYLE>\n";
 	    }
 	}
 
         #page TITLE
-        if (defined $p->{'title'} and $p->{'title'} ne "") {
-            $t .= "<TITLE>$p->{'title'}</TITLE>\n";
+        if (defined $par->{'title'} and $par->{'title'} ne "") {
+            $t .= "<TITLE>$par->{'title'}</TITLE>\n";
         } else {
             $t .= "<TITLE>MView</TITLE>\n";
         }
@@ -297,25 +397,24 @@ sub html_head {
     }
 
     #want BODY?
-    if ($p->{'html'} & $HTML_BODY) {
-        $s .= "<BODY style=\"background-color:$p->{'pagecolor'}; color:$p->{'textcolor'}\">\n";
+    if ($par->{'html'} & $HTML_BODY) {
+        $s .= "<BODY style=\"background-color:$par->{'pagecolor'}; color:$par->{'textcolor'}\">\n";
     }
 
     #want TITLE? (in document)
-    if (defined $p->{'title'} and $p->{'title'} ne "") {
-	$s .= "<H4>$p->{'title'}</H4>\n";
+    if (defined $par->{'title'} and $par->{'title'} ne "") {
+	$s .= "<H4>$par->{'title'}</H4>\n";
     }
 
     $s;
 }
 
 sub html_foot {
-    my $p = shift;
-    return  unless $p->{'html'};
-    return  if $p->{'html'} == $HTML_DATA;
+    my $par = shift;
+    return ''  if $par->{'html'} == $HTML_DATA;
     my $s = '';
-    $s .= "</BODY>\n"  if $p->{'html'} & $HTML_BODY;
-    $s .= "</HTML>\n"  if $p->{'html'} & $HTML_HTML;
+    $s .= "</BODY>\n"  if $par->{'html'} & $HTML_BODY;
+    $s .= "</HTML>\n"  if $par->{'html'} & $HTML_HTML;
     $s;
 }
 
@@ -398,18 +497,6 @@ sub check_format {
     exit 1;
 }
 
-sub usage {
-    my ($com, $par, $exit, $stm) = (@_, *STDOUT);
-    $par->{'title'} = 'MView command line options';
-    print $stm html_head($par);
-    print $stm "<HR><PRE>\n"   if $par->{'html'};
-    print $stm $com->usage;
-    print $stm "</PRE><HR>\n"  if $par->{'html'};
-    print $stm copyright($par);
-    html_foot($par, $stm);
-    exit $exit  if defined $exit;
-}
-
 sub dump_parameters {
     my $par = shift;
     warn "\nProcessed parameters:\n";
@@ -422,39 +509,11 @@ sub dump_parameters {
     warn "\n";
 }
 
-sub copyright {
-    my ($par) = @_;
-    my $s = '';
-    no strict;
-
-    if ($par->{'mode'} eq 'rdb') {    #rdb files
-        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
-	$s .= "# $INVOKE\n";
-	return $s;
-    }
-
-    if ($par->{'html'}) {    #any HTML
-        $s .= "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
-        $s .= "$VERSION, Copyright \&copy; ";
-        $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
-        $s .= "</SMALL></P>\n";
-	return $s;
-    }
-
-    if ($par->{'noparse'}) {    #listcolor/listgroups without HTML
-        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
-	return $s;
-    }
-
-    $s = "\n$PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n\n";
-    $s;
-}
-
 
 ###########################################################################
 __DATA__
 
-text:     "usage: <PROG> [options] [file...]\n\n
+header:  "usage: <PROG> [options] [file...]\n\n
 Option names and parameter values can generally be abbreviated. Alternative\n
 parameter values are listed in braces {}, followed by the default value in\n
 square brackets [].\n\n
@@ -509,7 +568,7 @@ default:  0
 ###########################################################################
 [FORMATS]
 
-text:     "Input/output formats:"
+header:   "Input/output formats:"
 
 option:   in
 usage:    "Input <CHOOSE>(main::check_format)"
@@ -545,7 +604,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [CONTENT]
 
-text:     "Main formatting options:"
+header:   "Main formatting options:"
 
 option:   ruler
 usage:    "Show ruler"
@@ -579,7 +638,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [IDENTITY]
 
-text: "Percent identity calculations and filters:"
+header:   "Percent identity calculations and filters:"
 
 option:   pcid
 usage:    "Compute percent identities with respect to <CHOOSE>(Bio::MView::Manager::check_identity_mode)"
@@ -625,7 +684,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [FILTER]
 
-text:     "General row/column filters:"
+header:   "General row/column filters:"
 
 option:   top
 param:    topn
@@ -677,7 +736,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [MOLTYPE]
 
-text:     "Molecule type:"
+header:   "Molecule type:"
 
 option:   moltype
 usage:    "Affects coloring and format converions <CHOOSE>(Bio::MView::Manager::check_molecule_type)"
@@ -706,7 +765,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [ALIGNMENT_COLORING]
 
-text:     "Alignment coloring:"
+header:   "Alignment coloring:"
 
 option:   coloring
 param:    aln_coloring
@@ -793,7 +852,7 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [CONSENSUS_COLORING]
 
-text:     "Consensus coloring:"
+header:   "Consensus coloring:"
 
 option:   con_coloring
 usage:    "Basic style of coloring <CHOOSE>(Bio::MView::Manager::check_consensus_color_scheme)"
@@ -886,7 +945,7 @@ default:  on
 ###########################################################################
 [PATTERNS]
 
-text:     "Motif colouring:"
+header:   "Motif colouring:"
 
 option:   find
 usage:    "Find and highlight exact string or simple regular expression or ':' delimited set of patterns"
@@ -900,7 +959,7 @@ action:   sub { <ARGS>;
 ###########################################################################
 [MISC_FORMATTING]
 
-text:     "Miscellaneous formatting:"
+header:   "Miscellaneous formatting:"
 
 option:   label0
 usage:    "Switch off label {0= row number}"
@@ -955,7 +1014,7 @@ default:  on
 ###########################################################################
 [HTML]
 
-text:     "HTML markup:"
+header:   "HTML markup:"
 
 option:   html
 usage:    "Controls amount of HTML markup {head,body,data,full,off}"
@@ -1026,7 +1085,7 @@ default:  #666666
 ###########################################################################
 [SRS_LINKS]
 
-text:     "Database links:"
+header:   "Database links:"
 
 option:   srs
 usage:    "Try to use sequence database links {off,on}"
@@ -1119,7 +1178,7 @@ default:  off
 ###########################################################################
 [BLAST1]
 
-text:     "NCBI BLAST (series 1), WashU-BLAST:"
+header:   "NCBI BLAST (series 1), WashU-BLAST:"
 
 generic:  hsp
 
@@ -1152,7 +1211,7 @@ generic:  keepinserts
 ###########################################################################
 [BLAST2]
 
-text:     "NCBI BLAST (series 2), BLAST+:"
+header:   "NCBI BLAST (series 2), BLAST+:"
 
 generic:  hsp
 
@@ -1167,7 +1226,7 @@ generic:  keepinserts
 ###########################################################################
 [PSIBLAST]
 
-text:     "NCBI PSI-BLAST:"
+header:   "NCBI PSI-BLAST:"
 
 generic:  hsp
 
@@ -1199,7 +1258,7 @@ generic:  keepinserts
 ###########################################################################
 [FASTA]
 
-text:     "FASTA (U. of Virginia):"
+header:   "FASTA (U. of Virginia):"
 
 option:   minopt
 usage:    "Ignore hits with opt score less than N"
@@ -1217,7 +1276,7 @@ generic:  strand
 ###########################################################################
 [HSSP]
 
-text:     "HSSP/Maxhom:"
+header:   "HSSP/Maxhom:"
 
 option:   chain
 usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
@@ -1260,21 +1319,21 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [MAF]
 
-text:     "UCSC MAF:"
+header:   "UCSC MAF:"
 
 generic:  block
 
 ###########################################################################
 [MULTAL]
 
-text:     "MULTAL/MULTAS:"
+header:   "MULTAL/MULTAS:"
 
 generic:  block
 
 ###########################################################################
 [MAPFILES]
 
-text:     "User defined colormap and consensus group definition:"
+header:   "User defined colormap and consensus group definition:"
 
 option:   colorfile
 usage:    "Load more colormaps from file"
@@ -1285,7 +1344,7 @@ usage:    "Load more groupmaps from file"
 ###########################################################################
 [HELP]
 
-text:     "More information and help:"
+header:   "More information and help:"
 
 option:   help
 usage:    "This help"

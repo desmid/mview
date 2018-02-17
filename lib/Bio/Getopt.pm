@@ -10,7 +10,7 @@
 # option:    the command line option.
 # generic:   refer to an already defined option in group [.].
 #
-# text:      descriptive string for a group of options in a class.
+# header:    descriptive string, may span multiple lines.
 # usage:     usage string; if undefined, be silent about the option.
 # type:      parameter type.
 # param:     internal parameter name: if null or empty uses option name.
@@ -80,16 +80,16 @@ sub set_text {
     $self;
 }
 
-sub set_generic {
+sub set_option {
     my ($self, $option) = @_;
-    $self->{'option'}->{$option} = { 'generic' => 1 };
+    $self->{'option'}->{$option} = { 'name' => $option };
     push @{$self->{'order'}}, $option;
     $self;
 }
 
-sub set_option {
+sub set_generic {
     my ($self, $option) = @_;
-    $self->{'option'}->{$option} = { 'name' => $option };
+    $self->{'option'}->{$option} = { 'generic' => 1 };
     push @{$self->{'order'}}, $option;
     $self;
 }
@@ -117,7 +117,7 @@ sub usage {
     my ($self, $generic) = (shift, shift);
     my @list = ();
 
-    return '' if $self->{'name'} eq '.';  #silent
+    return ''  if $self->{'name'} eq '.';  #silent
 
     #lookup the option in this class, or in the generic class
     foreach my $o (@{$self->{'order'}}) {
@@ -405,6 +405,8 @@ sub build_options {
 ###########################################################################
 package Bio::Getopt::OptionLoader;
 
+use strict;
+
 sub load_options {
     my ($scope, $prog, $stm) = @_;
     my $text = '';
@@ -415,15 +417,14 @@ sub load_options {
     local $_;
 
     while (<$stm>) {
-	
-	last    if eof;
-	next    if /^\s*$/;   #blank
-	next    if /^\s*\#/;  #hash comment
 	chomp;
 
-	#TEXT
-	if (!defined $class and /^\s*text\s*:\s*(.*)/i) {
-	    #warn "#text($1)\n";
+	next  if /^\s*$/;   #blank
+	next  if /^\s*\#/;  #hash comment
+
+	#HEADER
+	if (!defined $class and /^\s*header\s*:\s*(.*)/i) {
+	    #warn "#header($1)\n";
 	    ($text, $_) = _scan_quoted_text($prog, $stm, $1);
 	    redo;
 	}
@@ -444,9 +445,9 @@ sub load_options {
 	    next;
 	}
 
-	#class.TEXT
-	if (/^\s*text\s*:\s*(.*)/i) {
-	    #warn "#class.text($1)\n";
+	#class.HEADER
+	if (/^\s*header\s*:\s*(.*)/i) {
+	    #warn "#class.header($1)\n";
 	    ($tmp, $_) = _scan_quoted_text($prog, $stm, $1);
 	    $class->set_text($tmp);
 	    redo;
@@ -515,6 +516,7 @@ sub load_options {
 	
 	CORE::die "Bio::Getopt::Class::load_options() unrecognised line: [$_]";
     }
+
     ($text, \@order, \%class);
 }
 
@@ -558,7 +560,7 @@ sub _scan_subroutine {
         $tmp = "$1\n";                                  #first line
     }
     while ($line = <$stm>) {    
-        last if $line =~ /^\s*(?:text|option|generic|usage|type|default|param|convert|action)\s*:/i;                                    #next option
+        last if $line =~ /^\s*(?:header|option|generic|usage|type|default|param|convert|action)\s*:/i;                                  #next option
         last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i;  #next class
         $tmp .= $line;                                  #middle lines
     }
