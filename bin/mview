@@ -68,11 +68,11 @@ $com->parse_options(\@ARGV);
 $opt = $com->get_option_hash;
 $par = $com->get_parameter_hash;
 rationalise_parameters($opt, $par);
-dump_options($com)  if $opt->{'verbose'} & $VERB_OPTS;
-usage($com, $opt, $par, 0)  if $opt->{'help'};
+dump_options($com)  if $par->{'verbose'} & $VERB_OPTS;
+usage($com, $par, 0)  if $par->{'help'};
 
 #CSS listing request: no alignment, no HTML
-if ($opt->{'listcss'}) {
+if ($par->{'listcss'}) {
     #http://www.w3.org/TR/REC-CSS1#containment-in-html
     print $stm Bio::MView::Manager::list_css(
 	'alncolor' => $par->{'alncolor'},
@@ -83,13 +83,13 @@ if ($opt->{'listcss'}) {
     exit 0;
 }
 
-html_head($opt, $par, $stm);
+html_head($par, $stm);
 
 #echo command line?
-if ($opt->{'verbose'} & $VERB_ARGV) {
+if ($par->{'verbose'} & $VERB_ARGV) {
     my $s = $com->dump_argv;
     $s =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
-    if ($opt->{'html'}) {
+    if ($par->{'html'}) {
 	print $stm "<H4>command line:</H4>\n<CODE>";
 	print $stm "$PROG $s";
 	print $stm "</CODE>\n<H4>produced:</H4>\n";
@@ -101,30 +101,30 @@ if ($opt->{'verbose'} & $VERB_ARGV) {
 }
 
 #leading copyright?
-print $stm copyright($opt)    if $opt->{'out'} eq 'rdb';
+print $stm copyright($par)  if $par->{'mode'} eq 'rdb';
 
 #colormap listing request: no alignment
-if ($opt->{'listcolors'}) {
-    print $stm "<HR><PRE>\n"       if $opt->{'html'};
-    print $stm Bio::MView::Manager::list_colormaps($opt->{'html'});
-    print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm copyright($opt);
-    html_foot($opt, $par, $stm);
+if ($par->{'listcolors'}) {
+    print $stm "<HR><PRE>\n"       if $par->{'html'};
+    print $stm Bio::MView::Manager::list_colormaps($par->{'html'});
+    print $stm "</PRE><HR>\n"      if $par->{'html'};
+    print $stm copyright($par);
+    html_foot($par, $stm);
     exit 0;
 }
 
 #groupmap listing request: no alignment
-if ($opt->{'listgroups'}) {
-    print $stm "<HR><PRE>\n"       if $opt->{'html'};
-    print $stm Bio::MView::Manager::list_groupmaps($opt->{'html'});
-    print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm copyright($opt);
-    html_foot($opt, $par, $stm);
+if ($par->{'listgroups'}) {
+    print $stm "<HR><PRE>\n"       if $par->{'html'};
+    print $stm Bio::MView::Manager::list_groupmaps($par->{'html'});
+    print $stm "</PRE><HR>\n"      if $par->{'html'};
+    print $stm copyright($par);
+    html_foot($par, $stm);
     exit 0;
 }
 
 #read from stdin?
-unless (@ARGV or $opt->{'noparse'}) {
+unless (@ARGV or $par->{'noparse'}) {
     warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
     open(TMP, ">$SCRATCH") or
         die "$PROG: can't save to temporary file - aborting.\n";
@@ -135,14 +135,14 @@ unless (@ARGV or $opt->{'noparse'}) {
 
 #do the real work
 if (mview($opt, $par, $stm, @ARGV)) {
-    print $stm copyright($opt)  if $opt->{'html'} != $HTML_DATA and
-        $opt->{'out'} =~ /^new/;
+    print $stm copyright($par)  if $par->{'html'} != $HTML_DATA and
+        $par->{'mode'} =~ /^new/;
 } else {
     my $s = "$PROG: no alignments found\n";
-    print $s  if $opt->{'html'} and $opt->{'html'} != $HTML_DATA;
+    print $s  if $par->{'html'} != $HTML_DATA;
     warn $s;
 }
-html_foot($opt, $par, $stm);
+html_foot($par, $stm);
 
 #Universal::vmstat("FINISHED.");
 
@@ -171,21 +171,23 @@ sub mview {
 	    warn "$PROG: '$file' is not readable\n";
 	    next;
 	}
-        warn "$PROG: processing '$file'\n"  if $opt->{'verbose'} & $VERB_FILE;
+        warn "$PROG: processing '$file'\n"  if $par->{'verbose'} & $VERB_FILE;
 
 	#try to choose a format if one wasn't specified
-	$format = (defined $opt->{'in'} ? $opt->{'in'} :
-		   check_format($file, 'file'));
-        warn "$PROG: format is probably '$format'\n"
-	    if !defined $opt->{'in'} and $opt->{'verbose'} & $VERB_FORM;
-	
-	print $stm "<PRE>\n"    if $opt->{'pre'};
+        if (!defined $par->{'in'}) {
+            my $format = check_format($file, 'file');
+            warn "$PROG: format is probably '$format'\n"
+                if $par->{'verbose'} & $VERB_FORM;
+            $par->{'in'} = $format;
+        }
+        
+	print $stm "<PRE>\n"  if $par->{'pre'};
 
-	if (! defined $mgr->parse($file, $format)) {
+	if (! defined $mgr->parse($file, $par->{'in'})) {
 	    warn "$PROG: can't parse file '$file'\n";
 	}
 
-	print $stm "</PRE>\n"   if $opt->{'pre'};
+	print $stm "</PRE>\n"  if $par->{'pre'};
     }
     #Universal::vmstat("Manager constructor done");
 
@@ -193,7 +195,7 @@ sub mview {
     return 0  if $par->{'noparse'};
 
     #save printing until end?
-    if ($par->{'register'} and $opt->{'out'} eq 'new') {
+    if ($par->{'register'} and $par->{'mode'} eq 'new') {
 	$mgr->print;
 	#Universal::vmstat("print done (mview)");
     }
@@ -205,33 +207,22 @@ sub cleanup { unlink "$SCRATCH"    if -f "$SCRATCH" }
 sub rationalise_parameters {
     my ($o, $p) = @_;
 
-    #ignore HTML if RDB output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'rdb';
-
-    #ignore HTML if CLUSTAL output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'clustal';
-
-    #ignore HTML if PIR output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'pir';
-
-    #ignore HTML if MSF output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'msf';
-
-    #ignore HTML if pearson/fasta output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'pearson';
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'fasta';
-
-    #ignore HTML if plain output
-    ($o->{'html'}, $p->{'html'}) = (0, 0)  if $p->{'mode'} eq 'plain';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'rdb';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'clustal';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'pir';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'msf';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'pearson';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'fasta';
+    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'plain';
 
     #switch off preformatted flag if HTML is off
-    $o->{'pre'} = 0  unless $o->{'html'};
+    ($o->{'pre'}, $p->{'pre'}) = (0, 0)  if $p->{'html'} eq 'off';
 
     #ignore style sheets if HTML off
-    ($o->{'css'}, $p->{'css1'}) = ('off', 0)  if $o->{'html'} == 0;
+    ($o->{'css'}, $p->{'css1'}) = ('off', 0)  if $p->{'html'} eq 'off';
 
     #ignore style sheets in HTML if css is unset
-    $o->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA)
+    $p->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA)
     	if $o->{'css'} eq 'off';
 
     #ignore coloring if HTML is off!
@@ -250,37 +241,37 @@ sub rationalise_parameters {
 }
 
 sub html_head {
-    my ($o, $p, $stm) = (@_, *STDOUT);
+    my ($p, $stm) = (@_, *STDOUT);
 
-    #warn "HTML=$o->{'html'}\n";
+    #warn "HTML=$p->{'html'}\n";
 
-    return    unless $o->{'html'};
-    return    if $o->{'html'} == $HTML_DATA;
+    return  unless $p->{'html'};
+    return  if $p->{'html'} == $HTML_DATA;
 
     #want MIME type?
-    if ($o->{'html'} & $HTML_MIME) {
+    if ($p->{'html'} & $HTML_MIME) {
 	print $stm "Content-Type: text/html\n\n";
     }
 
     #want HTML HEAD?
-    if ($o->{'html'} & $HTML_HTML) {
+    if ($p->{'html'} & $HTML_HTML) {
         my $s = "$DOCMETA\n";
 
         #link styles
-        if ($o->{'srs'} eq 'on') {
+        if ($p->{'srs'}) {
             $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-            $s .= "A:link{background:transparent;color:$o->{'linkcolor'}}\n";
-            $s .= "A:active{background:transparent;color:$o->{'alinkcolor'}}\n";
-            $s .= "A:visited{background:transparent;color:$o->{'vlinkcolor'}}\n";
+            $s .= "A:link{background:transparent;color:$p->{'linkcolor'}}\n";
+            $s .= "A:active{background:transparent;color:$p->{'alinkcolor'}}\n";
+            $s .= "A:visited{background:transparent;color:$p->{'vlinkcolor'}}\n";
             $s .= "-->\n</STYLE>\n";
         }
 
 	#want colour definitions?
-	if ($o->{'html'} & $HTML_CSS) {
+	if ($p->{'html'} & $HTML_CSS) {
 	    #alignment styles
-	    if ($o->{'css'} =~ /^(?:file|http):/i) {
+	    if ($p->{'css1'} =~ /^(?:file|http):/i) {
 		#link to style sheet
-	        $s .= "<LINK REL=STYLESHEET HREF=\"$o->{'css'}\">\n";
+	        $s .= "<LINK REL=STYLESHEET HREF=\"$p->{'css1'}\">\n";
 	    } else {
 		#style sheet in situ
 		$s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
@@ -295,8 +286,8 @@ sub html_head {
 	}
 
         #page TITLE
-        if (defined $o->{'title'} and $o->{'title'} ne "") {
-            $s .= "<TITLE>$o->{'title'}</TITLE>\n";
+        if (defined $p->{'title'} and $p->{'title'} ne "") {
+            $s .= "<TITLE>$p->{'title'}</TITLE>\n";
         } else {
             $s .= "<TITLE>MView</TITLE>\n";
         }
@@ -306,22 +297,22 @@ sub html_head {
     }
 
     #want BODY?
-    if ($o->{'html'} & $HTML_BODY) {
-        print $stm "<BODY style=\"background-color:$o->{'pagecolor'}; color:$o->{'textcolor'}\">\n";
+    if ($p->{'html'} & $HTML_BODY) {
+        print $stm "<BODY style=\"background-color:$p->{'pagecolor'}; color:$p->{'textcolor'}\">\n";
     }
 
     #want TITLE? (in document)
-    if (defined $o->{'title'} and $o->{'title'} ne "") {
-	print $stm "<H4>$o->{'title'}</H4>\n";
+    if (defined $p->{'title'} and $p->{'title'} ne "") {
+	print $stm "<H4>$p->{'title'}</H4>\n";
     }
 }
 
 sub html_foot {
-    my ($o, $p, $stm) = (@_, *STDOUT);
-    return    unless $o->{'html'};
-    return    if $o->{'html'} == $HTML_DATA;
-    print $stm "</BODY>\n"    if $o->{'html'} & $HTML_BODY;
-    print $stm "</HTML>\n"    if $o->{'html'} & $HTML_HTML;
+    my ($p, $stm) = (@_, *STDOUT);
+    return  unless $p->{'html'};
+    return  if $p->{'html'} == $HTML_DATA;
+    print $stm "</BODY>\n"  if $p->{'html'} & $HTML_BODY;
+    print $stm "</HTML>\n"  if $p->{'html'} & $HTML_HTML;
 }
 
 sub check_format {
@@ -404,15 +395,15 @@ sub check_format {
 }
 
 sub usage {
-    my ($com, $opt, $par, $exit, $stm) = (@_, *STDOUT);
-    $opt->{'title'} = 'MView command line options';
-    html_head($opt, $par, $stm);
-    print $stm "<HR><PRE>\n"       if $opt->{'html'};
+    my ($com, $par, $exit, $stm) = (@_, *STDOUT);
+    $par->{'title'} = 'MView command line options';
+    html_head($par, $stm);
+    print $stm "<HR><PRE>\n"   if $par->{'html'};
     print $stm $com->usage($stm);
-    print $stm "</PRE><HR>\n"      if $opt->{'html'};
-    print $stm copyright($opt);
-    html_foot($opt, $par, $stm);
-    exit $exit    if defined $exit;
+    print $stm "</PRE><HR>\n"  if $par->{'html'};
+    print $stm copyright($par);
+    html_foot($par, $stm);
+    exit $exit  if defined $exit;
 }
 
 sub dump_options {
@@ -423,17 +414,17 @@ sub dump_options {
 }
 
 sub copyright {
-    my ($opt) = @_;
+    my ($par) = @_;
     my $s = '';
     no strict;
 
-    if ($opt->{'out'} eq 'rdb') {    #rdb files
+    if ($par->{'mode'} eq 'rdb') {    #rdb files
         $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
 	$s .= "# $INVOKE\n";
 	return $s;
     }
 
-    if ($opt->{'html'}) {    #any HTML
+    if ($par->{'html'}) {    #any HTML
         $s .= "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
         $s .= "$VERSION, Copyright \&copy; ";
         $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
@@ -441,7 +432,7 @@ sub copyright {
 	return $s;
     }
 
-    if ($opt->{'noparse'}) {    #listcolor/listgroups without HTML
+    if ($par->{'noparse'}) {    #listcolor/listgroups without HTML
         $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
 	return $s;
     }
@@ -465,31 +456,30 @@ contains whitespace or a wildcard that might be expanded by the shell\n"
 
 
 ###########################################################################
-#silent options because no 'usage:' field.
-[SILENT]
+[.]
 
 #force @ARGV to be examined for '-help' first.
-OPTION:   help
+option:   help
 default:  0
 action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listcolors' first.
-OPTION:   listcolors
+option:   listcolors
 default:  0
 action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listgroups' first.
-OPTION:   listgroups
+option:   listgroups
 default:  0
 action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-listcss' first.
-OPTION:   listcss
+option:   listcss
 default:  0
 action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
 
 #force @ARGV to be examined for '-colorfile' first.
-OPTION:   colorfile
+option:   colorfile
 type:     s
 action:   sub { <ARGS>;
               local *TMP;
@@ -501,7 +491,7 @@ action:   sub { <ARGS>;
           }
 
 #force @ARGV to be examined for '-groupfile' first.
-OPTION:   groupfile
+option:   groupfile
 type:     s
 action:   sub { <ARGS>;
               local *TMP;
@@ -513,7 +503,7 @@ action:   sub { <ARGS>;
           }
 
 #set the default colormaps and groupmaps (assume protein)
-OPTION:   aa
+option:   aa
 action:   sub { <ARGS>;
                 (<PARAM>{'def_aln_colormap'},
                  <PARAM>{'def_con_colormap'}) =
@@ -521,22 +511,21 @@ action:   sub { <ARGS>;
                 <PARAM>{'def_aln_groupmap'} = <PARAM>{'def_con_groupmap'} =
                   Bio::MView::Manager::get_default_groupmap('aa');
                 <PARAM>{'moltype'} = 'aa';
-                return 0;
           }
 
 #verbosity level, normally 0 to keep quiet
-OPTION:   verbose
+option:   verbose
 type:     i
 default:  0
 
 #obsolete options: report fact to user
-OPTION:   dna
+option:   dna
 action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' replaced by '-moltype dna'") if defined <OVAL>; }
 
-OPTION:   keep
+option:   keep
 action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-show'") if defined <OVAL>; }
 
-OPTION:   disc
+option:   disc
 action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-hide'") if defined <OVAL>; }
 
 ###########################################################################
@@ -544,7 +533,7 @@ action:   sub { <ARGS>; <WARN>("obsolete option '-<ONAME>' renamed as '-hide'") 
 
 text:     "Input/output formats:"
 
-OPTION:   in
+option:   in
 usage:    "Input <CHOOSE>(main::check_format)"
 type:     s
 action:   sub { <ARGS>;
@@ -553,22 +542,24 @@ action:   sub { <ARGS>;
                 return undef;
           }
 
-OPTION:   out
+option:   out
+param:    mode
 usage:    "Output <CHOOSE>(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
-param:    mode
 convert:  sub { <ARGS>;
                 <OPTION>{'pre'} = 1;
-                if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new'; <OPTION>{'pre'} = 0; }
-                elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain'; }
-                elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson'; }
-                elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson'; }
-                elsif (<OVAL> =~ /^pi/i) { <PVAL> = 'pir'; }
-                elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf'; }
-                elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal'; }
-                elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal'; }
-                elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb'; <OPTION>{'pre'} = 0; }
+                if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new';
+                                           <OPTION>{'pre'} = 0; }
+                elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain';    }
+                elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson';  }
+                elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson';  }
+                elsif (<OVAL> =~ /^pi/i) { <PVAL> = 'pir';      }
+                elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf';      }
+                elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal';  }
+                elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal';  }
+                elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';
+                                           <OPTION>{'pre'} = 0; }
                 else {
                     <WARN>("bad option '-<ONAME>=<OVAL>'");
                     <WARN>("known types are: ", join(",",
@@ -582,35 +573,30 @@ convert:  sub { <ARGS>;
 
 text:     "Main formatting options:"
 
-OPTION:   ruler
+option:   ruler
 usage:    "Show ruler"
 type:     b
 default:  on
-param:
 
-OPTION:   alignment
+option:   alignment
 usage:    "Show alignment"
 type:     b
 default:  on
-param:
 
-OPTION:   conservation
+option:   conservation
 usage:    "Show clustal conservation line"
 type:     b
 default:  off
-param:
 
-OPTION:   consensus
+option:   consensus
 usage:    "Show consensus"
 type:     b
 default:  off
-param:
 
-OPTION:   width
+option:   width
 usage:    "Paginate alignment in blocks of N columns {N,flat}"
 type:     s
 default:  flat
-param:
 convert:  sub { <ARGS>;
             if (<OVAL> eq 'flat') { return 0; }
             else                  { return <TEST>('i', <ONAME>, <OVAL>); }
@@ -621,11 +607,10 @@ convert:  sub { <ARGS>;
 
 text: "Percent identity calculations and filters:"
 
-OPTION:   pcid
+option:   pcid
 usage:    "Compute percent identities with respect to <CHOOSE>(Bio::MView::Manager::check_identity_mode)"
 type:     s
 default:  'aligned'
-param:
 convert:  sub { <ARGS>;
                 return 'reference' if <OVAL> =~ /^r/;
                 return 'aligned'   if <OVAL> =~ /^a/;
@@ -635,17 +620,16 @@ convert:  sub { <ARGS>;
                 Bio::MView::Manager::check_identity_mode));
               }
 
-OPTION:   reference
+option:   reference
+param:    ref_id
 usage:    "Use row N or row identifier as %identity reference"
 type:     s
 default:  query
-param:    ref_id
 
-OPTION:   minident
+option:   minident
 usage:    "Only report sequences with percent identity >= N compared to reference"
 type:     f
 default:  0
-param:
 convert:  sub { <ARGS>;
                 if (<OVAL> < 0 or <OVAL> > 100) {
                     <WARN>("bad option '-<ONAME>=<OVAL>', want range 0..100");
@@ -653,11 +637,10 @@ convert:  sub { <ARGS>;
                 <OVAL>;
           }
 
-OPTION:   maxident
+option:   maxident
 usage:    "Only report sequences with percent identity <= N compared to reference"
 type:     f
 default:  100
-param:
 convert:  sub { <ARGS>;
                 if (<OVAL> < 0 or <OVAL> > 100) {
                     <WARN>("bad option '-<ONAME>=<OVAL>', want range 0..100");
@@ -670,36 +653,35 @@ convert:  sub { <ARGS>;
 
 text:     "General row/column filters:"
 
-OPTION:   top
+option:   top
+param:    topn
 usage:    "Report top N hits"
 type:     s
 default:  all
-param:    topn
 convert:  sub { <ARGS>;
             return 0    if <OVAL> eq 'all';
             return <TEST>('i', <ONAME>, <OVAL>);
           }
 
-OPTION:   show
+option:   show
+param:    keeplist
 usage:    "Keep rows 1..N or identifiers"
 type:     @s
-param:    keeplist
 
-OPTION:   hide
+option:   hide
+param:    skiplist
 usage:    "Hide rows 1..N or identifiers"
 type:     @s
-param:    skiplist
 
-OPTION:   nops
+option:   nops
+param:    nopslist
 usage:    "No operation: exclude rows 1..N or identifiers from calculatons"
 type:     @s
-param:    nopslist
 
-OPTION:   range
+option:   range
 usage:    "Display column range M:N as numbered by ruler"
 type:     s
 default:  all
-param:
 convert:  sub { <ARGS>;
             my @tmp = ();
             if (<OVAL> ne 'all') {
@@ -723,11 +705,10 @@ convert:  sub { <ARGS>;
 
 text:     "Molecule type:"
 
-OPTION:   moltype
+option:   moltype
 usage:    "Affects coloring and format converions <CHOOSE>(Bio::MView::Manager::check_molecule_type)"
 type:     s
 default:  aa
-param:    moltype
 convert:  sub { <ARGS>;
               if    (<OVAL> =~ /^aa/i)  { <PVAL> = 'aa';  }
               elsif (<OVAL> =~ /^na/i)  { <PVAL> = 'na';  }
@@ -749,15 +730,15 @@ convert:  sub { <ARGS>;
           }
 
 ###########################################################################
-[ALN]
+[ALIGNMENT_COLORING]
 
 text:     "Alignment coloring:"
 
-OPTION:   coloring
+option:   coloring
+param:    aln_coloring
 usage:    "Basic style of coloring <CHOOSE>(Bio::MView::Manager::check_alignment_color_scheme)"
 type:     s
 default:  none
-param:    aln_coloring
 convert:  sub { <ARGS>;
               if    (<OVAL> =~ /^n/i) { <PVAL> = 'none';      }
               elsif (<OVAL> =~ /^a/i) { <PVAL> = 'any';       }
@@ -774,10 +755,10 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   colormap
+option:   colormap
+param:    aln_colormap
 usage:    "Name of colormap to use"
 type:     s
-param:    aln_colormap
 convert:  sub { <ARGS>;
               if (defined <OVAL>) { <PVAL> = <OVAL>; }
               else                { <PVAL> = <PARAM>{'def_aln_colormap'}; }
@@ -791,10 +772,10 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   groupmap
+option:   groupmap
+param:    aln_groupmap
 usage:    "Name of groupmap to use if coloring by consensus"
 type:     s
-param:    aln_groupmap
 convert:  sub { <ARGS>;
               if (defined <OVAL>) { <PVAL> = <OVAL>; }
               else                { <PVAL> = <PARAM>{'def_aln_groupmap'}; }
@@ -808,11 +789,11 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   threshold
+option:   threshold
+param:    aln_threshold
 usage:    "Threshold percentage for consensus coloring"
 type:     f
 default:  70
-param:    aln_threshold
 convert:  sub { <ARGS>;
               if (<OVAL> < 50 or <OVAL> > 100) {
                   <WARN>("bad value for '-<ONAME>=<OVAL>' must be in range 50..100");
@@ -820,11 +801,11 @@ convert:  sub { <ARGS>;
               [ <OVAL> ];
           }
 
-OPTION:   ignore
+option:   ignore
+param:    aln_ignore
 usage:    "Ignore singleton or class groups <CHOOSE>(Bio::MView::Manager::check_ignore_class)"
 type:     s
 default:  none
-param:    aln_ignore
 convert:  sub { <ARGS>;
             <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
             if (!defined <PVAL>) {
@@ -836,15 +817,14 @@ convert:  sub { <ARGS>;
           }
 
 ###########################################################################
-[CON]
+[CONSENSUS_COLORING]
 
 text:     "Consensus coloring:"
 
-OPTION:   con_coloring
+option:   con_coloring
 usage:    "Basic style of coloring <CHOOSE>(Bio::MView::Manager::check_consensus_color_scheme)"
 type:     s
 default:  none
-param:    con_coloring
 convert:  sub { <ARGS>;
                if    (<OVAL> =~ /^n/i) { <PVAL> = 'none';     }
                elsif (<OVAL> =~ /^a/i) { <PVAL> = 'any';      }
@@ -857,10 +837,9 @@ convert:  sub { <ARGS>;
                <PVAL>;
           }
 
-OPTION:   con_colormap
+option:   con_colormap
 usage:    "Name of colormap to use"
 type:     s
-param:    con_colormap
 convert:  sub { <ARGS>;
               if (defined <OVAL>) {
                   <PVAL> = <OVAL>;
@@ -878,10 +857,9 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   con_groupmap
+option:   con_groupmap
 usage:    "Name of groupmap to use if coloring by consensus"
 type:     s
-param:    con_groupmap
 convert:  sub { <ARGS>;
               if (defined <OVAL>) {
                   <PVAL> = <OVAL>;
@@ -898,11 +876,10 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   con_threshold
+option:   con_threshold
 usage:    "Consensus line thresholds"
 type:     @f
 default:  '100,90,80,70'
-param:    con_threshold
 convert:  sub { <ARGS>;
               local $_;
               foreach (@{<PVAL>}) {
@@ -913,11 +890,10 @@ convert:  sub { <ARGS>;
               <PVAL>;
           }
 
-OPTION:   con_ignore
+option:   con_ignore
 usage:    "Ignore singleton or class groups <CHOOSE>(Bio::MView::Manager::check_ignore_class)"
 type:     s
 default:  none
-param:    con_ignore
 convert:  sub { <ARGS>;
             <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
             if (!defined <PVAL>) {
@@ -928,22 +904,20 @@ convert:  sub { <ARGS>;
             <PVAL>;
           }
 
-OPTION:   con_gaps
+option:   con_gaps
 usage:    "Count gaps during consensus computations if set to 'on'"
 type:     b
 default:  on
-param:
 
 ###########################################################################
 [PATTERNS]
 
 text:     "Motif colouring:"
 
-OPTION:   find
+option:   find
 usage:    "Find and highlight exact string or simple regular expression or ':' delimited set of patterns"
 type:     s
 default:  ""
-param:
 action:   sub { <ARGS>;
                 if (<OVAL>) {
                     <PARAM>{'fnd_colormap'} =
@@ -952,192 +926,169 @@ action:   sub { <ARGS>;
           }
 
 ###########################################################################
-[GENERALFORMAT]
+[MISC_FORMATTING]
 
 text:     "Miscellaneous formatting:"
 
-OPTION:   label0
+option:   label0
 usage:    "Switch off label {0= row number}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label1
+option:   label1
 usage:    "Switch off label {1= identifier}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label2
+option:   label2
 usage:    "Switch off label {2= description}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label3
+option:   label3
 usage:    "Switch off label {3= scores}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label4
+option:   label4
 usage:    "Switch off label {4= percent coverage}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label5
+option:   label5
 usage:    "Switch off label {5= percent identity}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label6
+option:   label6
 usage:    "Switch off label {6= first sequence positions: query}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   label7
+option:   label7
 usage:    "Switch off label {7= second sequence positions: hit}"
 default:  0
-param:
 convert:  sub { <ARGS>; (<OVAL> ? 0 : 1) }
 
-OPTION:   gap
+option:   gap
 usage:    "Use this gap character"
 type:     s
 default:  -
-param:
 
-OPTION:   register
+option:   register
 usage:    "Output multi-pass alignments with columns in register"
 type:     b
 default:  on
-param:
 
 ###########################################################################
 [HTML]
 
 text:     "HTML markup:"
 
-OPTION:   html
+option:   html
 usage:    "Controls amount of HTML markup {head,body,data,full,off}"
 type:     s
 default:  off
-param:
 convert:  sub { <ARGS>;
-                if (<OVAL> =~ /^full/i) { <OPTION>{<ONAME>} = (16|8|4|2|1); return 1; }
-                if (<OVAL> =~ /^head/i) { <OPTION>{<ONAME>} = (8|4|2|1); return 1; }
-                if (<OVAL> =~ /^body/i) { <OPTION>{<ONAME>} = (4|2|1); return 1; }
-                if (<OVAL> =~ /^data/i) { <OPTION>{<ONAME>} = (1); return 1; }
-                if (<OVAL> =~ /^off/i)  { <OPTION>{<ONAME>} = 0; return 0; }
+                if (<OVAL> =~ /^full/i) { return 16|8|4|2|1;}
+                if (<OVAL> =~ /^head/i) { return 8|4|2|1;   }
+                if (<OVAL> =~ /^body/i) { return 4|2|1;     }
+                if (<OVAL> =~ /^data/i) { return 1;         }
+                if (<OVAL> =~ /^off/i)  { return 0;         }
                 <WARN> ("bad option '-<ONAME>=<OVAL>'");
             }
 
-OPTION:   bold
+option:   bold
 usage:    "Use bold emphasis for coloring sequence symbols"
 default:  0
-param:
 convert:  sub { <ARGS>; <OVAL> > 0 ? 1 : 0 }
 
-OPTION:   css
+option:   css
+param:    css1
 usage:    "Use Cascading Style Sheets {off,on,URL}"
 type:     s
 default:  off
-param:    css1
 convert:  sub { <ARGS>;
                 #supplied style sheet URL
                 return 1  if <OVAL> =~ /^(?:file|http):/i;
-                if (<OVAL> ne 'on' and <OVAL> ne 'off' and <OVAL> ne '0' and <OVAL> ne '1') {
-                    <WARN>("bad value for '-<ONAME>=<OVAL>' want {on,off,URL} or {0,1,URL}");
-                }
-                return 1  if <OVAL> eq 'on' or <OVAL> eq '1';
-                return 0;
+                return 1  if <OVAL> eq 'on'  or <OVAL> eq '1';
+                return 0  if <OVAL> eq 'off' or <OVAL> eq '0';
+                <WARN>("bad value for '-<ONAME>=<OVAL>' want {on,off,URL} or {0,1,URL}");
           }
 
-OPTION:   title
+option:   title
 usage:    "Page title string"
 type:     s
 default:  ""
 
-OPTION:   pagecolor
+option:   pagecolor
 usage:    "Page backgound color"
 type:     s
 default:  white
 
-OPTION:   textcolor
+option:   textcolor
 usage:    "Page text color"
 type:     s
 default:  black
 
-OPTION:   alncolor
+option:   alncolor
 usage:    "Alignment background color"
 type:     s
 default:  white
-param:
 
-OPTION:   labcolor
+option:   labcolor
 usage:    "Alignment label color"
 type:     s
 default:  black
-param:
 
-OPTION:   symcolor
+option:   symcolor
 usage:    "Alignment symbol default color"
 type:     s
 default:  #666666
-param:
 
-OPTION:   gapcolor
+option:   gapcolor
 usage:    "Alignment gap color"
 type:     s
 default:  #666666
-param:
 
 ###########################################################################
-[SRSLINKS]
+[SRS_LINKS]
 
 text:     "Database links:"
 
-OPTION:   srs
+option:   srs
 usage:    "Try to use sequence database links {off,on}"
 type:     s
 default:  off
-action:   sub { <ARGS>;
-                if    (<OVAL> eq 'off') { return $Bio::SRS::Type = 0; }
-                elsif (<OVAL> eq 'on')  { return $Bio::SRS::Type = 1; }
-                else {
-                    <WARN>("bad SRS setting, want {off,on}");
-                }
-                return $Bio::SRS::Type = 1;    #default
-            }
+convert:  sub { <ARGS>;
+              if    (<OVAL> eq 'off') { return $Bio::SRS::Type = 0; }
+              elsif (<OVAL> eq 'on')  { return $Bio::SRS::Type = 1; }
+              <WARN>("bad SRS setting, want {off,on}");
+              return $Bio::SRS::Type = 0;  #default
+          }
 
-OPTION:   linkcolor
+option:   linkcolor
 usage:    "Link color"
 type:     s
 default:  blue
-param:
 
-OPTION:   alinkcolor
+option:   alinkcolor
 usage:    "Active link color"
 type:     s
 default:  red
-param:
 
-OPTION:   vlinkcolor
+option:   vlinkcolor
 usage:    "Visited link color"
 type:     s
 default:  purple
-param:
 
 ###########################################################################
-[GENERICBLAST]
+[.]
 
-OPTION:   hsp
+option:   hsp
+usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
 type:     s
 default:  ranked
-param:
 convert:  sub { <ARGS>;
                 return 'all'       if <OVAL> =~ /^a/;
                 return 'discrete'  if <OVAL> =~ /^d/;
@@ -1147,162 +1098,115 @@ convert:  sub { <ARGS>;
                 Bio::MView::Manager::check_hsp_tiling));
               }
 
-OPTION:   maxeval
+option:   maxeval
+usage:    "Ignore hits with e-value greater than N"
 type:     s
 default:  unlimited
-param:
 convert:  sub { <ARGS>;
-                return undef    if <OVAL> eq 'unlimited';
-                <TEST>('f', <ONAME>, <OVAL>);
+                return undef  if <OVAL> eq 'unlimited';
+                <OVAL> = <TEST>('f', <ONAME>, <OVAL>);
                 <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
                 <OVAL>;
           }
 
-OPTION:   minbits
+option:   minbits
+usage:    "Ignore hits with bits less than N"
 type:     s
 default:  unlimited
-param:
 convert:  sub { <ARGS>;
-                return undef    if <OVAL> eq 'unlimited';
-                <TEST>('f', <ONAME>, <OVAL>);
+                return undef  if <OVAL> eq 'unlimited';
+                <OVAL> = <TEST>('f', <ONAME>, <OVAL>);
                 <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
                 <OVAL>;
           }
 
-OPTION:   strand
+option:   strand
+usage:    "Report only these query strand orientations {p,m,both,*}"
 type:     @s
 default:  both
-param:
 convert:  sub { <ARGS>;
-                local $_;
+                local $_; my @tmp=();
                 foreach (@{<PVAL>}) {
-                    if    (lc $_ eq 'p')    { return ['+']; }
-                    elsif (lc $_ eq 'm')    { return ['-']; }
-                    elsif (lc $_ eq 'both') { return [];    }
-                    elsif ($_ eq '*')       { return [];    }
+                    if    (lc $_ eq 'p')    { push @tmp, '+'; }
+                    elsif (lc $_ eq 'm')    { push @tmp, '-'; }
+                    elsif (lc $_ eq 'both') { @tmp = ();      }
+                    elsif ($_ eq '*')       { @tmp = ();      }
                     else {
                         <WARN>("bad value for '-<ONAME>=$_', choose from '{p,m,both,*}'");
                     }
                 }
+                @tmp = ()  if @tmp > 1;
+                return [ @tmp ];
             }
 
-OPTION:   keepinserts
+option:   keepinserts
+usage:    "Keep hit sequence insertions in unaligned output"
 type:     b
 default:  off
-param:
 
 ###########################################################################
 [BLAST1]
 
 text:     "NCBI BLAST (series 1), WashU-BLAST:"
 
-#generic
-OPTION:   hsp
-usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
-type:     s
-default:  ranked
+generic:  hsp
 
-OPTION:   maxpval
+option:   maxpval
 usage:    "Ignore hits with p-value greater than N"
 type:     s
 default:  unlimited
-param:
 convert:  sub { <ARGS>;
-                return undef    if <OVAL> eq 'unlimited';
+                return undef  if <OVAL> eq 'unlimited';
                 <TEST>('f', <ONAME>, <OVAL>);
                 <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
                 <OVAL>;
           }
 
-OPTION:   minscore
+option:   minscore
 usage:    "Ignore hits with score less than N"
 type:     s
 default:  unlimited
-param:
 convert:  sub { <ARGS>;
-                return undef    if <OVAL> eq 'unlimited';
+                return undef  if <OVAL> eq 'unlimited';
                 <TEST>('f', <ONAME>, <OVAL>);
                 <WARN>("bad option '-<ONAME>=<OVAL>', want > 0") if <OVAL> < 0;
                 <OVAL>;
           }
 
-#generic
-OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,both,*}"
-type:     @s
-default:  both
+generic:  strand
 
-#generic
-OPTION:   keepinserts
-usage:    "Keep hit sequence insertions in unaligned output"
-type:     b
-default:  off
-param:
+generic:  keepinserts
 
 ###########################################################################
 [BLAST2]
 
 text:     "NCBI BLAST (series 2), BLAST+:"
 
-#generic
-OPTION:   hsp
-usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
-type:     s
-default:  ranked
+generic:  hsp
 
-#generic
-OPTION:   maxeval
-usage:    "Ignore hits with e-value greater than N"
-type:     s
-default:  unlimited
+generic:  maxeval
 
-#generic
-OPTION:   minbits
-usage:    "Ignore hits with bits less than N"
-type:     s
-default:  unlimited
+generic:  minbits
 
-#generic
-OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,both,*}"
-type:     @s
-default:  both
+generic:  strand
 
-#generic
-OPTION:   keepinserts
-usage:    "Keep hit sequence insertions in unaligned output"
-type:     b
-default:  off
-param:
+generic:  keepinserts
 
 ###########################################################################
 [PSIBLAST]
 
 text:     "NCBI PSI-BLAST:"
 
-#generic
-OPTION:   hsp
-usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
-type:     s
-default:  ranked
+generic:  hsp
 
-#generic
-OPTION:   maxeval
-usage:    "Ignore hits with e-value greater than N"
-type:     s
-default:  unlimited
+generic:  maxeval
 
-#generic
-OPTION:   minbits
-usage:    "Ignore hits with bits less than N"
-type:     s
-default:  unlimited
+generic:  minbits
 
-OPTION:   cycle
+option:   cycle
 usage:    "Process the N'th cycle of a multipass search {1..N,first,last,all,*}"
 type:     @s
 default:  last
-param:
 convert:  sub { <ARGS>;
                 local $_; my @tmp=();
                 foreach (@{<PVAL>}) {
@@ -1313,28 +1217,22 @@ convert:  sub { <ARGS>;
                     elsif (/^\d+$/)       { push @tmp, $_;   }
                     else {
                         <WARN>("bad value for '-<ONAME>=$_', choose from '{1..N,first,last,all,*}'");
-                    }
+                    }   
                 }
                 return [ @tmp ];
             }
 
-#generic
-OPTION:   keepinserts
-usage:    "Keep hit sequence insertions in unaligned output"
-type:     b
-default:  off
-param:
+generic:  keepinserts
 
 ###########################################################################
 [FASTA]
 
 text:     "FASTA (U. of Virginia):"
 
-OPTION:   minopt
+option:   minopt
 usage:    "Ignore hits with opt score less than N"
 type:     s
 default:  unlimited
-param:
 convert:  sub { <ARGS>;
                 return undef    if <OVAL> eq 'unlimited';
                 <TEST>('f', <ONAME>, <OVAL>);
@@ -1342,22 +1240,17 @@ convert:  sub { <ARGS>;
                 <OVAL>;
           }
 
-#generic
-OPTION:   strand
-usage:    "Report only these query strand orientations {p,m,both,*}"
-type:     @s
-default:  both
+generic:  strand
 
 ###########################################################################
 [HSSP]
 
 text:     "HSSP/Maxhom:"
 
-OPTION:   chain
+option:   chain
 usage:    "Report only these chainnames/numbers {A..B,1..N,first,last,all,*}"
 type:     @s
 default:  *
-param:
 convert:  sub { <ARGS>;
                 local $_; my @tmp=();
                 foreach (@{<PVAL>}) {
@@ -1371,15 +1264,12 @@ convert:  sub { <ARGS>;
             }
 
 ###########################################################################
-[MAF]
+[.]
 
-text:     "UCSC MAF:"
-
-OPTION:   block
+option:   block
 usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
 default:  first
-param:
 convert:  sub { <ARGS>;
                 local $_; my @tmp=();
                 foreach (@{<PVAL>}) {
@@ -1396,25 +1286,28 @@ convert:  sub { <ARGS>;
             }
 
 ###########################################################################
+[MAF]
+
+text:     "UCSC MAF:"
+
+generic:  block
+
+###########################################################################
 [MULTAL]
 
 text:     "MULTAL/MULTAS:"
 
-#share
-OPTION:   block
-usage:    "Report only these blocks {1..N,first,last,all,*}"
-type:     @s
-default:  first
+generic:  block
 
 ###########################################################################
-[MAPS]
+[MAPFILES]
 
 text:     "User defined colormap and consensus group definition:"
 
-OPTION:   colorfile
+option:   colorfile
 usage:    "Load more colormaps from file"
 
-OPTION:   groupfile
+option:   groupfile
 usage:    "Load more groupmaps from file"
 
 ###########################################################################
@@ -1422,16 +1315,16 @@ usage:    "Load more groupmaps from file"
 
 text:     "More information and help:"
 
-OPTION:   help
+option:   help
 usage:    "This help"
 
-OPTION:   listcolors
+option:   listcolors
 usage:    "Print listing of known colormaps"
 
-OPTION:   listgroups
+option:   listgroups
 usage:    "Print listing of known consensus groups"
 
-OPTION:   listcss
+option:   listcss
 usage:    "Print style sheet"
 
 ###########################################################################

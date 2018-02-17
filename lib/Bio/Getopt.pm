@@ -3,14 +3,19 @@
 
 ###########################################################################
 # 
-# if 'usage' is undefined: don't output any usage information.
-# if 'param' is undefined: don't copy option to parameter.
-# if 'param' is defined but null, copy with parameter name = option name.
-# if 'param' is defined and non-null, copy with new parameter name given
-#   by 'param'..
-# if 'type'  is empty: treat option as a switch.
-# if 'convert' references a function, use any return value from that
-#   function to set the parameter. 
+# Getopt fields:
+#
+# [name]     names a group of options; the group [.] is special.
+#
+# option:    the command line option.
+# generic:   refer to an already defined option in group [.].
+#
+# text:      descriptive string for a group of options in a class.
+# usage:     usage string; if undefined, be silent about the option.
+# type:      parameter type.
+# param:     internal parameter name: if null or empty uses option name.
+# convert:   function, return value sets the parameter value.
+# action:    function, for side effects only.
 # 
 ###########################################################################
 package Bio::Getopt::Class;
@@ -34,11 +39,12 @@ my %Template =
 
 sub new {
     my $type = shift;
-    my ($prog, $options, $passthru) = (@_, 1);
+    my ($prog, $name, $passthru) = (@_, 1);
     my $self = {};
 
     $self->{'prog'}   = $prog;
-    $self->{'option'} = $options;
+    $self->{'name'}   = $name;
+    $self->{'option'} = [];
     $self->{'order'}  = [];
     $self->{'errors'} = [];
 
@@ -75,9 +81,16 @@ sub set_text {
     $self;
 }
 
+sub set_generic {
+    my ($self, $option) = @_;
+    $self->{'option'}->[1]->{$option} = { 'generic' => 1 };
+    push @{$self->{'order'}}, $option;
+    $self;
+}
+
 sub set_option {
     my ($self, $option) = @_;
-    $self->{'option'}->[1]->{$option} = {};
+    $self->{'option'}->[1]->{$option} = { 'name' => $option };
     push @{$self->{'order'}}, $option;
     $self;
 }
@@ -102,33 +115,40 @@ sub die {
 }
 
 sub usage {
-    my $self = shift;
-    my ($s, $o, $default, $text, $type) = ('');
+    my ($self, $generic) = (shift, shift);
     my @list = ();
 
-    push @_, @{$self->{'order'}}    unless @_;
-    
-    foreach $o (@_) {
-	next    unless defined $self->{'option'}->[1]{$o}->{'usage'};
-	push @list, $o; 
+    return '' if $self->{'name'} eq '.';  #silent
+
+    push @_, @{$self->{'order'}}  unless @_;
+
+    foreach my $o (@_) {
+        my $item = $self->{'option'}->[1]->{$o};
+        if (defined $item->{'generic'}) {
+            $item = $generic->{'option'}->[1]->{$o};
+        }
+        if (defined $item->{'usage'}) {
+            push @list, $item;
+            next;
+        }
     }
 
-    if (@list) {
-	if (defined $self->{'option'}->[0] and $self->{'option'}->[0]) {
-	    $s = $self->{'option'}->[0] . "\n";
-	}
-    } else {
-	return '';
+    return ''  unless @list;
+
+    my $s = '';
+
+    if (defined $self->{'option'}->[0] and $self->{'option'}->[0]) {
+        $s = $self->{'option'}->[0] . "\n";
     }
     
-    foreach $o (@list) {
-	#warn "($o)\n";
-	next    unless defined $o;
-	next    unless exists $self->{'option'}->[1]{$o};
+    foreach my $item (@list) {
+        my ($name, $default, $text, $type);
 
-	$default = $self->{'option'}->[1]{$o}->{'default'};
+        $name = $item->{'name'};
+	$default = $item->{'default'};
+
 	if (defined $default) {
-	    if ($self->{'option'}->[1]{$o}->{'type'} eq '') {
+	    if ($item->{'type'} eq '') {
 		$default = ($default ? 'set' : 'unset');
 	    } elsif ($default eq '') {
 		$default = "''";
@@ -137,42 +157,39 @@ sub usage {
 	} else {
 	    $default = "[no default]";
 	}
-	$text = $self->{'option'}->[1]{$o}->{'usage'};
-	$type = '';
-	$type = "integer"   if $self->{'option'}->[1]{$o}->{'type'} eq 'i';
-	$type = "float"     if $self->{'option'}->[1]{$o}->{'type'} eq 'f';
-	$type = "string"    if $self->{'option'}->[1]{$o}->{'type'} eq 's';
-	$type = "int[,int]" if $self->{'option'}->[1]{$o}->{'type'} eq '@i';
-	$type = "flo[,flo]" if $self->{'option'}->[1]{$o}->{'type'} eq '@f';
-	$type = "str[,str]" if $self->{'option'}->[1]{$o}->{'type'} eq '@s';
-	$type = "int[,int]" if $self->{'option'}->[1]{$o}->{'type'} eq '@I';
-	$type = "flo[,flo]" if $self->{'option'}->[1]{$o}->{'type'} eq '@F';
-	$type = "str[,str]" if $self->{'option'}->[1]{$o}->{'type'} eq '@S';
-	$type = "on|off"    if $self->{'option'}->[1]{$o}->{'type'} eq 'b';
-	$s .= sprintf("  -%-20s %s %s.\n", "$o $type", $text, $default);
+	$text = $item->{'usage'};
+	$type = '';  #default
+	$type = "on|off"    if $item->{'type'} eq 'b';
+	$type = "integer"   if $item->{'type'} eq 'i';
+	$type = "float"     if $item->{'type'} eq 'f';
+	$type = "string"    if $item->{'type'} eq 's';
+	$type = "int[,int]" if $item->{'type'} eq '@i';
+	$type = "flo[,flo]" if $item->{'type'} eq '@f';
+	$type = "str[,str]" if $item->{'type'} eq '@s';
+	$type = "int[,int]" if $item->{'type'} eq '@I';
+	$type = "flo[,flo]" if $item->{'type'} eq '@F';
+	$type = "str[,str]" if $item->{'type'} eq '@S';
+	$s .= sprintf("  -%-20s %s %s.\n", "$name $type", $text, $default);
     }
     return "$s\n";
 }
 
 sub option_value {
     my $self = shift;
-    my ($o, $v) = @_;
-    #warn "($o, $v)\n";
-    return "'undef'"    unless defined $v;
-    return "''"         if $v eq '';
+    my ($o, $v) = @_; #warn "($o, $v)\n";
+    return "'undef'"  unless defined $v;
+    return "''"       if $v eq '';
     return $v;
 }
 
 sub param_value {
     my $self = shift;
-    my ($o, $v) = @_;
-    #warn "($o, $v)\n";
-    return "'undef'"    unless defined $v;
+    my ($o, $v) = @_; #warn "($o, $v)\n";
+    return "'undef'"  unless defined $v;
     if (ref $v or $self->{'option'}->[1]{$o}->{'type'} =~ /@/) {
-	#(assume) it's a list!
-	$v = "[" . join(",", @$v) . "]" 
+	$v = "[" . join(",", @$v) . "]"  #assume it's a list
     }
-    $v;
+    return $v;
 }
 
 sub get_options {
@@ -180,7 +197,7 @@ sub get_options {
     my ($caller, $opt, $par) = @_;
     my (@tmp, $o, $ov, $p, $pv);
 
-    return    if (@tmp = build_options($self->{'option'}->[1])) < 1;
+    return  if (@tmp = build_options($self->{'option'}->[1])) < 1;
 
     GetOptions($opt, @tmp);
 
@@ -189,77 +206,49 @@ sub get_options {
 OPTION:
     foreach $o (@{$self->{'order'}}) {
 
-	#get raw option value
-	if (defined $opt->{$o}) {
-	    #from command line
-	    $ov = $opt->{$o};
-	} else {
-	    #use default
-	    $ov = $self->{'option'}->[1]{$o}->{'default'};
-	}
+        my $item = $self->{'option'}->[1]->{$o};
 
-	#get the parameter name, if any
-	$p = $self->{'option'}->[1]{$o}->{'param'};
+        next  if $item->{'generic'};
 
-	#use option name if parameter name was set but empty
-	$p = $o    if defined $p and $p eq '';
+        $ov = $item->{'default'};                 #default
+        $ov = $opt->{$o}  if defined $opt->{$o};  #command line
+
+	$p = $item->{'param'};                    #explicit name
+	$p = $o    unless defined $p;             #use option name
 	
-	#perform trivial type tests and trivial option value
-	#to parameter conversion
-	$pv = $self->test_type($self->{'option'}->[1]{$o}->{'type'}, $o, $ov);
+	#simple type tests and parameter conversion
+	$pv = $self->test_type($item->{'type'}, $o, $ov);
 
-#	if (defined $p) {
-#	    warn "option:$o\nparam:$p\novalue:@{[(defined $ov?$ov:'undef')]}\npvalue:@{[(defined $pv?$pv:'undef')]}\n\n";
-#	} else {
-#		warn "option:$o\novalue:@{[(defined $ov?$ov:'undef')]}\npvalue:@{[(defined $pv?$pv:'undef')]}\n\n";
-#	}
+        #warn "option:$o\nparam:$p\novalue:@{[(defined $ov?$ov:'undef')]}\npvalue:@{[(defined $pv?$pv:'undef')]}\n\n";
 
 	next OPTION    if @{$self->{'errors'}};
 
-	#special option value to parameter conversion, if any
-	if (defined $p) {
-	    if (defined $self->{'option'}->[1]{$o}->{'convert'} and
-		ref $self->{'option'}->[1]{$o}->{'convert'} eq 'CODE') {
-		#use conversion function
-		$pv = &{$self->{'option'}->[1]{$o}->{'convert'}}
-		          ($caller, $self, $o, $ov, $p, $pv);
-		#warn "CONV($o): $pv\n"    if defined $pv;
-	    }
+	#special parameter conversion, if any
+        if (defined $item->{'convert'} and ref $item->{'convert'} eq 'CODE') {
+            #use conversion function
+            $pv = &{$item->{'convert'}}($caller, $self, $o, $ov, $p, $pv);
+            #warn "CONV($p): $pv\n"  if defined $pv;
 	}
 
 	next OPTION   if @{$self->{'errors'}};
 
 	#action: perform associated action, if any
-	if (defined $self->{'option'}->[1]{$o}->{'action'} and
-	    ref $self->{'option'}->[1]{$o}->{'action'} eq 'CODE') {
-	    $ov = &{$self->{'option'}->[1]{$o}->{'action'}}
-	              ($caller, $self, $o, $ov, $p, $pv);
-	    #warn "ACTN($o): $ov\n"    if defined $ov;
+	if (defined $item->{'action'} and ref $item->{'action'} eq 'CODE') {
+	    &{$item->{'action'}}($caller, $self, $o, $ov, $p, $pv);
+	    #warn "ACTN($o): $ov\n"  if defined $ov;
 	}
 	
 	next OPTION   if @{$self->{'errors'}};
 
-	#store any converted parameter value
-	$opt->{$o} = $ov    if ! exists $opt->{$o};
+	#overwrite option and parameter values
+	$opt->{$o} = $ov;
+	$par->{$p} = $pv;
 
-	#store any converted parameter value
-	$par->{$p} = $pv    if defined $p;
-
-	#for debugging
 	if ($DEBUG) {
 	    $ov = $self->option_value($o, $ov);
-
-	    if (defined $p) {
-		$p = sprintf("   %15s => %s", $p, $self->param_value($o, $pv));
-	    } else {
-		$p = '';
-	    }
-	    
-	    if (defined $opt->{$o}) {
-		printf STDERR "found:   %15s => %-10s %s\n", $o, $ov, $p;
-	    } else {
-		printf STDERR "default: %15s => %-10s %s\n", $o, $ov, $p;
-	    }
+	    $pv = $self->param_value($o, $pv);
+            printf STDERR "opt:%15s => %-10s    par:%15s => %-10s\n",
+                $o, $ov, $p, $pv;
 	}
     }
 
@@ -270,8 +259,8 @@ sub errors { return @{$_[0]->{'errors'}} }
 
 sub test_type {
     my ($self, $type, $o, $v) = @_;
-    return $v    unless defined $type and $type ne '';
-    return $v    if $type eq 's';
+    return $v  unless defined $type;
+    return $v  if $type eq 's' or $type eq '';
     if ($type eq 'i') {
 	unless ($v =~ /^$RX_Sint$/) {
 	    $self->warn("bad argument '$o=$v', want integer");
@@ -430,20 +419,15 @@ sub load_options {
     my ($scope, $prog, $stm) = @_;
     my ($tmp, $class, $name, $option);
     my $text = '';
-    my @class = ();
+    my @order = ();
     my %class;
     local $_;
 
     while (<$stm>) {
 	
 	last    if eof;
-
-	#blank
-	next    if /^\s*$/;
-
-	#hash comment
-	next    if /^\s*\#/;
-
+	next    if /^\s*$/;   #blank
+	next    if /^\s*\#/;  #hash comment
 	chomp;
 
 	#TEXT
@@ -454,15 +438,18 @@ sub load_options {
 	}
 	
 	#CLASS
-	if (/^\s*\[\s*([a-z0-9]+)\s*\]/i) {
-	    $name = $1;
+	if (/^\s*\[\s*([._a-z0-9]+)\s*\]/i) {
+	    $name = uc $1;
+            #allow classname to recur
 	    if (! exists $class{$name}) {
-		$class = new Bio::Getopt::Class($prog, [], 1);
+		$class = new Bio::Getopt::Class($prog, $name, 1);
 		$class{$name} = $class;
-		push @class, $name;
-	    } else {
-		CORE::die "Bio::Getopt::Class::load_options() class duplication for '$name'\n";
+                #warn "consct: $name, $class\n";
+		push @order, $name;
+                next;
 	    }
+            $class = $class{$name};
+            #warn "extend: $name, $class\n";
 	    next;
 	}
 
@@ -479,6 +466,14 @@ sub load_options {
 	    #warn "#class.option($1)\n";
 	    $option = _strip_quotes($1);
             $class->set_option($option);
+	    next;
+	}
+	
+	#class.GENERIC
+	if (/^\s*generic\s*:\s*(\S+)/i) {
+	    #warn "#class.generic($1)\n";
+	    $option = _strip_quotes($1);
+            $class->set_generic($option);
 	    next;
 	}
 	
@@ -537,7 +532,7 @@ sub load_options {
 
 	CORE::die "Bio::Getopt::Class::load_options() unrecognised line: [$_]";
     }
-    ($text, \@class, \%class);
+    ($text, \@order, \%class);
 }
 
 sub _scan_quoted_text {
@@ -552,7 +547,7 @@ sub _scan_quoted_text {
 	$text = $1;                                     #first line
 	while ($line = <$stm>) {
 	    last    if $line =~ /^\s*\S+\s*:/;          #next option
-	    last    if $line =~ /^\s*\[\s*[a-z0-9]+\s*\]i/; #next class
+	    last    if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]i/; #next class
 	    chomp $line;
 	    if ($line =~ /(.*[\"\'])\s*$/) {            #last line
 		$text .= $1;
@@ -577,12 +572,12 @@ sub _scan_subroutine {
     $line = ''    unless defined $line;
     #warn "($stm, $line, $tmp)";
     if ($line =~ /^\s*(sub.*)/) {
-        $tmp = "$1\n";                                  #first line
+        $tmp = "$1\n";                                #first line
     }
     while ($line = <$stm>) {    
-        last if $line =~ /^\s*(?:option|usage|type|default|param|convert|action|print)\s*:/i;                                          #next option
-        last    if $line =~ /^\s*\[\s*[a-z0-9]+\s*\]/i; #next class
-        $tmp .= $line;                                  #middle lines
+        last if $line =~ /^\s*(?:text|option|generic|usage|type|default|param|convert|action|print)\s*:/i;                            #next option
+        last if $line =~ /^\s*\[\s*[._a-z0-9]+\s*\]/i; #next class
+        $tmp .= $line;                                #middle lines
     }
 
     #warn "SUB: ($tmp)\n";
@@ -590,7 +585,7 @@ sub _scan_subroutine {
     #warn "SUB: ($tmp)\n";
 
     $tmp = eval $tmp;
-    CORE::die "Bio::Getopt::Class::load_options() bad sub definition '$option':\n$@"    if $@;
+    CORE::die "Bio::Getopt::Class::load_options() bad subroutine definition '$option':\n$@"    if $@;
 
     ($tmp, $line);
 }
@@ -701,7 +696,7 @@ sub usage {
     my $s = '';
     $s .= "$self->{'text'}\n"  if defined $self->{'text'};
     foreach my $cls (@{$self->{'order'}}) {
-	$s .= $self->{'class'}->{$cls}->usage;
+	$s .= $self->{'class'}->{$cls}->usage($self->{'class'}->{'.'});
     }
     $s;
 }

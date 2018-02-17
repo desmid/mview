@@ -28,6 +28,23 @@ my %Template =
      'noparse'       => undef,
      'bp'            => undef,
      'ap'            => undef,
+     #misc options
+     'aa'            => undef, #obsolete
+     'dna'           => undef, #obsolete
+     'in'            => undef,
+     'title'         => undef,
+     'help'          => undef,
+     'disc'          => undef,
+     'keep'          => undef,
+     'srs'           => undef,
+     'verbose'       => undef,
+     'colorfile'     => undef,
+     'groupfile'     => undef,
+     'listcolors'    => undef,
+     'listcss'       => undef,
+     'listgroups'    => undef,
+     'pagecolor'     => undef,
+     'textcolor'     => undef,
     );
 
 my %Template_Build_Param =
