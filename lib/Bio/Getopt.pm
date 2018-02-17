@@ -120,13 +120,9 @@ sub usage {
 
     return '' if $self->{'name'} eq '.';  #silent
 
-    push @_, @{$self->{'order'}}  unless @_;
-
-    foreach my $o (@_) {
+    foreach my $o (@{$self->{'order'}}) {
         my $item = $self->{'option'}->[1]->{$o};
-        if (defined $item->{'generic'}) {
-            $item = $generic->{'option'}->[1]->{$o};
-        }
+        $item = $generic->{'option'}->[1]->{$o} if exists $item->{'generic'};
         if (defined $item->{'usage'}) {
             push @list, $item;
             next;
@@ -208,7 +204,7 @@ OPTION:
 
         my $item = $self->{'option'}->[1]->{$o};
 
-        next  if $item->{'generic'};
+        next  if $item->{'generic'};  #let the [.] group deal with it
 
         $ov = $item->{'default'};                 #default
         $ov = $opt->{$o}  if defined $opt->{$o};  #command line
@@ -221,7 +217,7 @@ OPTION:
 
         #warn "option:$o\nparam:$p\novalue:@{[(defined $ov?$ov:'undef')]}\npvalue:@{[(defined $pv?$pv:'undef')]}\n\n";
 
-	next OPTION    if @{$self->{'errors'}};
+	next OPTION  if @{$self->{'errors'}};
 
 	#special parameter conversion, if any
         if (defined $item->{'convert'} and ref $item->{'convert'} eq 'CODE') {
@@ -230,7 +226,7 @@ OPTION:
             #warn "CONV($p): $pv\n"  if defined $pv;
 	}
 
-	next OPTION   if @{$self->{'errors'}};
+	next OPTION  if @{$self->{'errors'}};
 
 	#action: perform associated action, if any
 	if (defined $item->{'action'} and ref $item->{'action'} eq 'CODE') {
@@ -238,7 +234,7 @@ OPTION:
 	    #warn "ACTN($o): $ov\n"  if defined $ov;
 	}
 	
-	next OPTION   if @{$self->{'errors'}};
+	next OPTION  if @{$self->{'errors'}};
 
 	#overwrite option and parameter values
 	$opt->{$o} = $ov;

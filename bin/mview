@@ -461,28 +461,27 @@ contains whitespace or a wildcard that might be expanded by the shell\n"
 #force @ARGV to be examined for '-help' first.
 option:   help
 default:  0
-action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
+convert:  sub { 1; }
 
 #force @ARGV to be examined for '-listcolors' first.
 option:   listcolors
 default:  0
-action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
+convert:  sub { 1; }
 
 #force @ARGV to be examined for '-listgroups' first.
 option:   listgroups
 default:  0
-action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
+convert:  sub { 1; }
 
 #force @ARGV to be examined for '-listcss' first.
 option:   listcss
 default:  0
-action:   sub { <ARGS>; <OPTION>{<ONAME>} = 1    if <OVAL> }
+convert:  sub { 1; }
 
 #force @ARGV to be examined for '-colorfile' first.
 option:   colorfile
 type:     s
-action:   sub { <ARGS>;
-              local *TMP;
+action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
                   open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open colormap file '<OVAL>'\n";
                   Bio::MView::Manager::load_colormaps(\*TMP);
@@ -493,8 +492,7 @@ action:   sub { <ARGS>;
 #force @ARGV to be examined for '-groupfile' first.
 option:   groupfile
 type:     s
-action:   sub { <ARGS>;
-              local *TMP;
+action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
                   open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open consensus group file '<OVAL>'\n";
                   Bio::MView::Manager::load_groupmaps(\*TMP);
@@ -515,10 +513,9 @@ text:     "Input/output formats:"
 option:   in
 usage:    "Input <CHOOSE>(main::check_format)"
 type:     s
-action:   sub { <ARGS>;
-                return <OPTION>{<ONAME>} = main::check_format(<OVAL>, 'par')
-                    if defined <OVAL>;
-                return undef;
+convert:  sub { <ARGS>;
+              return main::check_format(<OVAL>, 'par')  if defined <OVAL>;
+              return undef;
           }
 
 option:   out
@@ -527,24 +524,24 @@ usage:    "Output <CHOOSE>(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 convert:  sub { <ARGS>;
-                <OPTION>{'pre'} = 1;
-                if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new';
-                                           <OPTION>{'pre'} = 0; }
-                elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain';    }
-                elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson';  }
-                elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson';  }
-                elsif (<OVAL> =~ /^pi/i) { <PVAL> = 'pir';      }
-                elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf';      }
-                elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal';  }
-                elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal';  }
-                elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';
-                                           <OPTION>{'pre'} = 0; }
-                else {
-                    <WARN>("bad option '-<ONAME>=<OVAL>'");
-                    <WARN>("known types are: ", join(",",
-                      Bio::MView::Manager::check_convert_mode));
-                }
-                <PVAL>;
+              <OPTION>{'pre'} = 1;
+              if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new';
+                                         <OPTION>{'pre'} = 0; }
+              elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain';    }
+              elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson';  }
+              elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson';  }
+              elsif (<OVAL> =~ /^pi/i) { <PVAL> = 'pir';      }
+              elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf';      }
+              elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal';  }
+              elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal';  }
+              elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';
+                                         <OPTION>{'pre'} = 0; }
+              else {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known types are: ", join(",",
+                    Bio::MView::Manager::check_convert_mode));
+              }
+              <PVAL>;
           }
 
 ###########################################################################
@@ -898,10 +895,8 @@ usage:    "Find and highlight exact string or simple regular expression or ':' d
 type:     s
 default:  ""
 action:   sub { <ARGS>;
-                if (<OVAL>) {
-                    <PARAM>{'fnd_colormap'} =
-                        Bio::MView::Manager::get_default_find_colormap();
-                }
+                <PARAM>{'fnd_colormap'} =
+                    Bio::MView::Manager::get_default_find_colormap();
           }
 
 ###########################################################################
