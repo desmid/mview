@@ -57,7 +57,7 @@ my %KNOWN_FORMAT =
 my ($HTML_NULL, $HTML_DATA, $HTML_CSS, $HTML_BODY, $HTML_HTML, $HTML_MIME) =
     (0,1,2,4,8,16);
 my ($VERB_NULL, $VERB_FILE, $VERB_ARGV, $VERB_FORM, $VERB_OPTS) = (0,1,2,4,8);
-my ($stm, $com, $opt, $par) = (\*STDOUT);
+my ($stm, $com, $par) = (\*STDOUT);
 
 ###########################################################################
 $SIG{'INT'} =
@@ -65,9 +65,8 @@ $SIG{'INT'} =
 
 $com = new Bio::Getopt($PROG, \*DATA);
 $com->parse_options(\@ARGV);
-$opt = $com->get_option_hash;
 $par = $com->get_parameter_hash;
-rationalise_parameters($opt, $par);
+rationalise_parameters($par);
 dump_options($com)  if $par->{'verbose'} & $VERB_OPTS;
 usage($com, $par, 0)  if $par->{'help'};
 
@@ -134,7 +133,7 @@ unless (@ARGV or $par->{'noparse'}) {
 }
 
 #do the real work
-if (mview($opt, $par, $stm, @ARGV)) {
+if (mview($par, $stm, @ARGV)) {
     print $stm copyright($par)  if $par->{'html'} != $HTML_DATA and
         $par->{'mode'} =~ /^new/;
 } else {
@@ -151,14 +150,13 @@ cleanup();
 
 ###########################################################################
 sub mview {
-    my ($opt, $par, $stm) = (shift, shift, shift);
-    my ($mgr, $file, $format);
+    my ($par, $stm) = (shift, shift);
 
     #Universal::vmstat("Manager constructor");
 
-    $mgr = new Bio::MView::Manager($PROG, %$par);
+    my $mgr = new Bio::MView::Manager($PROG, %$par);
 
-    foreach $file (@_) {
+    foreach my $file (@_) {
 	unless (-e $file) {
 	    warn "$PROG: '$file' does not exist\n";
 	    next;
@@ -181,7 +179,7 @@ sub mview {
             $par->{'in'} = $format;
         }
         
-	print $stm "<PRE>\n"  if $par->{'pre'};
+	print $stm "<PRE>\n"   if $par->{'pre'};
 
 	if (! defined $mgr->parse($file, $par->{'in'})) {
 	    warn "$PROG: can't parse file '$file'\n";
@@ -205,38 +203,38 @@ sub mview {
 sub cleanup { unlink "$SCRATCH"    if -f "$SCRATCH" }
 
 sub rationalise_parameters {
-    my ($o, $p) = @_;
+    my $p = shift;
 
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'rdb';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'clustal';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'pir';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'msf';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'pearson';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'fasta';
-    ($o->{'html'}, $p->{'html'}) = ('off', 0)  if $p->{'mode'} eq 'plain';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'rdb';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'clustal';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'pir';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'msf';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'pearson';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'fasta';
+    $p->{'html'} = 0  if $p->{'mode'} eq 'plain';
 
-    #switch off preformatted flag if HTML is off
-    ($o->{'pre'}, $p->{'pre'}) = (0, 0)  if $p->{'html'} eq 'off';
+    if ($p->{'html'}) {
+        #ignore style sheets if css is unset
+        unless ($p->{'css1'}) {
+            $p->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
+        }       
+    } else {
+        #ignore style sheets
+        $p->{'css1'} = 0;
 
-    #ignore style sheets if HTML off
-    ($o->{'css'}, $p->{'css1'}) = ('off', 0)  if $p->{'html'} eq 'off';
+        #switch off preformatted flag
+        $p->{'pre'} = 0;
 
-    #ignore style sheets in HTML if css is unset
-    $p->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA)
-    	if $o->{'css'} eq 'off';
-
-    #ignore coloring if HTML is off!
-    unless ($o->{'html'}) {
-	$p->{'aln_coloring'} = 'none';
-	$p->{'con_coloring'} = 'none';
+        #ignore coloring if HTML is off!
+        $p->{'aln_coloring'} = 'none';
+        $p->{'con_coloring'} = 'none';
     }
 
     #switch off parsing if color/groupmap listing requested
-    if ($o->{'listcolors'} or $o->{'listgroups'}) {
-	$o->{'noparse'} = $p->{'noparse'} = 1;
-	$o->{'pre'} = 0;
+    if ($p->{'listcolors'} or $p->{'listgroups'}) {
+	$p->{'noparse'} = 1;
     } else {
-	$o->{'noparse'} = $p->{'noparse'} = 0;
+	$p->{'noparse'} = 0;
     }
 }
 
@@ -530,9 +528,7 @@ usage:    "Output <CHOOSE>(Bio::MView::Manager::check_convert_mode)"
 type:     s
 default:  new
 convert:  sub { <ARGS>;
-              <OPTION>{'pre'} = 1;
-              if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new';
-                                         <OPTION>{'pre'} = 0; }
+              if    (<OVAL> =~ /^n/i)  { <PVAL> = 'new';      }
               elsif (<OVAL> =~ /^pl/i) { <PVAL> = 'plain';    }
               elsif (<OVAL> =~ /^fa/i) { <PVAL> = 'pearson';  }
               elsif (<OVAL> =~ /^pe/i) { <PVAL> = 'pearson';  }
@@ -540,8 +536,7 @@ convert:  sub { <ARGS>;
               elsif (<OVAL> =~ /^ms/i) { <PVAL> = 'msf';      }
               elsif (<OVAL> =~ /^cl/i) { <PVAL> = 'clustal';  }
               elsif (<OVAL> =~ /^al/i) { <PVAL> = 'clustal';  }
-              elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';
-                                         <OPTION>{'pre'} = 0; }
+              elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';      }
               else {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
                   <WARN>("known types are: ", join(",",

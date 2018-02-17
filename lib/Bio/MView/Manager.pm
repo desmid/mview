@@ -32,6 +32,7 @@ my %Template =
      'in'            => undef,
      'title'         => undef,
      'help'          => undef,
+     'pre'           => undef,
      'srs'           => undef,
      'verbose'       => undef,
      'colorfile'     => undef,
