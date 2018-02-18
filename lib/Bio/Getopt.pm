@@ -5,14 +5,17 @@
 # 
 # Getopt fields:
 #
-# [name]     names a group of options; the group [.] is special.
-#
-# option:    the command line option.
-# generic:   refer to an already defined option in group [.].
+# [.]        names the generic group of options which may be shared.
+# [name]     names a group of options.
 #
 # header:    descriptive string, may span multiple lines.
+#
+# option:    the command line option, or instead,
+# generic:   refer to an already defined option in group [.].
+#
 # usage:     usage string; if undefined, be silent about the option.
-# type:      parameter type.
+# type:      parameter type (see below for variants).
+# default:   default parameter value.
 # param:     internal parameter name: if null or empty uses option name.
 # convert:   function, return value sets the parameter value.
 # action:    function, for side effects only.
@@ -21,13 +24,9 @@
 $Bio::Getopt::GENERIC_GROUP = '.';
 
 ###########################################################################
-package Bio::Getopt::Group;
+package Bio::Getopt::Option;
 
-use Getopt::Long;
-use NPB::Parse::Regexps;
 use strict;
-
-my $DEBUG = 0;
 
 my %Template =
     (
@@ -38,6 +37,119 @@ my %Template =
      'convert' => undef,
      'action'  => undef,
     );
+
+sub new {
+    my $type = shift;
+    my $self = {};
+    my ($name, $generic) = (@_, 0);  #1 is generic
+
+    $self->{'name'}    = $name;
+    $self->{'generic'} = $generic;
+    $self->{'o_val'}   = undef;
+    $self->{'p_val'}   = undef;
+
+    bless $self, $type;
+}
+
+sub init {
+    my $self = shift;
+    foreach my $val (keys %Template) {
+        $self->{$val} = $Template{$val} if !exists $self->{$val};
+    }
+    $self;
+}
+
+sub set_attribute {
+    my ($self, $key, $val) = @_;
+    $self->{$key} = $val;
+    $self;
+}
+
+sub is_generic { return $_[0]->{'generic'} == 1 }
+
+sub name    { return $_[0]->{'name'} }
+sub o_val   { return $_[0]->{'o_val'} }
+sub p_val   { return $_[0]->{'p_val'} }
+
+sub usage   { return $_[0]->{'usage'} }
+sub type    { return $_[0]->{'type'} }
+sub default { return $_[0]->{'default'} }
+sub param   { return $_[0]->{'param'} }
+sub convert { return $_[0]->{'convert'} }
+sub action  { return $_[0]->{'action'} }
+
+sub _as_string {
+    my ($self, $v) = @_;
+    return "undef"  unless defined $v;
+    if ($v eq '') {
+        return "''";
+    }
+    if (ref $v eq 'ARRAY') {
+        return "[" . join(@$v, ",") . "]";
+    }
+    return "$v";
+}
+
+sub name_string    { return $_[0]->_as_string($_[0]->{'name'}) }
+sub generic_string { return $_[0]->_as_string($_[0]->{'generic'}) }
+sub o_val_string   { return $_[0]->_as_string($_[0]->{'o_val'}) }
+sub p_val_string   { return $_[0]->_as_string($_[0]->{'p_val'}) }
+sub usage_string   { return $_[0]->_as_string($_[0]->{'usage'}) }
+sub param_string   { return $_[0]->_as_string($_[0]->{'param'}) }
+sub type_string    { return $_[0]->_as_string($_[0]->{'type'}) }
+                   
+sub type_string_long {
+    return "on|off"     if $_[0]->{'type'} eq 'b';
+    return "integer"    if $_[0]->{'type'} eq 'i';
+    return "float"      if $_[0]->{'type'} eq 'f';
+    return "string"     if $_[0]->{'type'} eq 's';
+    return "int[,int]"  if $_[0]->{'type'} eq '@i';
+    return "flo[,flo]"  if $_[0]->{'type'} eq '@f';
+    return "str[,str]"  if $_[0]->{'type'} eq '@s';
+    return "int[,int]"  if $_[0]->{'type'} eq '@I';
+    return "flo[,flo]"  if $_[0]->{'type'} eq '@F';
+    return "str[,str]"  if $_[0]->{'type'} eq '@S';
+    return '';
+}
+
+sub default_string {
+    return "no default"  unless defined $_[0]->{'default'};
+    if ($_[0]->{'type'} eq '') {
+        return ($_[0]->{'default'} ? 'set' : 'unset');
+    }
+    if ($_[0]->{'default'} eq '') {
+        return "''";
+    }
+    if (ref $_[0]->{'default'} eq 'ARRAY') {
+        return "[" . join(@{$_[0]->{'default'}}, ",") . "]";
+    }
+    return $_[0]->{'default'};
+}
+
+sub dump {
+    my ($self, $stm) = (@_, \*STDERR);
+    print $stm sprintf "%20s => %s\n", 'option',      $self->name_string;
+    print $stm sprintf "%20s => %s\n", 'generic',     $self->generic_string;
+    print $stm sprintf "%20s => %s\n", 'o_val',       $self->o_val_string;
+    print $stm sprintf "%20s => %s\n", 'p_val',       $self->p_val_string;
+    print $stm sprintf "%20s => %s\n", 'usage',       $self->usage_string;
+    print $stm sprintf "%20s => %s\n", 'type',        $self->type_string;
+    print $stm sprintf "%20s => %s\n", 'type_string', $self->type_string_long;
+    print $stm sprintf "%20s => %s\n", 'default',     $self->default_string;
+    print $stm sprintf "%20s => %s\n", 'param',       $self->param_string;
+    print $stm "\n";
+    $_[0];
+}
+
+
+###########################################################################
+package Bio::Getopt::Group;
+
+use Getopt::Long;
+use NPB::Parse::Regexps;
+use strict;
+
+my $DEBUG = 0;
 
 sub new {
     my $type = shift;
@@ -70,9 +182,7 @@ sub init {
     my $self = shift;
     foreach my $o (keys %{$self->{'option'}}) {
         my $item = $self->{'option'}->{$o};
-	foreach my $val (keys %Template) {
-	    $item->{$val} = $Template{$val} if !exists $item->{$val};
-	}
+        $item->init;
     }
     $self;
 }
@@ -85,22 +195,23 @@ sub set_text {
 
 sub set_option {
     my ($self, $option) = @_;
-    $self->{'option'}->{$option} = { 'name' => $option };
+    my $item = new Bio::Getopt::Option($option);
+    $self->{'option'}->{$option} = $item;
     push @{$self->{'order'}}, $option;
     $self;
 }
 
 sub set_generic {
     my ($self, $option) = @_;
-    $self->{'option'}->{$option} = { 'generic' => 1 };
+    my $item = new Bio::Getopt::Option($option, 1);
+    $self->{'option'}->{$option} = $item;
     push @{$self->{'order'}}, $option;
     $self;
 }
 
 sub set_option_keyval {
     my ($self, $option, $key, $val) = @_;
-    #warn "($option, $key, $val)\n";
-    $self->{'option'}->{$option}->{$key} = $val;
+    $self->{'option'}->{$option}->set_attribute($key, $val);
     $self;
 }
 
@@ -112,7 +223,7 @@ sub warn {
 
 sub die {
     my $self = shift;
-    CORE::warn $self->errors    if @{$self->{'errors'}};
+    CORE::warn $self->get_errors  if @{$self->{'errors'}};
     CORE::die "$self->{'prog'}: @_\n";
 }
 
@@ -125,8 +236,8 @@ sub usage {
     #lookup the option in this group, or in the generic group
     foreach my $o (@{$self->{'order'}}) {
         my $item = $self->{'option'}->{$o};
-        $item = $generic->{'option'}->{$o} if exists $item->{'generic'};
-        if (defined $item->{'usage'}) {
+        $item = $generic->{'option'}->{$o}  if $item->is_generic;
+        if (defined $item->usage) {
             push @list, $item;
             next;
         }
@@ -141,54 +252,13 @@ sub usage {
     }
     
     foreach my $item (@list) {
-        my ($name, $default, $text, $type);
-
-        $name = $item->{'name'};
-	$default = $item->{'default'};
-
-	if (defined $default) {
-	    if ($item->{'type'} eq '') {
-		$default = ($default ? 'set' : 'unset');
-	    } elsif ($default eq '') {
-		$default = "''";
-	    }
-	    $default = "[$default]";
-	} else {
-	    $default = "[no default]";
-	}
-	$text = $item->{'usage'};
-	$type = '';  #default
-	$type = "on|off"    if $item->{'type'} eq 'b';
-	$type = "integer"   if $item->{'type'} eq 'i';
-	$type = "float"     if $item->{'type'} eq 'f';
-	$type = "string"    if $item->{'type'} eq 's';
-	$type = "int[,int]" if $item->{'type'} eq '@i';
-	$type = "flo[,flo]" if $item->{'type'} eq '@f';
-	$type = "str[,str]" if $item->{'type'} eq '@s';
-	$type = "int[,int]" if $item->{'type'} eq '@I';
-	$type = "flo[,flo]" if $item->{'type'} eq '@F';
-	$type = "str[,str]" if $item->{'type'} eq '@S';
-	$s .= sprintf("  -%-20s %s %s.\n", "$name $type", $text, $default);
+        my $name    = $item->name;
+        my $type    = $item->type_string_long;
+	my $usage   = $item->usage_string;
+	my $default = $item->default_string;
+	$s .= sprintf("  -%-20s %s [%s].\n", "$name $type", $usage, $default);
     }
     return "$s\n";
-}
-
-sub option_value {
-    my $self = shift;
-    my ($o, $v) = @_; #warn "($o, $v)\n";
-    return "'undef'"  unless defined $v;
-    return "''"       if $v eq '';
-    return $v;
-}
-
-sub param_value {
-    my $self = shift;
-    my ($o, $v) = @_; #warn "($o, $v)\n";
-    return "'undef'"  unless defined $v;
-    if (ref $v or $self->{'option'}->{$o}->{'type'} =~ /@/) {
-	$v = "[" . join(",", @$v) . "]"  #assume it's a list
-    }
-    return $v;
 }
 
 sub get_options {
@@ -207,39 +277,42 @@ OPTION:
 
         my $item = $self->{'option'}->{$o};
 
-        next  if $item->{'generic'};  #let the [.] group deal with it
+        next  if $item->is_generic;  #let the [.] group deal with it
 
-        $ov = $item->{'default'};                 #default
+        $ov = $item->default;                     #default
         $ov = $opt->{$o}  if defined $opt->{$o};  #command line
 
-	$p = $item->{'param'};                    #explicit name
+	$p = $item->param;                        #explicit name
 	$p = $o  unless defined $p;               #use option name
 	
 	#type tests and simple parameter conversion
-	$pv = $self->test_type($item->{'type'}, $o, $ov);
+	$pv = $self->test_type($item->type, $o, $ov);
 
 	next OPTION  if @{$self->{'errors'}};
 
 	#convert: special parameter conversion
-        if (defined $item->{'convert'} and ref $item->{'convert'} eq 'CODE') {
-            $pv = &{$item->{'convert'}}($caller, $self, $o, $ov, $p, $pv);
+        if (defined $item->convert and ref $item->convert eq 'CODE') {
+            $pv = &{$item->convert}($caller, $self, $o, $ov, $p, $pv);
 	}
 
 	next OPTION  if @{$self->{'errors'}};
 
 	#action: perform special action
-	if (defined $item->{'action'} and ref $item->{'action'} eq 'CODE') {
-	    &{$item->{'action'}}($caller, $self, $o, $ov, $p, $pv);
+	if (defined $item->action and ref $item->action eq 'CODE') {
+	    &{$item->action}($caller, $self, $o, $ov, $p, $pv);
 	}
 	
 	next OPTION  if @{$self->{'errors'}};
 
-	#overwrite option and parameter values
-	$opt->{$o} = $ov; $par->{$p} = $pv;
+	#overwrite caller's parameter values
+        $par->{$p} = $pv;
+
+        $item->set_attribute('o_val', $ov);
+        $item->set_attribute('p_val', $pv);
 
 	if ($DEBUG) {
-	    $ov = $self->option_value($o, $ov);
-	    $pv = $self->param_value($o, $pv);
+	    $ov = $item->o_val_string;
+	    $pv = $item->p_val_string;
             printf STDERR "opt:%15s => %-10s    par:%15s => %-10s\n",
                 $o, $ov, $p, $pv;
 	}
@@ -248,7 +321,22 @@ OPTION:
     @{$self->{'errors'}};
 }
 
-sub errors { return @{$_[0]->{'errors'}} }
+sub get_errors { @{$_[0]->{'errors'}} }
+
+sub build_options {
+    my $self = shift;
+    my @tmp = ();
+    foreach my $o (keys %{$self->{'option'}}) {
+        my $item = $self->{'option'}->{$o};
+	if (!defined $item->type or $item->type eq '') {
+	    push @tmp, $o;
+	} else {
+	    push @tmp, "$o=s";
+	}
+    }
+    #warn "OPT: @tmp\n";
+    @tmp;
+}
 
 sub test_type {
     my ($self, $type, $o, $v) = @_;
@@ -389,19 +477,14 @@ sub expand_toggle {
     return 0;
 }
 
-sub build_options {
-    my $self = shift;
-    my @tmp = ();
-    foreach my $o (keys %{$self->{'option'}}) {
-        my $item = $self->{'option'}->{$o};
-	if (!defined $item->{'type'} or $item->{'type'} eq '') {
-	    push @tmp, $o;
-	} else {
-	    push @tmp, "$o=s";
-	}
+sub dump {
+    my ($self, $stm) = (@_, \*STDERR);
+    print $stm "group: ", $self->{'name'}, "\n";
+    foreach my $o (@{$self->{'order'}}) {
+        my $item = $self->{'option'}->{$o};        
+        $item->dump($stm);
     }
-    #warn "OPT: @tmp\n";
-    @tmp;
+    $self;
 }
 
 
@@ -669,8 +752,8 @@ sub new {
      $self->{'group'},
     ) = Bio::Getopt::OptionLoader::load_options((caller)[0], $prog, $stm);
 
-    foreach my $cls (keys %{$self->{'group'}}) {
-	$self->{'group'}->{$cls}->init;
+    foreach my $grp (keys %{$self->{'group'}}) {
+	$self->{'group'}->{$grp}->init;
     }
 
     bless $self, $type;
@@ -681,8 +764,9 @@ sub usage {
     my $s = '';
     $s .= "$self->{'text'}\n"  if defined $self->{'text'};
     my $generic = $self->{'group'}->{$Bio::Getopt::GENERIC_GROUP};
-    foreach my $cls (@{$self->{'order'}}) {
-	$s .= $self->{'group'}->{$cls}->usage($generic);
+    foreach my $grp (@{$self->{'order'}}) {
+        #$self->{'group'}->{$grp}->dump;
+	$s .= $self->{'group'}->{$grp}->usage($generic);
     }
     $s;
 }
@@ -690,30 +774,29 @@ sub usage {
 sub parse_options {
     my ($self, $argv, $stm) = (@_, \*STDERR);
     my @tmp = ();
-    my $error = 0;
+    my $errors = 0;
 
     #save input ARGV for posterity
     push @{$self->{'argv'}}, @$argv;
 
     #process options in specified group order
-    foreach my $cls (@{$self->{'order'}}) {
-	if ($self->{'group'}->{$cls}->get_options($self, $self->{'option'}, 
-                                                  $self->{'param'})) {
-	    print $stm $self->{'group'}->{$cls}->errors;
-	    $error++;
-	}
+    foreach my $grp (@{$self->{'order'}}) {
+        my $item = $self->{'group'}->{$grp}; 
+        $errors += $item->get_options($self,
+                                      $self->{'option'}, $self->{'param'});
+        print $stm $item->get_errors  if $errors;
     }
 
     #error if any remaining options
     foreach my $arg (@ARGV) {
 	if ($arg =~ /^--?\S/) {
 	    print $stm "$self->{'prog'}: unknown option '$arg'\n";
-	    $error++;
+	    $errors++;
 	} else {
 	    push @tmp, $arg;
 	}
     }
-    CORE::die "$self->{'prog'}: aborting.\n"  if $error;
+    CORE::die "$self->{'prog'}: aborting.\n"  if $errors;
 
     @ARGV = @tmp;
     $self;
