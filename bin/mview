@@ -526,41 +526,46 @@ contains whitespace or a wildcard that might be expanded by the shell\n"
 ###########################################################################
 [.]
 
-#force @ARGV to be examined for '-help' first.
+#force @ARGV to be examined for these items first.
+#usage messages for [.] are silenced and will appear in a later group
+
 option:   help
+usage:    "This help"
 
-#force @ARGV to be examined for '-listcolors' first.
 option:   listcolors
+usage:    "Print listing of known colormaps"
 
-#force @ARGV to be examined for '-listgroups' first.
 option:   listgroups
+usage:    "Print listing of known consensus groups"
 
-#force @ARGV to be examined for '-listcss' first.
 option:   listcss
+usage:    "Print style sheet"
 
-#force @ARGV to be examined for '-colorfile' first.
 option:   colorfile
-type:     s
+usage:    "Load more colormaps from file"
+type:     file
 action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
-                  open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open colormap file '<OVAL>'\n";
+                  open(TMP, "< <OVAL>") or CORE::die
+                    "<PROG>: can't open colormap file '<OVAL>'\n";
                   Bio::MView::Manager::load_colormaps(\*TMP);
                   close TMP;
               }
           }
 
-#force @ARGV to be examined for '-groupfile' first.
 option:   groupfile
-type:     s
+usage:    "Load more groupmaps from file"
+type:     file
 action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
-                  open(TMP, "< <OVAL>") or CORE::die "<PROG>: can't open consensus group file '<OVAL>'\n";
+                  open(TMP, "< <OVAL>") or CORE::die
+                    "<PROG>: can't open consensus group file '<OVAL>'\n";
                   Bio::MView::Manager::load_groupmaps(\*TMP);
                   close TMP;
               }
           }
 
-#verbosity level, normally 0 to keep quiet
+#hidden option: verbosity level, normally 0 to keep quiet
 option:   verbose
 type:     i
 default:  0
@@ -753,12 +758,12 @@ convert:  sub { <ARGS>;
                    <WARN>("known molecule types are: ", join(",",
                      Bio::MView::Manager::check_molecule_type));
               }
-              (<PARAM>{'def_aln_colormap'},
-               <PARAM>{'def_con_colormap'}) =
+              (<PARAM>('def_aln_colormap'),
+               <PARAM>('def_con_colormap')) =
                    Bio::MView::Manager::get_default_colormaps(<PVAL>);
-              <PARAM>{'def_aln_groupmap'} = <PARAM>{'def_con_groupmap'} =
+              <PARAM>('def_aln_groupmap') = <PARAM>('def_con_groupmap') =
                  Bio::MView::Manager::get_default_groupmap(<OVAL>);
-              <PARAM>{'moltype'} = <PVAL>;
+              <PARAM>('moltype') = <PVAL>;
               <PVAL>;
           }
 
@@ -794,14 +799,14 @@ usage:    "Name of colormap to use"
 type:     s
 convert:  sub { <ARGS>;
               if (defined <OVAL>) { <PVAL> = <OVAL>; }
-              else                { <PVAL> = <PARAM>{'def_aln_colormap'}; }
+              else                { <PVAL> = <PARAM>('def_aln_colormap'); }
               <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
                   <WARN>("known colormaps are: ", join(",",
                          Bio::MView::Manager::check_colormap));
               }
-              <DELETE_PARAM>('def_aln_colormap');
+              <DROP_PARAM>('def_aln_colormap');
               <PVAL>;
           }
 
@@ -811,14 +816,14 @@ usage:    "Name of groupmap to use if coloring by consensus"
 type:     s
 convert:  sub { <ARGS>;
               if (defined <OVAL>) { <PVAL> = <OVAL>; }
-              else                { <PVAL> = <PARAM>{'def_aln_groupmap'}; }
+              else                { <PVAL> = <PARAM>('def_aln_groupmap'); }
               <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
                   <WARN>("known group maps are: ", join(",",
                          Bio::MView::Manager::check_groupmap));
               }
-              <DELETE_PARAM>('def_aln_groupmap');
+              <DROP_PARAM>('def_aln_groupmap');
               <PVAL>;
           }
 
@@ -877,16 +882,16 @@ convert:  sub { <ARGS>;
               if (defined <OVAL>) {
                   <PVAL> = <OVAL>;
               } else {
-                  <PVAL> = <PARAM>{'def_con_colormap'};
+                  <PVAL> = <PARAM>('def_con_colormap');
               }
-              <PVAL> = <PARAM>{'def_con_colormap'} unless defined <OVAL>;
+              <PVAL> = <PARAM>('def_con_colormap') unless defined <OVAL>;
               <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
                   <WARN>("known consensus colomaps are: ", join(",",
                          Bio::MView::Manager::check_colormap));
               }
-              <DELETE_PARAM>('def_con_colormap');
+              <DROP_PARAM>('def_con_colormap');
               <PVAL>;
           }
 
@@ -897,7 +902,7 @@ convert:  sub { <ARGS>;
               if (defined <OVAL>) {
                   <PVAL> = <OVAL>;
               } else {
-                  <PVAL> = <PARAM>{'def_con_groupmap'};
+                  <PVAL> = <PARAM>('def_con_groupmap');
               }
               <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
               unless (defined <PVAL>) {
@@ -905,7 +910,7 @@ convert:  sub { <ARGS>;
                   <WARN>("known consensus group maps are: ", join(",",
                          Bio::MView::Manager::check_groupmap));
               }
-              <DELETE_PARAM>('def_con_groupmap');
+              <DROP_PARAM>('def_con_groupmap');
               <PVAL>;
           }
 
@@ -952,7 +957,7 @@ usage:    "Find and highlight exact string or simple regular expression or ':' d
 type:     s
 default:  ""
 action:   sub { <ARGS>;
-                <PARAM>{'fnd_colormap'} =
+                <PARAM>('fnd_colormap') =
                     Bio::MView::Manager::get_default_find_colormap();
           }
 
@@ -1115,6 +1120,8 @@ default:  purple
 
 ###########################################################################
 [.]
+
+#usage messages for [.] are silenced and will appear in a later group
 
 option:   hsp
 usage:    "HSP tiling method <CHOOSE>(Bio::MView::Manager::check_hsp_tiling)"
@@ -1297,6 +1304,8 @@ convert:  sub { <ARGS>;
 ###########################################################################
 [.]
 
+#usage messages for [.] are silenced and will appear in a later group
+
 option:   block
 usage:    "Report only these blocks {1..N,first,last,all,*}"
 type:     @s
@@ -1335,27 +1344,21 @@ generic:  block
 
 header:   "User defined colormap and consensus group definition:"
 
-option:   colorfile
-usage:    "Load more colormaps from file"
+generic:  colorfile
 
-option:   groupfile
-usage:    "Load more groupmaps from file"
+generic:  groupfile
 
 ###########################################################################
 [HELP]
 
 header:   "More information and help:"
 
-option:   help
-usage:    "This help"
+generic:  help
 
-option:   listcolors
-usage:    "Print listing of known colormaps"
+generic:  listcolors
 
-option:   listgroups
-usage:    "Print listing of known consensus groups"
+generic:  listgroups
 
-option:   listcss
-usage:    "Print style sheet"
+generic:  listcss
 
 ###########################################################################
