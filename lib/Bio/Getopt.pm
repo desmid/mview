@@ -196,7 +196,7 @@ sub test_type {
     return $self->test_float_list($o, $v, $errors, 1)    if $type eq '@F';
     return $self->test_string_list($o, $v, $errors, 1)   if $type eq '@S';
     return $self->test_toggle($o, $v, $errors)           if $type eq 'b';
-    return $v                                              if $type eq 'file';
+    return $v                                            if $type eq 'file';
     CORE::die "Bio::Getopt::Option::test_type() unknown type '$type'\n";
 }
 
@@ -680,16 +680,19 @@ sub process_macros {
         $text =~ s/<ARGS>/my (\$self,\$par,\$on,\$ov,\$pn,\$pv,\$e)=\@_;/g;
 
 	#PARAM macro
-	$text =~ s/<PARAM>\(\s*([^)]+)\s*\)/\$par->{$1}/g;
+	$text =~ s/<PARAM>\s*\(\s*([^)]+)\s*\)/\$par->{$1}/g;
 	
 	#DROP_PARAM macro
-	$text =~ s/<DROP_PARAM>\(\s*([^)]+)\s*\)/delete \$par->{$1}/g;
+	$text =~ s/<DROP_PARAM>\s*\(\s*([^)]+)\s*\)/delete \$par->{$1}/g;
 	
 	#TEST macro
-	$text =~ s/<TEST>\(\s*(\S+\s*,\s*\S+\s*,\s*\S+)\s*\)/\$self->test_type($1, \$e)/g;
+	$text =~ s/<TEST>\s*\(\s*(\S+\s*,\s*\S+\s*,\s*\S+)\s*\)/\$self->test_type($1, \$e)/g;
 
-	#WARN macro
-	$text =~ s/<WARN>/push \@\$e, /g;
+	#WARN macro: must be all on one line
+	$text =~ s/<WARN>\s*\((.*)\)/push(\@\$e, $1)/g;
+
+	#DIE macro: must be all on one line
+	$text =~ s/<DIE>\s*\((.*)\)/push(\@\$e, $1); return;/g;
 
 	#USAGE macro
 	$text =~ s/<USAGE>/\$self->usage/g;
@@ -770,24 +773,16 @@ sub parse_options {
 	    push @tmp, $arg;
 	}
     }
-    $self->die(@errors)  if @errors;
 
     #put valid args back
     @ARGV = @tmp;
-    $self;
+
+    @errors;
 }
 
 sub get_parameters { $_[0]->{'param'} }
 
 sub dump_argv { join(" ", @{$_[0]->{'argv'}}) }
-
-sub die {
-    my $self = shift;
-    foreach my $e (@_) {
-        warn "$self->{'prog'}: $e\n";
-    }
-    CORE::die("$self->{'prog'}: aborting.\n");
-}
 
 
 ###########################################################################

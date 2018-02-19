@@ -62,16 +62,27 @@ my ($stm, $com, $par) = (\*STDOUT);
 ###########################################################################
 sub cleanup { unlink "$SCRATCH"  if -f "$SCRATCH" }
 
-$SIG{'INT'} = sub {
-    warn "$PROG: interrupted - aborting.\n";
+sub abort {
+    foreach my $e (@_) {
+        warn "$PROG: $e\n";
+    }
+    warn "$PROG: aborting\n";
     cleanup();
     exit 1;
-};
+}
 
+$SIG{'INT'} = sub { abort("interrupted") };
+
+###########################################################################
 #parse default options and command line
 $com = new Bio::Getopt($PROG, \*DATA);
-$com->parse_options(\@ARGV);
+
+my @err = $com->parse_options(\@ARGV);
+
+abort(@err)  if @err;
+
 $par = $com->get_parameters;
+
 rationalise_parameters($par);
 
 dump_parameters($par)  if $par->{'verbose'} & $VERB_OPTS;
@@ -119,7 +130,7 @@ if ($par->{'mode'} eq 'rdb') {
 unless (@ARGV or $par->{'noparse'}) {
     warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
     open(TMP, ">$SCRATCH") or
-        die "$PROG: can't save to temporary file - aborting.\n";
+        abort("can't save to temporary file");
     while (<>) { print TMP }
     close TMP;
     push @ARGV, $SCRATCH;
@@ -424,7 +435,7 @@ sub check_format {
 	return 'Pearson'  unless $_[1] eq 'file';
 	local $_, *TMP;
 	my $guess = 'Pearson';
-	open(TMP, "< $_[0]") or die "$PROG: can't open '$_[0]'\n";
+	open(TMP, "< $_[0]") or abort("can't open '$_[0]'");
 	while (<TMP>) {
 	    next  if /^\s*$/;
 	    $guess = 'FASTA'  unless /^\s*>/;
@@ -492,9 +503,7 @@ sub check_format {
         return 'Pearson'  if $_ =~ /pear/i;
     }
     #fall through, unknown format
-    warn "$PROG: can't determine format - aborting\n";
-    cleanup();
-    exit 1;
+    abort("can't determine format");
 }
 
 sub dump_parameters {
@@ -546,8 +555,8 @@ usage:    "Load more colormaps from file"
 type:     file
 action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
-                  open(TMP, "< <OVAL>") or CORE::die
-                    "<PROG>: can't open colormap file '<OVAL>'\n";
+                  open(TMP, "< <OVAL>") or
+                    <DIE>("can't open colormap file '<OVAL>'");
                   Bio::MView::Manager::load_colormaps(\*TMP);
                   close TMP;
               }
@@ -558,8 +567,8 @@ usage:    "Load more groupmaps from file"
 type:     file
 action:   sub { <ARGS>; local *TMP;
               if (defined <OVAL>) {
-                  open(TMP, "< <OVAL>") or CORE::die
-                    "<PROG>: can't open consensus group file '<OVAL>'\n";
+                  open(TMP, "< <OVAL>") or
+                    <DIE>("can't open consensus group file '<OVAL>'");
                   Bio::MView::Manager::load_groupmaps(\*TMP);
                   close TMP;
               }
@@ -600,8 +609,7 @@ convert:  sub { <ARGS>;
               elsif (<OVAL> =~ /^rd/i) { <PVAL> = 'rdb';      }
               else {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                  <WARN>("known types are: ", join(",",
-                    Bio::MView::Manager::check_convert_mode));
+                  <WARN>("known types are: ", join(",", Bio::MView::Manager::check_convert_mode));
               }
               <PVAL>;
           }
@@ -654,8 +662,7 @@ convert:  sub { <ARGS>;
                 return 'aligned'   if <OVAL> =~ /^a/;
                 return 'hit'       if <OVAL> =~ /^h/;
                 <WARN>("bad option '-<ONAME>=<OVAL>'");
-                <WARN>("known percent identity methods are: ", join(",",
-                Bio::MView::Manager::check_identity_mode));
+                <WARN>("known percent identity methods are: ", join(",", Bio::MView::Manager::check_identity_mode));
               }
 
 option:   reference
@@ -755,11 +762,9 @@ convert:  sub { <ARGS>;
               unless (defined <PVAL> and defined
                        Bio::MView::Manager::check_molecule_type(<PVAL>)) {
                    <WARN>("bad option '-<ONAME>=<OVAL>'");
-                   <WARN>("known molecule types are: ", join(",",
-                     Bio::MView::Manager::check_molecule_type));
+                   <WARN>("known molecule types are: ", join(",", Bio::MView::Manager::check_molecule_type));
               }
-              (<PARAM>('def_aln_colormap'),
-               <PARAM>('def_con_colormap')) =
+              (<PARAM>('def_aln_colormap'), <PARAM>('def_con_colormap')) =
                    Bio::MView::Manager::get_default_colormaps(<PVAL>);
               <PARAM>('def_aln_groupmap') = <PARAM>('def_con_groupmap') =
                  Bio::MView::Manager::get_default_groupmap(<OVAL>);
@@ -785,10 +790,9 @@ convert:  sub { <ARGS>;
               elsif (<OVAL> =~ /^c/i) { <PVAL> = 'consensus'; }
               elsif (<OVAL> =~ /^g/i) { <PVAL> = 'group';     }
               unless (defined <PVAL> and defined
-                       Bio::MView::Manager::check_alignment_color_scheme(<PVAL>)) {
-                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                   <WARN>("known color schemes are: ", join(",",
-                   Bio::MView::Manager::check_alignment_color_scheme));
+                  Bio::MView::Manager::check_alignment_color_scheme(<PVAL>)) {
+                  <WARN>("bad option '-<ONAME>=<OVAL>'");
+                  <WARN>("known color schemes are: ", join(",", Bio::MView::Manager::check_alignment_color_scheme));
               }
               <PVAL>;
           }
@@ -803,8 +807,7 @@ convert:  sub { <ARGS>;
               <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                  <WARN>("known colormaps are: ", join(",",
-                         Bio::MView::Manager::check_colormap));
+                  <WARN>("known colormaps are: ", join(",", Bio::MView::Manager::check_colormap));
               }
               <DROP_PARAM>('def_aln_colormap');
               <PVAL>;
@@ -820,8 +823,7 @@ convert:  sub { <ARGS>;
               <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                  <WARN>("known group maps are: ", join(",",
-                         Bio::MView::Manager::check_groupmap));
+                  <WARN>("known group maps are: ", join(",", Bio::MView::Manager::check_groupmap));
               }
               <DROP_PARAM>('def_aln_groupmap');
               <PVAL>;
@@ -848,8 +850,7 @@ convert:  sub { <ARGS>;
             <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
             if (!defined <PVAL>) {
               <WARN>("bad option '-<ONAME>=<OVAL>'");
-              <WARN>("known ignore classes are: ", join(",",
-                     Bio::MView::Manager::check_ignore_class));
+              <WARN>("known ignore classes are: ", join(",", Bio::MView::Manager::check_ignore_class));
             }
             <PVAL>;
           }
@@ -869,8 +870,7 @@ convert:  sub { <ARGS>;
                elsif (<OVAL> =~ /^i/i) { <PVAL> = 'identity'; }
                unless (defined <PVAL> and defined
                        Bio::MView::Manager::check_consensus_color_scheme(<PVAL>)) {
-                  <WARN>("known color schemes are: ", join(",",
-                         Bio::MView::Manager::check_consensus_color_scheme));
+                  <WARN>("known color schemes are: ", join(",", Bio::MView::Manager::check_consensus_color_scheme));
                }
                <PVAL>;
           }
@@ -888,8 +888,7 @@ convert:  sub { <ARGS>;
               <PVAL> = Bio::MView::Manager::check_colormap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                  <WARN>("known consensus colomaps are: ", join(",",
-                         Bio::MView::Manager::check_colormap));
+                  <WARN>("known consensus colomaps are: ", join(",", Bio::MView::Manager::check_colormap));
               }
               <DROP_PARAM>('def_con_colormap');
               <PVAL>;
@@ -907,8 +906,7 @@ convert:  sub { <ARGS>;
               <PVAL> = Bio::MView::Manager::check_groupmap(<PVAL>);
               unless (defined <PVAL>) {
                   <WARN>("bad option '-<ONAME>=<OVAL>'");
-                  <WARN>("known consensus group maps are: ", join(",",
-                         Bio::MView::Manager::check_groupmap));
+                  <WARN>("known consensus group maps are: ", join(",", Bio::MView::Manager::check_groupmap));
               }
               <DROP_PARAM>('def_con_groupmap');
               <PVAL>;
@@ -936,8 +934,7 @@ convert:  sub { <ARGS>;
             <PVAL> = Bio::MView::Manager::check_ignore_class(<OVAL>);
             if (!defined <PVAL>) {
               <WARN>("bad option '-<ONAME>=<OVAL>'");
-              <WARN>("known consensus ignore classes are: ", join(",",
-                     Bio::MView::Manager::check_ignore_class));
+              <WARN>("known consensus ignore classes are: ", join(",", Bio::MView::Manager::check_ignore_class));
             }
             <PVAL>;
           }
@@ -1031,7 +1028,7 @@ convert:  sub { <ARGS>;
                 if (<OVAL> =~ /^body/i) { return 4|2|1;     }
                 if (<OVAL> =~ /^data/i) { return 1;         }
                 if (<OVAL> =~ /^off/i)  { return 0;         }
-                <WARN> ("bad option '-<ONAME>=<OVAL>'");
+                <WARN>("bad option '-<ONAME>=<OVAL>'");
             }
 
 option:   bold
@@ -1132,8 +1129,7 @@ convert:  sub { <ARGS>;
                 return 'discrete'  if <OVAL> =~ /^d/;
                 return 'ranked'    if <OVAL> =~ /^r/;
                 <WARN>("bad option '-<ONAME>=<OVAL>'");
-                <WARN>("known hsp methods are: ", join(",",
-                Bio::MView::Manager::check_hsp_tiling));
+                <WARN>("known hsp methods are: ", join(",", Bio::MView::Manager::check_hsp_tiling));
               }
 
 option:   maxeval
