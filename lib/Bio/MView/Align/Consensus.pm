@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Consensus;
@@ -145,6 +145,7 @@ sub make_group {
     $Group->{$group}->[0]->{$class}->[0] = $sym;
     
     foreach (@$members) {
+        next  unless defined $_;
 	#class  => member existence
 	$Group->{$group}->[0]->{$class}->[1]->{$_} = 1;
 	#member => symbol existence
@@ -223,32 +224,28 @@ sub list_groupmaps {
     $s;
 }
 
+sub list_groupmap_names { return join(",", sort keys %$Group) }
+
 sub check_groupmap {
-    if (defined $_[0]) {
-	if (exists $Group->{uc $_[0]}) {
-	    return uc $_[0];
-	}
-	return undef;
+    if (exists $Group->{uc $_[0]}) {
+        return uc $_[0];
     }
-    return sort keys %$Group;
+    return undef;
 }
 
+sub list_ignore_classes { return join(",", sort keys %Known_Ignore_Class) }
+
 sub check_ignore_class {
-    if (defined $_[0]) {
-	if (exists $Known_Ignore_Class{lc $_[0]}) {
-	    return lc $_[0];
-	}
-	return undef;
+    if (exists $Known_Ignore_Class{lc $_[0]}) {
+        return lc $_[0];
     }
-    return map { lc $_ } sort keys %Known_Ignore_Class;
+    return undef;
 }
 
 sub get_default_groupmap {
-    if (! defined $_[0] or $_[0] eq 'aa') {
-	#default to protein
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
 	return $Default_PRO_Group;
     }
-    #otherwise DNA/RNA explicitly requested
     return $Default_DNA_Group;
 }
 

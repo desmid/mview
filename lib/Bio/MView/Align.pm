@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Align;
@@ -61,39 +61,11 @@ my %Known_Parameter =
      'gapcolor'   => [ '\S+',     $Bio::MView::Align::Row::Colour_DarkGray ],
      'group'      => [ '\S+',     $Bio::MView::Align::Consensus::Default_Group ],
      'ignore'     => [ '\S+',     $Bio::MView::Align::Consensus::Default_Ignore ],
-     'con_gaps'   => [ '[01]',    1 ],
-     'threshold'  => [ [],        [80] ],
+     'con_gaps'   => [ '[01]',     1 ],
+     'threshold'  => [ '\S+',     80 ],
      'nopshash'   => [ {},        {} ],
      'hidehash'   => [ {},        {} ],
      'find'       => [ '\S*',     '' ],
-    );
-
-my %Known_Molecule_Type =
-    (
-     #name
-     'aa' => 1,
-     'na' => 1,
-     'dna'=> 1,
-     'rna'=> 1,
-    );
-
-my %Known_Alignment_Color_Schemes =
-    (
-     #name
-     'none'       => 1,
-     'any'        => 1,
-     'identity'   => 1,
-     'mismatch'   => 1,
-     'consensus'  => 1,
-     'group'      => 1,
-    );
-
-my %Known_Consensus_Color_Schemes =
-    (
-     #name
-     'none'       => 1,
-     'any'        => 1,
-     'identity'   => 1,
     );
 
 #static load the $Colormaps hash.
@@ -567,58 +539,30 @@ sub list_css1_colormaps {
     $s;
 }
 
-sub check_molecule_type {
-    if (defined $_[0]) {
-	if (exists $Known_Molecule_Type{lc $_[0]}) {
-	    return lc $_[0];
-	}
-	return undef;
-    }
-    return map { lc $_ } sort keys %Known_Molecule_Type;
-}
-
-sub check_alignment_color_scheme {
-    if (defined $_[0]) {
-	if (exists $Known_Alignment_Color_Schemes{lc $_[0]}) {
-	    return lc $_[0];
-	}
-	return undef;
-    }
-    return map { lc $_ } sort keys %Known_Alignment_Color_Schemes;
-}
-
-sub check_consensus_color_scheme {
-    if (defined $_[0]) {
-	if (exists $Known_Consensus_Color_Schemes{lc $_[0]}) {
-	    return lc $_[0];
-	}
-	return undef;
-    }
-    return map { lc $_ } sort keys %Known_Consensus_Color_Schemes;
-}
+sub list_colormap_names { return join(",", sort keys %$Colormaps) }
 
 sub check_colormap {
-    if (defined $_[0]) {
-	if (exists $Colormaps->{uc $_[0]}) {
-	    return uc $_[0];
-	}
-        if (exists $Palette->[0]->{lc $_[0]}) {
-	    return lc $_[0]; #colormap all one predefined colour
-        }
-	return undef;
+    if (exists $Colormaps->{uc $_[0]}) {
+        return uc $_[0];  #named colormap
     }
-    return sort keys %$Colormaps;
+    if (exists $Palette->[0]->{lc $_[0]}) {
+        return lc $_[0];  #colormap all one predefined colour
+    }
+    return undef;
 }
 
-sub get_default_colormaps {
-    if (! defined $_[0] or $_[0] eq 'aa') {
-	#default to protein
-	return ($Bio::MView::Align::Sequence::Default_PRO_Colormap,
-		$Bio::MView::Align::Consensus::Default_PRO_Colormap);
+sub get_default_alignment_colormap {
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
+	return $Bio::MView::Align::Sequence::Default_PRO_Colormap;
     }
-    #otherwise DNA/RNA explicitly requested
-    return ($Bio::MView::Align::Sequence::Default_DNA_Colormap,
-	    $Bio::MView::Align::Consensus::Default_DNA_Colormap);
+    return $Bio::MView::Align::Sequence::Default_DNA_Colormap,
+}
+
+sub get_default_consensus_colormap {
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
+	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
+    }
+    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
 }
 
 sub get_default_find_colormap {
@@ -678,10 +622,10 @@ sub header {
 	$s .= "Colored by: mismatch";
     }
     elsif ($self->{'coloring'} eq 'consensus') {
-	$s .= "Colored by: consensus/$self->{'threshold'}->[0]\%";
+	$s .= "Colored by: consensus/$self->{'threshold'}\%";
     }
     elsif ($self->{'coloring'} eq 'group') {
-	$s .= "Colored by: consensus group/$self->{'threshold'}->[0]\%";
+	$s .= "Colored by: consensus group/$self->{'threshold'}\%";
     }
 
     #overlay any find pattern colouring
@@ -913,7 +857,7 @@ sub color_by_consensus_sequence {
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
 					       $self->{'group'},
-					       $self->{'threshold'}->[0],
+					       $self->{'threshold'},
 					       $self->{'ignore'});
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
@@ -942,7 +886,7 @@ sub color_by_consensus_group {
     my $con = new Bio::MView::Align::Consensus($from, $to,
 					       $self->{'tally'},
 					       $self->{'group'},
-					       $self->{'threshold'}->[0],
+					       $self->{'threshold'},
 					       $self->{'ignore'});
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;

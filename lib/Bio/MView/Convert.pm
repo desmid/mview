@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Convert;
@@ -7,26 +7,6 @@ use strict;
 
 my $ROW_NUMBER_DELIM = ':';
 my $ROW_DATA_DELIM   = ' ';
-
-my %Known_Convert_Mode =
-    (
-     #name
-     'plain'      => 1,
-     'fasta'      => 1,
-     'clustal'    => 1,
-     'pir'        => 1,
-     'msf'        => 1,
-     'rdb'        => 1,
-    );
-
-sub check_convert_mode {
-    if (defined $_[0]) {
-	if (exists $Known_Convert_Mode{$_[0]}) {
-	    return lc $_[0];
-	}
-    }
-    map { lc $_ } sort keys %Known_Convert_Mode;
-}
 
 sub new {
     my $type = shift;

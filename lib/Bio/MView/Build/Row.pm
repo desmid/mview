@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Row;
@@ -40,7 +40,7 @@ sub new {
 
     $self->{'seq'}  = new Bio::MView::Sequence; #finished sequence
 
-    $self->{'url'}  = Bio::SRS::srsLink($self->{'cid'});  #url
+    $self->{'url'}  = Bio::MView::SRS::srsLink($self->{'cid'});  #url
 
     $self->{'data'} = {};                       #other parsed info
 

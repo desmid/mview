@@ -1,7 +1,7 @@
-# Copyright (C) 1997 Christophe Leroy, 1997-2010 Nigel P. Brown
+# Copyright (C) 1997 Christophe Leroy, 1997-2018 Nigel P. Brown
 
 ###########################################################################
-package Bio::SRS;
+package Bio::MView::SRS;
 
 @ISA       = qw(Exporter);
 @EXPORT    = qw(srsLink);

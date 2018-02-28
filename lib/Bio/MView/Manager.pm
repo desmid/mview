@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Manager;
@@ -6,7 +6,7 @@ package Bio::MView::Manager;
 use Bio::MView::Build;
 use Bio::MView::Convert;
 use Bio::MView::Display;
-use Bio::SRS 'srsLink';
+use Bio::MView::SRS 'srsLink';
 
 use strict;
 
@@ -32,7 +32,6 @@ my %Template =
      'in'            => undef,
      'title'         => undef,
      'help'          => undef,
-     'pre'           => undef,
      'srs'           => undef,
      'verbose'       => undef,
      'colorfile'     => undef,
@@ -395,24 +394,14 @@ sub add_display {
 }
 
 #wrapper functions
-sub check_identity_mode   { Bio::MView::Build::check_identity_mode(@_) }
-sub check_hsp_tiling 	  { Bio::MView::Build::check_hsp_tiling(@_) }
-sub check_molecule_type	  { Bio::MView::Align::check_molecule_type(@_) }
-sub check_convert_mode 	  { Bio::MView::Convert::check_convert_mode(@_) }
-sub check_alignment_color_scheme { Bio::MView::Align::check_alignment_color_scheme(@_) }
-sub check_consensus_color_scheme { Bio::MView::Align::check_consensus_color_scheme(@_) }
-sub check_colormap     	  { Bio::MView::Align::check_colormap(@_) }
-sub check_groupmap    	  { Bio::MView::Align::Consensus::check_groupmap(@_) }
-sub check_ignore_class 	  { Bio::MView::Align::Consensus::check_ignore_class(@_) }
-sub get_default_colormaps { Bio::MView::Align::get_default_colormaps(@_) }
-sub get_default_groupmap  { Bio::MView::Align::Consensus::get_default_groupmap(@_) }
-sub get_default_find_colormap
-                          { Bio::MView::Align::get_default_find_colormap(@_) }
-sub load_colormaps     	  { Bio::MView::Align::load_colormaps(@_) }
-sub list_colormaps     	  { Bio::MView::Align::list_colormaps(@_) }
-sub load_groupmaps     	  { Bio::MView::Align::Consensus::load_groupmaps(@_) }
-sub list_groupmaps   	  { Bio::MView::Align::Consensus::list_groupmaps(@_) }
-sub list_css              { Bio::MView::Align::list_css1_colormaps(@_) }
+#NIGE sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
+
+sub list_colormaps { Bio::MView::Align::list_colormaps(@_) }
+sub list_groupmaps { Bio::MView::Align::Consensus::list_groupmaps(@_) }
+sub list_css       { Bio::MView::Align::list_css1_colormaps(@_) }
+
+sub load_colormaps { Bio::MView::Align::load_colormaps(@_) }
+sub load_groupmaps { Bio::MView::Align::Consensus::load_groupmaps(@_) }
 
 sub print {
     my ($self, $stm) = (@_, \*STDOUT);

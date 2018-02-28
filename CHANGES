@@ -1,11 +1,9 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Branch: opt
+Branch: param
 
-- move lib/Getopt.pm into lib/Bio
-- minor refactoring
-- change templating
-
+- rewrite option parsing mechanism
+- fix undefined variable warnings with '-groupfile' option
 
 
 Version 1.62  2017-08-06

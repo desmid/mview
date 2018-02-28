@@ -1,8 +1,8 @@
 TREE = lib/Bio
 DIRS = MView
-FILE =
+FILE = 
 EXES = 
-SRCS = Getopt.pm SRS.pm
+SRCS = 
 HTML = 
 
 include $(HOME)/etc/MAKEFILE.templ

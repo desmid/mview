@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ######################################################################
 package Bio::MView::Build;
@@ -57,23 +57,11 @@ my %Known_Parameters =
      'nopslist'    => [ [],         []        ],
      'range'       => [ [],         []        ],
      'keepinserts' => [ '\d+',      0         ],
-     'gap'         => [ '\S',       '+'       ],
+     'gap'         => [ '\S',       '-'       ],
      'showpcid'    => [ '\d+',      1         ],
     );
 
-my %Known_Identity_Mode =
-    (
-     'reference'  => 1,
-     'aligned'    => 1,
-     'hit'        => 1,
-    );
-
-my %Known_HSP_Tiling =
-    (
-     'all'       => 1,
-     'ranked'    => 1,
-     'discrete'  => 1,
-    );
+sub get_default_gap { return $Known_Parameters{'gap'}->[1] }
 
 sub new {
     my $type = shift;
@@ -103,24 +91,6 @@ sub print {
     }
     print "\n";
     $self;
-}
-
-sub check_identity_mode {
-    if (defined $_[0]) {
-	if (exists $Known_Identity_Mode{$_[0]}) {
-	    return lc $_[0];
-	}
-    }
-    return map { lc $_ } sort keys %Known_Identity_Mode;
-}
-
-sub check_hsp_tiling {
-    if (defined $_[0]) {
-	if (exists $Known_HSP_Tiling{$_[0]}) {
-	    return lc $_[0];
-	}
-    }
-    return map { lc $_ } sort keys %Known_HSP_Tiling;
 }
 
 sub initialise_parameters {
