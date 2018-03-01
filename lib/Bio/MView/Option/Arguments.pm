@@ -55,8 +55,9 @@ my @Known_Informats = (
 sub list_informats { return join(",", @Known_Informats) }
 
 sub test_file_contains_pearson_or_fasta {
-    my $file = shift;
+    my ($file, $mode) = @_;
     my $guess = 'Pearson';
+    return $guess  unless $mode eq 'file';
     local ($_, *TMP);
     open(TMP, "< $file");  #assume file access already checked
     while (<TMP>) {
@@ -69,9 +70,9 @@ sub test_file_contains_pearson_or_fasta {
 }
 
 sub check_informat_extension {
-    my ($file, $val, $mode) = @_;
+    my ($file, $ext, $mode) = @_;
     local $_;
-    foreach ($val) {  #switch
+    foreach ($ext) {  #switch
 	return 'CLUSTAL'  if $_ =~ /^aln/i;
 	return 'CLUSTAL'  if $_ =~ /^clu/i;
 	return 'HSSP'     if $_ =~ /^hss/i;
@@ -94,16 +95,16 @@ sub check_informat_extension {
 	return 'FASTA'    if $_ =~ /^gls/i;
 	return 'FASTA'    if $_ =~ /^ss/i;
     }
-    if ($mode eq 'file' and $val =~ /^fa/i) {
-        return test_file_contains_pearson_or_fasta($file);
+    if ($ext =~ /^fa/i) {
+        return test_file_contains_pearson_or_fasta($file, $mode);
     }
     return undef;
 }
 
 sub check_informat_basename {
-    my ($file, $val, $mode) = @_;
+    my ($file, $base, $mode) = @_;
     local $_;
-    foreach ($val) {  #switch
+    foreach ($base) {  #switch
         return 'CLUSTAL'  if $_ =~ /aln/i;
         return 'CLUSTAL'  if $_ =~ /clu/i;
         return 'HSSP'     if $_ =~ /hssp/i;
@@ -127,18 +128,18 @@ sub check_informat_basename {
         return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
         return 'Pearson'  if $_ =~ /pear/i;
     }
-    if ($mode eq 'file' and $val =~ /^fa/i) {
-        return test_file_contains_pearson_or_fasta($file);
+    if ($base =~ /^fa/i) {
+        return test_file_contains_pearson_or_fasta($file, $mode);
     }
     return undef;
 }
 
 sub check_informat {
-    my ($file, $mode) = (@_, '');
+    my ($file, $mode) = (@_, 'option');
     return ''  if $file eq '';
     my ($base, $ext, $guess) = ($file, '');
     ($base, $ext) = Universal::fileparts($file)  if $mode eq 'file';
-    #warn "($file, $mode, $base, $ext)";
+    #warn "(file=$file, mode=$mode, base=$base, ext=$ext)";
     $guess = check_informat_extension($file, $ext, $mode);
     $guess = check_informat_basename($file, $base, $mode)
         unless defined $guess;
