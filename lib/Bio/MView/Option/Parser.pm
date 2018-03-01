@@ -22,7 +22,6 @@ sub new {
     $self->{'param'}   = {};
 
     $self->{'types'}   = {};
-    $self->{'groups'}  = {};
     $self->{'options'} = {};
 
     $self->{'group_order'} = [];
@@ -33,14 +32,17 @@ sub new {
         $self->load_types($lib);
     }
 
+    my $groups = {};
     foreach my $lib (@OptionLibs) {
-        load_library($lib);
-        $self->load_groups($lib);
-        $self->load_options($lib);
+        load_library($lib, $groups);
+        $self->load_option_groups($lib);
+    }
+
+    if (! defined $Bio::MView::Option::Options::Header) {
+        die "Options: no options header found\n";
     }
 
     #warn "types:   ", scalar keys %{$self->{'types'}}, "\n";
-    #warn "groups:  ", scalar keys %{$self->{'groups'}}, "\n";
     #warn "options: ", scalar keys %{$self->{'options'}}, "\n";
 
     #want to search arglist for known options
@@ -53,38 +55,42 @@ sub new {
 }
 
 sub load_types {
-    my ($self, $lib, $var) = (@_, 'Types');
-    my $var = load_scalar($lib, ucfirst $var);
+    my ($self, $lib) = @_;
+    my $var = load_scalar($lib, 'Types');
     foreach my $type (@$var) {
         my $tn = $type->{'type'};
         if (exists $self->{'types'}->{$tn}) {
-            die "GetOptions: type '$tn' already exists\n";
+            die "Options: type '$tn' already exists\n";
         }
         $self->{'types'}->{$tn} = $type;
     }
     return $self;
 }
 
-sub load_groups {
-    my ($self, $lib, $var) = (@_, 'Groups');
-    my $var = load_scalar($lib, $var);
+sub load_option_groups {
+    my ($self, $lib, $groups) = @_;
+    my $var = load_scalar($lib, 'Options');
     foreach my $grp (@$var) {
         my $gn = $grp->{'group'};
-        if (exists $self->{'groups'}->{$gn}) {
-            die "GetOptions: group '$gn' already exists\n";
+        if (exists $groups->{$gn}) {
+            die "Options: option group '$gn' already exists\n";
         }
         push @{$self->{'group_order'}}, $grp;
-        $self->{'groups'}->{$gn} = $grp;
+        $groups->{$gn} = $grp;
+        $self->load_options($grp, $gn);
     }
     return $self;
 }
 
 sub load_options {
-    my ($self, $lib, $var) = (@_, 'Options');
-    my $var = load_scalar($lib, $var);
-    foreach my $opt (@$var) {
-        my $on = $opt->{'group'} . '::' . $opt->{'option'};
+    my ($self, $grp, $gn) = @_;
+    foreach my $opt (@{$grp->{'options'}}) {
+        my $on = $gn . '::' . $opt->{'option'};
+        if (exists $self->{'options'}->{$on}) {
+            die "Options: option '$on' already exists\n";
+        }
         push @{$self->{'option_order'}}, $opt;
+        $opt->{'group'} = $gn;
         $self->{'options'}->{$on} = $opt;
         $self->initialise_option($opt);
     }
@@ -109,25 +115,25 @@ sub initialise_option {
     my $on = $opt->{'option'};
 
     if (! exists $opt->{'type'}) {
-        die "GetOptions: option '$gn.$on' has no type\n";
+        die "Options: option '$gn.$on' has no type\n";
     }
 
     if (! $opt->{'type'}) {
-        die "GetOptions: option '$gn.$on' has empty type\n";
+        die "Options: option '$gn.$on' has empty type\n";
     }
 
     my $type = $self->get_type_record($opt);
 
     if (! defined $type) {
-        die "GetOptions: option '$gn.$on' has unbound type\n";
+        die "Options: option '$gn.$on' has unbound type\n";
     }
 
     #set a default value, unless set already
     if (! exists $opt->{'default'}) {
 
         if (! exists $type->{'default'}) {
-            warn "GetOptions: no default for option '$gn.$on'\n";
-            die  "GetOptions: no default for type '$type->{'type'}'\n";
+            warn "Options: no default for option '$gn.$on'\n";
+            die  "Options: no default for type '$type->{'type'}'\n";
         }
 
         $opt->{'default'} = $type->{'default'};
@@ -143,9 +149,9 @@ sub initialise_option {
     my @errors = $self->test_and_set_option($opt);
 
     if (@errors) {
-        warn "GetOptions: option '$gn.$on' initialisation errors:\n";
+        warn "Options: option '$gn.$on' initialisation errors:\n";
         foreach my $e (@errors) {
-            warn "GetOptions: $e\n";
+            warn "Options: $e\n";
         }
     }
 
@@ -157,10 +163,14 @@ sub initialise_option {
 sub update_option {
     my ($self, $on, $ov) = @_;
     #warn "update_option ($on)\n";
+
     return  unless exists $self->{'options'}->{$on};
     my $opt = $self->{'options'}->{$on};
+
     $opt->{'option_value'} = $ov;
+
     $self->test_and_set_option($opt);
+
     #warn "update_option ($on) done\n";
 }
 
