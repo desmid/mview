@@ -217,7 +217,7 @@ sub rationalise_parameters {
         #ignore style sheets if css is unset
         unless ($par->{'css1'}) {
             $par->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
-        }       
+        }
     } else {
         #ignore style sheets
         $par->{'css1'} = 0;

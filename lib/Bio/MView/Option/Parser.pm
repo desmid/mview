@@ -86,7 +86,6 @@ sub load_options {
         my $on = $opt->{'group'} . '::' . $opt->{'option'};
         push @{$self->{'option_order'}}, $opt;
         $self->{'options'}->{$on} = $opt;
-
         $self->initialise_option($opt);
     }
     return $self;
@@ -106,23 +105,34 @@ sub load_scalar {
 sub initialise_option {
     my ($self, $opt) = @_;
 
+    my $gn = $opt->{'group'};
     my $on = $opt->{'option'};
 
-    die "GetOptions: option '$on' has no type\n"  unless defined $opt->{'type'};
+    if (! exists $opt->{'type'}) {
+        die "GetOptions: option '$gn.$on' has no type\n";
+    }
+
+    if (! $opt->{'type'}) {
+        die "GetOptions: option '$gn.$on' has empty type\n";
+    }
 
     my $type = $self->get_type_record($opt);
+
+    if (! defined $type) {
+        die "GetOptions: option '$gn.$on' has unbound type\n";
+    }
 
     #set a default value, unless set already
     if (! exists $opt->{'default'}) {
 
         if (! exists $type->{'default'}) {
-            my $tn = $type->{'type'};
-            die "GetOptions: no default for option '$on' or type '$tn'\n";
+            warn "GetOptions: no default for option '$gn.$on'\n";
+            die  "GetOptions: no default for type '$type->{'type'}'\n";
         }
 
         $opt->{'default'} = $type->{'default'};
     }
-    
+
     #set the option value from the default: will be overwritten from CL
     $opt->{'option_value'} = $opt->{'default'};
 
@@ -133,7 +143,7 @@ sub initialise_option {
     my @errors = $self->test_and_set_option($opt);
 
     if (@errors) {
-        warn "GetOptions: initialisation errors:\n";
+        warn "GetOptions: option '$gn.$on' initialisation errors:\n";
         foreach my $e (@errors) {
             warn "GetOptions: $e\n";
         }
@@ -159,10 +169,8 @@ sub usage {
     my $s = $Bio::MView::Option::Options::Header;  #already loaded
     $s =~ s/<PROG>/$self->{'prog'}/;
 
-    my @groups = $self->order_groups_by_usage;
-
-    foreach my $grp (@groups) {
-        next  if $grp->{'usage'} < 1;  #hidden group
+    foreach my $grp (@{$self->{'group_order'}}) {
+        next  unless exists $grp->{'header'};  #hidden group
 
         $s .= $grp->{'header'} . "\n";
 
@@ -179,10 +187,11 @@ sub usage {
 
 sub get_type_record {
     my ($self, $key) = @_;
-    return $self->{'types'}->{$key}  unless ref $key;  #named type
-    my $type = $key->{'type'};
-    return $key  if $type eq '';       #defines own type
-    return $self->{'types'}->{$type};  #refers to base type
+    while (ref $key) {  #search for a base type
+        $key = $key->{'type'};
+    }
+    return $self->{'types'}->{$key}  if exists $self->{'types'}->{$key};
+    return undef;
 }
 
 sub str {
@@ -226,17 +235,13 @@ sub get_option_usage {
     return $s;
 }
 
-sub order_groups_by_usage {
-    return sort { $a->{'usage'} <=> $b->{'usage'} } @{$_[0]->{'group_order'}};
-}
-
 sub dump_item {
     my ($item, $stm) = (shift, shift);
     foreach my $key (@_) {
         next  unless exists $item->{$key};
         my $val = $item->{$key};
         $val = '<UNDEF>'  unless defined $val;
-        $val = 'CODE'     if ref $val eq 'CODE';  
+        $val = 'CODE'     if ref $val eq 'CODE';
         print $stm sprintf "%20s => %s\n", $key, $val;
     }
     print $stm "\n";
@@ -266,16 +271,13 @@ sub get_available_group_options {
 
         #dump_option($opt);
 
-	if ($opt->{'type'} eq 'flag') {
+        #flag: no argument
+	if ($opt->{'type'} =~/^flag/) {
 	    push @tmp, $o;
             next;
-        } 
+        }
 
-	if ($opt->{'type'} eq 'inverter') {
-	    push @tmp, $o;
-            next;
-        } 
-
+        #option: takes argument
         push @tmp, "$o=s";
     }
 
@@ -300,14 +302,14 @@ sub test_type {
 sub test_and_set_option {
     my ($self, $opt) = @_;
     my @errors = ();
-    
+
     #update the parameter hash with this option
     my $on  = $opt->{'option'};
     my $ov  = $opt->{'option_value'};
-    
+
     #type tests and simple parameter conversion
     my $pv = $self->test_type($opt, $on, $ov, \@errors);
-        
+
     #update the parameter hash
     $self->{'param'}->{$opt->{'param'}} = $pv;
 
