@@ -12,6 +12,51 @@ my @OptionLibs     = ( 'Bio::MView::Option::Options' );
 
 my $DEBUG=0;
 
+###########################################################################
+sub str {
+    return '<UNDEF>'  unless defined $_[0];
+    return "[@{$_[0]}]"  if ref $_[0] eq 'ARRAY';
+    return $_[0];
+}
+
+sub load_library {
+    my $library = $_[0];
+    $library =~ s/::/\//g;
+    require "$library.pm";
+}
+
+sub load_scalar {
+    my ($lib, $var) = @_;
+    return eval '$' . $lib . '::' . $var;
+}
+
+sub dump_item {
+    my ($item, $stm) = (shift, shift);
+    foreach my $key (@_) {
+        next  unless exists $item->{$key};
+        my $val = $item->{$key};
+        $val = '<UNDEF>'  unless defined $val;
+        $val = '<CODE>'     if ref $val eq 'CODE';
+        $val = "''"       if length $val < 1;
+        print $stm sprintf "%20s => %s\n", $key, $val;
+    }
+    print $stm "\n";
+}
+
+sub dump_type {
+    my ($type, $stm) = (@_, \*STDERR);
+    my @fields = qw(type label usage default test);
+    dump_item($type, $stm, @fields);
+}
+
+sub dump_option {
+    my ($opt, $stm) = (@_, \*STDERR);
+    my @fields = qw(group option option_value usage default type test
+                    label param);
+    dump_item($opt, $stm, @fields);
+}
+
+###########################################################################
 sub new {
     my ($type, $prog) = @_;
     my $self = {};
@@ -23,9 +68,7 @@ sub new {
 
     $self->{'types'}   = {};
     $self->{'options'} = {};
-
-    $self->{'group_order'} = [];
-    $self->{'option_order'} = [];
+    $self->{'groups'}  = [];
 
     foreach my $lib (@OptionTypeLibs) {
         load_library($lib);
@@ -42,8 +85,9 @@ sub new {
         die "Options: no options header found\n";
     }
 
-    #warn "types:   ", scalar keys %{$self->{'types'}}, "\n";
+    #warn "groups:  ", scalar @{$self->{'groups'}}, "\n";
     #warn "options: ", scalar keys %{$self->{'options'}}, "\n";
+    #warn "types:   ", scalar keys %{$self->{'types'}}, "\n";
 
     #want to search arglist for known options
     Getopt::Long::config(qw(permute));
@@ -68,15 +112,18 @@ sub load_types {
 }
 
 sub load_option_groups {
-    my ($self, $lib, $groups) = @_;
+    my ($self, $lib, $seen) = @_;
     my $var = load_scalar($lib, 'Options');
     foreach my $grp (@$var) {
         my $gn = $grp->{'group'};
-        if (exists $groups->{$gn}) {
+        if (exists $seen->{$gn}) {
             die "Options: option group '$gn' already exists\n";
         }
-        push @{$self->{'group_order'}}, $grp;
-        $groups->{$gn} = $grp;
+        if (! exists $grp->{'options'}) {
+            die "Options: option group '$gn' contains no options\n";
+        }
+        push @{$self->{'groups'}}, $grp;
+        $seen->{$gn} = $grp;
         $self->load_options($grp, $gn);
     }
     return $self;
@@ -89,23 +136,11 @@ sub load_options {
         if (exists $self->{'options'}->{$on}) {
             die "Options: option '$on' already exists\n";
         }
-        push @{$self->{'option_order'}}, $opt;
-        $opt->{'group'} = $gn;
+        $opt->{'group'} = $gn;  #insert extended option name
         $self->{'options'}->{$on} = $opt;
         $self->initialise_option($opt);
     }
     return $self;
-}
-
-sub load_library {
-    my $library = $_[0];
-    $library =~ s/::/\//g;
-    require "$library.pm";
-}
-
-sub load_scalar {
-    my ($lib, $var) = @_;
-    return eval '$' . $lib . '::' . $var;
 }
 
 sub initialise_option {
@@ -179,13 +214,12 @@ sub usage {
     my $s = $Bio::MView::Option::Options::Header;  #already loaded
     $s =~ s/<PROG>/$self->{'prog'}/;
 
-    foreach my $grp (@{$self->{'group_order'}}) {
+    foreach my $grp (@{$self->{'groups'}}) {
         next  unless exists $grp->{'header'};  #hidden group
 
         $s .= $grp->{'header'} . "\n";
 
-        foreach my $opt (@{$self->{'option_order'}}) {
-            next  unless $opt->{'group'} eq $grp->{'group'};
+        foreach my $opt (@{$grp->{'options'}}) {
             $s .= $self->get_option_usage($opt);
         }
 
@@ -202,12 +236,6 @@ sub get_type_record {
     }
     return $self->{'types'}->{$key}  if exists $self->{'types'}->{$key};
     return undef;
-}
-
-sub str {
-    return '<UNDEF>'  unless defined $_[0];
-    return "[@{$_[0]}]"  if ref $_[0] eq 'ARRAY';
-    return $_[0];
 }
 
 sub get_attr_string {
@@ -245,38 +273,11 @@ sub get_option_usage {
     return $s;
 }
 
-sub dump_item {
-    my ($item, $stm) = (shift, shift);
-    foreach my $key (@_) {
-        next  unless exists $item->{$key};
-        my $val = $item->{$key};
-        $val = '<UNDEF>'  unless defined $val;
-        $val = 'CODE'     if ref $val eq 'CODE';
-        print $stm sprintf "%20s => %s\n", $key, $val;
-    }
-    print $stm "\n";
-}
-
-sub dump_type {
-    my ($type, $stm) = (@_, \*STDERR);
-    my @fields = qw(type label usage default test);
-    dump_item($type, $stm, @fields);
-}
-
-sub dump_option {
-    my ($opt, $stm) = (@_, \*STDERR);
-    my @fields = qw(group option option_value usage default type test
-                    label param);
-    dump_item($opt, $stm, @fields);
-}
-
 sub get_available_group_options {
     my ($self, $grp) = @_;
     my @tmp = ();
 
-    foreach my $opt (@{$self->{'option_order'}}) {
-        next  unless $opt->{'group'} eq $grp->{'group'};
-
+    foreach my $opt (@{$grp->{'options'}}) {
         my $o = $opt->{'option'};
 
         #dump_option($opt);
@@ -345,9 +346,7 @@ sub parse_group {
     #map { print STDERR "$_ => $scanned->{$_}\n" } %$scan;
 
     #process this group's CL options
-    foreach my $opt (@{$self->{'option_order'}}) {
-        next  unless $opt->{'group'} eq $grp->{'group'};
-
+    foreach my $opt (@{$grp->{'options'}}) {
         my $on = $opt->{'option'};
         next  unless exists $scan->{$on};
 
@@ -368,7 +367,7 @@ sub parse_argv {
     push @{$self->{'argv'}}, @$argv;
 
     #process options in specified group order
-    foreach my $grp (@{$self->{'group_order'}}) {
+    foreach my $grp (@{$self->{'groups'}}) {
         push @errors, $self->parse_group($argv, $grp);
         return @errors  if @errors;
     }
