@@ -167,9 +167,9 @@ sub mview {
     my $mgr = new Bio::MView::Manager($PROG, %$par);
 
     foreach my $file (@_) {
-        warn("$PROG: '$file' does not exist\n"),  next  unless -e $file;
-        warn("$PROG: '$file' is not a file\n"),   next  unless -f $file;
-        warn("$PROG: '$file' is not readable\n"), next  unless -r $file;
+        warn("$PROG: file '$file' does not exist\n"),  next  unless -e $file;
+        warn("$PROG: file '$file' is not a file\n"),   next  unless -f $file;
+        warn("$PROG: file '$file' is not readable\n"), next  unless -r $file;
 
         warn "$PROG: processing '$file'\n"  if $par->{'verbose'} & $VERB_FILE;
 

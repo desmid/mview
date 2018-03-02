@@ -1,10 +1,9 @@
-# -*- perl -*-
 # Copyright (C) 2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Option::Parser;
 
-use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray);
 use strict;
 
 my @OptionTypeLibs = ( 'Bio::MView::Option::Types' );
@@ -30,7 +29,7 @@ sub load_scalar {
     return eval '$' . $lib . '::' . $var;
 }
 
-sub dump_item {
+sub _dump_item {
     my ($item, $stm) = (shift, shift);
     foreach my $key (@_) {
         next  unless exists $item->{$key};
@@ -46,14 +45,14 @@ sub dump_item {
 sub dump_type {
     my ($type, $stm) = (@_, \*STDERR);
     my @fields = qw(type label usage default test);
-    dump_item($type, $stm, @fields);
+    _dump_item($type, $stm, @fields);
 }
 
 sub dump_option {
     my ($opt, $stm) = (@_, \*STDERR);
     my @fields = qw(group option option_value usage default type test
                     label param);
-    dump_item($opt, $stm, @fields);
+    _dump_item($opt, $stm, @fields);
 }
 
 ###########################################################################
@@ -197,7 +196,6 @@ sub initialise_option {
 
 sub update_option {
     my ($self, $on, $ov) = @_;
-    #warn "update_option ($on)\n";
 
     return  unless exists $self->{'options'}->{$on};
     my $opt = $self->{'options'}->{$on};
@@ -205,8 +203,6 @@ sub update_option {
     $opt->{'option_value'} = $ov;
 
     $self->test_and_set_option($opt);
-
-    #warn "update_option ($on) done\n";
 }
 
 sub usage {
@@ -336,18 +332,19 @@ sub parse_group {
     my ($self, $argv, $grp) = @_;
 
     my @avail = $self->get_available_group_options($grp);
+
     return ()  unless @avail;
 
-    my @errors = ();
-    my $scan = {};
+    my @errors = (); my $scan = {};
 
-    GetOptions($scan, @avail);
+    GetOptionsFromArray($argv, $scan, @avail);
 
-    #map { print STDERR "$_ => $scanned->{$_}\n" } %$scan;
+    #map { print STDERR "$_ => $scan->{$_}\n" } %$scan;
 
     #process this group's CL options
     foreach my $opt (@{$grp->{'options'}}) {
         my $on = $opt->{'option'};
+
         next  unless exists $scan->{$on};
 
         #save scanned value
@@ -366,21 +363,32 @@ sub parse_argv {
     #save input ARGV for posterity
     push @{$self->{'argv'}}, @$argv;
 
+    #look for '--' to stop option processing
+    #warn "argv: [@$argv]\n";
+    my @lhs = (); my @rhs = (); my $options = 1;
+    while (@$argv) {
+        my $arg = shift @$argv;
+        $options = 0, next  if $arg eq '--';
+        push(@lhs, $arg), next  if $options;
+        push(@rhs, $arg);
+    }
+    #warn "lhs/rhs: [@lhs] [@rhs]\n";
+
     #process options in specified group order
     foreach my $grp (@{$self->{'groups'}}) {
-        push @errors, $self->parse_group($argv, $grp);
+        push @errors, $self->parse_group(\@lhs, $grp);
         return @errors  if @errors;
     }
 
-    #fail unprocessed options; leave non-option arguments
-    my @tmp = ();
-    foreach my $arg (@$argv) {
+    #fail unprocessed options; leave implicit non-options
+    @$argv = ();
+    foreach my $arg (@lhs) {
 	if ($arg =~ /^--?\S/) {
             push @errors, "unknown option '$arg'";
 	}
-        push @tmp, $arg;
+        push @$argv, $arg;
     }
-    @$argv = @tmp;
+    push @$argv, @rhs;  #replace explicit non-options
 
     return @errors;
 }
