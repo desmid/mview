@@ -382,7 +382,7 @@ sub load_colormaps {
 }
 
 #return a descriptive listing of all known colormaps
-sub list_colormaps {
+sub dump_colormaps {
     my $html = shift;
     my ($map, $sym, %p, $u, $l, $col, $rgb);
     my ($s, $f1, $f2, $c0, $c1, $c2) = ('', '', '', '', '', '');
@@ -486,7 +486,7 @@ sub get_colormap_length {
     return $len / 2;
 }
 
-sub list_css1_colormaps {
+sub dump_css1_colormaps {
     my %color = @_;
     my ($s, $i, $rgb, $fg);
 
@@ -565,9 +565,9 @@ sub get_default_consensus_colormap {
     return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
 }
 
-sub get_default_find_colormap {
-    return $Bio::MView::Align::Sequence::Default_FIND_Colormap;
-}
+#sub get_default_find_colormap {
+#    return $Bio::MView::Align::Sequence::Default_FIND_Colormap;
+#}
 
 #propagate display parameters to row objects
 sub set_display {

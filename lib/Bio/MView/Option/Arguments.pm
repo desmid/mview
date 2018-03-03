@@ -4,6 +4,7 @@
 package Bio::MView::Option::Arguments;
 
 use Exporter;
+use Bio::MView::Align;
 
 @ISA = qw(Exporter);
 

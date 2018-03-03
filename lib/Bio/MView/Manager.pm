@@ -3,10 +3,11 @@
 ######################################################################
 package Bio::MView::Manager;
 
+use Bio::MView::Option::Arguments;
 use Bio::MView::Build;
 use Bio::MView::Convert;
 use Bio::MView::Display;
-use Bio::MView::SRS 'srsLink';
+use Bio::MView::SRS qw(srsLink);
 
 use strict;
 
@@ -394,14 +395,20 @@ sub add_display {
 }
 
 #wrapper functions
-#NIGE sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 
-sub list_colormaps { Bio::MView::Align::list_colormaps(@_) }
-sub list_groupmaps { Bio::MView::Align::Consensus::list_groupmaps(@_) }
-sub list_css       { Bio::MView::Align::list_css1_colormaps(@_) }
+sub check_input_file {
+    my $file = shift;
+    return Bio::MView::Option::Arguments::check_informat($file, 'file');
+}
+
+sub dump_colormaps { Bio::MView::Align::dump_colormaps(@_) }
+sub dump_groupmaps { Bio::MView::Align::Consensus::dump_groupmaps(@_) }
+sub dump_css       { Bio::MView::Align::dump_css1_colormaps(@_) }
 
 sub load_colormaps { Bio::MView::Align::load_colormaps(@_) }
 sub load_groupmaps { Bio::MView::Align::Consensus::load_groupmaps(@_) }
+
+#sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 
 sub print {
     my ($self, $stm) = (@_, \*STDOUT);
