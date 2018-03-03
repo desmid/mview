@@ -178,7 +178,7 @@ sub dump_group {
 }
 
 #return a descriptive listing of supplied groups or all groups
-sub list_groupmaps {
+sub dump_groupmaps {
     my $html = shift;
     my ($group, $class, $p, $sym);
     my ($s, $c0, $c1, $c2) = ('', '', '', '');

@@ -92,19 +92,19 @@ if ($par->{'groupfile'} ne '') {
 
 #dump css and exit
 if ($par->{'listcss'}) {
-    print $stm list_css();
+    print $stm dump_css();
     exit 0;
 }
 
 #dump colormaps and exit
 if ($par->{'listcolors'}) {
-    print $stm list_colormaps($par);
+    print $stm dump_colormaps($par);
     exit 0;
 }
 
 #dump groupmaps and exit
 if ($par->{'listgroups'}) {
-    print $stm list_groupmaps($par);
+    print $stm dump_groupmaps($par);
     exit 0;
 }
 
@@ -175,9 +175,7 @@ sub mview {
 
 	#try to choose a format if one wasn't specified
         if (! $par->{'in'}) {
-            my $format = Bio::MView::Option::Options::check_informat(
-                $file, 'file'
-            );
+            my $format = Bio::MView::Manager::check_input_file($file);
             warn("$PROG: can't determine format\n"), next
                 unless defined $format;
             warn "$PROG: format is probably '$format'\n"
@@ -252,18 +250,18 @@ sub usage {
     $s;
 }
 
-sub list_css {
+sub dump_css {
     #http://www.w3.org/TR/REC-CSS1#containment-in-html
-    my $s = Bio::MView::Manager::list_css(
+    my $s = Bio::MView::Manager::dump_css(
 	'alncolor' => $par->{'alncolor'}, 'labcolor' => $par->{'labcolor'},
 	'symcolor' => $par->{'symcolor'}, 'gapcolor' => $par->{'gapcolor'},
 	);
     $s;
 }
 
-sub list_colormaps {
+sub dump_colormaps {
     my $par = shift;
-    my $data = Bio::MView::Manager::list_colormaps($par->{'html'});
+    my $data = Bio::MView::Manager::dump_colormaps($par->{'html'});
     my $s = '';
     if ($par->{'html'}) {
         $s .= html_head($par);
@@ -277,9 +275,9 @@ sub list_colormaps {
     $s;
 }
 
-sub list_groupmaps {
+sub dump_groupmaps {
     my $par = shift;
-    my $data = Bio::MView::Manager::list_groupmaps($par->{'html'});
+    my $data = Bio::MView::Manager::dump_groupmaps($par->{'html'});
     my $s = '';
     if ($par->{'html'}) {
         $s .= html_head($par);
@@ -372,12 +370,12 @@ sub html_head {
 	    } else {
 		#style sheet in situ
 		$t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-		$t .= Bio::MView::Align::list_css1_colormaps
-		    ('alncolor' => $par->{'alncolor'},
-		     'labcolor' => $par->{'labcolor'},
-		     'symcolor' => $par->{'symcolor'},
-		     'gapcolor' => $par->{'gapcolor'},
-		    );
+		$t .= Bio::MView::Manager::dump_css(
+                    'alncolor' => $par->{'alncolor'},
+                    'labcolor' => $par->{'labcolor'},
+                    'symcolor' => $par->{'symcolor'},
+                    'gapcolor' => $par->{'gapcolor'},
+		);
 		$t .= "-->\n</STYLE>\n";
 	    }
 	}
