@@ -53,13 +53,15 @@ $Options = [
         'options' => [
             {
                 'option'  => "in",
-                'type'    => "formats::in",
+                'usage'   => "Input",
+                'type'    => "format::in",
             },
 
             {
                 'option'  => "out",
+                'usage'   => "Output",
+                'type'    => "format::out",
                 'param'   => "mode",
-                'type'    => "formats::out",
             },
         ],
     },
@@ -98,6 +100,7 @@ $Options = [
 
             {
                 'option'  => "width",
+                'usage'   => "Paginate alignment in blocks of width",
                 'type'    => "content::width",
             },
 
@@ -110,15 +113,16 @@ $Options = [
         'options' => [
             {
                 'option'  => "pcid",
+                'usage'   => "Compute percent identities with respect to",
                 'type'    => "identity::pcid",
             },
 
             {
                 'option'  => "reference",
-                'param'   => "ref_id",
                 'usage'   => "Use row N or row identifier as %identity reference",
                 'type'    => "string",
                 'default' => "query",
+                'param'   => "ref_id",
             },
 
             {
@@ -143,29 +147,30 @@ $Options = [
         'options' => [
             {
                 'option'  => "top",
-                'param'   => "topn",
+                'usage'   => "Report top N hits",
                 'type'    => "filter::top",
+                'param'   => "topn",
             },
 
             {
                 'option'  => "show",
-                'param'   => "keeplist",
                 'usage'   => "Keep rows 1..N or identifiers",
                 'type'    => "string_list",
+                'param'   => "keeplist",
             },
 
             {
                 'option'  => "hide",
-                'param'   => "skiplist",
                 'usage'   => "Hide rows 1..N or identifiers",
                 'type'    => "string_list",
+                'param'   => "skiplist",
             },
 
             {
                 'option'  => "nops",
-                'param'   => "nopslist",
                 'usage'   => "Exclude rows 1..N or identifiers from calculations",
                 'type'    => "string_list",
+                'param'   => "nopslist",
             },
 
             {
@@ -184,6 +189,7 @@ $Options = [
         'options' => [
             {
                 'option'  => "moltype",
+                'usage'   => "Affects coloring and format converions",
                 'type'    => "moltype::type",
             },
 
@@ -196,34 +202,38 @@ $Options = [
         'options' => [
             {
                 'option'  => "coloring",
-                'param'   => "aln_coloring",
+                'usage'   => "Basic style of coloring",
                 'type'    => "alignment::coloring",
+                'param'   => "aln_coloring",
             },
 
             {
                 'option'  => "colormap",
-                'param'   => "aln_colormap",
+                'usage'   => "Name of colormap to use",
                 'type'    => "alignment::colormap",
+                'param'   => "aln_colormap",
             },
 
             {
                 'option'  => "groupmap",
-                'param'   => "aln_groupmap",
+                'usage'   => "Name of groupmap to use if coloring by consensus",
                 'type'    => "alignment::groupmap",
+                'param'   => "aln_groupmap",
             },
 
             {
                 'option'  => "threshold",
-                'param'   => "aln_threshold",
                 'usage'   => "Threshold percentage for consensus coloring",
                 'type'    => "percentage_ge_50",
                 'default' => 70,
+                'param'   => "aln_threshold",
             },
 
             {
                 'option'  => "ignore",
-                'param'   => "aln_ignore",
+                'usage'   => "Ignore singleton or class groups",
                 'type'    => "alignment::ignore",
+                'param'   => "aln_ignore",
             },
 
         ],
@@ -235,26 +245,31 @@ $Options = [
         'options' => [
             {
                 'option'  => "con_coloring",
+                'usage'   => "Basic style of coloring",
                 'type'    => "consensus::coloring",
             },
 
             {
                 'option'  => "con_colormap",
+                'usage'   => "Name of colormap to use",
                 'type'    => "consensus::colormap",
             },
 
             {
                 'option'  => "con_groupmap",
+                'usage'   => "Name of groupmap to use if coloring by consensus",
                 'type'    => "consensus::groupmap",
             },
 
             {
                 'option'  => "con_threshold",
+                'usage'   => "Consensus line thresholds",
                 'type'    => "consensus::threshold",
             },
 
             {
                 'option'  => "con_ignore",
+                'usage'   => "Ignore singleton or class groups",
                 'type'    => "consensus::ignore",
             },
 
@@ -356,7 +371,7 @@ $Options = [
         'options' => [
             {
                 'option'  => "html",
-                'usage'   => "Controls amount of HTML markup {@{[list_html_modes]}}",
+                'usage'   => "Controls amount of HTML markup",
                 'type'    => "html::html_mode",
             },
 
@@ -368,8 +383,9 @@ $Options = [
 
             {
                 'option'  => "css",
-                'param'   => "css1",
+                'usage'   => "Use Cascading Style Sheets",
                 'type'    => "html::css_mode",
+                'param'   => "css1",
             },
 
             {
@@ -428,6 +444,7 @@ $Options = [
         'options' => [
             {
                 'option'  => "srs",
+                'usage'   => "Try to use sequence database links",
                 'type'    => "srs::mode",
             },
 
@@ -608,13 +625,13 @@ $Options = [
         'group'   => "MAPFILES",
         'header'  => "User defined colormap and consensus group definition:",
         'options' => [
-            { 
+            {
                 'option'  => "colorfile",
                 'usage'   => "Load more colormaps from file",
                 'type'    => "infile",
             },
 
-            { 
+            {
                 'option'  => "groupfile",
                 'usage'   => "Load more groupmaps from file",
                 'type'    => "infile",

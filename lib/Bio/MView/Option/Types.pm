@@ -71,7 +71,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             return 0  if $ov eq 'off' or $ov eq '0';
             return 1  if $ov eq 'on'  or $ov eq '1';
-            push(@$e, "bad argument '$on=$ov', want on|off");
+            push(@$e, "bad value '$on=$ov', want on|off");
             return $ov;
         },
     },
@@ -82,7 +82,7 @@ $Types = [
         'default' => "",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad argument '$on=$ov', want character"),
+            push(@$e, "bad value '$on=$ov', want character"),
                 unless length($ov) == 1;
             return $ov;
         },
@@ -105,7 +105,7 @@ $Types = [
         'label'   => "integer",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad argument '$on=$ov', want integer >= 0"),
+            push(@$e, "bad value '$on=$ov', want integer >= 0"),
                 unless $ov =~ /^$RX_Uint$/;
             return $ov;
         },
@@ -116,7 +116,7 @@ $Types = [
         'label'   => "number",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad argument '$on=$ov', want numeric >= 0"),
+            push(@$e, "bad value '$on=$ov', want numeric >= 0"),
                 unless $ov =~ /^$RX_Ureal$/;
             return $ov;
         },
@@ -128,15 +128,9 @@ $Types = [
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = $self->test_type('u_numeric', $on, $ov, $e);
-            if (! defined $pv) {
-                pop @$e;
-                push(@$e, "bad value '$ov', want numeric > 0");
-                return undef;
-            }
-            if ($pv <= 0) {
-                push(@$e, "bad value '$ov', want numeric > 0");
-                return undef;
-            }
+            my $msg = "bad value '$ov', want numeric > 0";
+            if (! defined $pv) { pop @$e; push(@$e, $msg); return undef }
+            if ($pv <= 0)      {          push(@$e, $msg); return undef }
             return $pv;
         },
     },
@@ -148,7 +142,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             my $pv = $self->test_type('u_numeric', $on, $ov, $e);
             return $pv  if 0 <= $pv and $pv <= 100;
-            push(@$e, "bad percentage '$on=$ov', want value in 0..100");
+            push(@$e, "bad value '$on=$ov', want value in 0..100");
             return $ov;
         },
     },
@@ -160,7 +154,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             my $pv = $self->test_type('percentage', $on, $ov, $e);
             return $pv  if 50 <= $pv and $pv <= 100;
-            push(@$e, "bad percentage '$on=$ov', want value in 50..100");
+            push(@$e, "bad value '$on=$ov', want value in 50..100");
             return $ov;
         },
     },
@@ -173,8 +167,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             if (defined $ov and $ov ne '') {
                 local *TMP;
-                open(TMP, "< $ov") or
-                    push(@$e, "can't open $on file '$ov'");
+                open(TMP, "< $ov") or push(@$e, "can't open $on file '$ov'");
                 close TMP;
             }
             return $ov;
@@ -206,7 +199,6 @@ $Types = [
                 push @tmp, $_;
             }
             #warn "type: string_list(@tmp) out\n";
-            #return [ sort @tmp ];
             return [ @tmp ];
         },
     },
@@ -240,7 +232,6 @@ $Types = [
                 return [];
             }
             #warn "test: u_int_list(@tmp)\n";
-            #return [ sort @tmp ];
             return [ @tmp ];
         },
     },
@@ -265,7 +256,6 @@ $Types = [
                 return [];
             }
             #warn "type: u_numeric_list(@tmp)\n";
-            #return [ sort @tmp ];
             return [ @tmp ];
         },
     },
@@ -301,33 +291,32 @@ $Types = [
     #### MVIEW TYPES ####
 
     {
-        'type'    => "formats::in",
-        'usage'   => "Input {@{[list_informats]}}",
+        'type'    => "format::in",
         'label'   => "format",
+        'values'  => list_informats,
         'default' => "",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_informat($ov);
             if (! defined $pv) {
                 push @$e, "input format '$ov' unrecognised";
-                push @$e, "known formats are: {". list_informats . "}";
+                push @$e, "valid values are: @{[list_informats]}";
             }
             return $pv;
         },
     },
 
     {
-        'type'    => "formats::out",
-        'usage'   => "Output {@{[list_outformats]}}",
+        'type'    => "format::out",
         'label'   => "format",
+        'values'  => list_outformats,
         'default' => "new",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_outformat($ov);
             if (! defined $pv) {
                 push @$e, "output format '$ov' unrecognised";
-                push @$e, "known formats are: {",
-                    join(",", list_outformats) . "}";
+                push @$e, "valid values are: @{[list_outformats]}";
             }
             return $pv;
         },
@@ -335,17 +324,18 @@ $Types = [
 
     {
         'type'    => "content::width",
-        'usage'   => "Paginate alignment in blocks of N columns",
-        'label'   => "N,flat",
-        'default' => "flat",
+        'label'   => "columns",
+        'values'  => "N,full",
+        'default' => "full",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            return 0  if $ov eq "flat";
+            return 0  if $ov eq "full";
+            return 0  if $ov eq "flat";  #backwards compatibility
             my $pv = $self->test_type('u_int', $on, $ov, $e);
             if (@$e) {
                 pop @$e;
                 push @$e, "width '$ov' unrecognised";
-                push @$e, "known formats are: {N,flat} where N is an integer";
+                push @$e, "valid values are: {N,full} where N is an integer";
             }
             return $pv;
         },
@@ -353,16 +343,15 @@ $Types = [
 
     {
         'type'    => "identity::pcid",
-        'usage'   => "Compute percent identities with respect to {@{[list_identity_modes]}}",
         'label'   => "mode",
+        'values'  => list_identity_modes,
         'default' => "aligned",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_identity_mode($ov);
             if (! defined $pv) {
                 push @$e, "percent identity mode '$ov' unrecognised";
-                push @$e, "known percent identity modes are: {",
-                    join(",", list_identity_modes) . "}";
+                push @$e, "valid values are: @{[list_identity_modes]}";
             }
             return $pv;
         },
@@ -370,8 +359,8 @@ $Types = [
 
     {
         'type'    => "filter::top",
-        'usage'   => "Report top N hits",
-        'label'   => "N,all",
+        'label'   => "count",
+        'values'  => "N,all",
         'default' => "all",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
@@ -380,7 +369,7 @@ $Types = [
             if (@$e) {
                 pop @$e;
                 push @$e, "topn value '$ov' unrecognised";
-                push @$e, "known values are: {N,all} where N is an integer";
+                push @$e, "valid values are: {N,all} where N is an integer";
             }
             return $pv;
         },
@@ -388,16 +377,15 @@ $Types = [
 
     {
         'type'    => "moltype::type",
-        'usage'   => "Affects coloring and format converions {@{[list_molecule_types]}}",
         'label'   => "mol",
+        'values'  => list_molecule_types,
         'default' => "aa",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_molecule_type($ov);
             if (! defined $pv) {
                 push @$e, "molecule type '$ov' unrecognised";
-                push @$e, "known molecule types are: {",
-                    join(",", list_molecule_types) . "}";
+                push @$e, "valid values are: @{[list_molecule_types]}";
                 return $ov;
             }
             #warn "Setting moltype: $pv";
@@ -419,16 +407,15 @@ $Types = [
 
     {
         'type'    => "alignment::coloring",
-        'usage'   => "Basic style of coloring {@{[list_alignment_color_schemes]}}",
         'label'   => "mode",
+        'values'  => list_alignment_color_schemes,
         'default' => "none",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_alignment_color_scheme($ov);
             if (! defined $pv) {
                 push @$e, "alignment coloring scheme '$ov' unrecognised";
-                push @$e, "known color schemes are: {",
-                    join(",", list_alignment_color_schemes) . "}";
+                push @$e, "valid values are: @{[list_alignment_color_schemes]}";
             }
             return $pv;
         },
@@ -436,16 +423,16 @@ $Types = [
 
     {
         'type'    => "alignment::colormap",
-        'usage'   => "Name of colormap to use",
         'label'   => "name",
+        #'values'  => list_colormap_names,
+        'values'  => "see manual",
         'default' => get_default_alignment_colormap,
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_colormap($ov);
             if (! defined $pv) {
                 push @$e, "alignment colormap '$ov' unrecognised";
-                push @$e, "known colormaps are: ",
-                    join(",", list_colormap_names);
+                push @$e, "valid values are: @{[list_colormap_names]}";
             }
             return $pv;
         },
@@ -453,16 +440,16 @@ $Types = [
 
     {
         'type'    => "alignment::groupmap",
-        'usage'   => "Name of groupmap to use if coloring by consensus",
         'label'   => "name",
+        #'values'  => list_groupmap_names,
+        'values'  => "see manual",
         'default' => get_default_groupmap,
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_groupmap($ov);
             if (! defined $pv) {
                 push @$e, "alignment groupmap '$ov' unrecognised";
-                push @$e, "known groupmaps are: ",
-                    join(",", list_groupmap_names);
+                push @$e, "valid values are: @{[list_groupmap_names]}";
             }
             return $pv;
         },
@@ -470,7 +457,7 @@ $Types = [
 
     {
         'type'    => "alignment::ignore",
-        'usage'   => "Ignore singleton or class groups {@{[list_ignore_classes]}}",
+        'values'  => list_ignore_classes,
         'label'   => "mode",
         'default' => "none",
         'test'    => sub {
@@ -478,8 +465,7 @@ $Types = [
             my $pv = check_ignore_class($ov);
             if (! defined $pv) {
                 push @$e, "ignore class '$ov' unrecognised";
-                push @$e, "known ignore classes are: ",
-                    join(",", list_ignore_classes);
+                push @$e, "valid values are: @{[list_ignore_classes]}";
             }
             return $pv;
         },
@@ -487,7 +473,7 @@ $Types = [
 
     {
         'type'    => "consensus::coloring",
-        'usage'   => "Basic style of coloring {@{[list_consensus_color_schemes]}}",
+        'values'  => list_consensus_color_schemes,
         'label'   => "mode",
         'default' => "none",
         'test'    => sub {
@@ -495,8 +481,7 @@ $Types = [
             my $pv = check_consensus_color_scheme($ov);
             if (! defined $pv) {
                 push @$e, "consensus coloring scheme '$ov' unrecognised";
-                push @$e, "known color schemes are: {",
-                    join(",", list_consensus_color_schemes) . "}";
+                push @$e, "valid values are: @{[list_consensus_color_schemes]}";
             }
             return $pv;
         },
@@ -504,7 +489,8 @@ $Types = [
 
     {
         'type'    => "consensus::colormap",
-        'usage'   => "Name of colormap to use",
+        #'values'  => list_colormap_names,
+        'values'  => "see manual",
         'label'   => "name",
         'default' => get_default_consensus_colormap,
         'test'    => sub {
@@ -512,8 +498,7 @@ $Types = [
             my $pv = check_colormap($ov);
             if (! defined $pv) {
                 push @$e, "consensus colormap '$ov' unrecognised";
-                push @$e, "known consensus colormaps are: ",
-                    join(",", list_colormap_names);
+                push @$e, "valid values are: @{[list_colormap_names]}";
             }
             return $pv;
         },
@@ -521,7 +506,8 @@ $Types = [
 
     {
         'type'    => "consensus::groupmap",
-        'usage'   => "Name of groupmap to use if coloring by consensus",
+        #'values'  => list_groupmap_names,
+        'values'  => "see manual",
         'label'   => "name",
         'default' => get_default_groupmap,
         'test'    => sub {
@@ -529,8 +515,7 @@ $Types = [
             my $pv = check_groupmap($ov);
             if (! defined $pv) {
                 push @$e, "consensus groupmap '$ov' unrecognised";
-                push @$e, "known consensus groupmaps are: ",
-                    join(",", list_groupmap_names);
+                push @$e, "valid values are: @{[list_groupmap_names]}";
             }
             return $pv;
         },
@@ -538,7 +523,6 @@ $Types = [
 
     {
         'type'    => "consensus::threshold",
-        'usage'   => "Consensus line thresholds",
         'label'   => "N[,N]",
         'default' => '100,90,80,70',
         'test'    => sub {
@@ -546,7 +530,7 @@ $Types = [
             my $pv = $self->test_type('u_numeric_list', $on, $ov, $e);
             foreach my $v (@$pv) {
                 if ($v < 50 or $v > 100) {
-                    push @$e, ("bad percentage in '$ov', must be in range 50..100");
+                    push @$e, "bad value in '$ov', want in range 50..100";
                 }
             }
             return $pv;
@@ -555,16 +539,15 @@ $Types = [
 
     {
         'type'    => "consensus::ignore",
-        'usage'   => "Ignore singleton or class groups {@{[list_ignore_classes]}}",
+        'values'  => list_ignore_classes,
         'label'   => "mode",
         'default' => "none",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_ignore_class($ov);
             if (! defined $pv) {
-                push @$e, "consensus ignore class '$ov' unrecognised",
-                    push @$e, "known consensus ignore classes are: ",
-                    join(",", list_ignore_classes);
+                push @$e, "consensus ignore class '$ov' unrecognised";
+                push @$e, "valid values are: @{[list_ignore_classes]}";
             }
             return  $pv;
         },
@@ -572,16 +555,15 @@ $Types = [
 
     {
         'type'    => "html::html_mode",
-        'usage'   => "Controls amount of HTML markup {@{[list_html_modes]}}",
+        'values'  => list_html_modes,
         'label'   => "mode",
         'default' => "off",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_html_mode($ov);
             if (! defined $pv) {
-                push @$e, "html mode '$ov' unrecognised",
-                    push @$e, "known html modes are: ",
-                    join(",", list_html_modes);
+                push @$e, "html mode '$ov' unrecognised";
+                push @$e, "valid values are: @{[list_html_modes]}";
             }
             return $pv;
         },
@@ -589,16 +571,15 @@ $Types = [
 
     {
         'type'    => "html::css_mode",
-        'usage'   => "Use Cascading Style Sheets {@{[list_css_modes]}}",
+        'values'  => list_css_modes,
         'label'   => "mode",
         'default' => "off",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_css_mode($ov);
             if (! defined $pv) {
-                push @$e, "css mode '$ov' unrecognised",
-                    push @$e, "known css modes are: ",
-                    join(",", list_html_modes);
+                push @$e, "css mode '$ov' unrecognised";
+                push @$e, "valid values are: @{[list_css_modes]}";
             }
             return $pv;
         },
@@ -606,7 +587,6 @@ $Types = [
 
     {
         'type'    => "srs::mode",
-        'usage'   => "Try to use sequence database links",
         'label'   => "on|off",
         'default' => "off",
         'test'    => sub {
@@ -622,7 +602,8 @@ $Types = [
 
     {
         'type'    => "blast::hsp_mode",
-        'usage'   => "HSP tiling mode {@{[list_hsp_tiling]}",
+        'usage'   => "HSP tiling mode",
+        'values'  => list_hsp_tiling,
         'label'   => "mode",
         'default' => "ranked",
         'test'    => sub {
@@ -630,7 +611,7 @@ $Types = [
             my $pv = check_hsp_tiling($ov);
             if (! defined $pv) {
                 push @$e, "bad hsp mode '$ov'";
-                push @$e, "known hsp modes are: {" . list_hsp_tiling . "}";
+                push @$e, "valid values are: @{[list_hsp_tiling]}";
             }
             return $pv;
         },
@@ -717,7 +698,8 @@ $Types = [
 
     {
         'type'    => "psiblast::cycle",
-        'usage'   => "Process the N'th cycle of a multipass search {@{[list_cycle_types]}}",
+        'usage'   => "Process the N'th cycle of a multipass search",
+        'values'  => list_cycle_types,
         'label'   => "cycles",
         'default' => "last",
         'test'    => sub {
@@ -725,8 +707,7 @@ $Types = [
             my $pv = check_cycle_type($ov);
             if (! defined $pv) {
                 push @$e, "bad cycle value in '$ov'";
-                push @$e, "valid cycle values are: {"
-                    . list_cycle_types . "}";
+                push @$e, "valid values are: @{[list_cycle_types]}";
             }
             return $pv;
         },
@@ -735,7 +716,8 @@ $Types = [
 
     {
         'type'    => "search::strand",
-        'usage'   => "Report only these query strand orientations {@{[list_strand_types]}}",
+        'usage'   => "Report only these query strand orientations",
+        'values'  => list_strand_types,
         'label'   => "strands",
         'default' => "both",
         'test'    => sub {
@@ -743,8 +725,7 @@ $Types = [
             my $pv = check_strand_type($ov);
             if (! defined $pv) {
                 push @$e, "bad strand orientation in '$ov'";
-                push @$e, "valid strand orientations are: {"
-                    . list_strand_types . "}";
+                push @$e, "valid values are: @{[list_strand_types]}";
             }
             return $pv;
         },
@@ -752,7 +733,8 @@ $Types = [
 
     {
         'type'    => "align::block",
-        'usage'   => "Report only these blocks {@{[list_block_values]}}",
+        'usage'   => "Report only these blocks",
+        'values'  => list_block_values,
         'label'   => "blocks",
         'default' => "first",
         'test'    => sub {
@@ -760,8 +742,7 @@ $Types = [
             my $pv = check_block_value($ov);
             if (! defined $pv) {
                 push @$e, "bad block value in '$ov'";
-                push @$e, "valid block values are: {"
-                    . list_block_values . "}";
+                push @$e, "valid values are: @{[list_block_values]}";
             }
             return $pv;
         },
@@ -769,7 +750,8 @@ $Types = [
 
     {
         'type'    => "hssp::chain",
-        'usage'   => "Report only these chain names/numbers {@{[list_chain_values]}}",
+        'usage'   => "Report only these chain names/numbers",
+        'values'  => list_chain_values,
         'label'   => "chains",
         'default' => "*",
         'test'    => sub {
@@ -777,8 +759,7 @@ $Types = [
             my $pv = check_chain_value($ov);
             if (! defined $pv) {
                 push @$e, "bad chain in '$ov'";
-                push @$e, "valid chain specifications are: {"
-                    . list_chain_values . "}";
+                push @$e, "valid values are: @{[list_chain_values]}";
             }
             return $pv;
         },

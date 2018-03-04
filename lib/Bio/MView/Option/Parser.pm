@@ -239,12 +239,17 @@ sub get_attr_string {
     return str($opt->{$attr})   if exists $opt->{$attr};
     my $type = $self->get_type_record($opt);
     return str($type->{$attr})  if exists $type->{$attr};
-    return '<NOEXIST>';
+    return '';
 }
 
 sub get_label_string {
     my ($self, $opt) = @_;
     return $self->get_attr_string($opt, 'label');
+}
+
+sub get_values_string {
+    my ($self, $opt) = @_;
+    return $self->get_attr_string($opt, 'values');
 }
 
 sub get_default_string {
@@ -259,13 +264,17 @@ sub get_usage_string {
 
 sub get_option_usage {
     my ($self, $opt) = @_;
-    my $name = $opt->{'option'};
-    my $type = $self->get_label_string($opt);
-    my $usage = $self->get_usage_string($opt);
+    my $name    = $opt->{'option'};
+    my $type    = $self->get_label_string($opt);
+    my $values  = $self->get_values_string($opt);
+    my $usage   = $self->get_usage_string($opt);
     my $default = $self->get_default_string($opt);
     my $s = sprintf("  -%-20s %s", "$name $type", $usage);
+    $s .= " {$values}"   if $values  ne '';
+    #$s .= ".";  #NIGE
     $s .= " [$default]"  if $default ne '';
-    $s .= ".\n";
+    #$s .= "\n";  #NIGE
+    $s .= ".\n";  #NIGE
     return $s;
 }
 
@@ -374,17 +383,17 @@ sub parse_argv {
     }
     #warn "lhs/rhs: [@lhs] [@rhs]\n";
 
-    #process options in specified group order
+    #process options in specified group order;
+    #don't abort on error: allows caller to react to 'help' option
     foreach my $grp (@{$self->{'groups'}}) {
         push @errors, $self->parse_group(\@lhs, $grp);
-        return @errors  if @errors;
     }
 
     #fail unprocessed options; leave implicit non-options
     @$argv = ();
     foreach my $arg (@lhs) {
 	if ($arg =~ /^--?\S/) {
-            push @errors, "unknown option '$arg'";
+            push @errors, "unknown or bad option '$arg'";
 	}
         push @$argv, $arg;
     }

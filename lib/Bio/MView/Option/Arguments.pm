@@ -127,7 +127,7 @@ sub check_informat_basename {
         return 'FASTA'    if $_ =~ /uvf/i;
         return 'FASTA'    if $_ =~ /tfast/i;
         return 'FASTA'    if $_ =~ /fast[fmsxy]/i;
-        return 'Pearson'  if $_ =~ /pear/i;
+        return 'Pearson'  if $_ =~ /pearson/i;
     }
     if ($base =~ /^fa/i) {
         return test_file_contains_pearson_or_fasta($file, $mode);

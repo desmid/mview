@@ -60,19 +60,20 @@ my $stm = \*STDOUT;
 my $com = new Bio::MView::Option::Parser($PROG);
 my @err = $com->parse_argv(\@ARGV);
 
-abort(@err)  if @err;
-
 my $par = $com->get_parameters;
+
+if ($par->{'help'}) {
+    #usage message and exit
+    print $stm usage($com, $par);
+    exit 0;
+} else {
+    #report command line errors and exit
+    abort(@err)  if @err;
+}
 
 rationalise_parameters($par);
 
 dump_parameters($par)  if $par->{'verbose'} & $VERB_OPTS;
-
-#usage message and exit
-if ($par->{'help'}) {
-    print $stm usage($com, $par);
-    exit 0;
-}
 
 #load user colormaps; before listcolors
 if ($par->{'colorfile'} ne '') {
