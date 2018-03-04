@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Sequence;
@@ -12,7 +12,7 @@ use vars qw(@ISA
 	    $Wildcard_Sym
             $Default_PRO_Colormap $Default_DNA_Colormap
             $Default_FIND_Colormap $Default_Colormap
-	    %Template);
+	    %Template $KWARGS);
 
 @ISA = qw(Bio::MView::Align::Row);
 
@@ -20,9 +20,9 @@ $Wildcard_Sym          = '.';     #key for default colouring
 $Default_PRO_Colormap  = 'P1';    #default protein colormap name
 $Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
 $Default_FIND_Colormap = 'FIND';  #default find pattern colormap name
-$Default_Colormap = $Default_PRO_Colormap;
+$Default_Colormap      = $Default_PRO_Colormap;
 
-%Template = 
+%Template =
     (
      'id'      => undef,     #identifier
      'type'    => undef,     #information about own subtype
@@ -30,6 +30,13 @@ $Default_Colormap = $Default_PRO_Colormap;
      'string'  => undef,     #alignment string
      'display' => undef,     #hash of display parameters
     );
+
+$KWARGS = {
+    'colormap' => $Default_Colormap,
+    'find'     => '',
+    'mapsize'  => 0,
+    'patterns' => [],
+};
 
 sub new {
     my $type = shift;
@@ -54,19 +61,6 @@ sub new {
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub dump {
-    sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
-    }
-    my $self = shift;
-    warn "$self\n";
-    map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-    $self;
-}
 
 sub id       { $_[0]->{'id'} }
 sub seqobj   { $_[0]->{'string'} }
@@ -134,20 +128,14 @@ sub get_color {
 
 sub color_none {
     my $self = shift;
-    my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -160,11 +148,11 @@ sub color_none {
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 
-        push @$color, $i, 'color' => $par{'symcolor'};
+        push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 
     $self->{'display'}->{'paint'}  = 1;
@@ -173,34 +161,26 @@ sub color_none {
 
 sub color_special {
     my $self = shift;
-    my %par = @_;
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Default_Colormap
-	unless defined $par{'colormap'};
+    my $kw = $self->set_kwargs(@_);
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
     foreach $map (keys %$Bio::MView::Align::Colormaps) {
 	if ($self->{'id'} =~ /$map/i) {
 	    if (length($&) > $size) {
-		$par{'colormap'} = $map;
+		$kw->{'colormap'} = $map;
 		$size = length($&);
 	    }
 	}
     }
     return unless $size;
 
-    #warn $par{'colormap'};
+    #warn $kw->{'colormap'};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-    
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -213,110 +193,92 @@ sub color_special {
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $par{'colormap'});
+	@tmp = $self->get_color($c, $kw->{'colormap'});
 
 	if (@tmp) {
-	    if ($par{'css1'}) {
+	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
 	    } else {
 		push @$color, $i, 'color' => $tmp[0];
 	    }
 	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
+	    push @$color, $i, 'color' => $kw->{'symcolor'};
 	}
     }
-    
+
     $self->{'display'}->{'paint'}  = 1;
     $self;
 }
 
 sub color_by_find_block {
     my $self = shift;
-    my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Default_Colormap
-	unless defined $par{'colormap'};
-    $par{'find'}     = ''
-        unless defined $par{'find'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-    
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     my %mindex = ();
-    foreach my $block (@{$self->{string}->findall($par{patterns},
-						  $par{mapsize})}) {
+    foreach my $block (@{$self->{string}->findall($kw->{patterns},
+						  $kw->{mapsize})}) {
 	$mindex{$block->[1]} = $block->[0];
     }
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-        
+
 	$c = $self->{'string'}->raw($i);
 	
 	#warn "[$i]= $c\n";
 
 	#white space: no color
 	next    if $self->{'string'}->is_space($c);
-        
+
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
         if (exists $mindex{$i}) {
             #use symbol color/wildcard colour
-            @tmp = $self->get_color($mindex{$i}, $par{'colormap'});
+            @tmp = $self->get_color($mindex{$i}, $kw->{'colormap'});
         } else {
             @tmp = ();
         }
 	
 	if (@tmp) {
-	    if ($par{'css1'}) {
+	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
 	    } else {
 		push @$color, $i, 'color' => $tmp[0];
 	    }
 	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
+	    push @$color, $i, 'color' => $kw->{'symcolor'};
 	}
     }
-    
+
     $self->{'display'}->{'paint'} = 1;
     $self;
 }
 
 sub color_by_type {
     my $self = shift;
-    my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Default_Colormap
-	unless defined $par{'colormap'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-    
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -329,24 +291,24 @@ sub color_by_type {
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $par{'colormap'});
+	@tmp = $self->get_color($c, $kw->{'colormap'});
 	
 	if (@tmp) {
-	    if ($par{'css1'}) {
+	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
 	    } else {
 		push @$color, $i, 'color' => $tmp[0];
 	    }
 	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
+	    push @$color, $i, 'color' => $kw->{'symcolor'};
 	}
     }
-    
+
     $self->{'display'}->{'paint'}  = 1;
     $self;
 }
@@ -363,7 +325,6 @@ sub color_by_mismatch {
 
 sub color_by_identity_body {
     my ($self, $othr, $byidentity) = (shift, shift, shift);
-    my %par = @_;
 
     return  unless $self->{'type'} eq 'sequence';
     return  unless defined $othr;
@@ -371,18 +332,11 @@ sub color_by_identity_body {
     die "${self}::color_by_identity() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Default_Colormap
-	unless defined $par{'colormap'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     for (my $i=1; $i<$end; $i++) {
 
@@ -393,10 +347,10 @@ sub color_by_identity_body {
 
 	#white space: no color
 	next  if $self->{'string'}->is_space($c1);
-					 
+
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c1)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 
@@ -404,21 +358,21 @@ sub color_by_identity_body {
 
         #compare symbols, case-insensitive
         if ($byidentity) { #mismatch coloring mode
-            @tmp = $self->get_color($c1, $par{'colormap'})
-                if uc $c1 eq uc $c2; #same symbol or symcolor 
+            @tmp = $self->get_color($c1, $kw->{'colormap'})
+                if uc $c1 eq uc $c2; #same symbol or symcolor
         } else { #identity coloring mode
-            @tmp = $self->get_color($c1, $par{'colormap'})
-                if uc $c1 ne uc $c2; #different symbol or symcolor 
+            @tmp = $self->get_color($c1, $kw->{'colormap'})
+                if uc $c1 ne uc $c2; #different symbol or symcolor
         }
 
         if (@tmp) {
-            if ($par{'css1'}) {
+            if ($kw->{'css1'}) {
                 push @$color, $i, 'class' => $tmp[1];
             } else {
                 push @$color, $i, 'color' => $tmp[0];
             }
         } else { #default color
-            push @$color, $i, 'color' => $par{'symcolor'};
+            push @$color, $i, 'color' => $kw->{'symcolor'};
         }
     }
 
@@ -516,7 +470,7 @@ sub compute_identity_to {
 
     die "${self}::compute_identity_to() length mismatch\n"
 	unless $self->length == $othr->length;
-    
+
     my ($sum, $len) = (0, 0);
     my $end = $self->length +1;
 
@@ -543,7 +497,7 @@ sub compute_identity_to {
 	$sum++  if $c1 eq $c2;
 	#warn "[$i] $c1 $c2 : $cnt => $sum / $len\n";
     }
-    
+
     #normalise identities
     my $norm = 0;
     if ($mode eq 'aligned') {
@@ -562,3 +516,35 @@ sub compute_identity_to {
 
 ###########################################################################
 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

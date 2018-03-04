@@ -645,7 +645,8 @@ sub set_color_scheme {
 			);
 
     if ($self->{'coloring'} eq 'none') {
-        $self->color_none('symcolor'  => $self->{'symcolor'},
+        $self->color_none('colormap'  => $self->{'colormap'},
+                          'symcolor'  => $self->{'symcolor'},
                           'gapcolor'  => $self->{'gapcolor'},
                           'css1'      => $self->{'css1'},
                          );
@@ -682,8 +683,6 @@ sub set_color_scheme {
 					   'symcolor'  => $self->{'symcolor'},
 					   'gapcolor'  => $self->{'gapcolor'},
 					   'css1'      => $self->{'css1'},
-					   'group'     => $self->{'group'},
-					   'threshold' => $self->{'threshold'},
 					  );
     }
 
@@ -692,8 +691,6 @@ sub set_color_scheme {
 					'symcolor'  => $self->{'symcolor'},
 					'gapcolor'  => $self->{'gapcolor'},
 					'css1'      => $self->{'css1'},
-					'group'     => $self->{'group'},
-					'threshold' => $self->{'threshold'},
 				       );
     }
 
@@ -703,11 +700,20 @@ sub set_color_scheme {
 
     #find overlays anything else
     if ($self->{'find'} ne '') {
+
+        my $mapsize = get_colormap_length($self->{'colormapf'});
+        my @patterns = split($BLOCKSEPARATOR, $self->{'find'});
+        if (@patterns > $mapsize) {
+            warn "recycling colormap '$self->{'colormapf'}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
+        }
+
 	$self->color_by_find_block('colormap'  => $self->{'colormapf'},
 				   'symcolor'  => $self->{'symcolor'},
 				   'gapcolor'  => $self->{'gapcolor'},
 				   'css1'      => $self->{'css1'},
 				   'find'      => $self->{'find'},
+                                   'mapsize'   => $mapsize,
+                                   'patterns'  => [@patterns],
             );
     }
 
@@ -753,12 +759,11 @@ sub set_consensus_color_scheme {
 #propagate colour scheme to row objects
 sub color_special {
     my $self = shift;
-
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	next  if $r->{'type'} ne 'special';
 	$r->color_special(@_);
 	$r->set_display('label0'=>'', #not 1
                         'label2'=>'', 'label3'=>'',
@@ -886,15 +891,6 @@ sub color_by_consensus_group {
 #propagate colour scheme to row objects
 sub color_by_find_block {
     my $self = shift;
-    my %par = @_;
-
-    my $mapsize = get_colormap_length($par{'colormap'});
-    my @patterns = split($BLOCKSEPARATOR, $par{find});
-    if (@patterns > $mapsize) {
-	warn "recycling colormap '$par{'colormap'}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
-    }
-    push @_, 'mapsize'  => $mapsize;
-    push @_, 'patterns' => [@patterns];
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
@@ -1091,9 +1087,9 @@ sub compute_tallies {
 	#iterate over rows
 	for my $r (@{$self->{'index2row'}}) {
 	    next unless defined $r;
+	    next if $r->{'type'} ne 'sequence';
 	    next if $self->is_nop($r->id);
 	    next if $self->is_hidden($r->id);
-	    next if $r->{'type'} ne 'sequence';
 
 	    push @$col, $r->{'string'}->raw($c);
 	}

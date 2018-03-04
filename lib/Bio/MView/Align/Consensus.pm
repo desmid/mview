@@ -11,7 +11,7 @@ use strict;
 use vars qw(@ISA
 	    $Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
 	    $Default_PRO_Group $Default_DNA_Group
-	    $Group_Any $Default_Group_Any $Default_Ignore $Group);
+	    $Group_Any $Default_Group_Any $Default_Ignore $Group $KWARGS);
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
@@ -27,7 +27,6 @@ $Default_Group_Any    = '.';      #default symbol for non-consensus group
 $Default_Ignore       = 'none';   #default ignore classes setting
 $Group                = {};       #static hash of consensus schemes
 
-
 my %Known_Ignore_Class =
     (
      #name
@@ -36,9 +35,12 @@ my %Known_Ignore_Class =
      'class'      => 1,    #ignore non-singleton, ie., class consensi
     );
 
+$KWARGS = {
+    'colormapc' => $Default_Colormap,
+};
+
 #static load the $Group hash.
 eval { load_groupmaps() }; if ($@) {$::COMPILE_ERROR=1; warn $@}
-
 
 sub load_groupmaps {
     my ($stream, $override) = (@_, \*DATA, 1);
@@ -574,27 +576,17 @@ sub new {
 
 sub color_by_type {
     my $self = shift;
-    my %par = @_;
 
     #overkill!
     return unless $self->{'type'} eq 'consensus';
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-	unless defined $par{'colormap'};
-    $par{'colormapc'}= $Default_Colormap
-	unless defined $par{'colormapc'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_type($self) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
+    #warn "color_by_type($self) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -607,23 +599,22 @@ sub color_by_type {
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cg)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color_type($cg,
-				     $par{'colormap'},
-				     $par{'colormapc'});
-	
+				     $kw->{'colormap'},
+				     $kw->{'colormapc'});
 	if (@tmp) {
-	    if ($par{'css1'}) {
+	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
 	    } else {
 		push @$color, $i, 'color' => $tmp[0];
 	    }
 	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
+	    push @$color, $i, 'color' => $kw->{'symcolor'};
 	}
     }
 
@@ -633,27 +624,17 @@ sub color_by_type {
 
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);    #ignore second arg
-    my %par = @_;
 
     #overkill!
     return unless $self->{'type'} eq 'consensus';
 
-    $par{'css1'}     = 0
-       unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-       unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-       unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-       unless defined $par{'colormap'};
-    $par{'colormapc'}= $Default_Colormap
-       unless defined $par{'colormapc'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_identity($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
+    #warn "color_by_identity($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -664,7 +645,7 @@ sub color_by_identity {
 
        #gap: gapcolour
        if ($self->{'string'}->is_non_char($cg)) {
-           push @$color, $i, 'color' => $par{'gapcolor'};
+           push @$color, $i, 'color' => $kw->{'gapcolor'};
            next;
        }
 
@@ -673,16 +654,16 @@ sub color_by_identity {
            if (keys %{$Group->{$self->{'group'}}->[2]->{$cg}} == 1) {
 
                #refer to reference colormap NOT the consensus colormap
-               @tmp = $self->get_color_identity($cg, $par{'colormap'});
+               @tmp = $self->get_color_identity($cg, $kw->{'colormap'});
 
                if (@tmp) {
-                   if ($par{'css1'}) {
+                   if ($kw->{'css1'}) {
                        push @$color, $i, 'class' => $tmp[1];
                    } else {
                        push @$color, $i, 'color' => $tmp[0];
                    }
                } else {
-                   push @$color, $i, 'color' => $par{'symcolor'};
+                   push @$color, $i, 'color' => $kw->{'symcolor'};
                }
 
                next;
@@ -690,7 +671,7 @@ sub color_by_identity {
        }
 
        #symbol not in consensus group: use contrast colour
-       push @$color, $i, 'color' => $par{'symcolor'};
+       push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 
     $self->{'display'}->{'paint'} = 1;
@@ -707,27 +688,16 @@ sub color_by_consensus_sequence {
     return unless $othr;
     return unless $othr->{'type'} eq 'sequence';
 
-    my %par = @_;
-
     die "${self}::color_by_consensus_sequence() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-	unless defined $par{'colormap'};
-    $par{'colormapc'}= $Default_Colormap
-	unless defined $par{'colormapc'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_consensus_sequence($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
+    #warn "color_by_consensus_sequence($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -740,7 +710,7 @@ sub color_by_consensus_sequence {
 					
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
@@ -753,17 +723,16 @@ sub color_by_consensus_sequence {
 
 		#colour by sequence symbol
 		@tmp = $self->get_color_consensus_sequence($cs, $cg,
-							   $par{'colormap'},
-							   $par{'colormapc'});
-
+							   $kw->{'colormap'},
+							   $kw->{'colormapc'});
 		if (@tmp) {
-		    if ($par{'css1'}) {
+		    if ($kw->{'css1'}) {
 			push @$color, $i, 'class' => $tmp[1];
 		    } else {
 			push @$color, $i, 'color' => $tmp[0];
 		    }
 		} else {
-		    push @$color, $i, 'color' => $par{'symcolor'};
+		    push @$color, $i, 'color' => $kw->{'symcolor'};
 		}
 
 		next;
@@ -771,7 +740,7 @@ sub color_by_consensus_sequence {
 	}
 
         #symbol not in consensus group: use contrast colour
-	push @$color, $i, 'color' => $par{'symcolor'};
+	push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 
     $othr->{'display'}->{'paint'} = 1;
@@ -787,27 +756,16 @@ sub color_by_consensus_group {
     return unless $othr;
     return unless $othr->{'type'} eq 'sequence';
 
-    my %par = @_;
-
     die "${self}::color_by_consensus_group() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-	unless defined $par{'colormap'};
-    $par{'colormapc'}= $Default_Colormap
-	unless defined $par{'colormapc'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_consensus_group($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
+    #warn "color_by_consensus_group($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -820,7 +778,7 @@ sub color_by_consensus_group {
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
@@ -834,16 +792,16 @@ sub color_by_consensus_group {
 		#colour by consensus group symbol
 		#note: both symbols passed; colormaps swapped
 		@tmp = $self->get_color_consensus_group($cs, $cg,
-							$par{'colormap'},
-							$par{'colormapc'});
+							$kw->{'colormap'},
+							$kw->{'colormapc'});
 		if (@tmp) {
-		    if ($par{'css1'}) {
+		    if ($kw->{'css1'}) {
 			push @$color, $i, 'class' => $tmp[1];
 		    } else {
 			push @$color, $i, 'color' => $tmp[0];
 		    }
 		} else {
-		    push @$color, $i, 'color' => $par{'symcolor'};
+		    push @$color, $i, 'color' => $kw->{'symcolor'};
 		}
 
 		next;
@@ -851,7 +809,7 @@ sub color_by_consensus_group {
 	}
 	
 	#symbol not in consensus group: use contrast colour
-	push @$color, $i, 'color' => $par{'symcolor'};
+	push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 
     $othr->{'display'}->{'paint'} = 1;

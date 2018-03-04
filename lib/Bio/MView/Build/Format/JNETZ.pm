@@ -186,20 +186,12 @@ Bio::MView::Align::load_colormaps(\*DATA, 0);
 
 sub color_row {
     my $self = shift;
-    my %par = @_;
 
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-	unless defined $par{'colormap'};
+    my $kw = $self->set_kwargs(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -212,21 +204,21 @@ sub color_row {
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 	
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $par{'colormap'});
+	@tmp = $self->get_color($c, $kw->{'colormap'});
 	
 	if (@tmp) {
-	    if ($par{'css1'}) {
+	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
 	    } else {
 		push @$color, $i, 'color' => $tmp[0];
 	    }
 	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
+	    push @$color, $i, 'color' => $kw->{'symcolor'};
 	}
     }
 
