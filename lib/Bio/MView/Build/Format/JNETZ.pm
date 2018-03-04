@@ -103,73 +103,11 @@ sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 
 
 ###########################################################################
-package Bio::MView::Build::Format::JNETZ::Align::Sequence;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Align::Sequence);
-
-sub color_row {
-    my $self = shift;
-    my %par = @_;
-
-    $par{'css1'}     = 0
-	unless defined $par{'css1'};
-    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'symcolor'};
-    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
-	unless defined $par{'gapcolor'};
-    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
-	unless defined $par{'colormap'};
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-	
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next    if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $par{'gapcolor'};
-	    next;
-	}
-	
-	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $par{'colormap'});
-	
-	if (@tmp) {
-	    if ($par{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $par{'symcolor'};
-	}
-    }
-
-    $self->{'display'}->{'paint'}  = 1;
-    $self;
-}
-
-
-###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align;
 
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align);
-
-#the 0 here says don't override any colormap of the same name, to
-#allow earler loaded user definitions priority - crude, but it'll do.
-Bio::MView::Align::load_colormaps(\*DATA, 0);
 
 #use our own Align subclass instead of the generic one
 sub rebless_align_rows {
@@ -231,6 +169,68 @@ sub color_by_type {
 	    next;
 	}
     }
+    $self;
+}
+
+
+###########################################################################
+package Bio::MView::Build::Format::JNETZ::Align::Sequence;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Align::Sequence);
+
+#the 0 here says don't override any colormap of the same name, to
+#allow earler loaded user definitions priority - crude, but it'll do.
+Bio::MView::Align::load_colormaps(\*DATA, 0);
+
+sub color_row {
+    my $self = shift;
+    my %par = @_;
+
+    $par{'css1'}     = 0
+	unless defined $par{'css1'};
+    $par{'symcolor'} = $Bio::MView::Align::Row::Colour_Black
+	unless defined $par{'symcolor'};
+    $par{'gapcolor'} = $Bio::MView::Align::Row::Colour_Black
+	unless defined $par{'gapcolor'};
+    $par{'colormap'} = $Bio::MView::Align::Sequence::Default_Colormap
+	unless defined $par{'colormap'};
+
+    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $par{'symcolor'};
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+	$c = $self->{'string'}->raw($i);
+	
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next    if $self->{'string'}->is_space($c);
+
+	#gap: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $par{'gapcolor'};
+	    next;
+	}
+	
+	#use symbol color/wildcard colour
+	@tmp = $self->get_color($c, $par{'colormap'});
+	
+	if (@tmp) {
+	    if ($par{'css1'}) {
+		push @$color, $i, 'class' => $tmp[1];
+	    } else {
+		push @$color, $i, 'color' => $tmp[0];
+	    }
+	} else {
+	    push @$color, $i, 'color' => $par{'symcolor'};
+	}
+    }
+
+    $self->{'display'}->{'paint'}  = 1;
     $self;
 }
 

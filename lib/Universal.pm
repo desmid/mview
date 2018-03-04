@@ -20,9 +20,9 @@ sub member {
 #pretty-print object contents by given ordered keys, or all sorted
 sub dump_object {
     my $self = shift;
-    my @keys = @_ ? @_ : sort keys %$self;
-    print STDERR "Class $self\n";
-    foreach my $k (@keys) {
+    print STDERR "Class: $self\n";
+    @_ = sort keys %$self  unless @_;
+    foreach my $k (@_) {
         printf STDERR "%16s => %s\n", $k,
             defined $self->{$k} ? $self->{$k} : '';
     }
@@ -32,9 +32,9 @@ sub dump_object {
 #pretty-print hash contents by given ordered keys, or all sorted
 sub dump_hash {
     my $hash = shift;
-    my @keys = @_ ? @_ : sort keys %$hash;
     print STDERR "HASH: $hash\n";
-    foreach my $k (@keys) {
+    @_ = sort keys %$hash  unless @_;
+    foreach my $k (@_) {
         printf STDERR "%16s => %s\n", $k,
             defined $hash->{$k} ? $hash->{$k} : '';
     }

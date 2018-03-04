@@ -65,8 +65,7 @@ sub parse {
 
     while (defined ($bld = $self->next)) {
 
-        #$bld->initialise($PAR->{'p'});   #NIGE HACK: move $PAR inwards
-        $bld->reset;  #NIGE renamed;
+        $bld->reset;  #NIGE renamed
 
         while (defined ($aln = $bld->next)) {
 

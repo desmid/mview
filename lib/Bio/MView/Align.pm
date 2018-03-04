@@ -891,7 +891,7 @@ sub color_by_find_block {
     my $mapsize = get_colormap_length($par{'colormap'});
     my @patterns = split($BLOCKSEPARATOR, $par{find});
     if (@patterns > $mapsize) {
-	warn "recycling colormap '$par{colormap}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
+	warn "recycling colormap '$par{'colormap'}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
     }
     push @_, 'mapsize'  => $mapsize;
     push @_, 'patterns' => [@patterns];

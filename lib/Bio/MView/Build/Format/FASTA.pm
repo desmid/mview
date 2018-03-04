@@ -56,7 +56,6 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    #$self->initialise_parameters;  #NIGE
     $self->initialise;
 
     $self;
