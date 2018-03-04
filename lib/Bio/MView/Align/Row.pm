@@ -23,11 +23,10 @@ $Colour_Comment                 = '#aa6666';  #brown
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub print {
+sub dump {
     my $self = shift;
-    local $_;
-    foreach (sort keys %$self) {
-	printf "%15s => %s\n", $_, $self->{$_};
+    foreach my $k (sort keys %$self) {
+	printf "%15s => %s\n", $k, $self->{$k};
     }
     $self;
 }
@@ -35,7 +34,7 @@ sub print {
 sub set_display {
     my $self = shift;
     my ($key, $val, @tmp, %tmp);
-    #$self->print;
+    #$self->dump;
     while ($key = shift @_) {
 
 	$val = shift @_;

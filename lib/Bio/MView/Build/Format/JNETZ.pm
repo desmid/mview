@@ -1,8 +1,9 @@
-# Copyright (C) 1998-2017 Nigel P. Brown
+# Copyright (C) 1998-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Align;
 
 use strict;
@@ -20,40 +21,42 @@ sub parse {
     return  unless defined $self->{scheduler}->next;
 
     $aln = $self->{'entry'}->parse(qw(ALIGNMENT));
-    
-    $rank++; $id  = 'res';
-    last  if $self->topn_done($rank);
-    next  if $self->skip_row($rank, $rank, $id);
-    $seq = $aln->get_query;
-    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-    #no special subtype: use default
-    push @hit, $row;
 
-    $rank++; $id  = 'align';
-    last  if $self->topn_done($rank);
-    next  if $self->skip_row($rank, $rank, $id);
-    $seq = $aln->get_align;
-    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-    $row->set_subtype('jnet.pred');    #override the default
-    push @hit, $row;
+    my $i = 1; while ($i--) {
+        $rank++; $id  = 'res';
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
+        $seq = $aln->get_query;
+        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
+        #no special subtype: use default
+        push @hit, $row;
 
-    $rank++; $id  = 'conf';
-    last  if $self->topn_done($rank);
-    next  if $self->skip_row($rank, $rank, $id);
-    $seq = $aln->get_conf;
-    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-    $row->set_subtype('jnet.conf');    #override the default
-    push @hit, $row;
+        $rank++; $id  = 'align';
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
+        $seq = $aln->get_align;
+        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
+        $row->set_subtype('jnet.pred'); #override the default
+        push @hit, $row;
 
-    $rank++; $id  = 'final';
-    last  if $self->topn_done($rank);
-    next  if $self->skip_row($rank, $rank, $id);
-    $seq = $aln->get_final;
-    $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-    $row->set_subtype('jnet.pred');    #override the default
-    push @hit, $row;
+        $rank++; $id  = 'conf';
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
+        $seq = $aln->get_conf;
+        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
+        $row->set_subtype('jnet.conf'); #override the default
+        push @hit, $row;
 
-    #map { $_->print } @hit;
+        $rank++; $id  = 'final';
+        last  if $self->topn_done($rank);
+        next  if $self->skip_row($rank, $rank, $id);
+        $seq = $aln->get_final;
+        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
+        $row->set_subtype('jnet.pred'); #override the default
+        push @hit, $row;
+    }
+
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(ALIGNMENT));
@@ -61,31 +64,28 @@ sub parse {
     return \@hit;
 }
 
-#return list of parameters (key, val) pairs special to this parse
-sub change_parameters {
-    my $self = shift;
-    my %opt = ();
-    $opt{'label0'} = 0;    #don't report rank
-    $opt{'label4'} = 0;    #don't report %coverage
-    $opt{'label5'} = 0;    #don't report %identity
-    $opt{'label6'} = 0;    #don't report sequence positions
-    %opt;
-}
-
-#use our own Align subclass instead of the generic one
-sub change_alignment_type {
+#override: use our own Align subclass instead of the generic one;
+#set temporary parameters
+sub change_alignment_settings {
     my ($self, $aln) = @_;
     bless $aln, 'Bio::MView::Build::Format::JNETZ::Align';
     $aln->rebless_align_rows;
+
+    #set parameters for this specific parse
+    $self->{'label0'} = $PAR->set('label0', 0);  #don't report rank
+    $self->{'label4'} = $PAR->set('label4', 0);  #don't report %coverage
+    $self->{'label5'} = $PAR->set('label5', 0);  #don't report %identity
+    $self->{'label6'} = $PAR->set('label6', 0);  #don't report sequence pos
+    $self->{'label7'} = $PAR->set('label7', 0);  #don't report sequence pos
+
     $self;
 }
 
 #construct a header string describing this alignment
 sub header {
     my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s    if $quiet;
-    Bio::MView::Display::displaytext($s);
+    return ''  if $quiet;
+    Bio::MView::Display::displaytext('');
 }
 
 
@@ -123,7 +123,7 @@ sub color_row {
 	unless defined $par{'colormap'};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-    
+
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
@@ -154,7 +154,7 @@ sub color_row {
 	    push @$color, $i, 'color' => $par{'symcolor'};
 	}
     }
-    
+
     $self->{'display'}->{'paint'}  = 1;
     $self;
 }
@@ -170,16 +170,13 @@ use vars qw(@ISA);
 #the 0 here says don't override any colormap of the same name, to
 #allow earler loaded user definitions priority - crude, but it'll do.
 Bio::MView::Align::load_colormaps(\*DATA, 0);
-#print Bio::MView::Align::list_colormaps(0);
 
 #use our own Align subclass instead of the generic one
 sub rebless_align_rows {
     my $self = shift;
-    my $i;
-    for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	bless $self->{'index2row'}->[$i], 
-	    'Bio::MView::Build::Format::JNETZ::Align::Sequence';
+    foreach my $row (@{$self->{'index2row'}}) {
+	next  unless defined $row;
+	bless $row, 'Bio::MView::Build::Format::JNETZ::Align::Sequence';
     }
     $self;
 }
@@ -187,8 +184,8 @@ sub rebless_align_rows {
 #change the header text
 sub header {
     my ($self, $quiet) = (@_, 0);
+    return ''  if $quiet;
     my $s = '';
-    return $s    if $quiet;
     $s .= "Residues colored by:  property\n";
     $s .= "Structure colored by: type\n";
     Bio::MView::Display::displaytext($s);
@@ -199,15 +196,14 @@ sub set_color_scheme {
     my $self = shift;
 
     $self->set_parameters(@_);
-    
-    return $self    if $self->{'coloring'} eq 'none';
+
+    return $self  if $self->{'coloring'} eq 'none';
 
     $self->color_by_type('colormap'  => $self->{'colormap'},
 			 'symcolor'  => $self->{'symcolor'},
 			 'gapcolor'  => $self->{'gapcolor'},
 			 'css1'      => $self->{'css1'},
 			);
-
     $self;
 }
 
@@ -215,25 +211,23 @@ sub set_color_scheme {
 sub color_by_type {
     my $self = shift;
     my $i;
-    
-    for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
-	next unless defined $self->{'index2row'}->[$i];
-	next if exists $self->{'nopshash'}->{$self->{'index2row'}->[$i]->id};
-	next if exists $self->{'hidehash'}->{$self->{'index2row'}->[$i]->id};
+
+    foreach my $row (@{$self->{'index2row'}}) {
+	next  unless defined $row;
 	
-	if ($self->{'index2row'}->[$i]->{'type'} eq 'sequence') {
+	if ($row->{'type'} eq 'sequence') {
 	    #sequence row: use default sequence colours but switch off css
-	    $self->{'index2row'}->[$i]->color_row(@_, 'css1'=> 0);
+	    $row->color_row(@_, 'css1'=> 0);
 	    next;
 	}
-	if ($self->{'index2row'}->[$i]->{'type'} eq 'jnet.pred') {
+	if ($row->{'type'} eq 'jnet.pred') {
 	    #structure row: use our colours
-	    $self->{'index2row'}->[$i]->color_row(@_,'colormap'=> 'JNET.PRED');
+	    $row->color_row(@_,'colormap'=> 'JNET.PRED');
 	    next;
 	}
-	if ($self->{'index2row'}->[$i]->{'type'} eq 'jnet.conf') {
+	if ($row->{'type'} eq 'jnet.conf') {
 	    #confidence row: use our colours
-	    $self->{'index2row'}->[$i]->color_row(@_,'colormap'=> 'JNET.CONF');
+	    $row->color_row(@_,'colormap'=> 'JNET.CONF');
 	    next;
 	}
     }
@@ -262,6 +256,5 @@ Ll  =>  dark-green      #coil
 7   ->  gray12
 8   ->  gray14
 9   ->  gray15          #good
-
 
 ###########################################################################

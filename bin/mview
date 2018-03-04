@@ -165,7 +165,8 @@ sub mview {
 
     #Universal::vmstat("Manager constructor");
 
-    my $mgr = new Bio::MView::Manager($PROG, %$par);
+#NIGE
+    my $mgr = new Bio::MView::Manager;  #NIGE removed $PROG, %$par
 
     foreach my $file (@_) {
         warn("$PROG: file '$file' does not exist\n"),  next  unless -e $file;

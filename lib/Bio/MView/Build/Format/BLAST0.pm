@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Nigel P. Brown
+# Copyright (C) 2015-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -15,6 +15,7 @@ use lib '/home/brown/HOME/work/MView/dev/lib';
 
 package Bio::MView::Build::Format::BLAST0;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Format::BLAST;
 
 use strict;
@@ -34,9 +35,10 @@ sub subheader {
     my ($self, $quiet) = (@_, 0);
     my $s = '';
     return $s  if $quiet;
-    if ($self->{'hsp'} eq 'all') {
+    my $mode = $PAR->get('hsp');
+    if ($mode eq 'all') {
 	$s .= "HSP processing: all\n";
-    } elsif ($self->{'hsp'} eq 'discrete') {
+    } elsif ($mode eq 'discrete') {
 	$s .= "HSP processing: discrete\n";
     } else {
 	$s .= "HSP processing: ranked\n";
@@ -118,13 +120,14 @@ sub parse {
 	$coll->insert($self->record($rank, undef, undef, $hit), $key1);
     }
 
-    if ($self->{'hsp'} eq 'all') {
+    my $mode = $PAR->get('hsp');
+    if ($mode eq 'all') {
         $self->parse_all_hits($coll, $search);
 
-    } elsif ($self->{'hsp'} eq 'ranked') {
+    } elsif ($mode eq 'ranked') {
         $self->parse_ranked_hits($coll, $search);
 
-    } elsif ($self->{'hsp'} eq 'discrete') {
+    } elsif ($mode eq 'discrete') {
         $self->parse_discrete_hits($coll, $search);
     }
 
@@ -159,7 +162,7 @@ sub parse_ranked_hits {
             next  if $self->skip_hsp($aln);
 
 	    #for gapped alignments: keep sbjct sequence insertions?
-            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
+            my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -220,7 +223,7 @@ sub parse_discrete_hits {
 	    }
 
 	    #for gapped alignments: keep sbjct sequence insertions?
-            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
+            my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -280,7 +283,7 @@ sub parse_blastpx_all_hits {
 	    $n++;
 
 	    #for gapped alignments: keep sbjct sequence insertions?
-            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
+            my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
@@ -351,7 +354,7 @@ sub parse_tblastnx_all_hits {
             }
 
 	    #for gapped alignments: keep sbjct sequence insertions?
-            my $uncut = ($self->{'keepinserts'} ? $aln->{'sbjct'} : '');
+            my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(

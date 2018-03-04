@@ -1,8 +1,9 @@
-# Copyright (C) 1998-2015 Nigel P. Brown
+# Copyright (C) 1998-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Format::MULTAS;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Align;
 
 use strict;
@@ -19,11 +20,8 @@ my %Known_Parameters =
      'block'      => [ [],     undef   ],
     );
 
-#tell the parent
-sub known_parameters { \%Known_Parameters }
-
 #called by the constructor
-sub initialise_child {
+sub initialise {
     my $self = shift;
 
     #MULTAL/MULTAS ordinal block number: counted 1..N whereas the actual
@@ -43,8 +41,8 @@ sub initialise_child {
 #called on each iteration
 sub reset_child {
     my $self = shift;
-    #warn "reset_child [@{$self->{'block'}}]\n";
-    $self->{scheduler}->filter($self->{'block'});
+    #warn "reset_child [@{$PAR->get('block')}]\n";
+    $self->{scheduler}->filter($PAR->get('block'));
     $self;
 }
 
@@ -91,7 +89,7 @@ sub parse {
 	push @hit, new Bio::MView::Build::Row::MULTAS($rank+1, $id, $desc,
                                                       $seq);
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(BLOCK));

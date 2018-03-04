@@ -3,6 +3,7 @@
 ######################################################################
 package Bio::MView::Manager;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Build;
 use Bio::MView::Convert;
@@ -11,135 +12,31 @@ use Bio::MView::SRS qw(srsLink);
 
 use strict;
 
-my %Template =
-    (
-     'acount'        => undef,
-     'file'          => undef,
-     'format'        => undef,
-     'stream'        => undef,
-     'filter'        => undef,
-     'class'         => undef,
-     'display'       => undef,
-     'html'          => undef,
-     'linkcolor'     => undef,
-     'alinkcolor'    => undef,
-     'vlinkcolor'    => undef,
-     'register'      => undef,
-     'quiet'         => undef,
-     'noparse'       => undef,
-     'bp'            => undef,
-     'ap'            => undef,
-     #misc options
-     'in'            => undef,
-     'title'         => undef,
-     'help'          => undef,
-     'srs'           => undef,
-     'verbose'       => undef,
-     'colorfile'     => undef,
-     'groupfile'     => undef,
-     'listcolors'    => undef,
-     'listcss'       => undef,
-     'listgroups'    => undef,
-     'pagecolor'     => undef,
-     'textcolor'     => undef,
-    );
-
-my %Template_Build_Param =
-    (
-     'topn'          => undef,
-     'minident'      => undef,
-     'maxident'      => undef,
-     'pcid'          => undef,
-     'mode'          => undef,
-     'ref_id'        => undef,
-     'keeplist'      => undef,
-     'skiplist'      => undef,
-     'nopslist'      => undef,
-     'range'         => undef,
-     'gap'           => undef,
-     'moltype'       => undef,
-     'keepinserts'   => undef,
-     		     
-     'ruler'         => undef,
-     'alignment'     => undef,
-     'consensus'     => undef,
-     'conservation'  => undef,
-   		     
-     'maxpval'       => undef,
-     'maxeval'       => undef,
-     'minbits'       => undef,
-     'minscore'      => undef,
-     'minopt'        => undef,
-     'hsp'           => undef,
-     		     
-     'cycle'         => undef,
-     'strand'        => undef,
-     'chain'         => undef,
-     'block'         => undef,
-
-     'showpcid'      => undef,
-    );
-
-my %Template_Align_Param =
-    (
-     'aln_coloring'  => undef,
-     'aln_colormap'  => undef,
-     'aln_groupmap'  => undef,
-     'aln_threshold' => undef,
-     'aln_ignore'    => undef,
-  		     
-     'con_coloring'  => undef,
-     'con_colormap'  => undef,
-     'con_groupmap'  => undef,
-     'con_threshold' => undef,
-     'con_ignore'    => undef,
-     'con_gaps'      => undef,
-		     
-     'fnd_colormap'  => undef,
-
-     'css1'          => undef,
-     'alncolor'      => undef,
-     'labcolor'      => undef,
-     'symcolor'      => undef,
-     'gapcolor'      => undef,
-     'bold'          => undef,
-     'width'         => undef,
-     'label0'        => undef,
-     'label1'        => undef,
-     'label2'        => undef,
-     'label3'        => undef,
-     'label4'        => undef,
-     'label5'        => undef,
-     'label6'        => undef,
-     'label7'        => undef,
-
-     'find'          => undef,
-    );
-
 sub new {
     my $type = shift;
-    my $self = { %Template };
+    my $self = {};
     bless $self, $type;
-    $self->{'prog'}    = shift;  #program name
-    $self->{'acount'}  = 0;      #alignment count 
+
+    $self->{'acount'}  = 0;
     $self->{'display'} = [];
-    $self->set_parameters(@_);
+    $self->{'file'}    = undef;
+    $self->{'format'}  = undef;
+    $self->{'stream'}  = undef;
+    $self->{'filter'}  = undef;
+    $self->{'class'}   = undef;
+    $self->{'quiet'}   = undef;
+    $self->{'noparse'} = undef;
+
     $self;
 }
 
 sub alignment_count { $_[0]->{'acount'} }
 
-sub report {
-    my $self = shift; warn $self->{prog}, ": ", @_;
-}
-
-#Called with the desired format to be parsed: either a string 'X' naming a 
+#Called with the desired format to be parsed: either a string 'X' naming a
 #Parse::Format::X or a hint which will be recognised by that class.
 sub parse {
     my ($self, $file, $format) = (shift, shift, shift);
     my ($library, $tmp, $bld, $aln, $dis, $header1, $header2, $header3, $loop);
-
-    $self->set_parameters(@_);
 
     #load a parser for the desired format
     $tmp = "Bio::MView::Build::Format::$format";
@@ -163,38 +60,39 @@ sub parse {
     return undef  unless defined $self->{'stream'};
 
     ($loop, $header1, $header2, $header3) = (0, '', '', '');
-    
+
     #$header1 = $self->header($self->{'quiet'});
 
     while (defined ($bld = $self->next)) {
 
-        $bld->initialise($self->{'bp'});
+        #$bld->initialise($PAR->{'p'});   #NIGE HACK: move $PAR inwards
+        $bld->reset;  #NIGE renamed;
 
         while (defined ($aln = $bld->next)) {
 
 	    if ($aln < 1) {  #null alignment
-		#$self->report("empty alignment\n");
+                #warn $PAR->get('prog') . ": empty alignment\n";
 		next;
 	    }
 
 	    $self->{'acount'}++;
 
-            if ($self->{'bp'}->{'mode'} ne 'new') {
+            if ($PAR->get('mode') ne 'new') {
                 my $conv = new Bio::MView::Convert($bld, $aln,
-                                                   $self->{'bp'}->{'moltype'});
+                                                   $PAR->get('moltype'));
                 my $s;
 
-                $s = $conv->plain    if $self->{'bp'}->{'mode'} eq 'plain';
-                $s = $conv->pearson  if $self->{'bp'}->{'mode'} eq 'pearson';
-                $s = $conv->pir      if $self->{'bp'}->{'mode'} eq 'pir';
-                $s = $conv->clustal  if $self->{'bp'}->{'mode'} eq 'clustal';
-                $s = $conv->msf      if $self->{'bp'}->{'mode'} eq 'msf';
-                $s = $conv->rdb      if $self->{'bp'}->{'mode'} eq 'rdb';
+                $s = $conv->plain    if $PAR->get('mode') eq 'plain';
+                $s = $conv->pearson  if $PAR->get('mode') eq 'pearson';
+                $s = $conv->pir      if $PAR->get('mode') eq 'pir';
+                $s = $conv->clustal  if $PAR->get('mode') eq 'clustal';
+                $s = $conv->msf      if $PAR->get('mode') eq 'msf';
+                $s = $conv->rdb      if $PAR->get('mode') eq 'rdb';
 
                 print $$s  if defined $s;
                 next;
             }
-    
+
             $dis = $self->add_display($bld, $aln);
 
 	    if ($loop++ < 1) {
@@ -206,7 +104,7 @@ sub parse {
 	    push @{$self->{'display'}}, [ $dis, $header1, $header2, $header3 ];
 
 	    #display item now?
-	    unless ($self->{'register'}) {
+	    unless ($PAR->get('register')) {
 		$self->print;
 		@{$self->{'display'}} = ();  #garbage collect
 		#Universal::vmstat("print done (Manager)");
@@ -224,44 +122,7 @@ sub parse {
     $self;
 }
 
-sub set_parameters {
-    my $self = shift;
-    my ($key, $val);
-    while (@_) {
-        ($key, $val) = (shift, shift);
-	#warn (defined $val ? "($key, $val)\n" : "($key, undef)\n");
-        if (exists $Template{$key}) {
-            $self->{$key} = $val;
-            next;
-        }
-        if (exists $Template_Build_Param{$key}) {
-            $self->{'bp'}->{$key} = $val;
-            next;
-        }
-        if (exists $Template_Align_Param{$key}) {
-            $self->{'ap'}->{$key} = $val;
-            next;
-        }
-        warn "Bio::MView::Manager: unknown parameter '$key'\n";
-    }
-    #hack to share certain state
-    if (exists $self->{'ap'}->{'label5'}) {
-	$self->{'bp'}->{'showpcid'} = $self->{'ap'}->{'label5'};
-    }
-    $self;
-}
-
-sub dump_parameters {
-    my $self = shift;
-    my $s = "Bio::MView::Manager:\n";
-    foreach my $k (sort keys %$self) {
-        my $v = defined $self->{$k} ? $self->{$k} :'undef';
-        $s .= "$k => $v\n";
-    }
-    return $s;
-}
-
-#return next entry worth of parse data as in a Bio::MView::Build object 
+#return next entry worth of parse data as in a Bio::MView::Build object
 #ready for parsing, or undef if no more data.
 sub next {
     my $self = shift;
@@ -288,15 +149,14 @@ sub next {
 #construct a header string describing this alignment
 sub header {
     my ($self, $quiet) = (@_, 0);
-    my $s = '';
-    return $s    if $quiet;
-    $s .= "File: $self->{'file'}  Format: $self->{'format'}\n";
+    return ''  if $quiet;
+    my $s = "File: $self->{'file'}  Format: $self->{'format'}\n";
     Bio::MView::Display::displaytext($s);
 }
 
 sub gc_flag {
-    return 0  if $_[0]->{'bp'}->{'consensus'};
-    return 0  if $_[0]->{'bp'}->{'conservation'};
+    return 0  if $PAR->get('consensus');
+    return 0  if $PAR->get('conservation');
     1;
 }
 
@@ -304,8 +164,8 @@ sub add_display {
     my ($self, $bld, $aln) = @_;
     my ($dis, $tmp);
 
-    my $ref    = $bld->get_row_id($self->{'bp'}->{'ref_id'});
-    my $refobj = $bld->get_row($self->{'bp'}->{'ref_id'});
+    my $ref    = $bld->get_row_id($PAR->get('ref_id'));
+    my $refobj = $bld->get_row($PAR->get('ref_id'));
 
     #collect all the column labels
     $self->{'labelwidths'} = [ $refobj->display_column_widths ];
@@ -313,42 +173,38 @@ sub add_display {
     #allow the Build instance to override the normal parameter
     #settings and to substitute specialised handlers for
     #'peculiar' alignments, eg., sequence versus secondary structure.
-    $self->set_parameters($bld->change_parameters());
-    $bld->change_alignment_type($aln);
+    $bld->change_alignment_settings($aln);
 
     #Universal::vmstat("display constructor");
     $dis = new Bio::MView::Display($aln->init_display);
     #Universal::vmstat("display constructor DONE");
-    
+
     #attach a ruler? (may include header text)
-    if ($self->{'bp'}->{'ruler'}) {
+    if ($PAR->get('ruler')) {
         $tmp = $aln->build_ruler($refobj);
 	$tmp->append_display($dis);
         #Universal::vmstat("ruler added");
     }
 
-    #warn $self->dump_parameters();
-
     #attach the alignment
-    #if ($self->{'bp'}->{'alignment'} && $self->{'html'}) {
-    if ($self->{'bp'}->{'alignment'}) {
-        if ($self->{'html'}) {
+    if ($PAR->get('alignment')) {
+        if ($PAR->get('html')) {
             $aln->set_color_scheme
                 (
                  'ref_id'      => $ref,
-                 'coloring'    => $self->{'ap'}->{'aln_coloring'},
-                 'colormap'    => $self->{'ap'}->{'aln_colormap'},
-                 'colormapf'   => $self->{'ap'}->{'fnd_colormap'},
-                 'group'       => $self->{'ap'}->{'aln_groupmap'},
-                 'threshold'   => $self->{'ap'}->{'aln_threshold'},
-                 'ignore'      => $self->{'ap'}->{'aln_ignore'},
-                 'con_gaps'    => $self->{'ap'}->{'con_gaps'},
-                 'css1'        => $self->{'ap'}->{'css1'},
-                 'alncolor'    => $self->{'ap'}->{'alncolor'},
-                 'labcolor'    => $self->{'ap'}->{'labcolor'},
-                 'symcolor'    => $self->{'ap'}->{'symcolor'},
-                 'gapcolor'    => $self->{'ap'}->{'gapcolor'},
-                 'find'        => $self->{'ap'}->{'find'},
+                 'coloring'    => $PAR->get('aln_coloring'),
+                 'colormap'    => $PAR->get('aln_colormap'),
+                 'colormapf'   => $PAR->get('fnd_colormap'),
+                 'group'       => $PAR->get('aln_groupmap'),
+                 'threshold'   => $PAR->get('aln_threshold'),
+                 'ignore'      => $PAR->get('aln_ignore'),
+                 'con_gaps'    => $PAR->get('con_gaps'),
+                 'css1'        => $PAR->get('css1'),
+                 'alncolor'    => $PAR->get('alncolor'),
+                 'labcolor'    => $PAR->get('labcolor'),
+                 'symcolor'    => $PAR->get('symcolor'),
+                 'gapcolor'    => $PAR->get('gapcolor'),
+                 'find'        => $PAR->get('find'),
                 );
         }
         #Universal::vmstat("set_color_scheme done");
@@ -357,30 +213,30 @@ sub add_display {
     }
 
     #attach conservation line?
-    if ($self->{'bp'}->{'conservation'}) {
-	$tmp = $aln->build_conservation_row($self->{'bp'}->{'moltype'});
+    if ($PAR->get('conservation')) {
+	$tmp = $aln->build_conservation_row($PAR->get('moltype'));
 	$tmp->append_display($dis);
         #Universal::vmstat("conservation added");
     }
 
     #attach consensus alignments?
-    if ($self->{'bp'}->{'consensus'}) {
+    if ($PAR->get('consensus')) {
 	$tmp = $aln->build_consensus_rows(
-                                          $self->{'ap'}->{'con_groupmap'},
-                                          $self->{'ap'}->{'con_threshold'},
-                                          $self->{'ap'}->{'con_ignore'},
-                                          $self->{'ap'}->{'con_gaps'},
+                                          $PAR->get('con_groupmap'),
+                                          $PAR->get('con_threshold'),
+                                          $PAR->get('con_ignore'),
+                                          $PAR->get('con_gaps'),
                                          );
 
         $tmp->set_consensus_color_scheme(
                                $aln, $ref,
-			       'coloringc' => $self->{'ap'}->{'con_coloring'},
-                               'colormap'  => $self->{'ap'}->{'aln_colormap'},
-                               'colormapc' => $self->{'ap'}->{'con_colormap'},
-                               'group'     => $self->{'ap'}->{'con_groupmap'},
-                               'threshold' => $self->{'ap'}->{'con_threshold'},
-                               'ignore'    => $self->{'ap'}->{'con_ignore'},
-			       'css1'      => $self->{'ap'}->{'css1'},
+			       'coloringc' => $PAR->get('con_coloring'),
+                               'colormap'  => $PAR->get('aln_colormap'),
+                               'colormapc' => $PAR->get('con_colormap'),
+                               'group'     => $PAR->get('con_groupmap'),
+                               'threshold' => $PAR->get('con_threshold'),
+                               'ignore'    => $PAR->get('con_ignore'),
+			       'css1'      => $PAR->get('css1'),
                               );
 	$tmp->append_display($dis);
         #Universal::vmstat("consensi added");
@@ -395,19 +251,15 @@ sub add_display {
 }
 
 #wrapper functions
-
 sub check_input_file {
     my $file = shift;
     return Bio::MView::Option::Arguments::check_informat($file, 'file');
 }
-
 sub dump_colormaps { Bio::MView::Align::dump_colormaps(@_) }
 sub dump_groupmaps { Bio::MView::Align::Consensus::dump_groupmaps(@_) }
 sub dump_css       { Bio::MView::Align::dump_css1_colormaps(@_) }
-
 sub load_colormaps { Bio::MView::Align::load_colormaps(@_) }
 sub load_groupmaps { Bio::MView::Align::Consensus::load_groupmaps(@_) }
-
 #sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 
 sub print {
@@ -477,21 +329,21 @@ sub print {
     #output
     while ($_ = shift @{$self->{'display'}}) {
 	#Universal::vmstat("display");
-	if ($self->{'html'}) {
+	if ($PAR->get('html')) {
             my $s = "style=\"border:0px;";
 	    #body tag
-	    if (! $self->{'ap'}->{'css1'}) {
+	    if (! $PAR->get('css1')) {
                 #supported in HTML 4.01:
-		$s .= " background-color:$self->{'ap'}->{'alncolor'};"
-		    if defined $self->{'ap'}->{'alncolor'};
-		$s .= " color:$self->{'ap'}->{'labcolor'};"
-		    if defined $self->{'ap'}->{'labcolor'};
-		$s .= " a:link:$self->{'linkcolor'};"
-		    if defined $self->{'linkcolor'};
-		$s .= " a:active:$self->{'alinkcolor'};"
-		    if defined $self->{'alinkcolor'};
-		$s .= " a:visited:$self->{'vlinkcolor'};"
-		    if defined $self->{'vlinkcolor'};
+		$s .= " background-color:" . $PAR->get('alncolor') . ";"
+		    if defined $PAR->get('alncolor');
+		$s .= " color:"            . $PAR->get('labcolor') . ";"
+		    if defined $PAR->get('labcolor');
+		$s .= " a:link:"           . $PAR->get('linkcolor')  . ";"
+		    if defined $PAR->get('linkcolor');
+		$s .= " a:active:"         . $PAR->get('alinkcolor') . ";"
+		    if defined $PAR->get('alinkcolor');
+		$s .= " a:visited:"        . $PAR->get('vlinkcolor') . ";"
+		    if defined $PAR->get('vlinkcolor');
             }
             $s .= "\"";
 	    print $stm "<P>\n"  unless $first;
@@ -520,17 +372,17 @@ sub print {
 	#alignment
 	$_->[0]->display(
 			 'stream'    => $stm,
-			 'html'      => $self->{'html'},
-			 'bold'      => $self->{'ap'}->{'bold'},
-			 'col'       => $self->{'ap'}->{'width'},
-			 'label0'    => $self->{'ap'}->{'label0'},
-			 'label1'    => $self->{'ap'}->{'label1'},
-			 'label2'    => $self->{'ap'}->{'label2'},
-			 'label3'    => $self->{'ap'}->{'label3'},
-			 'label4'    => $self->{'ap'}->{'label4'},
-			 'label5'    => $self->{'ap'}->{'label5'},
-			 'label6'    => $self->{'ap'}->{'label6'},
-			 'label7'    => $self->{'ap'}->{'label7'},
+			 'html'      => $PAR->get('html'),
+			 'bold'      => $PAR->get('bold'),
+			 'col'       => $PAR->get('width'),
+			 'label0'    => $PAR->get('label0'),
+			 'label1'    => $PAR->get('label1'),
+			 'label2'    => $PAR->get('label2'),
+			 'label3'    => $PAR->get('label3'),
+			 'label4'    => $PAR->get('label4'),
+			 'label5'    => $PAR->get('label5'),
+			 'label6'    => $PAR->get('label6'),
+			 'label7'    => $PAR->get('label7'),
 			 'posnwidth' => $self->{'posnwidth'},
 			 'labwidth0' => $self->{'labwidth0'},
 			 'labwidth1' => $self->{'labwidth1'},
@@ -541,7 +393,7 @@ sub print {
 			 'labwidth6' => $self->{'labwidth6'},
 			 'labwidth7' => $self->{'labwidth7'},
 			);
-	if ($self->{'html'}) {
+	if ($PAR->get('html')) {
 	    #alignment end
 	    print $stm "</TD></TR>\n";
 	    print $stm "</TABLE>\n";

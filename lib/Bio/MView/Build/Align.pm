@@ -3,6 +3,7 @@
 ###########################################################################
 package Bio::MView::Build::Align;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build;
 
 use strict;
@@ -17,7 +18,7 @@ sub use_row {
     #warn "use_row($num, $nid, $sid)\n";
 
     #first, check explicit keeplist and reference row
-    foreach $pat (@{$self->{'keeplist'}}, $self->{'ref_id'}) {
+    foreach $pat (@{$self->{'keeplist'}}, $PAR->get('ref_id')) {
 
 	#Align subclass only
 	return 1  if $pat eq '0'     and $num == 1;
@@ -34,7 +35,7 @@ sub use_row {
     }
 
     #second, check skiplist and reference row
-    foreach $pat (@{$self->{'skiplist'}}, $self->{'ref_id'}) {
+    foreach $pat (@{$self->{'skiplist'}}, $PAR->get('ref_id')) {
 
 	#Align subclass only
 	return 0  if $pat eq '0'     and $num == 1;

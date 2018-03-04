@@ -257,7 +257,7 @@ use vars qw(@ISA);
 my $FASTMFS_SPACER = '\001' x 5;
 
 #called by the constructor
-sub initialise_child {
+sub initialise {
     my $self = shift;
 
     #schedule by query peptide tuple
@@ -418,7 +418,7 @@ sub parse {
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->print;
+	    #$aln->dump;
 
             my $peptup = makepeptup("$aln->{'query'}");
 
@@ -660,7 +660,7 @@ sub parse {
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->print;
+	    #$aln->dump;
 
 	    #for FASTA gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},

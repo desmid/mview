@@ -9,9 +9,6 @@ use strict;
 use vars qw($Header $Groups $Options);
 
 ###########################################################################
-sub get_default_gap { Bio::MView::Build::get_default_gap }
-
-###########################################################################
 $Header = "usage: <PROG> [options] [file...]
 
 Option names and parameter values can generally be abbreviated. Alternative
@@ -353,7 +350,7 @@ $Options = [
                 'option'  => "gap",
                 'usage'   => "Use this gap character",
                 'type'    => "char",
-                'default' => get_default_gap,
+                'default' => '-',
             },
 
             {

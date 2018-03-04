@@ -210,13 +210,12 @@ sub append {
     $self;
 }
 
-sub print {
+sub dump {
     my $self = shift;
-    local $_;
-    foreach (sort keys %$self) {
-	printf "%15s => %s\n", $_, $self->{$_};
+    foreach my $k (sort keys %$self) {
+	printf "%15s => %s\n", $k, $self->{$k};
     }
-    map { $_->print } @{$self->{'object'}};
+    map { $_->dump } @{$self->{'object'}};
     $self;
 }
 

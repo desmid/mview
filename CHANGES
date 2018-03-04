@@ -2,9 +2,10 @@
 
 Branch: param
 
-- rewrite option parsing mechanism
-- fix undefined variable warnings with '-groupfile' option
+- rewrite option parsing mechanism.
+- fix undefined variable warnings with '-groupfile' option.
 - change '-width flat' to '-width full'.
+- fix JNETZ warnings.
 
 Version 1.62  2017-08-06
 

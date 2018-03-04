@@ -14,22 +14,19 @@ $Palette      = [{},[]];     #static color palette
 $Map_Text     = '';          #used as special index
 $Wildcard_Key = '.';         #key for default colouring
 
-my $BLOCKSEPARATOR = ':';   #for block search patterns
+my $BLOCKSEPARATOR = ':';    #for block search patterns
 
-my %Template = 
+my %Template =
     (
      'length'     => 0,     #alignment width
      'id2index'   => undef, #hash of identifiers giving row numbers
      'index2row'  => undef, #list of aligned rows, from zero
      'parent'     => undef, #identifier of parent sequence
      'cursor'     => -1,    #index2row iterator
-     'ref_id'     => undef, #identifier of reference row
      'tally'      => undef, #column tallies for consensus
-     'coloring'   => undef, #alignment coloring mode
-     'coloringc'  => undef, #consensus coloring mode
+
+     'ref_id'     => undef, #identifier of reference row
      'colormap'   => undef, #name of alignment colormap
-     'colormapc'  => undef, #name of consensus colormap
-     'colormapf'  => undef, #name of find colormap
      'group'      => undef, #consensus group name
      'ignore'     => undef, #ignore self/non-self classes
      'con_gaps'   => undef, #ignore gaps when computing consensus
@@ -39,13 +36,18 @@ my %Template =
      'alncolor'   => undef, #colour of alignment background
      'symcolor'   => undef, #default colour of alignment text
      'gapcolor'   => undef, #colour of alignment gap
+     'find'       => undef, #pattern to match in sequence
+
+     'coloring'   => undef, #alignment coloring mode
+     'coloringc'  => undef, #consensus coloring mode
+     'colormapc'  => undef, #name of consensus colormap
+     'colormapf'  => undef, #name of find colormap
      'old'        => {},    #previous settings of the above
      'nopshash'   => undef, #hash of id's to ignore for computations/colouring
      'hidehash'   => undef, #hash of id's to ignore for display
-     'find'       => undef, #pattern to match in sequence
     );
 
-my %Known_Parameter = 
+my %Known_Parameter =
     (
      'ref_id'     => [ '(\S+(?:\s*)?)+', undef ],
      'coloring'   => [ '\S+',     'none' ],
@@ -71,7 +73,6 @@ my %Known_Parameter =
 #static load the $Colormaps hash.
 eval { load_colormaps() }; if ($@) {$::COMPILE_ERROR=1; warn $@}
 
-
 sub new {
     my $type = shift;
     #warn "${type}::new() @_\n";
@@ -81,11 +82,11 @@ sub new {
     my ($obj, $aligned, $parent) = (@_, undef);
     my $i;
 
-    my %self = %Template;
+    my $self = { %Template };
 
-    $self{'id2index'}  = {};
-    $self{'index2row'} = [];
-    $self{'aligned'}  = $aligned;
+    $self->{'id2index'}  = {};
+    $self->{'index2row'} = [];
+    $self->{'aligned'}  = $aligned;
 
     #warn "Align: [$obj][$aligned]\n";
 
@@ -94,32 +95,34 @@ sub new {
 	if (defined $obj->[$i]) {
 	    #warn "[$i] ",  $obj->[$i]->id, " ", $obj->[$i]->string, "\n";
 
-	    $self{'id2index'}->{$obj->[$i]->id} = $i;
-	    $self{'index2row'}->[$i] = $obj->[$i];
+	    $self->{'id2index'}->{$obj->[$i]->id} = $i;
+	    $self->{'index2row'}->[$i] = $obj->[$i];
 
-	    $self{'length'} = $obj->[$i]->length  if $self{'length'} < 1;
+	    $self->{'length'} = $obj->[$i]->length  if $self->{'length'} < 1;
 
-	    if ($aligned and $obj->[$i]->length != $self{'length'}) {
+	    if ($aligned and $obj->[$i]->length != $self->{'length'}) {
 		#warn "[@{[$obj->[$i]->string]}]\n";
-		die "${type}::new() incompatible alignment lengths, row $i, expect $self{'length'}, got @{[$obj->[$i]->length]}\n";
+		die "${type}::new() incompatible alignment lengths, row $i, expect $self->{'length'}, got @{[$obj->[$i]->length]}\n";
 	    }
 	}
     }
 
     if (defined $parent) {
-	$self{'parent'} = $parent;
+	$self->{'parent'} = $parent;
     } else {
-	$self{'parent'} = $self{'index2row'}->[0];
-    } 
+	$self->{'parent'} = $self->{'index2row'}->[0];
+    }
 
-    my $self = bless \%self, $type;
+    bless $self, $type;
+
     $self->initialise_parameters;
+
     $self;
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub print {
+sub dump {
     sub _format {
 	my ($self, $k, $v) = @_;
 	$v = 'undef' unless defined $v;
@@ -130,7 +133,7 @@ sub print {
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
     foreach my $r (@{$self->{'index2row'}}) {
-	$r->print  if defined $r;
+	$r->dump  if defined $r;
     }
     warn "\n";
     $self;
@@ -151,10 +154,6 @@ sub initialise_parameters {
 	}
 	$self->{$k} = $p->{$k}->[1];
     }
-
-    $self->{'nopshash'} = {};
-    $self->{'hidehash'} = {};
-
     $self;
 }
 
@@ -207,16 +206,6 @@ sub get_parameters {
         push @tmp, $k, $self->{$k};
     }
     return @tmp;
-}
-
-sub dump_parameters {
-    my $self = shift;
-    my $s = "Bio::MView::Align:\n";
-    foreach my $k (sort keys %$self) {
-        my $v = defined $self->{$k} ? $self->{$k} :'undef';
-        $s .= "$k => $v\n";
-    }
-    return $s;
 }
 
 sub length { $_[0]->{'length'} }
@@ -397,13 +386,13 @@ sub dump_colormaps {
     for ($u=0; $u < @{$Palette->[1]}; $u++) {
 	$rgb = $Palette->[1]->[ $u ];
 	($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
-	$s .= sprintf("color %s%-20s%s : %-7s\n", 
+	$s .= sprintf("color %s%-20s%s : %-7s\n",
 		      $f1, $Palette->[0]->{$u}, $f2, $Palette->[1]->[$u]);
     }
 
     $s .= "\n\n$c1#Colormap listing - suitable for reloading.\n";
     $s .= "#Character matching is case-sensitive.$c2\n\n";
-    
+
     @_ = keys %$Colormaps  unless @_;
 
     foreach $map (sort @_) {
@@ -498,9 +487,9 @@ sub dump_css1_colormaps {
         unless exists $color{'symcolor'};
     $color{'gapcolor'} = $Known_Parameter{'gapcolor'}->[1]
         unless exists $color{'gapcolor'};
-    
+
     #warn "bg=$color{'alncolor'} fg=$color{'symcolor'}\n";
-    
+
     $s = "TD {font-family:Fixed,Courier,monospace; background-color:$color{'alncolor'}; color:$color{'labcolor'}}\n";
 
     for ($i=0; $i < @{$Palette->[1]}; $i++) {
@@ -521,7 +510,7 @@ sub dump_css1_colormaps {
 
 	#just look at the green component
 	if ($g > 200) {
-	    $fg = $Bio::MView::Align::Row::Colour_Black;	    
+	    $fg = $Bio::MView::Align::Row::Colour_Black;	
 	} else {
 	    $fg = $Bio::MView::Align::Row::Colour_White;
 	}
@@ -609,8 +598,9 @@ sub set_coverage {
 
 sub header {
     my ($self, $quiet) = (@_, 0);
+    return ''  if $quiet;
+
     my $s = '';
-    return $s    if $quiet;
 
     if ($self->{'coloring'} eq 'any') {
 	$s .= "Colored by: property";
@@ -646,8 +636,6 @@ sub set_color_scheme {
     my $self = shift;
 
     $self->set_parameters(@_);
-
-    #warn $self->dump_parameters();
 
     #user-defined colouring?
     $self->color_special('colormap'  => $self->{'colormap'},
@@ -731,8 +719,6 @@ sub set_consensus_color_scheme {
 
     $self->set_parameters(@_);
 
-    #warn $self->dump_parameters();
-
     if ($self->{'coloringc'} eq 'none') {
         ;
     }
@@ -798,7 +784,7 @@ sub color_none {
 #propagate colour scheme to row objects
 sub color_by_type {
     my $self = shift;
-    
+
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
@@ -846,7 +832,7 @@ sub color_by_consensus_sequence {
 
     #is there already a suitable tally?
     if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and 
+	(defined $self->{'old'}->{'group'} and
 	 $self->{'old'}->{'group'} ne $self->{'group'})) {
 	$self->compute_tallies($self->{'group'});
     }
@@ -874,7 +860,7 @@ sub color_by_consensus_group {
 
     #is there already a suitable tally?
     if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and 
+	(defined $self->{'old'}->{'group'} and
 	 $self->{'old'}->{'group'} ne $self->{'group'})) {
 
 	$self->compute_tallies($self->{'group'});
@@ -901,8 +887,6 @@ sub color_by_consensus_group {
 sub color_by_find_block {
     my $self = shift;
     my %par = @_;
-
-    #warn $self->dump_parameters();
 
     my $mapsize = get_colormap_length($par{'colormap'});
     my @patterns = split($BLOCKSEPARATOR, $par{find});
@@ -1061,7 +1045,7 @@ sub build_consensus_rows {
 
     #is there already a suitable tally?
     if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and 
+	(defined $self->{'old'}->{'group'} and
 	 $self->{'old'}->{'group'} ne $self->{'group'})) {
 
 	$self->compute_tallies($self->{'group'});
@@ -1278,7 +1262,7 @@ color  clustal-magenta     :  #cc4ccc
 color  clustal-yellow      :  #cccc00
 color  clustal-orange      :  #e5994c
 color  clustal-white       :  #ffffff
-color  clustal-light-gray  :  #999999 
+color  clustal-light-gray  :  #999999
 color  clustal-dark-gray   :  #666666
 color  clustal-black       :  #000000
 
@@ -1312,7 +1296,7 @@ color  nardi-orange        :  #ff7f11
 color  nardi-pink          :  #ff11ff
 color  nardi-purple        :  #6611cc
 color  nardi-dull-blue     :  #197fe5
-color  nardi-light-gray    :  #999999 
+color  nardi-light-gray    :  #999999
 color  nardi-dark-gray     :  #666666
 
 ###########################################################################

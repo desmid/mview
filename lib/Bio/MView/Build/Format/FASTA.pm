@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -13,6 +13,7 @@
 ###########################################################################
 package Bio::MView::Build::Format::FASTA;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
 use NPB::Parse::Regexps;
 
@@ -32,9 +33,6 @@ my %Known_Parameters =
      #GCG FASTA (version 2)
      'strand'     => [ [],         undef   ],
     );
-
-#tell the parent
-sub known_parameters { \%Known_Parameters }
 
 #our own constructor since this is the entry point for different subtypes
 sub new {
@@ -58,16 +56,16 @@ sub new {
     $type .= "::$p";
     bless $self, $type;
 
-    $self->initialise_parameters;
-    $self->initialise_child;
+    #$self->initialise_parameters;  #NIGE
+    $self->initialise;
 
     $self;
 }
 
 #called by the constructor
-sub initialise_child {
+sub initialise {
     my $self = shift;
-    #warn "initialise_child\n";
+    #warn "initialise\n";
     #schedule by strand orientation
     $self->{scheduler} = new Bio::MView::Build::Scheduler([qw(+ -)]);
     $self;
@@ -76,8 +74,8 @@ sub initialise_child {
 #called on each iteration
 sub reset_child {
     my $self = shift;
-    #warn "reset_child [@{$self->{'strand'}}]\n";
-    $self->{scheduler}->filter($self->{'strand'});
+    #warn "reset_child [@{$PAR->get('strand')}]\n";
+    $self->{scheduler}->filter($PAR->get('strand'));
     $self;
 }
 
@@ -90,7 +88,7 @@ sub use_strand { $_[0]->{scheduler}->use_item($_[1]) }
 #minopt filter
 sub skip_frag {
     my ($self, $opt) = @_;
-    return 1  if defined $self->{'minopt'} and $opt < $self->{'minopt'};
+    return 1  if defined $PAR->get('minopt') and $opt < $PAR->get('minopt');
     return 0;
 }
 

@@ -28,7 +28,7 @@ $Default_Ignore       = 'none';   #default ignore classes setting
 $Group                = {};       #static hash of consensus schemes
 
 
-my %Known_Ignore_Class = 
+my %Known_Ignore_Class =
     (
      #name
      'none'       => 1,    #don't ignore
@@ -66,7 +66,7 @@ sub load_groupmaps {
 	    next;
 	}
 
-	die "Bio::MView::Align::Row::load_groupmaps() groupname undefined\n"    
+	die "Bio::MView::Align::Row::load_groupmaps() groupname undefined\n"
 	    unless defined $map;
 
 	next  if $mapignore;    #forget it if we're not allowing overrides
@@ -131,7 +131,7 @@ sub load_groupmaps {
 	    unless exists $Group->{$map}->[0]->{$Group_Any};
 	make_group($map, '', $Bio::MView::Sequence::Mark_Spc,
 		   [
-		    $Bio::MView::Sequence::Mark_Pad, 
+		    $Bio::MView::Sequence::Mark_Pad,
 		    $Bio::MView::Sequence::Mark_Gap,
 		   ]);
     }
@@ -143,7 +143,7 @@ sub make_group {
 
     #class => symbol
     $Group->{$group}->[0]->{$class}->[0] = $sym;
-    
+
     foreach (@$members) {
         next  unless defined $_;
 	#class  => member existence
@@ -192,7 +192,7 @@ sub dump_groupmaps {
     $s .= "#Character matching is case-insensitive.\n";
     $s .= "#Non-consensus positions default to '$Default_Group_Any' symbol.\n";
     $s .= "#Sequence gaps are shown as ' ' (space) symbols.$c2\n\n";
-    
+
     @_ = keys %$Group  unless @_;
 
     foreach $group (sort @_) {
@@ -202,7 +202,7 @@ sub dump_groupmaps {
 
 	$p = $Group->{$group}->[0];
 	foreach $class (sort keys %{$p}) {
-	    
+	
 	    next    if $class eq '';    #gap character
 
 	    #wildcard
@@ -212,7 +212,7 @@ sub dump_groupmaps {
 		$s .= sprintf "%-12s =>  %-6s\n", $class, $sym;
 		next;
 	    }
-	    
+	
 	    #consensus symbol
 	    $sym = $p->{$class}->[0];
 	    $sym = "'$sym'"    if $sym =~ /\s/;
@@ -304,7 +304,7 @@ sub get_color_type {
 	
 	return ($color, "$trans$index");
     }
-    
+
     #look for wildcard in sequence colormap
     if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
 
@@ -344,7 +344,7 @@ sub get_color_consensus_sequence {
 	
 	return ($color, "$trans$index");
     }
-    
+
     #lookup wildcard in sequence colormap
     if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
 
@@ -415,18 +415,18 @@ sub get_color_consensus_group {
 sub tally {
     my ($group, $col, $gaps) = (@_, 1);
     my ($score, $class, $sym, $depth) = ({});
-    
+
     if (! exists $Group->{$group}) {
 	die "Bio::MView::Align::Consensus::tally() unknown consensus set\n";
     }
-    
+
     #warn "tally: $group\n";
 
     $group = $Group->{$group}->[0];
-    
+
     #initialise tallies
     foreach $class (keys %$group) { $score->{$class} = 0 }
-    
+
     #select score normalization
     if ($gaps) {
 	#by total number of rows (sequence + non-sequence)
@@ -462,7 +462,7 @@ sub consensus {
     if (! exists $Group->{$group}) {
 	die "Bio::MView::Align::Consensus::consensus() unknown consensus set\n";
     }
-    
+
     $group = $Group->{$group}->[0];
 
     $consensus = '';
@@ -476,17 +476,17 @@ sub consensus {
 	foreach $class (keys %$group) {
 
 	    next    if $class eq $Group_Any; #wildcard
-	    
+	
 	    if ($class ne '') {
 		#non-gap classes: may want to ignore certain classes
 		next if $ignore eq 'singleton' and $class eq $group->{$class}->[0];
 		
 		next if $ignore eq 'class'     and $class ne $group->{$class}->[0];
 	    }
-	    
+	
 	    #choose smallest class exceeding threshold and
 	    #highest percent when same size
-	    
+	
 	    #warn "[$i] $class, $score->{$class}\n";
 
 	    if ($score->{$class} >= $threshold) {
@@ -499,7 +499,7 @@ sub consensus {
 		}
 		
 		#larger? this set should be rejected
-		if (keys %{$group->{$class}->[1]} > 
+		if (keys %{$group->{$class}->[1]} >
 		    keys %{$group->{$bstclass}->[1]}) {
 		    next;
 		}
@@ -510,7 +510,7 @@ sub consensus {
 		    $bstclass = $class;
 		    $bstscore = $score->{$class};
 		    next;
-		} 
+		}
 		
 		#same size: new set has better score?
 		if ($score->{$class} > $bstscore) {
@@ -564,7 +564,7 @@ sub new {
     $self->{'string'}->set_pad('.');
     $self->{'string'}->set_gap('.');
     $self->{'string'}->insert([$string, $from, $to]);
-    
+
     bless $self, $type;
 
     $self->reset_display;
@@ -591,7 +591,7 @@ sub color_by_type {
 	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
-    
+
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
     #warn "color_by_type($self) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
@@ -626,7 +626,7 @@ sub color_by_type {
 	    push @$color, $i, 'color' => $par{'symcolor'};
 	}
     }
-    
+
     $self->{'display'}->{'paint'}  = 1;
     $self;
 }
@@ -737,7 +737,7 @@ sub color_by_consensus_sequence {
 
 	#white space: no colour
 	next    if $self->{'string'}->is_space($cs);
-					 
+					
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {
 	    push @$color, $i, 'color' => $par{'gapcolor'};
@@ -773,7 +773,7 @@ sub color_by_consensus_sequence {
         #symbol not in consensus group: use contrast colour
 	push @$color, $i, 'color' => $par{'symcolor'};
     }
-    
+
     $othr->{'display'}->{'paint'} = 1;
     $self;
 }
@@ -804,7 +804,7 @@ sub color_by_consensus_group {
 	unless defined $par{'colormapc'};
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
-    
+
     push @$color, 1, $self->length, 'color' => $par{'symcolor'};
 
     #warn "color_by_consensus_group($self, $othr) 1=$par{'colormap'} 2=$par{'colormapc'}\n";
@@ -853,7 +853,7 @@ sub color_by_consensus_group {
 	#symbol not in consensus group: use contrast colour
 	push @$color, $i, 'color' => $par{'symcolor'};
     }
-    
+
     $othr->{'display'}->{'paint'} = 1;
     $self;
 }

@@ -71,7 +71,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             return 0  if $ov eq 'off' or $ov eq '0';
             return 1  if $ov eq 'on'  or $ov eq '1';
-            push(@$e, "bad value '$on=$ov', want on|off");
+            push(@$e, "bad $on value '$ov', want on|off");
             return $ov;
         },
     },
@@ -82,7 +82,7 @@ $Types = [
         'default' => "",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad value '$on=$ov', want character"),
+            push(@$e, "bad $on value '$ov', want character"),
                 unless length($ov) == 1;
             return $ov;
         },
@@ -105,7 +105,7 @@ $Types = [
         'label'   => "integer",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad value '$on=$ov', want integer >= 0"),
+            push(@$e, "bad $on value '$ov', want integer >= 0"),
                 unless $ov =~ /^$RX_Uint$/;
             return $ov;
         },
@@ -116,7 +116,7 @@ $Types = [
         'label'   => "number",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
-            push(@$e, "bad value '$on=$ov', want numeric >= 0"),
+            push(@$e, "bad $on value '$ov', want numeric >= 0"),
                 unless $ov =~ /^$RX_Ureal$/;
             return $ov;
         },
@@ -142,7 +142,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             my $pv = $self->test_type('u_numeric', $on, $ov, $e);
             return $pv  if 0 <= $pv and $pv <= 100;
-            push(@$e, "bad value '$on=$ov', want value in 0..100");
+            push(@$e, "bad $on value '$ov', want percentage in 0..100");
             return $ov;
         },
     },
@@ -154,7 +154,7 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             my $pv = $self->test_type('percentage', $on, $ov, $e);
             return $pv  if 50 <= $pv and $pv <= 100;
-            push(@$e, "bad value '$on=$ov', want value in 50..100");
+            push(@$e, "bad $on value '$ov', want percentage in 50..100");
             return $ov;
         },
     },
@@ -228,7 +228,7 @@ $Types = [
                     push @tmp, $1;
                     next;
                 }
-                push @$e, "bad integer list value '$_'";
+                push @$e, "bad $on value '$ov', want integer list";
                 return [];
             }
             #warn "test: u_int_list(@tmp)\n";
@@ -252,7 +252,7 @@ $Types = [
                     push @tmp, $1;
                     next;
                 }
-                push @$e, "bad numeric list value '$_'";
+                push @$e, "bad $on value '$ov', want numeric list";
                 return [];
             }
             #warn "type: u_numeric_list(@tmp)\n";
@@ -267,19 +267,17 @@ $Types = [
             my ($self, $on, $ov, $e) = @_;
             return []  if $ov eq 'all';
             my @tmp = split(/:/, $ov);
+            my $msg = "bad $on range '$ov', want M:N,all";
             if (@tmp != 2) {
-                push @$e, "bad range '$on=$ov', want M:N,all";
-                return [];
+                push @$e, $msg; return [];
             }
             $self->test_type('u_int', $on, $tmp[0], $e);
             if (@$e) {
-                push @$e, "bad range '$on=$ov', want M:N,all";
-                return [];
+                push @$e, $msg; return [];
             }
             $self->test_type('u_int', $on, $tmp[1], $e);
             if (@$e) {
-                push @$e, "bad range '$on=$ov', want M:N,all";
-                return [];
+                push @$e, $msg; return [];
             }
             if ($tmp[0] > $tmp[1]) {  #ensure ascending range
                 my $tmp = $tmp[0]; $tmp[0] = $tmp[1]; $tmp[1] = $tmp;
@@ -530,7 +528,8 @@ $Types = [
             my $pv = $self->test_type('u_numeric_list', $on, $ov, $e);
             foreach my $v (@$pv) {
                 if ($v < 50 or $v > 100) {
-                    push @$e, "bad value in '$ov', want in range 50..100";
+                    push @$e, "bad $on value '$ov', want percentage in range 50..100";
+                    return undef;
                 }
             }
             return $pv;

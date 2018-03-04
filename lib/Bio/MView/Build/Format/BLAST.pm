@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -7,6 +7,7 @@
 ###########################################################################
 package Bio::MView::Build::Format::BLAST;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
 use NPB::Parse::Regexps;
 
@@ -43,9 +44,6 @@ my %Known_Parameters =
      #BLASTX/TBLASTX (version 1)
     );
 
-#tell the parent
-sub known_parameters { \%Known_Parameters }
-
 #standard attribute names: override
 sub attr_score { 'unknown' }
 sub attr_sig   { 'unknown' }
@@ -72,17 +70,16 @@ sub new {
     $self->{'attr_score'} = $self->attr_score;
     $self->{'attr_sig'}   = $self->attr_sig;
 
-    $self->initialise_parameters;
-    $self->initialise_child;
+    $self->initialise;
 
     $self;
 }
 
 #called by the constructor
-sub initialise_child {
+sub initialise {
     my $self = shift;
     my $scheduler = $self->scheduler;
-    #warn "initialise_child ($scheduler)\n";
+    #warn "initialise ($scheduler)\n";
     while (1) {
         $self->{scheduler} = new Bio::MView::Build::Scheduler,
         last if $scheduler eq 'none';
@@ -103,7 +100,7 @@ sub initialise_child {
             last;
         }
 
-        die "initialise_child: unknown scheduler '$scheduler'";
+        die "initialise: unknown scheduler '$scheduler'";
     }
     return $self;
 }
@@ -113,19 +110,23 @@ sub reset_child {
     my $self = shift;
     my $scheduler = $self->scheduler;
     #warn "reset_child ($scheduler)\n";
+
+    my $strand = $PAR->get('strand');
+    my $cycle  = $PAR->get('cycle');
+
     while (1) {
         last if $scheduler eq 'none';
 
-        #(warn "strands: [@{$self->{'strand'}}]\n"),
-        $self->{scheduler}->filter($self->{'strand'}),
+        #(warn "strands: [@{$strand}]\n"),
+        $self->{scheduler}->filter($strand),
         last if $scheduler eq 'strand';
 
-        #(warn "cycles: [@{$self->{'cycle'}}]\n"),
-        $self->{scheduler}->filter($self->{'cycle'}),
+        #(warn "cycles: [@{$cycle}]\n"),
+        $self->{scheduler}->filter($cycle),
         last if $scheduler eq 'cycle';
 
-        #(warn "cycles+strands: [@{$self->{'cycle'}}][@{$self->{'strand'}}]\n"),
-        $self->{scheduler}->filter($self->{'cycle'}, $self->{'strand'}),
+        #(warn "cycles+strands: [@{$cycle}][@{$strand}]\n"),
+        $self->{scheduler}->filter($cycle, $strand),
         last if $scheduler eq 'cycle+strand';
 
         die "reset_child: unknown scheduler '$scheduler'";
@@ -155,18 +156,17 @@ sub build_rows {
     my ($lo, $hi) = (0,0);
 
     #compute alignment length from query sequence in row[0]
-    if (! $self->{'keepinserts'}) {
+    if (! $PAR->get('keepinserts')) {
         ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
     }
     #warn "BLAST::build_rows range[0] ($lo, $hi)\n";
 
     #query row contains missing query sequence, rather than gaps
     $self->{'index2row'}->[0]->assemble($lo, $hi, $MISSING_QUERY_CHAR);
-
     #assemble sparse sequence strings for all rows
     for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
         #warn "BLAST::build_rows range[$i] ($lo, $hi)\n";
-	$self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+	$self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
     }
     $self;
 }

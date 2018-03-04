@@ -6,62 +6,27 @@ package Bio::MView::Build;
 use Universal;
 use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Build::Scheduler;
 use strict;
 
-my $DEBUG_PARAM = 0;
+my $DEBUG_PARAM = 0; #NIGE
 
-my %Template = 
+my %Template =
     (
      'entry'       => undef,   #parse tree ref
      'align'       => undef,   #current alignment
      'index2row'   => undef,   #list of aligned rows, from zero
      'uid2row'     => undef,   #hash of aligned rows, by Build::Row->uid
      'ref_row'     => undef,   #reference row ref
-     'topn'        => undef,   #show at most top N items
      'show'        => undef,   #actual number of rows to show
-     'minident'    => undef,   #show items with at least minident %identity 
-     'maxident'    => undef,   #show items with at most maxident %identity 
-     'pcid'        => undef,   #identity calculation method
-     'mode'        => undef,   #display format mode
      'aligned'     => undef,   #treat input as aligned
-     'ref_id'      => undef,   #reference id for %identity
-
-     'skiplist'    => undef,   #discard rows by {num,id,regex}
-     'keeplist'    => undef,   #keep rows by {num,id,regex}
-     'nopslist'    => undef,   #no-process rows by {num,id,regex}
-
      'keep_uid'    => undef,   #hashed version of 'keeplist' by Row->uid
      'nops_uid'    => undef,   #hashed version of 'nopslist'  by Row->uid
      'hide_uid'    => undef,   #hashed merge of 'disc/keep/nops/' by Row->uid
-
-     'keepinserts' => undef,   #keep sequence inserts in searches
-
-     'range'       => undef,   #display lower/upper bounds (sequence numbering)
-     'gap'         => undef,   #output sequence gap character
     );
-
-my %Known_Parameters =
-    (
-     #name         => [ format,     default   ]
-     'topn'        => [ '\d+',      0         ],
-     'minident'    => [ $RX_Ureal,  0         ],
-     'maxident'    => [ $RX_Ureal,  100       ],
-     'pcid'        => [ '\S+',      'aligned' ],
-     'mode'        => [ '\S+',      'new'     ],
-     'ref_id'      => [ '\S+',      0         ],
-     'skiplist'    => [ [],         []        ],
-     'keeplist'    => [ [],         []        ],
-     'nopslist'    => [ [],         []        ],
-     'range'       => [ [],         []        ],
-     'keepinserts' => [ '\d+',      0         ],
-     'gap'         => [ '\S',       '-'       ],
-     'showpcid'    => [ '\d+',      1         ],
-    );
-
-sub get_default_gap { return $Known_Parameters{'gap'}->[1] }
 
 sub new {
     my $type = shift;
@@ -75,116 +40,18 @@ sub new {
 
     bless $self, $type;
 
-    $self->initialise_parameters;
-    $self->initialise_child;
+    $self->initialise;
 
     $self;
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub print {
-    my $self = shift;
-    local $_;
-    foreach (sort keys %$self) {
-	printf "%15s => %s\n", $_, $self->{$_};
-    }
-    print "\n";
-    $self;
-}
-
-sub initialise_parameters {
-    my $self = shift;
-    foreach my $p (\%Known_Parameters, $self->known_parameters) {
-        warn "initialise_parameters $p\n"  if $DEBUG_PARAM;
-        $self->_initialise_parameters($p);
-    }
-    $self;
-}
-
-sub _initialise_parameters {
-    my ($self, $p) = @_;
-    foreach my $k (keys %$p) {
-	warn "_initialise_parameters() $k\n"  if $DEBUG_PARAM;
-	if (ref $p->{$k}->[0] eq 'ARRAY') {
-	    $self->{$k} = [];
-	    next;
-	}
-	if (ref $p->{$k}->[0] eq 'HASH') {
-	    $self->{$k} = {};
-	    next;
-	}
-	$self->{$k} = $p->{$k}->[1];
-    }
-    $self;
-}
-
-sub set_parameters {
-    my $self = shift;
-    foreach my $p (\%Known_Parameters, $self->known_parameters) {
-        warn "set_parameters: $p\n"  if $DEBUG_PARAM;
-        $self->_set_parameters($p, @_);
-    }
-
-    $self->{'aligned'} = 0;
-
-    #how many expected rows of alignment to show (1 more if search)
-    $self->{'show'} = $self->{'topn'};
-    $self->{'show'} += $self->is_search  if $self->{'topn'} > 0;
-    $self;
-}
-
-sub _set_parameters {
-    my ($self, $p) = (shift, shift);
-    while (my $key = shift) {
-	my $val = shift;
-	if (exists $p->{$key}) {
-	    warn "_set_parameters() $key, @{[defined $val ? $val : 'undef']}\n"
-                if $DEBUG_PARAM;
-	    if (ref $p->{$key}->[0] eq 'ARRAY' and ref $val eq 'ARRAY') {
-		$self->{$key} = $val;
-		next;
-	    }
-	    if (ref $p->{$key}->[0] eq 'HASH' and ref $val eq 'HASH') {
-		$self->{$key} = $val;
-		next;
-	    }
-	    if (! defined $val) {
-		#set default
-		$self->{$key} = $p->{$key}->[1];
-		next;
-	    }
-	    if ($val =~ /^$p->{$key}->[0]$/) {
-		#matches expected format
-		$self->{$key} = $val;
-		next;
-	    }
-	    warn "${self}::set_parameters() bad value for '$key', got '$val', wanted '$p->{$key}->[0]'\n";
-	}
-	#ignore unrecognised parameters which may be recognised by subclass
-	#set_parameters() methods.
-    }
-    $self;
-}
-
-sub dump_parameters {
-    my $self = shift;
-    my $s = "Bio::MView::Build:\n";
-    foreach my $k (sort keys %$self) {
-        my $v = defined $self->{$k} ? $self->{$k} :'undef';
-        $s .= "$k => $v\n";
-    }
-    return $s;
-}
-
-#override if children add extra parameters
-sub known_parameters {{}}
-
-#override if children have an extra query sequence (children of Build::Search)
+#override if children have a query sequence (children of Build::Search)
 sub is_search {0}
 
 #override if children need to do something special during creation
-sub initialise_child {
+sub initialise {
     $_[0]->{scheduler} = new Bio::MView::Build::Scheduler;
     $_[0];
 }
@@ -200,8 +67,8 @@ sub reset_child {
 #parser
 sub topn_done {
     my ($self, $num) = @_;
-    return 0  if $self->{'maxident'} != 100;
-    return 1  if $self->{'topn'} > 0 and $num > $self->{'topn'};
+    return 0  if $PAR->get('maxident') != 100;
+    return 1  if $PAR->get('topn') > 0 and $num > $PAR->get('topn');
     return 0;
 }
 
@@ -254,7 +121,7 @@ sub map_id {
 	}
 	
 	#string identifier
-	if ($ref eq $self->{'index2row'}->[$i]->rid or 
+	if ($ref eq $self->{'index2row'}->[$i]->rid or
 	    $ref eq $self->{'index2row'}->[$i]->cid) {
 	    push @rowref, $self->{'index2row'}->[$i];
 	    next;
@@ -282,12 +149,9 @@ sub map_id {
     return @rowref;
 }
 
-#override this to return list of parameters (key, val) pairs special to
-#a particular instance (eg., specific to some parser)
-sub change_parameters {()}
-
-#allow instance to rebless an Bio::MView::Align object
-sub change_alignment_type {}
+#Allow instance to rebless an Bio::MView::Align object and change
+#parameter settings; used by Manager
+sub change_alignment_settings {}
 
 sub get_entry { $_[0]->{'entry'} }
 
@@ -319,8 +183,16 @@ sub index2row { $_[0]->{index2row}->[$_[1]] }
 #construct a header string describing this alignment
 sub header {
     my ($self, $quiet) = (@_, 0);
+    return ''  if $quiet;
+
+    my $showpcid = $PAR->get('label5');
+    my $minident = $PAR->get('minident');
+    my $maxident = $PAR->get('maxident');
+    my $pcidmode = $PAR->get('pcid');
+    my $topn     = $PAR->get('topn');
+
     my $s = '';
-    return $s    if $quiet;
+
     if (defined $self->{'ref_row'}) {
 	$s .= "Reference sequence ";
 	if ($self->{'ref_row'}->num !~ /^\s*$/) {
@@ -330,27 +202,33 @@ sub header {
 	}
 	$s .= ": " . $self->{'ref_row'}->cid . "\n";
     }
-    if ($self->{'minident'} > 0 and $self->{'maxident'} < 100) {
-	$s .= "Identity limits: $self->{'minident'}-$self->{'maxident'}%";
-	$s .= " normalised by $self->{'pcid'} length.\n";
-    } elsif ($self->{'minident'} > 0) {
-	$s .= "Minimum identity: $self->{'minident'}%";
-	$s .= " normalised by $self->{'pcid'} length.\n";
-    } elsif ($self->{'maxident'} < 100) {
-	$s .= "Maximum identity: $self->{'maxident'}%";
-	$s .= " normalised by $self->{'pcid'} length.\n";
-    } elsif ($self->{'showpcid'}) {
-	$s .= "Identities normalised by $self->{'pcid'} length.\n";
+    if (0 < $minident and $maxident < 100) {
+	$s .= "Identity limits: $minident-$maxident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif (0 < $minident) {
+	$s .= "Minimum identity: $minident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif ($maxident < 100) {
+	$s .= "Maximum identity: $maxident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif ($showpcid) {
+	$s .= "Identities normalised by $pcidmode length.\n";
     }
-    if ($self->{'topn'}) {
-	$s .= "Maximum sequences to show: $self->{'topn'}\n";
+    if ($topn) {
+	$s .= "Maximum sequences to show: $topn\n";
     }
     Bio::MView::Display::displaytext($s);
 }
 
-sub initialise {
-    my ($self, $params) = @_;
-    $self->set_parameters(%$params);
+sub reset {
+    my $self = shift;
+
+    $self->{'aligned'} = 0;
+
+    #how many expected rows of alignment to show (1 more if search)
+    $self->{'show'} = $PAR->get('topn');
+    $self->{'show'} += $self->is_search  if $self->{'show'} > 0;
+
     $self->reset_child;
 }
 
@@ -402,16 +280,17 @@ sub build_block {
             $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
         }
     } else { #it's a search, so do we want sequence insertions?
-        $aligned = 0  if $self->{'keepinserts'};
+        $aligned = 0  if $PAR->get('keepinserts');
     }
     $self->{'aligned'} = $aligned;
 
-    #warn "KEEPINSERTS: $self->{'keepinserts'}\n";
+    #warn "KEEPINSERTS: " . $PAR->get('keepinserts') . "\n";
     #warn "ALIGNED:     $self->{'aligned'}\n";
 
-    if (!$self->{'aligned'} and
-        !grep {$_ eq $self->{'mode'}} qw(fasta pearson pir)) {
-        warn "Sequence lengths must be the same for output format '$self->{'mode'}' - aborting\n";
+    my $outmode = $PAR->get('mode');
+
+    if (!$self->{'aligned'} and !grep {$_ eq $outmode} qw(fasta pearson pir)) {
+        warn "Sequence lengths must be the same for output format '$outmode' - aborting\n";
         return undef;
     }
 
@@ -422,7 +301,7 @@ sub build_block {
 
     return undef  unless $aln->all_ids > 0;
 
-    if ($self->{'mode'} eq 'new') {
+    if ($outmode eq 'new') {
         $aln = $self->build_new_alignment($aln);
     }
     $aln;
@@ -443,13 +322,13 @@ sub build_indices {
     }
 
     #get the reference row handle, if any
-    if (@id = $self->map_id($self->{'ref_id'})) {
+    if (@id = $self->map_id($PAR->get('ref_id'))) {
 	$self->{'ref_row'} = $id[0];
     }
 
     #make all skiplist rows invisible; this has to be done because some
     #may not really have been discarded at all, eg., reference row.
-    foreach $i (@{$self->{'skiplist'}}) {
+    foreach $i (@{$PAR->get('skiplist')}) {
 	@id = $self->map_id($i);
 	foreach $r (@id) {
 	    $self->{'hide_uid'}->{$r->uid} = 1;           #invisible
@@ -457,7 +336,7 @@ sub build_indices {
     }
 
     #hash the keeplist and make all keeplist rows visible again
-    foreach $i (@{$self->{'keeplist'}}) {
+    foreach $i (@{$PAR->get('keeplist')}) {
 	@id = $self->map_id($i);
 	foreach $r (@id) {
 	    $self->{'keep_uid'}->{$r->uid} = 1;
@@ -474,7 +353,8 @@ sub build_indices {
     #hash the nopslist: the 'uid' key is used so that the
     #underlying Align class can recognise rows. don't override any previous
     #visibility set by discard list.
-    foreach $i (@{$self->{'nopslist'}}) {
+
+    foreach $i (@{$PAR->get('nopslist')}) {
 	@id = $self->map_id($i);
 	foreach $r (@id) {
 	    $self->{'nops_uid'}->{$r->uid}  = 1;
@@ -493,14 +373,14 @@ sub build_rows {
     if ($self->{'aligned'}) {  #treat as alignment: common range
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
             #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
         }
 
     } else {  #treat as format conversion: each row has own range
         for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
             my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
             #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $self->{'gap'});
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
         }
     }
     $self;
@@ -508,15 +388,12 @@ sub build_rows {
 
 sub get_range {
     my ($self, $row) = @_;
-    my ($lo, $hi) = $row->range;
-    if (@{$self->{'range'}} and @{$self->{'range'}} % 2 < 1) {
-	if ($self->{'range'}->[0] < $self->{'range'}->[1]) {
-	    ($lo, $hi) = ($self->{'range'}->[0], $self->{'range'}->[1]);
-	} else {
-	    ($lo, $hi) = ($self->{'range'}->[1], $self->{'range'}->[0]);
-	}
+    my @range = @{$PAR->get('range')};
+    if (@range and @range % 2 < 1) {
+        return ($range[0], $range[1])  if $range[0] < $range[1];
+        return ($range[1], $range[0]);
     }
-    ($lo, $hi);
+    return $row->range;  #default
 }
 
 sub build_base_alignment {
@@ -536,27 +413,27 @@ sub build_base_alignment {
 
     $aln = new Bio::MView::Align(\@list, $self->{'aligned'});
 
-    $aln->set_parameters('nopshash' => $self->{'nops_uid'},
-			 'hidehash' => $self->{'hide_uid'});
+    $aln->set_parameters('nopshash' => $self->{'nops_uid'},  #NIGE
+                         'hidehash' => $self->{'hide_uid'});
 
     #filter alignment based on %identity to reference
-    if (($self->{'minident'} > 0 or $self->{'maxident'} < 100)
+    if ((0 < $PAR->get('minident') or $PAR->get('maxident') < 100)
         and defined $self->{'ref_row'}) {
         my $tmp = $aln->prune_identities($self->{'ref_row'}->uid,
-                                         $self->{'pcid'},
-                                         $self->{'minident'},
-                                         $self->{'maxident'},
+                                         $PAR->get('pcid'),
+                                         $PAR->get('minident'),
+                                         $PAR->get('maxident'),
                                          $self->{'show'},
                                          keys %{$self->{'keep_uid'}});
-        $tmp->set_parameters($aln->get_parameters);
+        $tmp->set_parameters($aln->get_parameters); #NIGE
         $aln = $tmp;
     }
 
     #compute columnwise data for aligned output
-    unless ($self->{'keepinserts'}) {
+    unless ($PAR->get('keepinserts')) {
         if (defined $self->{'ref_row'}) {
             $aln->set_coverage($self->{'ref_row'}->uid);
-            $aln->set_identity($self->{'ref_row'}->uid, $self->{'pcid'});
+            $aln->set_identity($self->{'ref_row'}->uid, $PAR->get('pcid'));
         }
     }
 
@@ -573,7 +450,7 @@ sub build_base_alignment {
     }
 
     # foreach my $r ($aln->all_ids) {
-    #     $aln->id2row($r)->seqobj->print;
+    #     $aln->id2row($r)->seqobj->dump;
     # }
     # warn "LEN: ", $aln->length;
     $aln;
@@ -594,6 +471,7 @@ sub build_new_alignment {
 
 	if (exists $self->{'nops_uid'}->{$brow->uid} or
 	    (defined $brow->{'type'} and $brow->{'type'} eq 'special')) {
+
 	    $arow->set_display('label0' => '',
 			       'label1' => $brow->cid,
 			       'label2' => $brow->text,

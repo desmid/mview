@@ -34,7 +34,7 @@ sub parse {
 	
 	push @hit, new Bio::MView::Build::Row::Plain($rank, $id, '', $seq);
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(ALIGNMENT));

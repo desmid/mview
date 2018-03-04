@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2017 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
 
 ######################################################################
 package Universal;
@@ -17,8 +17,8 @@ sub member {
     return 0;
 }
 
-#dump sorted list of all instance variables, or supplied list
-sub examine {
+#pretty-print object contents by given ordered keys, or all sorted
+sub dump_object {
     my $self = shift;
     my @keys = @_ ? @_ : sort keys %$self;
     print STDERR "Class $self\n";
@@ -27,6 +27,17 @@ sub examine {
             defined $self->{$k} ? $self->{$k} : '';
     }
     $self;
+}
+
+#pretty-print hash contents by given ordered keys, or all sorted
+sub dump_hash {
+    my $hash = shift;
+    my @keys = @_ ? @_ : sort keys %$hash;
+    print STDERR "HASH: $hash\n";
+    foreach my $k (@keys) {
+        printf STDERR "%16s => %s\n", $k,
+            defined $hash->{$k} ? $hash->{$k} : '';
+    }
 }
 
 #shallow copy
@@ -141,9 +152,13 @@ sub vmstat {
 }
 
 sub stacktrace {
-    warn "Stack Trace:\n"; my $i = 1;
-    while ( (my @calls = (caller($i++))) ){
-        warn $calls[1] . ":" . $calls[2] . " in function " . $calls[3] . "\n";
+    warn "Stack Trace:\n"; my $i = 0;
+    my @calls = caller($i++);
+    my ($file, $line, $func) = ($calls[1], $calls[2], $calls[3]);
+    while ( @calls = caller($i++) ){
+        #func is one ahead
+        warn $file . ":" . $line . " in function " . $calls[3] . "\n";
+        ($file, $line, $func) = ($calls[1], $calls[2], $calls[3]);
     }
 }
 

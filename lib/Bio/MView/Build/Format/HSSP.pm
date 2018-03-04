@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Build::Row::HSSP;
@@ -22,6 +22,7 @@ sub ignore_columns { ['posn1', 'posn2']; }
 ###########################################################################
 package Bio::MView::Build::Format::HSSP;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
 
 use strict;
@@ -38,11 +39,8 @@ my %Known_Parameters =
      'chain'      => [ [],     undef   ],
     );
 
-#tell the parent
-sub known_parameters { \%Known_Parameters }
-
 #called by the constructor
-sub initialise_child {
+sub initialise {
     my $self = shift;
 
     #MaxHom/HSSP chain names
@@ -59,8 +57,8 @@ sub initialise_child {
 #called on each iteration
 sub reset_child {
     my $self = shift;
-    #warn "reset_child [@{$self->{'chain'}}]\n";
-    $self->{scheduler}->filter($self->{'chain'});
+    #warn "reset_child [@{$PAR->get('chain')}]\n";
+    $self->{scheduler}->filter($PAR->get('chain'));
     $self;
 }
 
@@ -129,7 +127,7 @@ sub parse {
 						    $self->chain);
         $hit[$#hit]->add_frag($seq);
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(HEADER PROTEIN ALIGNMENT));

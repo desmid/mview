@@ -106,7 +106,7 @@ sub new {
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub print {
+sub dump {
     sub _format {
 	my ($self, $k, $v) = @_;
 	$v = 'undef' unless defined $v;
@@ -413,7 +413,7 @@ sub insert {
     $self->{'reflo'} = $self->{'lo'} + $self->{'pfxlen'};
     $self->{'refhi'} = $self->{'hi'} - $self->{'sfxlen'};
 
-    #$self->print;
+    #$self->dump;
 
     $self;
 }
@@ -471,9 +471,9 @@ sub col {
 
     $p = $self->{'lo'} + $col - 1;
 
-#    warn("col(+): $col [", 
+#    warn("col(+): $col [",
 #	 exists $self->{'seq'}->{$col} ? $self->{'seq'}->{$col} : '',
-#	 "]=> $p [", 
+#	 "]=> $p [",
 #	 exists $self->{'seq'}->{$p} ? $self->{'seq'}->{$p} : '',
 #	 "]\n");
 
@@ -639,7 +639,7 @@ sub insert {
     $self->{'reflo'} = $self->{'hi'} - $self->{'pfxlen'};
     $self->{'refhi'} = $self->{'lo'} + $self->{'sfxlen'};
 
-    #$self->print;
+    #$self->dump;
 
     $self;
 }
@@ -697,9 +697,9 @@ sub col {
 
     $p = $self->{'hi'} - $col + 1;    #REVERSE $col
 
-#    warn("col(-): $col [", 
+#    warn("col(-): $col [",
 #	 exists $self->{'seq'}->{$col} ? $self->{'seq'}->{$col} : '',
-#	 "]=> $p [", 
+#	 "]=> $p [",
 #	 exists $self->{'seq'}->{$p} ? $self->{'seq'}->{$p} : '',
 #	 "]\n");
 

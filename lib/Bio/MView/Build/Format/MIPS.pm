@@ -33,7 +33,7 @@ sub parse {
 
 	push @hit, new Bio::MView::Build::Row::MIPS($rank, $id, $des, $seq);
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(NAME ALIGNMENT));

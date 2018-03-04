@@ -108,7 +108,7 @@ sub truncate {
     $t;
 }
 
-sub print {
+sub dump {
     sub _format {
 	my ($self, $k, $v) = @_;
 	$v = 'undef' unless defined $v;

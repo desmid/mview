@@ -215,7 +215,7 @@ sub parse {
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->print;
+	    #$aln->dump;
 	    
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},

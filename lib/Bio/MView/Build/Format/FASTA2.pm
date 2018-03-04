@@ -191,7 +191,7 @@ sub parse {
 
             #warn "SEE: [$key1]\n";
 	    
-	    #$aln->print;
+	    #$aln->dump;
 	    
 	    #for FASTA gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
@@ -346,7 +346,7 @@ sub parse {
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->print;
+	    #$aln->dump;
 	    
 	    #for FASTA gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},

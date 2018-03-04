@@ -53,7 +53,7 @@ sub parse {
 	push @hit, new Bio::MView::Build::Row::MSF($rank, $id, '', $wgt);
         $hit[$#hit]->add_frag($seq);
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(NAME ALIGNMENT));

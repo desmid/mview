@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -9,6 +9,7 @@
 ###########################################################################
 package Bio::MView::Build::Format::BLAST2;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Format::BLAST0;
 
 use strict;
@@ -73,9 +74,9 @@ sub get_scores {
 sub skip_hsp {
     my ($self, $hsp) = @_;
     return 1  if
-        defined $self->{'minbits'} and $hsp->{'bits'} < $self->{'minbits'};
+        defined $PAR->get('minbits') and $hsp->{'bits'} < $PAR->get('minbits');
     return 1  if
-        defined $self->{'maxeval'} and $hsp->{'expect'} > $self->{'maxeval'};
+        defined $PAR->get('maxeval') and $hsp->{'expect'} > $PAR->get('maxeval');
     return 0;
 }
 

@@ -3,8 +3,8 @@
 ###########################################################################
 package Bio::MView::Build::Search;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build;
-
 use strict;
 use vars qw(@ISA);
 
@@ -19,7 +19,7 @@ sub use_row {
     #warn "use_row($num, $nid, $sid)\n";
     
     #first, check explicit keeplist and reference row
-    foreach my $pat (@{$self->{'keeplist'}}, $self->{'ref_id'}) {
+    foreach my $pat (@{$PAR->get('keeplist')}, $PAR->get('ref_id')) {
 
 	#Search subclass only
 	return 1  if $pat eq '0'     and $num == 0;
@@ -43,7 +43,7 @@ sub use_row {
     }
 
     #second, check skiplist and reference row
-    foreach my $pat (@{$self->{'skiplist'}}, $self->{'ref_id'}) {
+    foreach my $pat (@{$PAR->get('skiplist')}, $PAR->get('ref_id')) {
 
 	#Search subclass only
 	return 0  if $pat eq '0'     and $num == 0;

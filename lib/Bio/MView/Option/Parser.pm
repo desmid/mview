@@ -4,6 +4,7 @@
 package Bio::MView::Option::Parser;
 
 use Getopt::Long qw(GetOptionsFromArray);
+use Bio::MView::Option::Parameters;
 use strict;
 
 my @OptionTypeLibs = ( 'Bio::MView::Option::Types' );
@@ -61,9 +62,8 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'prog'}    = $prog;
     $self->{'argv'}    = [];
-    $self->{'param'}   = {};
+    $self->{'param'}   = { 'prog' => $prog };
 
     $self->{'types'}   = {};
     $self->{'options'} = {};
@@ -208,7 +208,8 @@ sub update_option {
 sub usage {
     my $self = shift;
     my $s = $Bio::MView::Option::Options::Header;  #already loaded
-    $s =~ s/<PROG>/$self->{'prog'}/;
+    my $prog = $self->{'param'}->{'prog'};
+    $s =~ s/<PROG>/$prog/;
 
     foreach my $grp (@{$self->{'groups'}}) {
         next  unless exists $grp->{'header'};  #hidden group
@@ -247,6 +248,11 @@ sub get_label_string {
     return $self->get_attr_string($opt, 'label');
 }
 
+sub get_usage_string {
+    my ($self, $opt) = @_;
+    return $self->get_attr_string($opt, 'usage');
+}
+
 sub get_values_string {
     my ($self, $opt) = @_;
     return $self->get_attr_string($opt, 'values');
@@ -257,24 +263,18 @@ sub get_default_string {
     return $self->get_attr_string($opt, 'default');
 }
 
-sub get_usage_string {
-    my ($self, $opt) = @_;
-    return $self->get_attr_string($opt, 'usage');
-}
-
 sub get_option_usage {
     my ($self, $opt) = @_;
     my $name    = $opt->{'option'};
     my $type    = $self->get_label_string($opt);
-    my $values  = $self->get_values_string($opt);
     my $usage   = $self->get_usage_string($opt);
+    my $values  = $self->get_values_string($opt);
     my $default = $self->get_default_string($opt);
     my $s = sprintf("  -%-20s %s", "$name $type", $usage);
     $s .= " {$values}"   if $values  ne '';
-    #$s .= ".";  #NIGE
+    $s .= ".";
     $s .= " [$default]"  if $default ne '';
-    #$s .= "\n";  #NIGE
-    $s .= ".\n";  #NIGE
+    $s .= "\n";
     return $s;
 }
 
@@ -383,8 +383,8 @@ sub parse_argv {
     }
     #warn "lhs/rhs: [@lhs] [@rhs]\n";
 
-    #process options in specified group order;
-    #don't abort on error: allows caller to react to 'help' option
+    #process options in specified group order; don't abort on error:
+    #allows caller to find 'help' option first
     foreach my $grp (@{$self->{'groups'}}) {
         push @errors, $self->parse_group(\@lhs, $grp);
     }
@@ -399,12 +399,17 @@ sub parse_argv {
     }
     push @$argv, @rhs;  #replace explicit non-options
 
+    #instantiate global parameter object
+    unless (@errors) {
+        new Bio::MView::Option::Parameters($self->{'param'});
+    }
+
     return @errors;
 }
 
-sub get_parameters { return $_[0]->{'param'} }
-
 sub dump_argv { return join(" ", @{$_[0]->{'argv'}}) }
+
+sub get_parameters { return $_[0]->{'param'} }
 
 
 ###########################################################################

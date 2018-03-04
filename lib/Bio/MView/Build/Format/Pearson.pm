@@ -34,7 +34,7 @@ sub parse {
                                                        $rec->{'seq'},
             );
     }
-    #map { $_->print } @hit;
+    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(SEQ));
