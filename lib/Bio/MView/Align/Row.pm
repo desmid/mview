@@ -11,22 +11,12 @@ use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
 
 use strict;
-use vars qw($Colour_Black $Colour_White $Colour_DarkGray $Colour_LightGray
-	    $Colour_Cream $Colour_Brown $Colour_Comment $KWARGS);
-
-$Colour_Black      = '#000000';
-$Colour_White      = '#FFFFFF';
-$Colour_DarkGray   = '#666666';
-$Colour_LightGray  = '#999999';
-$Colour_Cream      = '#FFFFCC';
-$Colour_Brown      = '#aa6666';
-
-$Colour_Comment    = $Colour_Brown;
+use vars qw($KWARGS);
 
 $KWARGS = {
     'css1'     => 0,
-    'gapcolor' => $Colour_Black,
-    'symcolor' => $Colour_Black,
+    'gapcolor' => $Bio::MView::Colormaps::Colour_Black,
+    'symcolor' => $Bio::MView::Colormaps::Colour_Black,
 };
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
@@ -130,7 +120,7 @@ sub _do_inner_kwargs {
 sub set_display {
     my $self = shift;
     my ($key, $val, @tmp, %tmp);
-    #$self->dump;
+
     while ($key = shift @_) {
 
 	$val = shift @_;

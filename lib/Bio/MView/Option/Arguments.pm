@@ -4,7 +4,8 @@
 package Bio::MView::Option::Arguments;
 
 use Exporter;
-use Bio::MView::Align;
+use Bio::MView::Colormaps;
+use Bio::MView::Align::Consensus;
 
 @ISA = qw(Exporter);
 
@@ -272,8 +273,8 @@ sub check_molecule_type {
 }
 
 ###########################################################################
-sub list_colormap_names { Bio::MView::Align::list_colormap_names }
-sub check_colormap      { Bio::MView::Align::check_colormap(@_) }
+sub list_colormap_names { Bio::MView::Colormaps::list_colormap_names }
+sub check_colormap      { Bio::MView::Colormaps::check_colormap(@_) }
 
 ###########################################################################
 sub list_groupmap_names { Bio::MView::Align::Consensus::list_groupmap_names }

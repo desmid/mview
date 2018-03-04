@@ -68,7 +68,7 @@ sub load_groupmaps {
 	    next;
 	}
 
-	die "Bio::MView::Align::Row::load_groupmaps() groupname undefined\n"
+	die "Bio::MView::Align::Consensus::load_groupmaps() groupname undefined\n"
 	    unless defined $map;
 
 	next  if $mapignore;    #forget it if we're not allowing overrides
@@ -82,7 +82,7 @@ sub load_groupmaps {
 	    $sym     = $1;
 	    $sym     =~ s/^\'//;
 	    $sym     =~ s/\'$//;
-	    chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
+	    chomp; die "Bio::MView::Align::Consensus::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
 	    make_group($map, $Group_Any, $sym, []);
             next;
 	}
@@ -93,7 +93,7 @@ sub load_groupmaps {
 	    ($class, $sym, $members) = ($1, $2, $3);
 	    $sym     =~ s/^\'//;
 	    $sym     =~ s/\'$//;
-	    chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
+	    chomp; die "Bio::MView::Align::Consensus::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
 	    $members =~ s/[\s,]//g;
 	    $members =~ s/''/ /g;
 	    $members = uc $members;
@@ -106,7 +106,7 @@ sub load_groupmaps {
 	if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')/) {
 	    $state = 2;
 	    ($class, $sym, $members) = ($1, $2, $1);
-	    chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
+	    chomp; die "Bio::MView::Align::Consensus::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
 	    $members = uc $members;
 	    $members = [ split(//, $members) ];
 	    make_group($map, $class, $sym, $members);
@@ -124,7 +124,7 @@ sub load_groupmaps {
 	}
 
 	#default
-	chomp; die "Bio::MView::Align::Row::load_groupmaps() bad format in line '$_'\n";	
+	chomp; die "Bio::MView::Align::Consensus::load_groupmaps() bad format in line '$_'\n";	
     }
     close $stream;
 
@@ -186,8 +186,8 @@ sub dump_groupmaps {
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Black\">",
-	"<SPAN style=\"color:$Bio::MView::Align::Row::Colour_Comment\">",
+	"<SPAN style=\"color:$Bio::MView::Colormaps::Colour_Black\">",
+	"<SPAN style=\"color:$Bio::MView::Colormaps::Colour_Comment\">",
 	"</SPAN>")  if $html;
 
     $s .= "$c1#Consensus group listing - suitable for reloading.\n";
@@ -266,14 +266,14 @@ sub get_color_type {
 
     #warn "get_color_type($self, $c, $mapS, $mapG)\n";
 
-    my @tmp = keys %{$Bio::MView::Align::Colormaps->{$mapG}};
+    my @tmp = keys %{$Bio::MView::Colormaps::Colormaps->{$mapG}};
 
     #colormap is preset colorname
     if (@tmp < 1) {
-        if (exists $Bio::MView::Align::Palette->[0]->{$mapG}) {
+        if (exists $Bio::MView::Colormaps::Palette->[0]->{$mapG}) {
             $trans = 'T';  #ignore CSS setting
-            $index = $Bio::MView::Align::Palette->[0]->{$mapG};
-            $color = $Bio::MView::Align::Palette->[1]->[$index];
+            $index = $Bio::MView::Colormaps::Palette->[0]->{$mapG};
+            $color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
             #warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
 
@@ -282,12 +282,12 @@ sub get_color_type {
     }
 
     #look in group colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapG}->{$c}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapG}->{$c}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapG}->{$c}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapG}->{$c}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapG}->{$c}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapG}->{$c}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
 	
@@ -295,12 +295,12 @@ sub get_color_type {
     }
 
     #look in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$c}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$c}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$c}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$c}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$c}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$c}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "$c $mapS\{$c} [$index] [$color] [$trans]\n";
 	
@@ -308,12 +308,12 @@ sub get_color_type {
     }
 
     #look for wildcard in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "$c $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
@@ -335,12 +335,12 @@ sub get_color_consensus_sequence {
     #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
 
     #lookup sequence symbol in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$cs}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cs}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$cs}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$cs}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cs}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cs}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "$cs/$cg $mapS\{$cs} [$index] [$color] [$trans]\n";
 	
@@ -348,12 +348,12 @@ sub get_color_consensus_sequence {
     }
 
     #lookup wildcard in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
@@ -376,36 +376,36 @@ sub get_color_consensus_group {
     #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
 
     #lookup group symbol in group colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapG}->{$cg}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapG}->{$cg}) {
 
 	#set transparent(T)/solid(S)/color from GROUP colormap
-	$trans = $Bio::MView::Align::Colormaps->{$mapG}->{$cg}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapG}->{$cg}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapG}->{$cg}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapG}->{$cg}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 	#warn "$cs/$cg $mapG\{$cg} [$index] [$color] [$trans]\n";
 
 	return ($color, "$trans$index");
     }
 
     #lookup group symbol in sequence colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$cg}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cg}) {
 
 	#set transparent(T)/solid(S)/color from SEQUENCE colormap
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$cg}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$cg}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cg}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$cg}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 	#warn "$cs/$cg $mapS\{$cg} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");
     }
 
     #lookup wildcard in SEQUENCE colormap
-    if (exists $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}) {
 
 	#set transparent(T)/solid(S)/color from SEQUENCE colormap
-	$trans = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$mapS}->{$Group_Any}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
 	
 	return ($color, "$trans$index");

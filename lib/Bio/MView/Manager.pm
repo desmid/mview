@@ -254,11 +254,14 @@ sub check_input_file {
     my $file = shift;
     return Bio::MView::Option::Arguments::check_informat($file, 'file');
 }
-sub dump_colormaps { Bio::MView::Align::dump_colormaps(@_) }
-sub dump_groupmaps { Bio::MView::Align::Consensus::dump_groupmaps(@_) }
-sub dump_css       { Bio::MView::Align::dump_css1_colormaps(@_) }
-sub load_colormaps { Bio::MView::Align::load_colormaps(@_) }
+
+sub load_colormaps { Bio::MView::Colormaps::load_colormaps(@_) }
+sub dump_colormaps { Bio::MView::Colormaps::dump_colormaps(@_) }
+sub dump_css       { Bio::MView::Colormaps::dump_css1_colormaps(@_) }
+
 sub load_groupmaps { Bio::MView::Align::Consensus::load_groupmaps(@_) }
+sub dump_groupmaps { Bio::MView::Align::Consensus::dump_groupmaps(@_) }
+
 #sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 
 sub print {

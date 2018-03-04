@@ -87,11 +87,11 @@ sub get_color {
     #warn "get_color: $c, $map";
 
     #set transparent(T)/solid(S)
-    if (exists $Bio::MView::Align::Colormaps->{$map}->{$c}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$map}->{$c}) {
 
-	$trans = $Bio::MView::Align::Colormaps->{$map}->{$c}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$map}->{$c}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$map}->{$c}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$map}->{$c}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "CL $c $map\{$c} [$index] [$color] [$trans]\n";
 	
@@ -99,11 +99,11 @@ sub get_color {
     }
 
     #wildcard colour
-    if (exists $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}) {
+    if (exists $Bio::MView::Colormaps::Colormaps->{$map}->{$Wildcard_Sym}) {
 
-	$trans = $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}->[1];
-	$index = $Bio::MView::Align::Colormaps->{$map}->{$Wildcard_Sym}->[0];
-	$color = $Bio::MView::Align::Palette->[1]->[$index];
+	$trans = $Bio::MView::Colormaps::Colormaps->{$map}->{$Wildcard_Sym}->[1];
+	$index = $Bio::MView::Colormaps::Colormaps->{$map}->{$Wildcard_Sym}->[0];
+	$color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "WC $c $map\{$Wildcard_Sym} [$index] [$color] [$trans]\n";
 
@@ -112,11 +112,11 @@ sub get_color {
 
     #preset colour name in $map, used for string searches or plain
     #colouring where all matches should be same colour
-    if (exists $Bio::MView::Align::Palette->[0]->{$map}) {
+    if (exists $Bio::MView::Colormaps::Palette->[0]->{$map}) {
 
 	$trans = 'S';
-	$index = $Bio::MView::Align::Palette->[0]->{$map};
-        $color = $Bio::MView::Align::Palette->[1]->[$index];
+	$index = $Bio::MView::Colormaps::Palette->[0]->{$map};
+        $color = $Bio::MView::Colormaps::Palette->[1]->[$index];
 
 	#warn "FD $c $map\{$c} [$index] [$color] [$trans]\n";
 
@@ -166,7 +166,7 @@ sub color_special {
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
-    foreach $map (keys %$Bio::MView::Align::Colormaps) {
+    foreach $map (keys %$Bio::MView::Colormaps::Colormaps) {
 	if ($self->{'id'} =~ /$map/i) {
 	    if (length($&) > $size) {
 		$kw->{'colormap'} = $map;

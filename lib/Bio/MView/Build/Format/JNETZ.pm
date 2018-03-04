@@ -182,7 +182,7 @@ use vars qw(@ISA);
 
 #the 0 here says don't override any colormap of the same name, to
 #allow earler loaded user definitions priority - crude, but it'll do.
-Bio::MView::Align::load_colormaps(\*DATA, 0);
+Bio::MView::Colormaps::load_colormaps(\*DATA, 0);
 
 sub color_row {
     my $self = shift;
