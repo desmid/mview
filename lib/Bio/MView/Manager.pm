@@ -255,12 +255,12 @@ sub check_input_file {
     return Bio::MView::Option::Arguments::check_informat($file, 'file');
 }
 
-sub load_colormaps { Bio::MView::Colormaps::load_colormaps(@_) }
-sub dump_colormaps { Bio::MView::Colormaps::dump_colormaps(@_) }
-sub dump_css       { Bio::MView::Colormaps::dump_css1_colormaps(@_) }
+sub load_colormaps { Bio::MView::Colormap::load_colormaps(@_) }
+sub dump_colormaps { Bio::MView::Colormap::dump_colormaps(@_) }
+sub dump_css       { Bio::MView::Colormap::dump_css1_colormaps(@_) }
 
-sub load_groupmaps { Bio::MView::Align::Consensus::load_groupmaps(@_) }
-sub dump_groupmaps { Bio::MView::Align::Consensus::dump_groupmaps(@_) }
+sub load_groupmaps { Bio::MView::Groupmap::load_groupmaps(@_) }
+sub dump_groupmaps { Bio::MView::Groupmap::dump_groupmaps(@_) }
 
 #sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 

@@ -4,19 +4,21 @@
 package Bio::MView::Option::Types;
 
 use Bio::MView::Option::Arguments;
+use Bio::MView::Colormap;
+use Bio::MView::Groupmap;
 use NPB::Parse::Regexps;
 use strict;
 use vars qw($Types);
 
 ######################################################################
 sub get_default_alignment_colormap {
-    Bio::MView::Colormaps::get_default_alignment_colormap(@_)
+    Bio::MView::Colormap::get_default_alignment_colormap(@_)
 }
 sub get_default_consensus_colormap {
-    Bio::MView::Colormaps::get_default_consensus_colormap(@_)
+    Bio::MView::Colormap::get_default_consensus_colormap(@_)
 }
 sub get_default_groupmap {
-    Bio::MView::Align::Consensus::get_default_groupmap(@_)
+    Bio::MView::Groupmap::get_default_groupmap(@_)
 }
 
 ######################################################################

@@ -15,8 +15,8 @@ use vars qw($KWARGS);
 
 $KWARGS = {
     'css1'     => 0,
-    'gapcolor' => $Bio::MView::Colormaps::Colour_Black,
-    'symcolor' => $Bio::MView::Colormaps::Colour_Black,
+    'gapcolor' => $Bio::MView::Colormap::Colour_Black,
+    'symcolor' => $Bio::MView::Colormap::Colour_Black,
 };
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }

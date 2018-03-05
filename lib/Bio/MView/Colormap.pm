@@ -1,7 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
 ######################################################################
-package Bio::MView::Colormaps;
+package Bio::MView::Colormap;
 
 use strict;
 use vars qw($Colormaps $Palette $Map_Text $Wildcard_Key);
@@ -110,7 +110,7 @@ sub load_colormaps {
 
 	#save map description?
 	$Colormaps->{$map}->{$Map_Text} = $de  if $state == 1;
-	
+
 	#symbol[symbol] {->|=>} [palette_colorname|#RGB] any other text...
 	if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
 
@@ -272,11 +272,11 @@ sub dump_css1_colormaps {
     $s = "TD {font-family:Fixed,Courier,monospace; background-color:$color{'alncolor'}; color:$color{'labcolor'}}\n";
 
     for ($i=0; $i < @{$Palette->[1]}; $i++) {
-	
+
 	$rgb = $Palette->[1]->[$i];
 	$fg = hex(substr($rgb, 1));
 	my ($r, $g, $b) = (($fg>>16)&255, ($fg>>8)&255, $fg&255);
-	
+
 #	#SOLID: coloured background/monochrome foreground
 #	#flip foreground between black/white depending on
 #	#largest (brightest) RGB component of background.
@@ -289,7 +289,7 @@ sub dump_css1_colormaps {
 
 	#just look at the green component
 	if ($g > 200) {
-	    $fg = $Colour_Black;	
+	    $fg = $Colour_Black;
 	} else {
 	    $fg = $Colour_White;
 	}

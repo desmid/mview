@@ -182,7 +182,7 @@ use vars qw(@ISA);
 
 #the 0 here says don't override any colormap of the same name, to
 #allow earler loaded user definitions priority - crude, but it'll do.
-Bio::MView::Colormaps::load_colormaps(\*DATA, 0);
+Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 
 sub color_row {
     my $self = shift;
@@ -196,7 +196,7 @@ sub color_row {
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
 	$c = $self->{'string'}->raw($i);
-	
+
 	#warn "[$i]= $c\n";
 
 	#white space: no color
@@ -207,10 +207,10 @@ sub color_row {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'colormap'});
-	
+
 	if (@tmp) {
 	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];

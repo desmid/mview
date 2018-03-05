@@ -3,7 +3,7 @@
 ######################################################################
 package Bio::MView::Align;
 
-use Bio::MView::Colormaps;
+use Bio::MView::Colormap;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
@@ -52,10 +52,10 @@ my %Known_Parameter =
      'colormapf'  => [ '\S+',     $Bio::MView::Align::Sequence::Default_FIND_Colormap ],
      'bold'       => [ '[01]',    1 ],
      'css1'       => [ '[01]',    0 ],
-     'alncolor'   => [ '\S+',     $Bio::MView::Colormaps::Colour_White ],
-     'labcolor'   => [ '\S+',     $Bio::MView::Colormaps::Colour_Black ],
-     'symcolor'   => [ '\S+',     $Bio::MView::Colormaps::Colour_Black ],
-     'gapcolor'   => [ '\S+',     $Bio::MView::Colormaps::Colour_DarkGray ],
+     'alncolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_White ],
+     'labcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_Black ],
+     'symcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_Black ],
+     'gapcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_DarkGray ],
      'group'      => [ '\S+',     $Bio::MView::Align::Consensus::Default_Group ],
      'ignore'     => [ '\S+',     $Bio::MView::Align::Consensus::Default_Ignore ],
      'con_gaps'   => [ '[01]',     1 ],
@@ -419,7 +419,7 @@ sub set_color_scheme {
     #find overlays anything else
     if ($self->{'find'} ne '') {
 
-        my $mapsize = Bio::MView::Colormaps::get_colormap_length(
+        my $mapsize = Bio::MView::Colormap::get_colormap_length(
             $self->{'colormapf'}
         );
         my @patterns = split($BLOCKSEPARATOR, $self->{'find'});

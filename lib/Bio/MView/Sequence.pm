@@ -260,7 +260,7 @@ sub findall {
     my $gapchar = $self->{text_gap};
 
     #warn "findall(): @{[$self->string]}\n";
-    #warn "findall(): BLOCK=$pattern\n";
+    #warn "findall(): blocks=[@{[join(', ', @$blocks)]}]\n";
 
     my $end = scalar @$blocks;
 
