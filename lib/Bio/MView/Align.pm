@@ -9,8 +9,6 @@ use Bio::MView::Align::Row;
 
 use strict;
 
-my $BLOCKSEPARATOR = ':';  #for block search patterns
-
 my %Template =
     (
      'length'     => 0,     #alignment width
@@ -418,22 +416,11 @@ sub set_color_scheme {
 
     #find overlays anything else
     if ($self->{'find'} ne '') {
-
-        my $mapsize = Bio::MView::Colormap::get_colormap_length(
-            $self->{'colormapf'}
-        );
-        my @patterns = split($BLOCKSEPARATOR, $self->{'find'});
-        if (@patterns > $mapsize) {
-            warn "recycling colormap '$self->{'colormapf'}': @{[scalar @patterns]} patterns but only $mapsize color(s)\n";
-        }
-
 	$self->color_by_find_block('colormap'  => $self->{'colormapf'},
 				   'symcolor'  => $self->{'symcolor'},
 				   'gapcolor'  => $self->{'gapcolor'},
 				   'css1'      => $self->{'css1'},
 				   'find'      => $self->{'find'},
-                                   'mapsize'   => $mapsize,
-                                   'patterns'  => [@patterns],
             );
     }
 

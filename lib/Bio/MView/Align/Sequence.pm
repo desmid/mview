@@ -17,9 +17,11 @@ use vars qw(@ISA
 @ISA = qw(Bio::MView::Align::Row);
 
 $Wildcard_Sym          = '.';     #key for default colouring
+
 $Default_PRO_Colormap  = 'P1';    #default protein colormap name
 $Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
 $Default_FIND_Colormap = 'FIND';  #default find pattern colormap name
+
 $Default_Colormap      = $Default_PRO_Colormap;
 
 %Template =
@@ -34,9 +36,10 @@ $Default_Colormap      = $Default_PRO_Colormap;
 $KWARGS = {
     'colormap' => $Default_Colormap,
     'find'     => '',
-    'mapsize'  => 0,
-    'patterns' => [],
 };
+
+my $BLOCK_SEPARATOR = ':';  #for multiple find patterns
+my $BLOCK_WARNINGS = 1;     #find block warnings only once
 
 sub new {
     my $type = shift;
@@ -56,6 +59,8 @@ sub new {
     bless $self, $type;
 
     $self->reset_display;
+
+    $BLOCK_WARNINGS = 1;   #reset
 
     $self;
 }
@@ -215,6 +220,28 @@ sub color_special {
     $self;
 }
 
+sub find_blocks {
+    my ($self, $find, $colormap) = @_;
+
+    my $mapsize = Bio::MView::Colormap::get_colormap_length($colormap);
+
+    my @patterns = split($BLOCK_SEPARATOR, $find);
+
+    if (@patterns > $mapsize and $BLOCK_WARNINGS) {
+        warn "find: @{[scalar @patterns]} pattern blocks but only $mapsize color@{[$mapsize gt 1 ? 's' : '']} in colormap '$colormap' - recycling\n";
+        $BLOCK_WARNINGS--;
+    }
+
+    my $matches = $self->{string}->findall(\@patterns, $mapsize);
+    my $index = {};
+
+    foreach my $block (@$matches) {
+        $index->{$block->[1]} = $block->[0];
+    }
+
+    return $index;
+}
+
 sub color_by_find_block {
     my $self = shift;
 
@@ -226,11 +253,7 @@ sub color_by_find_block {
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    my %mindex = ();
-    foreach my $block (@{$self->{string}->findall($kw->{patterns},
-						  $kw->{mapsize})}) {
-	$mindex{$block->[1]} = $block->[0];
-    }
+    my $block = $self->find_blocks($kw->{'find'}, $kw->{'colormap'});
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -247,9 +270,9 @@ sub color_by_find_block {
 	    next;
 	}
 	
-        if (exists $mindex{$i}) {
+        if (exists $block->{$i}) {
             #use symbol color/wildcard colour
-            @tmp = $self->get_color($mindex{$i}, $kw->{'colormap'});
+            @tmp = $self->get_color($block->{$i}, $kw->{'colormap'});
         } else {
             @tmp = ();
         }
