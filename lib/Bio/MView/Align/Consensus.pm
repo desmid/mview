@@ -3,6 +3,7 @@
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
+use Kwargs;
 use Bio::MView::Groupmap;
 use Bio::MView::Align;
 use Bio::MView::Display;
@@ -10,21 +11,19 @@ use Bio::MView::Align::Row;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
-use Kwargs;
+use strict;
+use vars qw($Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
+	    $Group_Any $Default_Group_Any $Default_Ignore $KWARGS);
+
+$Default_PRO_Colormap = 'PC1';    #default colormap name
+$Default_DNA_Colormap = 'DC1';    #default colormap name
+$Default_Colormap     = $Default_PRO_Colormap;  #NIGE
+
+$Default_Ignore       = 'none';   #default ignore classes setting  #NIGE
 
 $KWARGS = {
     'colormapc' => $Default_Colormap,
 };
-
-use strict;
-use vars qw($Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
-	    $Group_Any $Default_Group_Any $Default_Ignore);
-
-$Default_PRO_Colormap = 'PC1';    #default colormap name
-$Default_DNA_Colormap = 'DC1';    #default colormap name
-$Default_Colormap     = $Default_PRO_Colormap;
-
-$Default_Ignore       = 'none';   #default ignore classes setting
 
 my $Group             = $Bio::MView::Groupmap::Group;
 my $Group_Any         = $Bio::MView::Groupmap::Group_Any;
@@ -373,7 +372,6 @@ sub new {
 sub color_by_type {
     my $self = shift;
 
-    #overkill!
     return unless $self->{'type'} eq 'consensus';
 
     my $kw = Kwargs::set(@_);
@@ -421,7 +419,6 @@ sub color_by_type {
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);    #ignore second arg
 
-    #overkill!
     return unless $self->{'type'} eq 'consensus';
 
     my $kw = Kwargs::set(@_);

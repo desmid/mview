@@ -3,6 +3,7 @@
 ###########################################################################
 package Bio::MView::Align::Row;
 
+use Kwargs;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Ruler;
@@ -10,7 +11,8 @@ use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
 
-use Kwargs;
+use strict;
+use vars qw($KWARGS);
 
 $KWARGS = {
     ''         => 1,  #sentinel: terminate kwargs search
@@ -18,8 +20,6 @@ $KWARGS = {
     'gapcolor' => $Bio::MView::Colormap::Colour_Black,
     'symcolor' => $Bio::MView::Colormap::Colour_Black,
 };
-
-use strict;
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 

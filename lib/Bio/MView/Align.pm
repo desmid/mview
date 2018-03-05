@@ -40,7 +40,7 @@ my %Template =
      'hidehash'   => undef, #hash of id's to ignore for display
     );
 
-my %Known_Parameter =
+my %Known_Parameter =  #NIGE remove all and those $defaults below
     (
      'ref_id'     => [ '(\S+(?:\s*)?)+', undef ],
      'coloring'   => [ '\S+',     'none' ],
@@ -179,7 +179,7 @@ sub set_parameters {
 		$self->{$key} = $val;
 		next;
 	    }
-	    warn "${self}::set_parameters() bad value for '$key', got '$val', wanted '$p->{$key}->[0]'\n";
+	    warn "set_parameters() bad value for '$key', got '$val', wanted '$p->{$key}->[0]'\n";
 	}
 	#ignore unrecognised parameters which may be recognised by subclass
 	#set_parameters() methods.
@@ -353,76 +353,36 @@ sub set_color_scheme {
 
     $self->set_parameters(@_);
 
+    my $mode = $self->{'coloring'};
+
     #user-defined colouring?
-    $self->color_special('colormap'  => $self->{'colormap'},
-			 'symcolor'  => $self->{'symcolor'},
-			 'gapcolor'  => $self->{'gapcolor'},
-			 'css1'      => $self->{'css1'},
-			);
+    $self->color_special;
 
-    if ($self->{'coloring'} eq 'none') {
-        $self->color_none('colormap'  => $self->{'colormap'},
-                          'symcolor'  => $self->{'symcolor'},
-                          'gapcolor'  => $self->{'gapcolor'},
-                          'css1'      => $self->{'css1'},
-                         );
-    }
+    while (1) {
+        $self->color_none,
+            last  if $mode eq 'none';
 
-    elsif ($self->{'coloring'} eq 'any') {
-	$self->color_by_type('colormap'  => $self->{'colormap'},
-			     'symcolor'  => $self->{'symcolor'},
-			     'gapcolor'  => $self->{'gapcolor'},
-			     'css1'      => $self->{'css1'},
-			    );
-    }
+        $self->color_by_type,
+            last  if $mode eq 'any';
 
-    elsif ($self->{'coloring'} eq 'identity') {
-	$self->color_by_identity($self->{'ref_id'},
-				 'colormap'  => $self->{'colormap'},
-				 'symcolor'  => $self->{'symcolor'},
-				 'gapcolor'  => $self->{'gapcolor'},
-				 'css1'      => $self->{'css1'},
-				);
-    }
+        $self->color_by_identity,
+            last  if $mode eq 'identity';
 
-    elsif ($self->{'coloring'} eq 'mismatch') {
-	$self->color_by_mismatch($self->{'ref_id'},
-				 'colormap'  => $self->{'colormap'},
-				 'symcolor'  => $self->{'symcolor'},
-				 'gapcolor'  => $self->{'gapcolor'},
-				 'css1'      => $self->{'css1'},
-				);
-    }
+        $self->color_by_mismatch,
+            last  if $mode eq 'mismatch';
 
-    elsif ($self->{'coloring'} eq 'consensus') {
-	$self->color_by_consensus_sequence('colormap'  => $self->{'colormap'},
-					   'symcolor'  => $self->{'symcolor'},
-					   'gapcolor'  => $self->{'gapcolor'},
-					   'css1'      => $self->{'css1'},
-					  );
-    }
+        $self->color_by_consensus_sequence,
+            last  if $mode eq 'consensus';
 
-    elsif ($self->{'coloring'} eq 'group') {
-	$self->color_by_consensus_group('colormap'  => $self->{'colormap'},
-					'symcolor'  => $self->{'symcolor'},
-					'gapcolor'  => $self->{'gapcolor'},
-					'css1'      => $self->{'css1'},
-				       );
-    }
+        $self->color_by_consensus_group,
+            last  if $mode eq 'group';
 
-    else {
-        warn "${self}::set_color_scheme() unknown mode '$self->{'coloring'}'\n";
+        warn "set_color_scheme: unknown mode '$mode'\n";
+        last;
     }
 
     #find overlays anything else
-    if ($self->{'find'} ne '') {
-	$self->color_by_find_block('colormap'  => $self->{'colormapf'},
-				   'symcolor'  => $self->{'symcolor'},
-				   'gapcolor'  => $self->{'gapcolor'},
-				   'css1'      => $self->{'css1'},
-				   'find'      => $self->{'find'},
-            );
-    }
+    $self->color_by_find_block  if $self->{'find'} ne '';
 
     return $self;
 }
@@ -432,36 +392,23 @@ sub set_consensus_color_scheme {
 
     $self->set_parameters(@_);
 
-    if ($self->{'coloringc'} eq 'none') {
-        ;
-    }
+    my $mode = $self->{'coloringc'};
 
-    elsif ($self->{'coloringc'} eq 'any') {
-	$self->color_by_type('colormap'  => $self->{'colormap'},
-                             'colormapc' => $self->{'colormapc'},
-			     'symcolor'  => $self->{'symcolor'},
-			     'gapcolor'  => $self->{'gapcolor'},
-			     'css1'      => $self->{'css1'},
-			    );
-    }
+    while (1) {
+        last  if $mode eq 'none';
 
-    elsif ($self->{'coloringc'} eq 'identity') {
-	$self->color_consensus_by_identity($aln, $ref,
-                                 'colormap'  => $self->{'colormap'},
-                                 'colormapc' => $self->{'colormapc'},
-			         'symcolor'  => $self->{'symcolor'},
-			         'gapcolor'  => $self->{'gapcolor'},
-			         'css1'      => $self->{'css1'},
-			    );
-    }
+        $self->color_by_type,
+            last  if $mode eq 'any';
 
-    else {
-        warn "${self}::set_consensus_color_scheme() unknown mode '$self->{'coloringc'}'\n";
+        $self->color_consensus_by_identity($aln, $ref),
+            last  if $mode eq 'identity';
+
+        warn "set_consensus_color_scheme: unknown mode '$mode'\n";
+        last;
     }
 
     return $self;
 }
-
 
 #propagate colour scheme to row objects
 sub color_special {
@@ -471,11 +418,16 @@ sub color_special {
 	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special(@_);
+	$r->color_special('colormap'  => $self->{'colormap'},
+                          'symcolor'  => $self->{'symcolor'},
+                          'gapcolor'  => $self->{'gapcolor'},
+                          'css1'      => $self->{'css1'},
+        );
 	$r->set_display('label0'=>'', #not 1
                         'label2'=>'', 'label3'=>'',
 			'label4'=>'', 'label5'=>'',
-                        'label6'=>'', 'label7'=>'');
+                        'label6'=>'', 'label7'=>'',
+        );
     }
     $self;
 }
@@ -488,7 +440,11 @@ sub color_none {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none(@_);
+	$r->color_none('colormap'  => $self->{'colormap'},
+                       'symcolor'  => $self->{'symcolor'},
+                       'gapcolor'  => $self->{'gapcolor'},
+                       'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
@@ -501,39 +457,54 @@ sub color_by_type {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type(@_);
+	$r->color_by_type('colormap'  => $self->{'colormap'},
+                          'colormapc' => $self->{'colormapc'},
+                          'symcolor'  => $self->{'symcolor'},
+                          'gapcolor'  => $self->{'gapcolor'},
+                          'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
 
 #propagate colour scheme to row objects
 sub color_by_identity {
-    my ($self, $id) = (shift, shift);
+    my $self = shift;
 
-    my $ref = $self->item($id);
+    my $ref = $self->item($self->{'ref_id'});
     return $self  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, @_);
+	$r->color_by_identity($ref,
+                              'colormap'  => $self->{'colormap'},
+                              'symcolor'  => $self->{'symcolor'},
+                              'gapcolor'  => $self->{'gapcolor'},
+                              'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
 
 #propagate colour scheme to row objects
 sub color_by_mismatch {
-    my ($self, $id) = (shift, shift);
+    my $self = shift;
 
-    my $ref = $self->item($id);
+    my $ref = $self->item($self->{'ref_id'});
     return $self  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_mismatch($ref, @_);
+	$r->color_by_mismatch($ref,
+                              'colormap'  => $self->{'colormap'},
+                              'symcolor'  => $self->{'symcolor'},
+                              'gapcolor'  => $self->{'gapcolor'},
+                              'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
@@ -561,7 +532,12 @@ sub color_by_consensus_sequence {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_sequence($r, @_);
+	$con->color_by_consensus_sequence($r,
+                                          'colormap'  => $self->{'colormap'},
+                                          'symcolor'  => $self->{'symcolor'},
+                                          'gapcolor'  => $self->{'gapcolor'},
+                                          'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
@@ -590,7 +566,12 @@ sub color_by_consensus_group {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_group($r, @_);
+	$con->color_by_consensus_group($r,
+                                       'colormap'  => $self->{'colormap'},
+                                       'symcolor'  => $self->{'symcolor'},
+                                       'gapcolor'  => $self->{'gapcolor'},
+                                       'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }
@@ -603,7 +584,12 @@ sub color_by_find_block {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block(@_);
+	$r->color_by_find_block('colormap'  => $self->{'colormapf'},
+                                'symcolor'  => $self->{'symcolor'},
+                                'gapcolor'  => $self->{'gapcolor'},
+                                'css1'      => $self->{'css1'},
+                                'find'      => $self->{'find'},
+        );
     }
     $self;
 }
@@ -619,7 +605,13 @@ sub color_consensus_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, @_);
+	$r->color_by_identity($ref,
+                              'colormap'  => $self->{'colormap'},
+                              'colormapc' => $self->{'colormapc'},
+                              'symcolor'  => $self->{'symcolor'},
+                              'gapcolor'  => $self->{'gapcolor'},
+                              'css1'      => $self->{'css1'},
+        );
     }
     $self;
 }

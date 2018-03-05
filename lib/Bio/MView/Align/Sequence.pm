@@ -3,22 +3,16 @@
 ###########################################################################
 package Bio::MView::Align::Sequence;
 
+use Kwargs;
 use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
 @ISA = qw(Bio::MView::Align::Row);
 
-use Kwargs;
-
-$KWARGS = {
-    'colormap' => $Default_Colormap,
-    'find'     => '',
-};
-
 use strict;
 use vars qw($Wildcard_Sym $Default_PRO_Colormap $Default_DNA_Colormap
-            $Default_FIND_Colormap $Default_Colormap %Template);
+            $Default_FIND_Colormap $Default_Colormap %Template $KWARGS);
 
 $Wildcard_Sym          = '.';     #key for default colouring
 
@@ -26,7 +20,12 @@ $Default_PRO_Colormap  = 'P1';    #default protein colormap name
 $Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
 $Default_FIND_Colormap = 'FIND';  #default find pattern colormap name
 
-$Default_Colormap      = $Default_PRO_Colormap;
+$Default_Colormap      = $Default_PRO_Colormap; #NIGE
+
+$KWARGS = {
+    'colormap' => $Default_Colormap,
+    'find'     => '',
+};
 
 %Template =
     (

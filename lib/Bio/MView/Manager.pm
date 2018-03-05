@@ -161,7 +161,6 @@ sub gc_flag {
 
 sub add_display {
     my ($self, $bld, $aln) = @_;
-    my ($dis, $tmp);
 
     my $ref    = $bld->get_row_id($PAR->get('ref_id'));
     my $refobj = $bld->get_row($PAR->get('ref_id'));
@@ -175,12 +174,12 @@ sub add_display {
     $bld->change_alignment_settings($aln);
 
     #Universal::vmstat("display constructor");
-    $dis = new Bio::MView::Display($aln->init_display);
+    my $dis = new Bio::MView::Display($aln->init_display);
     #Universal::vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
     if ($PAR->get('ruler')) {
-        $tmp = $aln->build_ruler($refobj);
+        my $tmp = $aln->build_ruler($refobj);
 	$tmp->append_display($dis);
         #Universal::vmstat("ruler added");
     }
@@ -213,14 +212,14 @@ sub add_display {
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
-	$tmp = $aln->build_conservation_row($PAR->get('moltype'));
+	my $tmp = $aln->build_conservation_row($PAR->get('moltype'));
 	$tmp->append_display($dis);
         #Universal::vmstat("conservation added");
     }
 
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
-	$tmp = $aln->build_consensus_rows(
+	my $tmp = $aln->build_consensus_rows(
                                           $PAR->get('con_groupmap'),
                                           $PAR->get('con_threshold'),
                                           $PAR->get('con_ignore'),
