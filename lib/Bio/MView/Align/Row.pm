@@ -10,112 +10,18 @@ use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
 
-use strict;
-use vars qw($KWARGS);
+use Kwargs;
 
 $KWARGS = {
+    ''         => 1,  #sentinel: terminate kwargs search
     'css1'     => 0,
     'gapcolor' => $Bio::MView::Colormap::Colour_Black,
     'symcolor' => $Bio::MView::Colormap::Colour_Black,
 };
 
+use strict;
+
 #sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub set_kwargs {
-    my $self = shift;
-    my $kw = {};
-    #warn "set_kwargs: (@_)\n";
-    $self->_set_kwargs_search($kw, ref $self, @_);
-    return $kw;
-}
-
-sub _set_kwargs_search {
-    my ($self, $kw, $class) = (shift, shift, shift);
-
-    #warn "entering: $class\n";
-
-    #do base case?
-    if ($class eq 'Bio::MView::Align::Row' or !$class) {
-        #warn "  base case\n";
-        $self->_do_base_kwargs($kw, $class, @_);
-        return;
-    }
-
-    #do inner
-    #warn "  inner case\n";
-    @_ = $self->_do_inner_kwargs($kw, $class, @_);
-
-    #search parent
-    my @isa = eval '@' . $class . '::ISA';
-    $class = pop @isa;
-
-    #warn "  trying: $class\n";
-    $self->_set_kwargs_search($kw, $class, @_);
-}
-
-sub _do_base_kwargs {
-    my ($self, $kw, $class) = (shift, shift, shift);
-
-    #warn "  do base: $class (@_)\n";
-    my $kwargs = eval '$' . $class . '::KWARGS';
-
-    if (defined $kwargs) {
-
-        #set own defaults
-        map { $kw->{$_} = $kwargs->{$_} } keys %$kwargs;
-
-        my $caller = ref $self;
-
-        while (@_) {
-            my ($k, $v) = (shift, shift);
-
-            die "${caller}: unknown keyword '$k'\n"
-                unless exists $kw->{$k};
-
-            die "${caller}: keyword '$k' has undefined value\n"
-                unless defined $v;
-
-            #warn "  saving $k: $v\n";
-            $kw->{$k} = $v;  #override default
-        }
-    }
-}
-
-sub _do_inner_kwargs {
-    my ($self, $kw, $class) = (shift, shift, shift);
-
-    #warn "  do inner: $class (@_)\n";
-    my $kwargs = eval '$' . $class . '::KWARGS';
-
-    my @rest = ();
-
-    if (defined $kwargs) {
-
-        #set own defaults
-        map { $kw->{$_} = $kwargs->{$_} } keys %$kwargs;
-
-        my $caller = ref $self;
-
-        while (@_) {
-            my ($k, $v) = (shift, shift);
-
-            die "${caller}: keyword '$k' has undefined value\n"
-                unless defined $v;
-
-            if (!exists $kw->{$k}) {
-                push @rest, $k, $v;  #replace for parent
-                next;
-            }
-
-            #warn "  saving $k: $v\n";
-            $kw->{$k} = $v;  #override default
-        }
-
-        return @rest;
-    }
-
-    return @_;
-}
 
 sub set_display {
     my $self = shift;

@@ -8,12 +8,17 @@ use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
-use strict;
-use vars qw(@ISA
-	    $Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
-	    $Group_Any $Default_Group_Any $Default_Ignore $KWARGS);
-
 @ISA = qw(Bio::MView::Align::Sequence);
+
+use Kwargs;
+
+$KWARGS = {
+    'colormapc' => $Default_Colormap,
+};
+
+use strict;
+use vars qw($Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
+	    $Group_Any $Default_Group_Any $Default_Ignore);
 
 $Default_PRO_Colormap = 'PC1';    #default colormap name
 $Default_DNA_Colormap = 'DC1';    #default colormap name
@@ -32,10 +37,6 @@ my %Known_Ignore_Class =
      'singleton'  => 1,    #ignore singleton, ie., self-only consensi
      'class'      => 1,    #ignore non-singleton, ie., class consensi
     );
-
-$KWARGS = {
-    'colormapc' => $Default_Colormap,
-};
 
 sub list_ignore_classes { return join(",", sort keys %Known_Ignore_Class) }
 
@@ -375,7 +376,7 @@ sub color_by_type {
     #overkill!
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -423,7 +424,7 @@ sub color_by_identity {
     #overkill!
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -486,7 +487,7 @@ sub color_by_consensus_sequence {
     die "${self}::color_by_consensus_sequence() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -554,7 +555,7 @@ sub color_by_consensus_group {
     die "${self}::color_by_consensus_group() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 

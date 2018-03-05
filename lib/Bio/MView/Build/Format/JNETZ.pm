@@ -5,7 +5,6 @@ package Bio::MView::Build::Format::JNETZ;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Align;
-
 use strict;
 use vars qw(@ISA);
 
@@ -93,8 +92,6 @@ sub header {
 package Bio::MView::Build::Row::JNETZ;
 
 use Bio::MView::Build::Row;
-
-use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Simple_Row);
@@ -176,6 +173,7 @@ sub color_by_type {
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align::Sequence;
 
+use Kwargs;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align::Sequence);
@@ -187,7 +185,7 @@ Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 sub color_row {
     my $self = shift;
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 

@@ -7,14 +7,18 @@ use Bio::MView::Align;
 use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
-use strict;
-use vars qw(@ISA
-	    $Wildcard_Sym
-            $Default_PRO_Colormap $Default_DNA_Colormap
-            $Default_FIND_Colormap $Default_Colormap
-	    %Template $KWARGS);
-
 @ISA = qw(Bio::MView::Align::Row);
+
+use Kwargs;
+
+$KWARGS = {
+    'colormap' => $Default_Colormap,
+    'find'     => '',
+};
+
+use strict;
+use vars qw($Wildcard_Sym $Default_PRO_Colormap $Default_DNA_Colormap
+            $Default_FIND_Colormap $Default_Colormap %Template);
 
 $Wildcard_Sym          = '.';     #key for default colouring
 
@@ -32,11 +36,6 @@ $Default_Colormap      = $Default_PRO_Colormap;
      'string'  => undef,     #alignment string
      'display' => undef,     #hash of display parameters
     );
-
-$KWARGS = {
-    'colormap' => $Default_Colormap,
-    'find'     => '',
-};
 
 my $BLOCK_SEPARATOR = ':';  #for multiple find patterns
 my $BLOCK_WARNINGS = 1;     #find block warnings only once
@@ -136,7 +135,7 @@ sub color_none {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -167,7 +166,7 @@ sub color_none {
 sub color_special {
     my $self = shift;
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
@@ -247,7 +246,7 @@ sub color_by_find_block {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -297,7 +296,7 @@ sub color_by_type {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -355,7 +354,7 @@ sub color_by_identity_body {
     die "${self}::color_by_identity() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = $self->set_kwargs(@_);
+    my $kw = Kwargs::set(@_);
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 
