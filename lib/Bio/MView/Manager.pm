@@ -65,7 +65,7 @@ sub parse {
 
     while (defined ($bld = $self->next)) {
 
-        $bld->reset;  #NIGE renamed
+        $bld->reset;
 
         while (defined ($aln = $bld->next)) {
 
@@ -187,23 +187,7 @@ sub add_display {
     #attach the alignment
     if ($PAR->get('alignment')) {
         if ($PAR->get('html')) {
-            $aln->set_color_scheme
-                (
-                 'ref_id'      => $ref,
-                 'coloring'    => $PAR->get('aln_coloring'),
-                 'colormap'    => $PAR->get('aln_colormap'),
-                 'colormapf'   => $PAR->get('fnd_colormap'),
-                 'group'       => $PAR->get('aln_groupmap'),
-                 'threshold'   => $PAR->get('aln_threshold'),
-                 'ignore'      => $PAR->get('aln_ignore'),
-                 'con_gaps'    => $PAR->get('con_gaps'),
-                 'css1'        => $PAR->get('css1'),
-                 'alncolor'    => $PAR->get('alncolor'),
-                 'labcolor'    => $PAR->get('labcolor'),
-                 'symcolor'    => $PAR->get('symcolor'),
-                 'gapcolor'    => $PAR->get('gapcolor'),
-                 'find'        => $PAR->get('find'),
-                );
+            $aln->set_color_scheme($ref);
         }
         #Universal::vmstat("set_color_scheme done");
 	$aln->append_display($dis, $self->gc_flag);
@@ -219,23 +203,11 @@ sub add_display {
 
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
-	my $tmp = $aln->build_consensus_rows(
-                                          $PAR->get('con_groupmap'),
-                                          $PAR->get('con_threshold'),
-                                          $PAR->get('con_ignore'),
-                                          $PAR->get('con_gaps'),
-                                         );
-
-        $tmp->set_consensus_color_scheme(
-                               $aln, $ref,
-			       'coloringc' => $PAR->get('con_coloring'),
-                               'colormap'  => $PAR->get('aln_colormap'),
-                               'colormapc' => $PAR->get('con_colormap'),
-                               'group'     => $PAR->get('con_groupmap'),
-                               'threshold' => $PAR->get('con_threshold'),
-                               'ignore'    => $PAR->get('con_ignore'),
-			       'css1'      => $PAR->get('css1'),
-                              );
+	my $tmp = $aln->build_consensus_rows($PAR->get('con_groupmap'),
+                                             $PAR->get('con_threshold'),
+                                             $PAR->get('con_ignore'),
+                                             $PAR->get('con_gaps'));
+        $tmp->set_consensus_color_scheme($aln, $ref);
 	$tmp->append_display($dis);
         #Universal::vmstat("consensi added");
     }
@@ -260,8 +232,6 @@ sub dump_css       { Bio::MView::Colormap::dump_css1_colormaps(@_) }
 
 sub load_groupmaps { Bio::MView::Groupmap::load_groupmaps(@_) }
 sub dump_groupmaps { Bio::MView::Groupmap::dump_groupmaps(@_) }
-
-#sub get_default_find_colormap { Bio::MView::Align::get_default_find_colormap(@_) }
 
 sub print {
     my ($self, $stm) = (@_, \*STDOUT);

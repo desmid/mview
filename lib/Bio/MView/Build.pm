@@ -12,8 +12,6 @@ use Bio::MView::Display;
 use Bio::MView::Build::Scheduler;
 use strict;
 
-my $DEBUG_PARAM = 0; #NIGE
-
 my %Template =
     (
      'entry'       => undef,   #parse tree ref
@@ -413,9 +411,6 @@ sub build_base_alignment {
 
     $aln = new Bio::MView::Align(\@list, $self->{'aligned'});
 
-    $aln->set_parameters('nopshash' => $self->{'nops_uid'},  #NIGE
-                         'hidehash' => $self->{'hide_uid'});
-
     #filter alignment based on %identity to reference
     if ((0 < $PAR->get('minident') or $PAR->get('maxident') < 100)
         and defined $self->{'ref_row'}) {
@@ -425,9 +420,11 @@ sub build_base_alignment {
                                          $PAR->get('maxident'),
                                          $self->{'show'},
                                          keys %{$self->{'keep_uid'}});
-        $tmp->set_parameters($aln->get_parameters); #NIGE
         $aln = $tmp;
     }
+
+    $aln->set_parameters('nopshash' => $self->{'nops_uid'},
+                         'hidehash' => $self->{'hide_uid'});
 
     #compute columnwise data for aligned output
     unless ($PAR->get('keepinserts')) {

@@ -102,6 +102,7 @@ sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align);
@@ -130,14 +131,12 @@ sub header {
 sub set_color_scheme {
     my $self = shift;
 
-    $self->set_parameters(@_);
+    return $self  if $PAR->get('aln_coloring') eq 'none';
 
-    return $self  if $self->{'coloring'} eq 'none';
-
-    $self->color_by_type('colormap'  => $self->{'colormap'},
-			 'symcolor'  => $self->{'symcolor'},
-			 'gapcolor'  => $self->{'gapcolor'},
-			 'css1'      => $self->{'css1'},
+    $self->color_by_type('aln_colormap'  => $PAR->get('aln_colormap'),
+			 'symcolor'      => $PAR->get('symcolor'),
+			 'gapcolor'      => $PAR->get('gapcolor'),
+			 'css1'          => $PAR->get('css1'),
 			);
     $self;
 }
@@ -157,12 +156,12 @@ sub color_by_type {
 	}
 	if ($row->{'type'} eq 'jnet.pred') {
 	    #structure row: use our colours
-	    $row->color_row(@_,'colormap'=> 'JNET.PRED');
+	    $row->color_row(@_, 'aln_colormap'=> 'JNET.PRED');
 	    next;
 	}
 	if ($row->{'type'} eq 'jnet.conf') {
 	    #confidence row: use our colours
-	    $row->color_row(@_,'colormap'=> 'JNET.CONF');
+	    $row->color_row(@_, 'aln_colormap'=> 'JNET.CONF');
 	    next;
 	}
     }
@@ -207,7 +206,7 @@ sub color_row {
 	}
 
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'colormap'});
+	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
 	if (@tmp) {
 	    if ($kw->{'css1'}) {

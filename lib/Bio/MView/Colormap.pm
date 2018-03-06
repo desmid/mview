@@ -45,24 +45,6 @@ sub check_colormap {
     return undef;
 }
 
-sub get_default_alignment_colormap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Bio::MView::Align::Sequence::Default_PRO_Colormap;
-    }
-    return $Bio::MView::Align::Sequence::Default_DNA_Colormap,
-}
-
-sub get_default_consensus_colormap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
-    }
-    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
-}
-
-#sub get_default_find_colormap {
-#    return $Bio::MView::Align::Sequence::Default_FIND_Colormap;
-#}
-
 #load colormap data from stream
 sub load_colormaps {
     my ($stream, $override) = (@_, \*DATA, 1);    #allow replacement maps

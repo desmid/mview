@@ -4,18 +4,19 @@
 package Bio::MView::Option::Types;
 
 use Bio::MView::Option::Arguments;
-use Bio::MView::Colormap;
 use Bio::MView::Groupmap;
+use Bio::MView::Align::Sequence;
+use Bio::MView::Align::Consensus;
 use NPB::Parse::Regexps;
 use strict;
 use vars qw($Types);
 
 ######################################################################
-sub get_default_alignment_colormap {
-    Bio::MView::Colormap::get_default_alignment_colormap(@_)
+sub get_default_sequence_colormap {
+    Bio::MView::Align::Sequence::get_default_sequence_colormap(@_)
 }
 sub get_default_consensus_colormap {
-    Bio::MView::Colormap::get_default_consensus_colormap(@_)
+    Bio::MView::Align::Consensus::get_default_consensus_colormap(@_)
 }
 sub get_default_groupmap {
     Bio::MView::Groupmap::get_default_groupmap(@_)
@@ -391,7 +392,7 @@ $Types = [
             #warn "Setting moltype: $pv";
             #reset the default coloring schemes for subsequent options
             $self->update_option('ALIGNMENT::colormap',
-                                 get_default_alignment_colormap($pv));
+                                 get_default_sequence_colormap($pv));
 
             $self->update_option('CONSENSUS::con_colormap',
                                  get_default_consensus_colormap($pv));
@@ -426,7 +427,7 @@ $Types = [
         'label'   => "name",
         #'values'  => list_colormap_names,
         'values'  => "see manual",
-        'default' => get_default_alignment_colormap,
+        'default' => get_default_sequence_colormap,
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
             my $pv = check_colormap($ov);

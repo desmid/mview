@@ -3,9 +3,11 @@
 ######################################################################
 package Bio::MView::Align;
 
-use Bio::MView::Colormap;
+use Bio::MView::Option::Parameters;  #for PAR
 use Bio::MView::Display;
-use Bio::MView::Align::Row;
+use Bio::MView::Align::Ruler;
+use Bio::MView::Align::Consensus;
+use Bio::MView::Align::Conservation;
 
 use strict;
 
@@ -17,50 +19,8 @@ my %Template =
      'parent'     => undef, #identifier of parent sequence
      'cursor'     => -1,    #index2row iterator
      'tally'      => undef, #column tallies for consensus
-
-     'ref_id'     => undef, #identifier of reference row
-     'colormap'   => undef, #name of alignment colormap
-     'group'      => undef, #consensus group name
-     'ignore'     => undef, #ignore self/non-self classes
-     'con_gaps'   => undef, #ignore gaps when computing consensus
-     'threshold'  => undef, #consensus threshold for colouring
-     'bold'       => undef, #display alignment in bold
-     'css1'       => undef, #use CSS1 style sheets
-     'alncolor'   => undef, #colour of alignment background
-     'symcolor'   => undef, #default colour of alignment text
-     'gapcolor'   => undef, #colour of alignment gap
-     'find'       => undef, #pattern to match in sequence
-
-     'coloring'   => undef, #alignment coloring mode
-     'coloringc'  => undef, #consensus coloring mode
-     'colormapc'  => undef, #name of consensus colormap
-     'colormapf'  => undef, #name of find colormap
-     'old'        => {},    #previous settings of the above
-     'nopshash'   => undef, #hash of id's to ignore for computations/colouring
-     'hidehash'   => undef, #hash of id's to ignore for display
-    );
-
-my %Known_Parameter =  #NIGE remove all and those $defaults below
-    (
-     'ref_id'     => [ '(\S+(?:\s*)?)+', undef ],
-     'coloring'   => [ '\S+',     'none' ],
-     'coloringc'  => [ '\S+',     'none' ],
-     'colormap'   => [ '\S+',     $Bio::MView::Align::Sequence::Default_Colormap ],
-     'colormapc'  => [ '\S+',     $Bio::MView::Align::Consensus::Default_Colormap ],
-     'colormapf'  => [ '\S+',     $Bio::MView::Align::Sequence::Default_FIND_Colormap ],
-     'bold'       => [ '[01]',    1 ],
-     'css1'       => [ '[01]',    0 ],
-     'alncolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_White ],
-     'labcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_Black ],
-     'symcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_Black ],
-     'gapcolor'   => [ '\S+',     $Bio::MView::Colormap::Colour_DarkGray ],
-     'group'      => [ '\S+',     $Bio::MView::Align::Consensus::Default_Group ],
-     'ignore'     => [ '\S+',     $Bio::MView::Align::Consensus::Default_Ignore ],
-     'con_gaps'   => [ '[01]',     1 ],
-     'threshold'  => [ '\S+',     80 ],
-     'nopshash'   => [ {},        {} ],
-     'hidehash'   => [ {},        {} ],
-     'find'       => [ '\S*',     '' ],
+     'nopshash'   => undef, #id's to ignore for computations/colouring
+     'hidehash'   => undef, #id's to ignore for display
     );
 
 sub new {
@@ -76,7 +36,10 @@ sub new {
 
     $self->{'id2index'}  = {};
     $self->{'index2row'} = [];
-    $self->{'aligned'}  = $aligned;
+    $self->{'aligned'}   = $aligned;
+    $self->{'tally'}     = {};
+    $self->{'nopshash'}  = {};
+    $self->{'hidehash'}  = {};
 
     #warn "Align: [$obj][$aligned]\n";
 
@@ -105,8 +68,6 @@ sub new {
 
     bless $self, $type;
 
-    $self->initialise_parameters;
-
     $self;
 }
 
@@ -129,73 +90,13 @@ sub dump {
     $self;
 }
 
-sub initialise_parameters {
-    my $self = shift;
-    my ($p) = (@_, \%Known_Parameter);
-    foreach my $k (keys %$p) {
-	#warn "initialise_parameters() $k\n";
-	if (ref $p->{$k}->[0] eq 'ARRAY') {
-	    $self->{$k} = [];
-	    next;
-	}
-	if (ref $p->{$k}->[0] eq 'HASH') {
-	    $self->{$k} = {};
-	    next;
-	}
-	$self->{$k} = $p->{$k}->[1];
-    }
-    $self;
-}
-
 sub set_parameters {
     my $self = shift;
-    my $p = ref $_[0] ? shift : \%Known_Parameter;
-    my ($key, $val);
-    #warn "set_parameters($self) ". join(" ", keys %$p), "\n";
-    while ($key = shift) {
-	$val = shift;
-	#warn "set_parameters() $key, $val\n";
-	if (exists $p->{$key}) {
-	    #warn "set_parameters() $key, $val\n";
-	    if (ref $p->{$key}->[0] eq 'ARRAY' and ref $val eq 'ARRAY') {
-		$self->{'old'}->{$key} = $self->{$key};
-		$self->{$key} = $val;
-		next;
-	    }
-	    if (ref $p->{$key}->[0] eq 'HASH' and ref $val eq 'HASH') {
-		$self->{'old'}->{$key} = $self->{$key};
-		$self->{$key} = $val;
-		next;
-	    }
-	    if (! defined $val) {
-		#set default
-		$self->{'old'}->{$key} = $self->{$key};
-		$self->{$key} = $p->{$key}->[1];
-		next;
-	    }
-	    if ($val =~ /^$p->{$key}->[0]$/) {
-		#matches expected format
-		$self->{'old'}->{$key} = $self->{$key};
-		$self->{$key} = $val;
-		next;
-	    }
-	    warn "set_parameters() bad value for '$key', got '$val', wanted '$p->{$key}->[0]'\n";
-	}
-	#ignore unrecognised parameters which may be recognised by subclass
-	#set_parameters() methods.
-	warn "set_parameters(IGNORE) $key, $val\n";
+    while (@_) {
+        my ($k, $v) = (shift, shift);
+        $self->{$k} = $v;
     }
-
     $self;
-}
-
-sub get_parameters {
-    my $self = shift;
-    my @tmp = ();
-    foreach my $k (keys %Known_Parameter) {
-        push @tmp, $k, $self->{$k};
-    }
-    return @tmp;
 }
 
 sub length { $_[0]->{'length'} }
@@ -316,32 +217,33 @@ sub header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
 
+    my $mode      = $PAR->get('aln_coloring');
+    my $threshold = $PAR->get('aln_threshold');
+    my $ref_id    = $PAR->get('ref_id');
+    my $find      = $PAR->get('find');
+
     my $s = '';
 
-    if ($self->{'coloring'} eq 'any') {
+    if ($mode eq 'any') {
 	$s .= "Colored by: property";
     }
-    elsif ($self->{'coloring'} eq 'identity' and defined $self->{'ref_id'}) {
+    elsif ($mode eq 'identity' and defined $ref_id) {
 	$s .= "Colored by: identity";
     }
-    elsif ($self->{'coloring'} eq 'mismatch' and defined $self->{'ref_id'}) {
+    elsif ($mode eq 'mismatch' and defined $ref_id) {
 	$s .= "Colored by: mismatch";
     }
-    elsif ($self->{'coloring'} eq 'consensus') {
-	$s .= "Colored by: consensus/$self->{'threshold'}\%";
+    elsif ($mode eq 'consensus') {
+	$s .= "Colored by: consensus/$threshold\%";
     }
-    elsif ($self->{'coloring'} eq 'group') {
-	$s .= "Colored by: consensus group/$self->{'threshold'}\%";
+    elsif ($mode eq 'group') {
+	$s .= "Colored by: consensus group/$threshold\%";
     }
 
     #overlay any find pattern colouring
-    if ($self->{'find'} ne '') {
-        if ($s eq '') {
-            $s .= "Colored by: ";
-        } else {
-            $s .= "; ";
-        }
-        $s .= "search pattern '$self->{'find'}'\n";
+    if ($find ne '') {
+        $s .= $s eq '' ? "Colored by: " : "; ";
+        $s .= "search pattern '$find'\n";
     }
     $s .= "\n"  if $s ne '';
 
@@ -349,11 +251,9 @@ sub header {
 }
 
 sub set_color_scheme {
-    my $self = shift;
+    my ($self, $ref) = (shift, shift);
 
-    $self->set_parameters(@_);
-
-    my $mode = $self->{'coloring'};
+    my $mode = $PAR->get('aln_coloring');
 
     #user-defined colouring?
     $self->color_special;
@@ -365,10 +265,10 @@ sub set_color_scheme {
         $self->color_by_type,
             last  if $mode eq 'any';
 
-        $self->color_by_identity,
+        $self->color_by_identity($ref),
             last  if $mode eq 'identity';
 
-        $self->color_by_mismatch,
+        $self->color_by_mismatch($ref),
             last  if $mode eq 'mismatch';
 
         $self->color_by_consensus_sequence,
@@ -382,7 +282,7 @@ sub set_color_scheme {
     }
 
     #find overlays anything else
-    $self->color_by_find_block  if $self->{'find'} ne '';
+    $self->color_by_find_block  if $PAR->get('find') ne '';
 
     return $self;
 }
@@ -390,9 +290,7 @@ sub set_color_scheme {
 sub set_consensus_color_scheme {
     my ($self, $aln, $ref) = (shift, shift, shift);
 
-    $self->set_parameters(@_);
-
-    my $mode = $self->{'coloringc'};
+    my $mode = $PAR->get('con_coloring');
 
     while (1) {
         last  if $mode eq 'none';
@@ -418,11 +316,10 @@ sub color_special {
 	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special('colormap'  => $self->{'colormap'},
-                          'symcolor'  => $self->{'symcolor'},
-                          'gapcolor'  => $self->{'gapcolor'},
-                          'css1'      => $self->{'css1'},
-        );
+	$r->color_special('aln_colormap' => $PAR->get('aln_colormap'),
+                          'symcolor'     => $PAR->get('symcolor'),
+                          'gapcolor'     => $PAR->get('gapcolor'),
+                          'css1'         => $PAR->get('css1'));
 	$r->set_display('label0'=>'', #not 1
                         'label2'=>'', 'label3'=>'',
 			'label4'=>'', 'label5'=>'',
@@ -440,11 +337,10 @@ sub color_none {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none('colormap'  => $self->{'colormap'},
-                       'symcolor'  => $self->{'symcolor'},
-                       'gapcolor'  => $self->{'gapcolor'},
-                       'css1'      => $self->{'css1'},
-        );
+	$r->color_none('aln_colormap' => $PAR->get('aln_colormap'),
+                       'symcolor'     => $PAR->get('symcolor'),
+                       'gapcolor'     => $PAR->get('gapcolor'),
+                       'css1'         => $PAR->get('css1'));
     }
     $self;
 }
@@ -457,21 +353,20 @@ sub color_by_type {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type('colormap'  => $self->{'colormap'},
-                          'colormapc' => $self->{'colormapc'},
-                          'symcolor'  => $self->{'symcolor'},
-                          'gapcolor'  => $self->{'gapcolor'},
-                          'css1'      => $self->{'css1'},
-        );
+	$r->color_by_type('aln_colormap' => $PAR->get('aln_colormap'),
+                          'con_colormap' => $PAR->get('con_colormap'),
+                          'symcolor'     => $PAR->get('symcolor'),
+                          'gapcolor'     => $PAR->get('gapcolor'),
+                          'css1'         => $PAR->get('css1'));
     }
     $self;
 }
 
 #propagate colour scheme to row objects
 sub color_by_identity {
-    my $self = shift;
+    my ($self, $id) = (shift, shift);
 
-    my $ref = $self->item($self->{'ref_id'});
+    my $ref = $self->item($id);
     return $self  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
@@ -479,20 +374,19 @@ sub color_by_identity {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($ref,
-                              'colormap'  => $self->{'colormap'},
-                              'symcolor'  => $self->{'symcolor'},
-                              'gapcolor'  => $self->{'gapcolor'},
-                              'css1'      => $self->{'css1'},
-        );
+                              'aln_colormap' => $PAR->get('aln_colormap'),
+                              'symcolor'     => $PAR->get('symcolor'),
+                              'gapcolor'     => $PAR->get('gapcolor'),
+                              'css1'         => $PAR->get('css1'));
     }
     $self;
 }
 
 #propagate colour scheme to row objects
 sub color_by_mismatch {
-    my $self = shift;
+    my ($self, $id) = (shift, shift);
 
-    my $ref = $self->item($self->{'ref_id'});
+    my $ref = $self->item($id);
     return $self  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
@@ -500,11 +394,10 @@ sub color_by_mismatch {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$r->color_by_mismatch($ref,
-                              'colormap'  => $self->{'colormap'},
-                              'symcolor'  => $self->{'symcolor'},
-                              'gapcolor'  => $self->{'gapcolor'},
-                              'css1'      => $self->{'css1'},
-        );
+                              'aln_colormap' => $PAR->get('aln_colormap'),
+                              'symcolor'     => $PAR->get('symcolor'),
+                              'gapcolor'     => $PAR->get('gapcolor'),
+                              'css1'         => $PAR->get('css1'));
     }
     $self;
 }
@@ -513,31 +406,25 @@ sub color_by_mismatch {
 sub color_by_consensus_sequence {
     my $self = shift;
 
-    #is there already a suitable tally?
-    if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and
-	 $self->{'old'}->{'group'} ne $self->{'group'})) {
-	$self->compute_tallies($self->{'group'});
-    }
+    my $tally = $self->compute_tallies($PAR->get('aln_groupmap'));
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to,
-					       $self->{'tally'},
-					       $self->{'group'},
-					       $self->{'threshold'},
-					       $self->{'ignore'});
+					       $tally,
+					       $PAR->get('aln_groupmap'),
+					       $PAR->get('aln_threshold'),
+					       $PAR->get('aln_ignore'));
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_sequence($r,
-                                          'colormap'  => $self->{'colormap'},
-                                          'symcolor'  => $self->{'symcolor'},
-                                          'gapcolor'  => $self->{'gapcolor'},
-                                          'css1'      => $self->{'css1'},
-        );
+                                  'aln_colormap' => $PAR->get('aln_colormap'),
+                                  'symcolor'     => $PAR->get('symcolor'),
+                                  'gapcolor'     => $PAR->get('gapcolor'),
+                                  'css1'         => $PAR->get('css1'));
     }
     $self;
 }
@@ -546,32 +433,24 @@ sub color_by_consensus_sequence {
 sub color_by_consensus_group {
     my $self = shift;
 
-    #is there already a suitable tally?
-    if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and
-	 $self->{'old'}->{'group'} ne $self->{'group'})) {
-
-	$self->compute_tallies($self->{'group'});
-    }
+    my $tally = $self->compute_tallies($PAR->get('aln_groupmap'));
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
 
-    my $con = new Bio::MView::Align::Consensus($from, $to,
-					       $self->{'tally'},
-					       $self->{'group'},
-					       $self->{'threshold'},
-					       $self->{'ignore'});
+    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
+					       $PAR->get('aln_groupmap'),
+					       $PAR->get('aln_threshold'),
+					       $PAR->get('aln_ignore'));
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_group($r,
-                                       'colormap'  => $self->{'colormap'},
-                                       'symcolor'  => $self->{'symcolor'},
-                                       'gapcolor'  => $self->{'gapcolor'},
-                                       'css1'      => $self->{'css1'},
-        );
+                                  'aln_colormap' => $PAR->get('aln_colormap'),
+                                  'symcolor'  => $PAR->get('symcolor'),
+                                  'gapcolor'  => $PAR->get('gapcolor'),
+                                  'css1'      => $PAR->get('css1'));
     }
     $self;
 }
@@ -584,12 +463,10 @@ sub color_by_find_block {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block('colormap'  => $self->{'colormapf'},
-                                'symcolor'  => $self->{'symcolor'},
-                                'gapcolor'  => $self->{'gapcolor'},
-                                'css1'      => $self->{'css1'},
-                                'find'      => $self->{'find'},
-        );
+	$r->color_by_find_block('symcolor'  => $PAR->get('symcolor'),
+                                'gapcolor'  => $PAR->get('gapcolor'),
+                                'css1'      => $PAR->get('css1'),
+                                'find'      => $PAR->get('find'));
     }
     $self;
 }
@@ -606,12 +483,11 @@ sub color_consensus_by_identity {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($ref,
-                              'colormap'  => $self->{'colormap'},
-                              'colormapc' => $self->{'colormapc'},
-                              'symcolor'  => $self->{'symcolor'},
-                              'gapcolor'  => $self->{'gapcolor'},
-                              'css1'      => $self->{'css1'},
-        );
+                              'aln_colormap' => $PAR->get('aln_colormap'),
+                              'con_colormap' => $PAR->get('con_colormap'),
+                              'symcolor'     => $PAR->get('symcolor'),
+                              'gapcolor'     => $PAR->get('gapcolor'),
+                              'css1'         => $PAR->get('css1'));
     }
     $self;
 }
@@ -735,16 +611,7 @@ sub build_conservation_row {
 sub build_consensus_rows {
     my ($self, $group, $threshold, $ignore, $con_gaps) = @_;
 
-    $self->set_parameters('group' => $group, 'ignore' => $ignore,
-			  'con_gaps' => $con_gaps);
-
-    #is there already a suitable tally?
-    if (!defined $self->{'tally'} or
-	(defined $self->{'old'}->{'group'} and
-	 $self->{'old'}->{'group'} ne $self->{'group'})) {
-
-	$self->compute_tallies($self->{'group'});
-    }
+    my $tally = $self->compute_tallies($PAR->get('con_groupmap'));
 
     my @obj = ();
 
@@ -753,8 +620,11 @@ sub build_consensus_rows {
 
     foreach my $thresh (@$threshold) {
 	my $con = new Bio::MView::Align::Consensus($from, $to,
-						   $self->{'tally'},
-						   $group, $thresh, $ignore);
+						   $tally,
+                                                   $PAR->get('con_groupmap'),
+                                                   $thresh,
+                                                   $PAR->get('con_ignore'),
+            );
 	$con->set_display('label0'=>'',
                           #not 1
 			  'label2'=>'',
@@ -771,17 +641,22 @@ sub build_consensus_rows {
 }
 
 sub compute_tallies {
-    my ($self, $group) = @_;
+    my ($self, $gname) = @_;
 
-    $group = $Bio::MView::Align::Consensus::Default_Group
-	unless defined $group;
+    my $gaps = $PAR->get('con_gaps');
 
-    $self->{'tally'} = [];
+    my $key = join('::', ($gname, $gaps));
+    #warn "Tally: $key\n";
+
+    #is there already a suitable tally?
+    return $self->{'tally'}->{$key}  if exists $self->{'tally'}->{$key};
+
+    $self->{'tally'}->{$key} = [];
 
     #iterate over columns
     for (my $c=1; $c <= $self->{'length'}; $c++) {
 
-	my $col = [];
+	my $column = [];
 
 	#iterate over rows
 	for my $r (@{$self->{'index2row'}}) {
@@ -790,16 +665,16 @@ sub compute_tallies {
 	    next if $self->is_nop($r->id);
 	    next if $self->is_hidden($r->id);
 
-	    push @$col, $r->{'string'}->raw($c);
+	    push @$column, $r->{'string'}->raw($c);
 	}
 
-	#warn "compute_tallies: @$col\n";
+	#warn "compute_tallies: @$column\n";
 
-	push @{$self->{'tally'}},
-	    Bio::MView::Align::Consensus::tally($group, $col,
-						$self->{'con_gaps'});
+	push @{$self->{'tally'}->{$key}},
+	    Bio::MView::Align::Consensus::tally($gname, $column, $gaps);
     }
-    $self;
+
+    return $self->{'tally'}->{$key};
 }
 
 sub conservation {
@@ -873,7 +748,7 @@ sub conservation {
 	#&$printcons($j, $strong, 'strong');
 	#&$printcons($j, $weak, 'weak');
 
-	#warn "$same, $depth, [$self->{ref_id}], $refchar, ", $refseq->is_char($refchar), "\n";
+	#warn "$same, $depth, [@{[$PAR->get('ref_id')]}], $refchar, ", $refseq->is_char($refchar), "\n";
 	if ($depth > 0) {
 	    if ($same == $depth and $refseq->is_char($refchar)) {
 		$s .= '*';

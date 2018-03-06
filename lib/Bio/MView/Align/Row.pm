@@ -4,12 +4,7 @@
 package Bio::MView::Align::Row;
 
 use Kwargs;
-use Bio::MView::Align;
-use Bio::MView::Display;
-use Bio::MView::Align::Ruler;
-use Bio::MView::Align::Sequence;
-use Bio::MView::Align::Consensus;
-use Bio::MView::Align::Conservation;
+use Bio::MView::Colormap;
 
 use strict;
 use vars qw($KWARGS);

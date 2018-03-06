@@ -3,8 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Ruler;
 
-use Bio::MView::Align;
-use Bio::MView::Display;
 use Bio::MView::Align::Row;
 
 use vars qw(@ISA);

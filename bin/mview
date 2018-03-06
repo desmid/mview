@@ -59,7 +59,6 @@ my $stm = \*STDOUT;
 
 my $com = new Bio::MView::Option::Parser($PROG);
 my @err = $com->parse_argv(\@ARGV);
-
 my $par = $com->get_parameters;
 
 if ($par->{'help'}) {

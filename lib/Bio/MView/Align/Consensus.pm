@@ -4,26 +4,21 @@
 package Bio::MView::Align::Consensus;
 
 use Kwargs;
+use Bio::MView::Colormap;
 use Bio::MView::Groupmap;
-use Bio::MView::Align;
-use Bio::MView::Display;
-use Bio::MView::Align::Row;
+use Bio::MView::Align::Sequence;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
 use strict;
-use vars qw($Default_PRO_Colormap $Default_DNA_Colormap $Default_Colormap
-	    $Group_Any $Default_Group_Any $Default_Ignore $KWARGS);
+use vars qw($Default_PRO_Colormap $Default_DNA_Colormap
+	    $Group_Any $Default_Group_Any $KWARGS);
 
 $Default_PRO_Colormap = 'PC1';    #default colormap name
 $Default_DNA_Colormap = 'DC1';    #default colormap name
-$Default_Colormap     = $Default_PRO_Colormap;  #NIGE
 
-$Default_Ignore       = 'none';   #default ignore classes setting  #NIGE
-
-$KWARGS = {
-    'colormapc' => $Default_Colormap,
-};
+#hardwire the consensus line symcolor
+my $SYMCOLOR = $Bio::MView::Colormap::Colour_Black;
 
 my $Group             = $Bio::MView::Groupmap::Group;
 my $Group_Any         = $Bio::MView::Groupmap::Group_Any;
@@ -36,6 +31,17 @@ my %Known_Ignore_Class =
      'singleton'  => 1,    #ignore singleton, ie., self-only consensi
      'class'      => 1,    #ignore non-singleton, ie., class consensi
     );
+
+sub get_default_consensus_colormap {
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
+	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
+    }
+    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
+}
+
+$KWARGS = {
+    'con_colormap' => get_default_consensus_colormap,
+};
 
 sub list_ignore_classes { return join(",", sort keys %Known_Ignore_Class) }
 
@@ -210,16 +216,20 @@ sub get_color_consensus_group {
 }
 
 sub tally {
-    my ($group, $col, $gaps) = (@_, 1);
+    my ($gname, $col, $gaps) = (@_, 1);
     my ($score, $class, $sym, $depth) = ({});
 
-    if (! exists $Group->{$group}) {
-	die "Bio::MView::Align::Consensus::tally() unknown consensus set\n";
+    if (! defined $gname) {
+        $gname = Bio::MView::Groupmap::get_default_groupmap;
     }
 
-    #warn "tally: $group\n";
+    if (! exists $Group->{$gname}) {
+	die "Bio::MView::Align::Consensus::tally() unknown consensus group '$gname'\n";
+    }
 
-    $group = $Group->{$group}->[0];
+    #warn "tally: $gname\n";
+
+    my $group = $Group->{$gname}->[0];
 
     #initialise tallies
     foreach $class (keys %$group) { $score->{$class} = 0 }
@@ -253,14 +263,18 @@ sub tally {
 }
 
 sub consensus {
-    my ($tally, $group, $threshold, $ignore) = @_;
+    my ($tally, $gname, $threshold, $ignore) = @_;
     my ($class, $bstclass, $bstscore, $consensus, $i, $score);
 
-    if (! exists $Group->{$group}) {
-	die "Bio::MView::Align::Consensus::consensus() unknown consensus set\n";
+    if (! defined $gname) {
+        $gname = Bio::MView::Groupmap::get_default_groupmap;
     }
 
-    $group = $Group->{$group}->[0];
+    if (! exists $Group->{$gname}) {
+	die "Bio::MView::Align::Consensus::tally() unknown consensus group '$gname'\n";
+    }
+
+    my $group = $Group->{$gname}->[0];
 
     $consensus = '';
 
@@ -380,7 +394,7 @@ sub color_by_type {
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_type($self) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
+    #warn "color_by_type($self) 1=$kw->{'aln_colormap'} 2=$kw->{'con_colormap'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -399,8 +413,8 @@ sub color_by_type {
 	
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color_type($cg,
-				     $kw->{'colormap'},
-				     $kw->{'colormapc'});
+				     $kw->{'aln_colormap'},
+				     $kw->{'con_colormap'});
 	if (@tmp) {
 	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
@@ -425,9 +439,9 @@ sub color_by_identity {
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $SYMCOLOR;
 
-    #warn "color_by_identity($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
+    #warn "color_by_identity($self, $othr) 1=$kw->{'aln_colormap'} 2=$kw->{'con_colormap'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -447,7 +461,7 @@ sub color_by_identity {
            if (keys %{$Group->{$self->{'group'}}->[2]->{$cg}} == 1) {
 
                #refer to reference colormap NOT the consensus colormap
-               @tmp = $self->get_color_identity($cg, $kw->{'colormap'});
+               @tmp = $self->get_color_identity($cg, $kw->{'aln_colormap'});
 
                if (@tmp) {
                    if ($kw->{'css1'}) {
@@ -456,7 +470,7 @@ sub color_by_identity {
                        push @$color, $i, 'color' => $tmp[0];
                    }
                } else {
-                   push @$color, $i, 'color' => $kw->{'symcolor'};
+                   push @$color, $i, 'color' => $SYMCOLOR;
                }
 
                next;
@@ -464,7 +478,7 @@ sub color_by_identity {
        }
 
        #symbol not in consensus group: use contrast colour
-       push @$color, $i, 'color' => $kw->{'symcolor'};
+       push @$color, $i, 'color' => $SYMCOLOR;
     }
 
     $self->{'display'}->{'paint'} = 1;
@@ -490,7 +504,7 @@ sub color_by_consensus_sequence {
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_consensus_sequence($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
+    #warn "color_by_consensus_sequence($self, $othr) 1=$kw->{'aln_colormap'} 2=$kw->{'con_colormap'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -516,8 +530,8 @@ sub color_by_consensus_sequence {
 
 		#colour by sequence symbol
 		@tmp = $self->get_color_consensus_sequence($cs, $cg,
-							   $kw->{'colormap'},
-							   $kw->{'colormapc'});
+							   $kw->{'aln_colormap'},
+							   $kw->{'con_colormap'});
 		if (@tmp) {
 		    if ($kw->{'css1'}) {
 			push @$color, $i, 'class' => $tmp[1];
@@ -558,7 +572,7 @@ sub color_by_consensus_group {
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    #warn "color_by_consensus_group($self, $othr) 1=$kw->{'colormap'} 2=$kw->{'colormapc'}\n";
+    #warn "color_by_consensus_group($self, $othr) 1=$kw->{'aln_colormap'} 2=$kw->{'con_colormap'}\n";
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -585,8 +599,8 @@ sub color_by_consensus_group {
 		#colour by consensus group symbol
 		#note: both symbols passed; colormaps swapped
 		@tmp = $self->get_color_consensus_group($cs, $cg,
-							$kw->{'colormap'},
-							$kw->{'colormapc'});
+							$kw->{'aln_colormap'},
+							$kw->{'con_colormap'});
 		if (@tmp) {
 		    if ($kw->{'css1'}) {
 			push @$color, $i, 'class' => $tmp[1];

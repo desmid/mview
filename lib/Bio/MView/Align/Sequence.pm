@@ -4,28 +4,19 @@
 package Bio::MView::Align::Sequence;
 
 use Kwargs;
-use Bio::MView::Align;
-use Bio::MView::Display;
+use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
 
 @ISA = qw(Bio::MView::Align::Row);
 
 use strict;
 use vars qw($Wildcard_Sym $Default_PRO_Colormap $Default_DNA_Colormap
-            $Default_FIND_Colormap $Default_Colormap %Template $KWARGS);
+            %Template $KWARGS);
 
 $Wildcard_Sym          = '.';     #key for default colouring
 
 $Default_PRO_Colormap  = 'P1';    #default protein colormap name
 $Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
-$Default_FIND_Colormap = 'FIND';  #default find pattern colormap name
-
-$Default_Colormap      = $Default_PRO_Colormap; #NIGE
-
-$KWARGS = {
-    'colormap' => $Default_Colormap,
-    'find'     => '',
-};
 
 %Template =
     (
@@ -36,8 +27,21 @@ $KWARGS = {
      'display' => undef,     #hash of display parameters
     );
 
-my $BLOCK_SEPARATOR = ':';  #for multiple find patterns
-my $BLOCK_WARNINGS = 1;     #find block warnings only once
+my $FIND_WARNINGS  = 1;       #find block warnings only once
+my $FIND_SEPARATOR = ':';     #for multiple find patterns
+my $FIND_COLORMAP  = 'FIND';  #hardwired find colormap
+
+sub get_default_sequence_colormap {
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
+	return $Bio::MView::Align::Sequence::Default_PRO_Colormap;
+    }
+    return $Bio::MView::Align::Sequence::Default_DNA_Colormap,
+}
+
+$KWARGS = {
+    'aln_colormap' => get_default_sequence_colormap,
+    'find'         => '',
+};
 
 sub new {
     my $type = shift;
@@ -58,7 +62,7 @@ sub new {
 
     $self->reset_display;
 
-    $BLOCK_WARNINGS = 1;   #reset
+    $FIND_WARNINGS = 1;   #reset
 
     $self;
 }
@@ -172,14 +176,14 @@ sub color_special {
     foreach $map (keys %$Bio::MView::Colormap::Colormaps) {
 	if ($self->{'id'} =~ /$map/i) {
 	    if (length($&) > $size) {
-		$kw->{'colormap'} = $map;
+		$kw->{'aln_colormap'} = $map;
 		$size = length($&);
 	    }
 	}
     }
     return unless $size;
 
-    #warn $kw->{'colormap'};
+    #warn $kw->{'aln_colormap'};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -201,7 +205,7 @@ sub color_special {
 	}
 	
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'colormap'});
+	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
 	if (@tmp) {
 	    if ($kw->{'css1'}) {
@@ -223,11 +227,11 @@ sub find_blocks {
 
     my $mapsize = Bio::MView::Colormap::get_colormap_length($colormap);
 
-    my @patterns = split($BLOCK_SEPARATOR, $find);
+    my @patterns = split($FIND_SEPARATOR, $find);
 
-    if (@patterns > $mapsize and $BLOCK_WARNINGS) {
+    if (@patterns > $mapsize and $FIND_WARNINGS) {
         warn "find: @{[scalar @patterns]} pattern blocks but only $mapsize color@{[$mapsize gt 1 ? 's' : '']} in colormap '$colormap' - recycling\n";
-        $BLOCK_WARNINGS--;
+        $FIND_WARNINGS--;
     }
 
     my $matches = $self->{string}->findall(\@patterns, $mapsize);
@@ -251,7 +255,7 @@ sub color_by_find_block {
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    my $block = $self->find_blocks($kw->{'find'}, $kw->{'colormap'});
+    my $block = $self->find_blocks($kw->{'find'}, $FIND_COLORMAP);
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
@@ -270,7 +274,7 @@ sub color_by_find_block {
 	
         if (exists $block->{$i}) {
             #use symbol color/wildcard colour
-            @tmp = $self->get_color($block->{$i}, $kw->{'colormap'});
+            @tmp = $self->get_color($block->{$i}, $FIND_COLORMAP);
         } else {
             @tmp = ();
         }
@@ -317,8 +321,8 @@ sub color_by_type {
 	}
 	
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'colormap'});
-	
+	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
+
 	if (@tmp) {
 	    if ($kw->{'css1'}) {
 		push @$color, $i, 'class' => $tmp[1];
@@ -379,10 +383,10 @@ sub color_by_identity_body {
 
         #compare symbols, case-insensitive
         if ($byidentity) { #mismatch coloring mode
-            @tmp = $self->get_color($c1, $kw->{'colormap'})
+            @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
                 if uc $c1 eq uc $c2; #same symbol or symcolor
         } else { #identity coloring mode
-            @tmp = $self->get_color($c1, $kw->{'colormap'})
+            @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
                 if uc $c1 ne uc $c2; #different symbol or symcolor
         }
 
