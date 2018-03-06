@@ -173,7 +173,7 @@ sub add_display {
     #allow the Build instance to override the normal parameter
     #settings and to substitute specialised handlers for
     #'peculiar' alignments, eg., sequence versus secondary structure.
-    $bld->change_alignment_settings($aln);
+    $bld->adjust_parameters($aln);
 
     #Universal::vmstat("display constructor");
     my $dis = new Bio::MView::Display($aln->init_display);

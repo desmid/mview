@@ -63,19 +63,18 @@ sub parse {
     return \@hit;
 }
 
-#override: use our own Align subclass instead of the generic one;
-#set temporary parameters
-sub change_alignment_settings {
+#override: set temporary parameters
+sub adjust_parameters {
     my ($self, $aln) = @_;
     bless $aln, 'Bio::MView::Build::Format::JNETZ::Align';
     $aln->rebless_align_rows;
 
     #set parameters for this specific parse
-    $self->{'label0'} = $PAR->set('label0', 0);  #don't report rank
-    $self->{'label4'} = $PAR->set('label4', 0);  #don't report %coverage
-    $self->{'label5'} = $PAR->set('label5', 0);  #don't report %identity
-    $self->{'label6'} = $PAR->set('label6', 0);  #don't report sequence pos
-    $self->{'label7'} = $PAR->set('label7', 0);  #don't report sequence pos
+    $PAR->set('label0', 0);  #don't report rank
+    $PAR->set('label4', 0);  #don't report %coverage
+    $PAR->set('label5', 0);  #don't report %identity
+    $PAR->set('label6', 0);  #don't report sequence pos
+    $PAR->set('label7', 0);  #don't report sequence pos
 
     $self;
 }

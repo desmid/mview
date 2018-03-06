@@ -149,7 +149,7 @@ sub map_id {
 
 #Allow instance to rebless an Bio::MView::Align object and change
 #parameter settings; used by Manager
-sub change_alignment_settings {}
+sub adjust_parameters {}
 
 sub get_entry { $_[0]->{'entry'} }
 
