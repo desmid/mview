@@ -119,7 +119,7 @@ if ($par->{'verbose'} & $VERB_ARGV) {
 }
 
 #rdb mode: leading copyright
-if ($par->{'mode'} eq 'rdb') {
+if ($par->{'outfmt'} eq 'rdb') {
     print $stm copyright($par);
 }
 
@@ -138,7 +138,7 @@ my $count = mview($par, $stm, @ARGV);
 
 if ($count) {
     #got something
-    if ($par->{'html'} != $HTML_DATA and $par->{'mode'} =~ /^new/) {
+    if ($par->{'html'} != $HTML_DATA and $par->{'outfmt'} =~ /^new/) {
         print $stm copyright($par);
     }
 } else {
@@ -194,7 +194,7 @@ sub mview {
     return 0  if $par->{'noparse'};
 
     #save printing until end?
-    if ($par->{'register'} and $par->{'mode'} eq 'new') {
+    if ($par->{'register'} and $par->{'outfmt'} eq 'new') {
 	$mgr->print;
 	#Universal::vmstat("print done (mview)");
     }
@@ -204,13 +204,13 @@ sub mview {
 sub rationalise_parameters {
     my $par = shift;
 
-    $par->{'html'} = 0  if $par->{'mode'} eq 'rdb';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'clustal';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'pir';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'msf';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'pearson';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'fasta';
-    $par->{'html'} = 0  if $par->{'mode'} eq 'plain';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'rdb';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'clustal';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'pir';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'msf';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'pearson';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'fasta';
+    $par->{'html'} = 0  if $par->{'outfmt'} eq 'plain';
 
     if ($par->{'html'}) {
         #ignore style sheets if css is unset
@@ -314,7 +314,7 @@ sub copyright {
     my $s = '';
     no strict;
 
-    if ($par->{'mode'} eq 'rdb') {    #rdb files
+    if ($par->{'outfmt'} eq 'rdb') {    #rdb files
         $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
 	$s .= "# $INVOKE\n";
 	return $s;

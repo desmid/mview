@@ -58,7 +58,7 @@ $Options = [
                 'option'  => "out",
                 'usage'   => "Output",
                 'type'    => "format::out",
-                'param'   => "mode",
+                'param'   => "outfmt",
             },
         ],
     },

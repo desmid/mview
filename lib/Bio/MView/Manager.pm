@@ -76,17 +76,19 @@ sub parse {
 
 	    $self->{'acount'}++;
 
-            if ($PAR->get('mode') ne 'new') {
+            my $outfmt = $PAR->get('outfmt');
+
+            if ($outfmt ne 'new') {
                 my $conv = new Bio::MView::Convert($bld, $aln,
                                                    $PAR->get('moltype'));
                 my $s;
 
-                $s = $conv->plain    if $PAR->get('mode') eq 'plain';
-                $s = $conv->pearson  if $PAR->get('mode') eq 'pearson';
-                $s = $conv->pir      if $PAR->get('mode') eq 'pir';
-                $s = $conv->clustal  if $PAR->get('mode') eq 'clustal';
-                $s = $conv->msf      if $PAR->get('mode') eq 'msf';
-                $s = $conv->rdb      if $PAR->get('mode') eq 'rdb';
+                $s = $conv->plain    if $outfmt eq 'plain';
+                $s = $conv->pearson  if $outfmt eq 'pearson';
+                $s = $conv->pir      if $outfmt eq 'pir';
+                $s = $conv->clustal  if $outfmt eq 'clustal';
+                $s = $conv->msf      if $outfmt eq 'msf';
+                $s = $conv->rdb      if $outfmt eq 'rdb';
 
                 print $$s  if defined $s;
                 next;

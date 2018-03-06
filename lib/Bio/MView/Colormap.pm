@@ -85,7 +85,7 @@ sub load_colormaps {
 	    next;
 	}
 
-	die "load_colormaps(): colormap name undefined\n"
+	die "load_colormaps: colormap name undefined\n"
 	    unless defined $map;
 
 	next  if $mapignore;    #forget it if we're not allowing overrides
@@ -112,7 +112,7 @@ sub load_colormaps {
 		    $Palette->[0]->{$#{$Palette->[1]}} = $color;  #index->name
 		} else {
 		    chomp;
-		    die "load_colormaps(): undefined color in line '$_'\n";
+		    die "load_colormaps: undefined color in line '$_'\n";
 		}
 	    }
 
@@ -126,7 +126,7 @@ sub load_colormaps {
 
 	#default
 	chomp;
-	die "Bio::MView::Align::load_colormaps(): bad format in line '$_'\n";
+	die "Bio::MView::Align::load_colormaps: bad format in line '$_'\n";
     }
     close $stream;
 }
@@ -231,7 +231,7 @@ sub get_colormap_length {
     my $len = scalar keys %{$Colormaps->{$map}};
     $len--  if defined $Colormaps->{$map}->{''};
     if ($len % 2 != 0) {
-	die "get_colormap_length(): divide by two error\n"
+	die "get_colormap_length: divide by two error\n"
     }
     return $len / 2;
 }

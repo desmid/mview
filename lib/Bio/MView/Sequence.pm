@@ -259,13 +259,13 @@ sub findall {
     my @gapped = split(//, $self->string);
     my $gapchar = $self->{text_gap};
 
-    #warn "findall(): @{[$self->string]}\n";
-    #warn "findall(): blocks=[@{[join(', ', @$blocks)]}]\n";
+    #warn "findall: @{[$self->string]}\n";
+    #warn "findall: blocks=[@{[join(', ', @$blocks)]}]\n";
 
     my $end = scalar @$blocks;
 
     for (my $blocknum=0; $blocknum<$end; $blocknum++) {
-	#warn "findall(): $blocknum, $blocks->[$blocknum]\n";
+	#warn "findall: $blocknum, $blocks->[$blocknum]\n";
 	my $blockid = chr(ord('A') + $blocknum % $mapsize);
 	my $pattern = $blocks->[$blocknum];
 	study $pattern;
@@ -277,7 +277,7 @@ sub findall {
 	    my $s = substr($sequence, $j);
 	    if ($s =~ /^($pattern)/i) {  #case insensitive
 		my @match = split(//, $1);
-		#warn "\nfindall(): $i,$j [@match] $s\n";
+		#warn "\nfindall: $i,$j [@match] $s\n";
 		for (my ($k,$l) = ($i,0); $l<@match; $k++, $l++) {
 		    while ($gapped[$k] eq $gapchar) {
 			$k++;  #absorb gaps

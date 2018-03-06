@@ -285,10 +285,10 @@ sub build_block {
     #warn "KEEPINSERTS: " . $PAR->get('keepinserts') . "\n";
     #warn "ALIGNED:     $self->{'aligned'}\n";
 
-    my $outmode = $PAR->get('mode');
+    my $outfmt = $PAR->get('outfmt');
 
-    if (!$self->{'aligned'} and !grep {$_ eq $outmode} qw(fasta pearson pir)) {
-        warn "Sequence lengths must be the same for output format '$outmode' - aborting\n";
+    if (!$self->{'aligned'} and !grep {$_ eq $outfmt} qw(fasta pearson pir)) {
+        warn "Sequence lengths must be the same for output format '$outfmt' - aborting\n";
         return undef;
     }
 
@@ -299,7 +299,7 @@ sub build_block {
 
     return undef  unless $aln->all_ids > 0;
 
-    if ($outmode eq 'new') {
+    if ($outfmt eq 'new') {
         $aln = $self->build_new_alignment($aln);
     }
     $aln;
