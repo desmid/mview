@@ -29,18 +29,22 @@ sub new {
 #Return value at $key or undef if it doesn't exist.
 sub get {
     my ($self, $key) = @_;
-    return $self->{'p'}->{$key}  if exists $self->{'p'}->{$key}; #match
+    return $self->{'p'}->{$key}  if exists $self->{'p'}->{$key};
     return undef;  #no match
 }
 
-# #Return value at $key. If it doesn't exist return an optional caller
-# #supplied value or undef.
-# sub get_YAGNI {  #NIGE
-#     my ($self, $key) = (shift, shift);
-#     return $self->{'p'}->{$key}  if exists $self->{'p'}->{$key}; #match
-#     return $_[0]  if @_;  #no match: caller supplied value
-#     return undef;  #no match
-# }
+#Return a flat list of (key,value) pairs for supplied keys setting value
+#to undef if the key doesn't exist.
+sub keyval {
+    my $self = shift;
+    my @tmp = ();
+    foreach my $key (@_) {
+        my $val = undef;  #no match
+        $val = $self->{'p'}->{$key}  if exists $self->{'p'}->{$key};
+        push @tmp, ($key, $val);
+    }
+    return @tmp;
+}
 
 #Set value at $key to $val and return previous value or undef.
 sub set {

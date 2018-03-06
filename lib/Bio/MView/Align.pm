@@ -316,11 +316,10 @@ sub color_special {
 	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special('aln_colormap' => $PAR->get('aln_colormap'),
-                          'symcolor'     => $PAR->get('symcolor'),
-                          'gapcolor'     => $PAR->get('gapcolor'),
-                          'css1'         => $PAR->get('css1'));
-	$r->set_display('label0'=>'', #not 1
+	$r->color_special($PAR->keyval(
+                          'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
+	$r->set_display('label0'=>'', #not label1
                         'label2'=>'', 'label3'=>'',
 			'label4'=>'', 'label5'=>'',
                         'label6'=>'', 'label7'=>'',
@@ -337,10 +336,9 @@ sub color_none {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none('aln_colormap' => $PAR->get('aln_colormap'),
-                       'symcolor'     => $PAR->get('symcolor'),
-                       'gapcolor'     => $PAR->get('gapcolor'),
-                       'css1'         => $PAR->get('css1'));
+	$r->color_none($PAR->keyval(
+                       'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -353,11 +351,9 @@ sub color_by_type {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type('aln_colormap' => $PAR->get('aln_colormap'),
-                          'con_colormap' => $PAR->get('con_colormap'),
-                          'symcolor'     => $PAR->get('symcolor'),
-                          'gapcolor'     => $PAR->get('gapcolor'),
-                          'css1'         => $PAR->get('css1'));
+	$r->color_by_type($PAR->keyval(
+                'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -373,11 +369,9 @@ sub color_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref,
-                              'aln_colormap' => $PAR->get('aln_colormap'),
-                              'symcolor'     => $PAR->get('symcolor'),
-                              'gapcolor'     => $PAR->get('gapcolor'),
-                              'css1'         => $PAR->get('css1'));
+	$r->color_by_identity($ref, $PAR->keyval(
+                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -393,11 +387,9 @@ sub color_by_mismatch {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_mismatch($ref,
-                              'aln_colormap' => $PAR->get('aln_colormap'),
-                              'symcolor'     => $PAR->get('symcolor'),
-                              'gapcolor'     => $PAR->get('gapcolor'),
-                              'css1'         => $PAR->get('css1'));
+	$r->color_by_mismatch($ref, $PAR->keyval(
+                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -420,11 +412,9 @@ sub color_by_consensus_sequence {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_sequence($r,
-                                  'aln_colormap' => $PAR->get('aln_colormap'),
-                                  'symcolor'     => $PAR->get('symcolor'),
-                                  'gapcolor'     => $PAR->get('gapcolor'),
-                                  'css1'         => $PAR->get('css1'));
+	$con->color_by_consensus_sequence($r, $PAR->keyval(
+                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -446,11 +436,9 @@ sub color_by_consensus_group {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_group($r,
-                                  'aln_colormap' => $PAR->get('aln_colormap'),
-                                  'symcolor'  => $PAR->get('symcolor'),
-                                  'gapcolor'  => $PAR->get('gapcolor'),
-                                  'css1'      => $PAR->get('css1'));
+	$con->color_by_consensus_group($r, $PAR->keyval(
+                             'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -463,10 +451,9 @@ sub color_by_find_block {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block('symcolor'  => $PAR->get('symcolor'),
-                                'gapcolor'  => $PAR->get('gapcolor'),
-                                'css1'      => $PAR->get('css1'),
-                                'find'      => $PAR->get('find'));
+	$r->color_by_find_block($PAR->keyval(
+                                'symcolor', 'gapcolor', 'css1', 'find'
+        ));
     }
     $self;
 }
@@ -482,12 +469,9 @@ sub color_consensus_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref,
-                              'aln_colormap' => $PAR->get('aln_colormap'),
-                              'con_colormap' => $PAR->get('con_colormap'),
-                              'symcolor'     => $PAR->get('symcolor'),
-                              'gapcolor'     => $PAR->get('gapcolor'),
-                              'css1'         => $PAR->get('css1'));
+	$r->color_by_identity($ref, $PAR->keyval(
+               'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
+        ));
     }
     $self;
 }
@@ -624,16 +608,12 @@ sub build_consensus_rows {
                                                    $PAR->get('con_groupmap'),
                                                    $thresh,
                                                    $PAR->get('con_ignore'),
-            );
-	$con->set_display('label0'=>'',
-                          #not 1
-			  'label2'=>'',
-			  'label3'=>'',
-			  'label4'=>'',
-			  'label5'=>'',
-			  'label6'=>'',
-			  'label7'=>'',
-	    );
+        );
+	$con->set_display('label0'=>'', #not label1
+			  'label2'=>'', 'label3'=>'',
+			  'label4'=>'', 'label5'=>'',
+			  'label6'=>'', 'label7'=>'',
+	);
 	push @obj, $con;
     }
 
