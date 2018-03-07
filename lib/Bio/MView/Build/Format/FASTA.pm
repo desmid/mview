@@ -73,7 +73,7 @@ sub initialise {
 #called on each iteration
 sub reset_child {
     my $self = shift;
-    #warn "reset_child [@{$PAR->get('strand')}]\n";
+    #warn "reset_child [@{[$PAR->get('strand')]}]\n";
     $self->{scheduler}->filter($PAR->get('strand'));
     $self;
 }

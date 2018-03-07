@@ -133,11 +133,11 @@ sub append {
 	if (exists $row->{'type'}) {
 	    $type = ucfirst $row->{'type'};
 	} else {
-	    warn "$self append() missing type in '$row'\n";
+	    warn "$self append: missing type in '$row'\n";
 	    next;
 	}
 	unless (exists $Known_Types{$type}) {
-	    warn "$self append() unknown alignment type '$type'\n";
+	    warn "$self append: unknown alignment type '$type'\n";
 	    next;
 	}
 
@@ -274,11 +274,11 @@ sub display {
 	$par{'col'} = $self->{'length'};
     }
     if (CORE::length $par{'gap'} != 1) {
-	warn "${self}::display() gap must be single character '$par{'gap'}'\n";
+	warn "${self}::display: gap must be single character '$par{'gap'}'\n";
 	$par{'gap'} = $Default_Gap;
     }
     if (CORE::length $par{'pad'} > 1) {
-	warn "${self}::display() pad must be null or single character '$par{'pad'}'\n";
+	warn "${self}::display: pad must be null or single character '$par{'pad'}'\n";
 	$par{'pad'} = $Default_Pad;
     }
 

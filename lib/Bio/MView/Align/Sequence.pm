@@ -40,9 +40,9 @@ sub get_default_sequence_colormap {
 
 sub new {
     my $type = shift;
-    #warn "${type}::new() (@_)\n";
+    #warn "${type}::new(@_)\n";
     if (@_ < 2) {
-	die "${type}::new() missing arguments\n";
+	die "${type}::new: missing arguments\n";
     }
     my ($id, $string, $subtype) = (@_, 'sequence');
 
@@ -342,12 +342,12 @@ sub color_by_mismatch {
 }
 
 sub color_by_identity_body {
-    my ($self, $othr, $byidentity) = (shift, shift, shift);
+    my ($self, $othr, $byidentity) = @_;
 
     return  unless $self->{'type'} eq 'sequence';
     return  unless defined $othr;
 
-    die "${self}::color_by_identity() length mismatch\n"
+    die "${self}::color_by_identity: length mismatch\n"
 	unless $self->length == $othr->length;
 
     my $kw = $PAR->as_dict;
@@ -426,7 +426,7 @@ sub compute_coverage_wrt {
     return 0      unless defined $othr;
     return 100.0  if $self == $othr;  #always 100% coverage of self
 
-    die "${self}::compute_coverage_wrt() length mismatch\n"
+    die "${self}::compute_coverage_wrt: length mismatch\n"
 	unless $self->length == $othr->length;
 
     my ($sc, $oc) = (0, 0);
@@ -486,7 +486,7 @@ sub compute_identity_to {
     return 0      unless defined $othr;
     return 100.0  if $self == $othr;  #always 100% identical to self
 
-    die "${self}::compute_identity_to() length mismatch\n"
+    die "${self}::compute_identity_to: length mismatch\n"
 	unless $self->length == $othr->length;
 
     my ($sum, $len) = (0, 0);

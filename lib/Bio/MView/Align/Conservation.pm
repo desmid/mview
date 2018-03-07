@@ -6,17 +6,15 @@ package Bio::MView::Align::Conservation;
 use Bio::MView::Align::Sequence;
 
 use strict;
-use vars qw(@ISA $Debug);
+use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
-$Debug = 0;
-
 sub new {
     my $type = shift;
-    warn "${type}::new() (@_)\n"    if $Debug;
+    #warn "${type}::new(@_)\n";
     if (@_ < 1) {
-	die "${type}::new() missing arguments\n";
+	die "${type}::new: missing arguments\n";
     }
     my ($from, $to, $string) = @_;
 

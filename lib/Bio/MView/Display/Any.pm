@@ -157,12 +157,12 @@ sub parse_range {
 		$state = 2;
 		next;
 	    }
-	    die "$self new() never get here!\n";
+	    die "$self: never get here!\n";
 	}
 
 	#first position wasn't given: bad attribute list
 	if ($state == 0) {
-	    warn "$self new() bad attribute list '@$data'\n";
+	    warn "$self: bad attribute list '@$data'\n";
 	    last;
 	}
 	
@@ -180,7 +180,7 @@ sub parse_range {
 	    next;
 	}
     
-	warn "$self new() unknown range attribute '$data->[$i]'\n";
+	warn "$self: unknown range attribute '$data->[$i]'\n";
 	$i++;    #skip likely value
     }
 

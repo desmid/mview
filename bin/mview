@@ -126,8 +126,7 @@ if ($par->{'outfmt'} eq 'rdb') {
 #read from stdin?
 unless (@ARGV or $par->{'noparse'}) {
     warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
-    open(TMP, ">$SCRATCH") or
-        abort("can't save to temporary file");
+    open(TMP, ">$SCRATCH") or abort("can't save to temporary file");
     while (<>) { print TMP }
     close TMP;
     push @ARGV, $SCRATCH;
@@ -164,8 +163,7 @@ sub mview {
 
     #Universal::vmstat("Manager constructor");
 
-#NIGE
-    my $mgr = new Bio::MView::Manager;  #NIGE removed $PROG, %$par
+    my $mgr = new Bio::MView::Manager;
 
     foreach my $file (@_) {
         warn("$PROG: file '$file' does not exist\n"),  next  unless -e $file;

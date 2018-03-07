@@ -25,9 +25,9 @@ my %Template =
 
 sub new {
     my $type = shift;
-    #warn "${type}::new() @_\n";
+    #warn "${type}::new: @_\n";
     if (@_ < 1) {
-	die "${type}::new() missing arguments\n";
+	die "${type}::new: missing arguments\n";
     }
     my ($obj, $aligned, $parent) = (@_, undef);
     my $i;
@@ -55,7 +55,7 @@ sub new {
 
 	    if ($aligned and $obj->[$i]->length != $self->{'length'}) {
 		#warn "[@{[$obj->[$i]->string]}]\n";
-		die "${type}::new() incompatible alignment lengths, row $i, expect $self->{'length'}, got @{[$obj->[$i]->length]}\n";
+		die "${type}::new: incompatible alignment lengths, row $i, expect $self->{'length'}, got @{[$obj->[$i]->length]}\n";
 	    }
 	}
     }

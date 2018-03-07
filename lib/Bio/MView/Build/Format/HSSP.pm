@@ -57,7 +57,7 @@ sub initialise {
 #called on each iteration
 sub reset_child {
     my $self = shift;
-    #warn "reset_child [@{$PAR->get('chain')}]\n";
+    #warn "reset_child [@{[$PAR->get('chain')]}]\n";
     $self->{scheduler}->filter($PAR->get('chain'));
     $self;
 }

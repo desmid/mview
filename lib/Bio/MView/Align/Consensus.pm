@@ -220,7 +220,7 @@ sub tally {
     }
 
     if (! exists $Group->{$gname}) {
-	die "Bio::MView::Align::Consensus::tally() unknown consensus group '$gname'\n";
+	die "Bio::MView::Align::Consensus::tally: unknown consensus group '$gname'\n";
     }
 
     #warn "tally: $gname\n";
@@ -267,7 +267,7 @@ sub consensus {
     }
 
     if (! exists $Group->{$gname}) {
-	die "Bio::MView::Align::Consensus::tally() unknown consensus group '$gname'\n";
+	die "Bio::MView::Align::Consensus::tally: unknown consensus group '$gname'\n";
     }
 
     my $group = $Group->{$gname}->[0];
@@ -343,14 +343,14 @@ sub consensus {
 
 sub new {
     my $type = shift;
-    #warn "${type}::new() (@_)\n";
+    #warn "${type}::new(@_)\n";
     if (@_ < 5) {
-	die "${type}::new() missing arguments\n";
+	die "${type}::new: missing arguments\n";
     }
     my ($from, $to, $tally, $group, $threshold, $ignore) = @_;
 
     if ($threshold < 50 or $threshold > 100) {
-	die "${type}::new() threshold '$threshold\%' outside valid range [50..100]\n";
+	die "${type}::new: threshold '$threshold\%' outside valid range [50..100]\n";
     }
 
     my $self = { %Bio::MView::Align::Sequence::Template };
@@ -427,7 +427,7 @@ sub color_by_type {
 }
 
 sub color_by_identity {
-    my ($self, $othr) = (shift, shift);    #ignore second arg
+    my ($self, $othr) = (shift, shift);
 
     return unless $self->{'type'} eq 'consensus';
 
@@ -491,7 +491,7 @@ sub color_by_consensus_sequence {
     return unless $othr;
     return unless $othr->{'type'} eq 'sequence';
 
-    die "${self}::color_by_consensus_sequence() length mismatch\n"
+    die "${self}::color_by_consensus_sequence: length mismatch\n"
 	unless $self->length == $othr->length;
 
     my $kw = $PAR->as_dict;
@@ -559,7 +559,7 @@ sub color_by_consensus_group {
     return unless $othr;
     return unless $othr->{'type'} eq 'sequence';
 
-    die "${self}::color_by_consensus_group() length mismatch\n"
+    die "${self}::color_by_consensus_group: length mismatch\n"
 	unless $self->length == $othr->length;
 
     my $kw = $PAR->as_dict;
