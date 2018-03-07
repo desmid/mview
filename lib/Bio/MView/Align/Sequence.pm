@@ -3,7 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Sequence;
 
-use Kwargs;
 use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
 
@@ -11,7 +10,7 @@ use Bio::MView::Align::Row;
 
 use strict;
 use vars qw($Wildcard_Sym $Default_PRO_Colormap $Default_DNA_Colormap
-            %Template $KWARGS);
+            %Template);
 
 $Wildcard_Sym          = '.';     #key for default colouring
 
@@ -37,11 +36,6 @@ sub get_default_sequence_colormap {
     }
     return $Bio::MView::Align::Sequence::Default_DNA_Colormap,
 }
-
-$KWARGS = {
-    'aln_colormap' => get_default_sequence_colormap,
-    'find'         => '',
-};
 
 sub new {
     my $type = shift;
@@ -138,7 +132,7 @@ sub color_none {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -169,7 +163,7 @@ sub color_none {
 sub color_special {
     my $self = shift;
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
@@ -249,7 +243,7 @@ sub color_by_find_block {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -299,7 +293,7 @@ sub color_by_type {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -357,7 +351,7 @@ sub color_by_identity_body {
     die "${self}::color_by_identity() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 

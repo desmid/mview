@@ -437,7 +437,7 @@ sub color_by_consensus_group {
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_group($r, $PAR->keyval(
-                             'aln_colormap', 'symcolor', 'gapcolor', 'css1'
+            'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
         ));
     }
     $self;

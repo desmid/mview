@@ -3,7 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
-use Kwargs;
 use Bio::MView::Colormap;
 use Bio::MView::Groupmap;
 use Bio::MView::Align::Sequence;
@@ -12,7 +11,7 @@ use Bio::MView::Align::Sequence;
 
 use strict;
 use vars qw($Default_PRO_Colormap $Default_DNA_Colormap
-	    $Group_Any $Default_Group_Any $KWARGS);
+	    $Group_Any $Default_Group_Any);
 
 $Default_PRO_Colormap = 'PC1';    #default colormap name
 $Default_DNA_Colormap = 'DC1';    #default colormap name
@@ -32,17 +31,6 @@ my %Known_Ignore_Class =
      'class'      => 1,    #ignore non-singleton, ie., class consensi
     );
 
-sub get_default_consensus_colormap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
-    }
-    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
-}
-
-$KWARGS = {
-    'con_colormap' => get_default_consensus_colormap,
-};
-
 sub list_ignore_classes { return join(",", sort keys %Known_Ignore_Class) }
 
 sub check_ignore_class {
@@ -50,6 +38,13 @@ sub check_ignore_class {
         return lc $_[0];
     }
     return undef;
+}
+
+sub get_default_consensus_colormap {
+    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
+	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
+    }
+    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
 }
 
 sub get_color_identity { my $self = shift; $self->SUPER::get_color(@_) }
@@ -388,7 +383,7 @@ sub color_by_type {
 
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -435,7 +430,7 @@ sub color_by_identity {
 
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -498,7 +493,7 @@ sub color_by_consensus_sequence {
     die "${self}::color_by_consensus_sequence() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -566,7 +561,7 @@ sub color_by_consensus_group {
     die "${self}::color_by_consensus_group() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 

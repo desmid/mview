@@ -169,7 +169,6 @@ sub color_by_type {
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align::Sequence;
 
-use Kwargs;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align::Sequence);
@@ -181,7 +180,7 @@ Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 sub color_row {
     my $self = shift;
 
-    my $kw = Kwargs::set(@_);
+    my $kw = {@_};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 

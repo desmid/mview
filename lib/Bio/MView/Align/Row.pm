@@ -3,18 +3,9 @@
 ###########################################################################
 package Bio::MView::Align::Row;
 
-use Kwargs;
 use Bio::MView::Colormap;
 
 use strict;
-use vars qw($KWARGS);
-
-$KWARGS = {
-    ''         => 1,  #sentinel: terminate kwargs search
-    'css1'     => 0,
-    'gapcolor' => $Bio::MView::Colormap::Colour_Black,
-    'symcolor' => $Bio::MView::Colormap::Colour_Black,
-};
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
