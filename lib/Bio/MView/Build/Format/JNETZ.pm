@@ -132,33 +132,33 @@ sub set_color_scheme {
 
     return $self  if $PAR->get('aln_coloring') eq 'none';
     
-    $self->color_by_type($PAR->keyval(
-                             'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-                         ));
+    $self->color_by_type($PAR);
     $self;
 }
 
 #propagate colour scheme to row objects
 sub color_by_type {
     my $self = shift;
-    my $i;
 
     foreach my $row (@{$self->{'index2row'}}) {
 	next  unless defined $row;
 
 	if ($row->{'type'} eq 'sequence') {
-	    #sequence row: use default sequence colours but switch off css
-	    $row->color_row(@_, 'css1' => 0);
+	    #sequence row: use default sequence colours, switch off css
+            my $kw = $PAR->as_dict('css1' => 0);
+	    $row->color_row($kw);
 	    next;
 	}
 	if ($row->{'type'} eq 'jnet.pred') {
 	    #structure row: use our colours
-	    $row->color_row(@_, 'aln_colormap' => 'JNET.PRED');
+            my $kw = $PAR->as_dict('aln_colormap' => 'JNET.PRED');
+	    $row->color_row($kw);
 	    next;
 	}
 	if ($row->{'type'} eq 'jnet.conf') {
 	    #confidence row: use our colours
-	    $row->color_row(@_, 'aln_colormap' => 'JNET.CONF');
+            my $kw = $PAR->as_dict('aln_colormap' => 'JNET.CONF');
+	    $row->color_row($kw);
 	    next;
 	}
     }
@@ -178,9 +178,7 @@ use vars qw(@ISA);
 Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 
 sub color_row {
-    my $self = shift;
-
-    my $kw = {@_};
+    my ($self, $kw) = (shift, shift);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 

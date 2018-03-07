@@ -26,24 +26,23 @@ sub new {
     return $PAR = $self;
 }
 
+#Return internal hash cloned and modified with any extra (key,val) pairs
+#supplied by the caller.
+sub as_dict {
+    my $self = shift;
+    my %clone = %{$self->{'p'}};
+    while (@_) {
+        my ($k, $v) = (shift, shift);
+        $clone{$k} = $v;
+    }
+    return \%clone;
+}
+
 #Return value at $key or undef if it doesn't exist.
 sub get {
     my ($self, $key) = @_;
     return $self->{'p'}->{$key}  if exists $self->{'p'}->{$key};
     return undef;  #no match
-}
-
-#Return a flat list of (key,value) pairs for supplied keys setting value
-#to undef if the key doesn't exist.
-sub keyval {
-    my $self = shift;
-    my @tmp = ();
-    foreach my $key (@_) {
-        my $val = undef;  #no match
-        $val = $self->{'p'}->{$key}  if exists $self->{'p'}->{$key};
-        push @tmp, ($key, $val);
-    }
-    return @tmp;
 }
 
 #Set value at $key to $val and return previous value or undef.

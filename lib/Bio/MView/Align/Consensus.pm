@@ -3,6 +3,7 @@
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Colormap;
 use Bio::MView::Groupmap;
 use Bio::MView::Align::Sequence;
@@ -383,7 +384,7 @@ sub color_by_type {
 
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -430,7 +431,7 @@ sub color_by_identity {
 
     return unless $self->{'type'} eq 'consensus';
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -493,7 +494,7 @@ sub color_by_consensus_sequence {
     die "${self}::color_by_consensus_sequence() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -561,7 +562,7 @@ sub color_by_consensus_group {
     die "${self}::color_by_consensus_group() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 

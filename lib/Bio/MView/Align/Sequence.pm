@@ -3,6 +3,7 @@
 ###########################################################################
 package Bio::MView::Align::Sequence;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
 
@@ -132,7 +133,7 @@ sub color_none {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -163,7 +164,7 @@ sub color_none {
 sub color_special {
     my $self = shift;
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
@@ -176,8 +177,6 @@ sub color_special {
 	}
     }
     return unless $size;
-
-    #warn $kw->{'aln_colormap'};
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -243,7 +242,7 @@ sub color_by_find_block {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -293,7 +292,7 @@ sub color_by_type {
 
     return  unless $self->{'type'} eq 'sequence';
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -351,7 +350,7 @@ sub color_by_identity_body {
     die "${self}::color_by_identity() length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my $kw = {@_};
+    my $kw = $PAR->as_dict;
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 

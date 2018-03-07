@@ -3,7 +3,7 @@
 ######################################################################
 package Bio::MView::Align;
 
-use Bio::MView::Option::Parameters;  #for PAR
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Display;
 use Bio::MView::Align::Ruler;
 use Bio::MView::Align::Consensus;
@@ -316,9 +316,7 @@ sub color_special {
 	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special($PAR->keyval(
-                          'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_special($PAR);
 	$r->set_display('label0'=>'', #not label1
                         'label2'=>'', 'label3'=>'',
 			'label4'=>'', 'label5'=>'',
@@ -336,9 +334,7 @@ sub color_none {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none($PAR->keyval(
-                       'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_none($PAR);
     }
     $self;
 }
@@ -351,9 +347,7 @@ sub color_by_type {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type($PAR->keyval(
-                'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_by_type($PAR);
     }
     $self;
 }
@@ -369,9 +363,7 @@ sub color_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, $PAR->keyval(
-                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_by_identity($ref, $PAR);
     }
     $self;
 }
@@ -387,9 +379,7 @@ sub color_by_mismatch {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_mismatch($ref, $PAR->keyval(
-                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_by_mismatch($ref, $PAR);
     }
     $self;
 }
@@ -412,9 +402,7 @@ sub color_by_consensus_sequence {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_sequence($r, $PAR->keyval(
-                              'aln_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$con->color_by_consensus_sequence($r, $PAR);
     }
     $self;
 }
@@ -436,9 +424,7 @@ sub color_by_consensus_group {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_group($r, $PAR->keyval(
-            'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$con->color_by_consensus_group($r, $PAR);
     }
     $self;
 }
@@ -451,9 +437,7 @@ sub color_by_find_block {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block($PAR->keyval(
-                                'symcolor', 'gapcolor', 'css1', 'find'
-        ));
+	$r->color_by_find_block($PAR);
     }
     $self;
 }
@@ -469,14 +453,12 @@ sub color_consensus_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, $PAR->keyval(
-               'aln_colormap', 'con_colormap', 'symcolor', 'gapcolor', 'css1'
-        ));
+	$r->color_by_identity($ref, $PAR);
     }
     $self;
 }
 
-#return array of Bio::MView::Display::display() constructor arguments
+#return array of Bio::MView::Display::display constructor arguments
 sub init_display { ( $_[0]->{'parent'}->{'string'} ) }
 
 #Append Row data to the input Display object: done one at a time to reduce
