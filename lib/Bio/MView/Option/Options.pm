@@ -52,6 +52,7 @@ $Options = [
                 'option'  => "in",
                 'usage'   => "Input",
                 'type'    => "format::in",
+                'param'   => "infmt",
             },
 
             {
