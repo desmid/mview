@@ -55,15 +55,13 @@ $SIG{'INT'} = sub { abort("interrupted") };
 
 ###########################################################################
 #parse default options and command line
-my $stm = \*STDOUT;
-
 my $com = new Bio::MView::Option::Parser($PROG);
 my @err = $com->parse_argv(\@ARGV);
 my $par = $com->get_parameters;
 
 if ($par->{'help'}) {
     #usage message and exit
-    print $stm usage($com, $par);
+    print usage($com, $par);
     exit 0;
 } else {
     #report command line errors and exit
@@ -92,35 +90,35 @@ if ($par->{'groupfile'} ne '') {
 
 #dump css and exit
 if ($par->{'listcss'}) {
-    print $stm dump_css();
+    print dump_css();
     exit 0;
 }
 
 #dump colormaps and exit
 if ($par->{'listcolors'}) {
-    print $stm dump_colormaps($par);
+    print dump_colormaps($par);
     exit 0;
 }
 
 #dump groupmaps and exit
 if ($par->{'listgroups'}) {
-    print $stm dump_groupmaps($par);
+    print dump_groupmaps($par);
     exit 0;
 }
 
 #html header
 if ($par->{'html'}) {
-    print $stm html_head($par);
+    print html_head($par);
 }
 
 #verbose mode: echo command line
 if ($par->{'verbose'} & $VERB_ARGV) {
-    print $stm command_line($com, $par);
+    print command_line($com, $par);
 }
 
 #rdb mode: leading copyright
 if ($par->{'outfmt'} eq 'rdb') {
-    print $stm copyright($par);
+    print copyright($par);
 }
 
 #read from stdin?
@@ -133,12 +131,12 @@ unless (@ARGV or $par->{'noparse'}) {
 }
 
 #run mview and count alignments
-my $count = mview($par, $stm, @ARGV);
+my $count = mview($par,, @ARGV);
 
 if ($count) {
     #got something
     if ($par->{'html'} != $HTML_DATA and $par->{'outfmt'} =~ /^new/) {
-        print $stm copyright($par);
+        print copyright($par);
     }
 } else {
     my $s = "$PROG: no alignments found\n";
@@ -148,7 +146,7 @@ if ($count) {
 
 #html footer
 if ($par->{'html'}) {
-    print $stm html_foot($par);
+    print html_foot($par);
 }
 
 #Universal::vmstat("FINISHED.");
@@ -159,7 +157,7 @@ exit 0;
 
 ###########################################################################
 sub mview {
-    my ($par, $stm) = (shift, shift);
+    my $par = shift;
 
     #Universal::vmstat("Manager constructor");
 
