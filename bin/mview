@@ -30,14 +30,41 @@ exit 1  if $::COMPILE_ERROR;
 ###########################################################################
 my $PROG    = Universal::basename($0);
 my $SCRATCH = Universal::tmpfile("mview_$$");
-my $INVOKE  = "$PROG @ARGV";
+my $INVOCATION = "$PROG @ARGV";
 
-my $DOCTYPE = '<!DOCTYPE html>';
-my $DOCMETA = '<META http-equiv="Content-Type" content="text/html; charset=utf-8"/>';
+###########################################################################
+my ($VERB_NONE, $VERB_FILE, $VERB_ARGV, $VERB_FORM, $VERB_OPTS) =
+    (0,1,2,4,8);
 
-my ($HTML_NULL, $HTML_DATA, $HTML_CSS, $HTML_BODY, $HTML_HTML, $HTML_MIME) =
+sub verbose_echo_file       { return $_[0]->{'verbose'} & $VERB_FILE }
+sub verbose_echo_argv       { return $_[0]->{'verbose'} & $VERB_ARGV }
+sub verbose_echo_informat   { return $_[0]->{'verbose'} & $VERB_FORM }
+sub verbose_dump_parameters { return $_[0]->{'verbose'} & $VERB_OPTS }
+
+my ($HTML_NONE, $HTML_DATA, $HTML_CSS1, $HTML_BODY, $HTML_HTML, $HTML_MIME) =
     (0,1,2,4,8,16);
-my ($VERB_NULL, $VERB_FILE, $VERB_ARGV, $VERB_FORM, $VERB_OPTS) = (0,1,2,4,8);
+
+sub want_text               { return $_[0]->{'html'} == $HTML_NONE }
+sub want_html               { return $_[0]->{'html'} != $HTML_NONE }
+sub want_html_head          { return $_[0]->{'html'} &  $HTML_HTML }
+sub want_html_body          { return $_[0]->{'html'} &  $HTML_BODY }
+sub want_html_mime          { return $_[0]->{'html'} &  $HTML_MIME }
+sub want_html_css1          { return $_[0]->{'html'} &  $HTML_CSS1 }
+sub only_want_html_data     { return $_[0]->{'html'} == $HTML_DATA }
+
+sub want_convert            { return $_[0]->{'outfmt'} ne 'new' }
+sub want_convert_rdb        { return $_[0]->{'outfmt'} eq 'rdb' }
+sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'new' }
+
+sub want_help               { return $_[0]->{'help'} }
+sub want_dump_css           { return $_[0]->{'listcss'} }
+sub want_dump_colors        { return $_[0]->{'listcolors'} }
+sub want_dump_groups        { return $_[0]->{'listgroups'} }
+sub want_load_colors        { return $_[0]->{'colorfile'} ne '' }
+sub want_load_groups        { return $_[0]->{'groupfile'} ne '' }
+sub want_title              { return $_[0]->{'title'} ne '' }
+sub want_srs                { return $_[0]->{'srs'} }
+sub want_in_register        { return $_[0]->{'register'} }
 
 ###########################################################################
 sub cleanup { unlink "$SCRATCH"  if -f "$SCRATCH" }
@@ -59,70 +86,41 @@ my $com = new Bio::MView::Option::Parser($PROG);
 my @err = $com->parse_argv(\@ARGV);
 my $par = $com->get_parameters;
 
-if ($par->{'help'}) {
-    #usage message and exit
-    print usage($com, $par);
-    exit 0;
-} else {
-    #report command line errors and exit
-    abort(@err)  if @err;
-}
+print(usage($com, $par)), exit 0     if want_help($par);
 
-rationalise_parameters($par);
+abort(@err)  if @err;
 
-dump_parameters($par)  if $par->{'verbose'} & $VERB_OPTS;
+tidy_parameters($par);
+dump_parameters($par)  if verbose_dump_parameters($par);
 
-#load user colormaps; before listcolors
-if ($par->{'colorfile'} ne '') {
+if (want_load_colors($par)) {  #before listcolors
     local *TMP;
     open(TMP, "< $par->{'colorfile'}");
     Bio::MView::Manager::load_colormaps(\*TMP);
     close TMP;
 }
 
-#load user groupmaps; before listgroups
-if ($par->{'groupfile'} ne '') {
+print(dump_colormaps($par)), exit 0  if want_dump_colors($par);
+
+if (want_load_groups($par)) {  #before listgroups
     local *TMP;
     open(TMP, "< $par->{'groupfile'}");
     Bio::MView::Manager::load_groupmaps(\*TMP);
     close TMP;
 }
 
-#dump css and exit
-if ($par->{'listcss'}) {
-    print dump_css();
-    exit 0;
-}
+print(dump_groupmaps($par)), exit 0  if want_dump_groups($par);
 
-#dump colormaps and exit
-if ($par->{'listcolors'}) {
-    print dump_colormaps($par);
-    exit 0;
-}
+print(dump_css($par)), exit 0        if want_dump_css($par);
 
-#dump groupmaps and exit
-if ($par->{'listgroups'}) {
-    print dump_groupmaps($par);
-    exit 0;
-}
+print(html_head($par))               if want_html($par);
 
-#html header
-if ($par->{'html'}) {
-    print html_head($par);
-}
+print(echo_argv($par))               if verbose_echo_argv($par);
 
-#verbose mode: echo command line
-if ($par->{'verbose'} & $VERB_ARGV) {
-    print command_line($com, $par);
-}
-
-#rdb mode: leading copyright
-if ($par->{'outfmt'} eq 'rdb') {
-    print copyright($par);
-}
+print(copyright($par))               if want_convert_rdb($par);
 
 #read from stdin?
-unless (@ARGV or $par->{'noparse'}) {
+unless (@ARGV) {
     warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
     open(TMP, ">$SCRATCH") or abort("can't save to temporary file");
     while (<>) { print TMP }
@@ -133,21 +131,17 @@ unless (@ARGV or $par->{'noparse'}) {
 #run mview and count alignments
 my $count = mview($par,, @ARGV);
 
-if ($count) {
-    #got something
-    if ($par->{'html'} != $HTML_DATA and $par->{'outfmt'} =~ /^new/) {
+if ($count) {  #got something
+    if (!only_want_html_data($par) and want_mview_layout($par)) {
         print copyright($par);
     }
 } else {
     my $s = "$PROG: no alignments found\n";
-    print $s  if $par->{'html'} != $HTML_DATA;
+    print $s  unless only_want_html_data($par);
     warn $s;
 }
 
-#html footer
-if ($par->{'html'}) {
-    print html_foot($par);
-}
+print html_foot($par)  if want_html($par);
 
 #Universal::vmstat("FINISHED.");
 
@@ -168,7 +162,7 @@ sub mview {
         warn("$PROG: file '$file' is not a file\n"),   next  unless -f $file;
         warn("$PROG: file '$file' is not readable\n"), next  unless -r $file;
 
-        warn "$PROG: processing '$file'\n"  if $par->{'verbose'} & $VERB_FILE;
+        warn "$PROG: processing '$file'\n"  if verbose_echo_file($par);
 
 	#try to choose a format if one wasn't specified
         if (! $par->{'infmt'}) {
@@ -176,7 +170,7 @@ sub mview {
             warn("$PROG: can't determine format\n"), next
                 unless defined $format;
             warn "$PROG: format is probably '$format'\n"
-                if $par->{'verbose'} & $VERB_FORM;
+                if verbose_echo_informat($par);
             $par->{'infmt'} = $format;
         }
 
@@ -186,47 +180,23 @@ sub mview {
     }
     #Universal::vmstat("Manager constructor one");
 
-    #colormap/groupmap listing request: no alignment
-    return 0  if $par->{'noparse'};
-
     #save printing until end?
-    if ($par->{'register'} and $par->{'outfmt'} eq 'new') {
+    if (want_in_register($par) and want_mview_layout($par)) {
 	$mgr->print;
 	#Universal::vmstat("print done (mview)");
     }
     return $mgr->alignment_count;
 }
 
-sub rationalise_parameters {
+#direct surgery on the dict pointed to by the global $PAR object
+sub tidy_parameters {
     my $par = shift;
 
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'rdb';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'clustal';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'pir';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'msf';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'pearson';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'fasta';
-    $par->{'html'} = 0  if $par->{'outfmt'} eq 'plain';
+    $par->{'html'} = 0  if want_convert($par);
 
-    if ($par->{'html'}) {
-        #ignore style sheets if css is unset
-        unless ($par->{'css1'}) {
-            $par->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
-        }
-    } else {
-        #ignore style sheets
-        $par->{'css1'} = 0;
-
-        #ignore coloring if HTML is off!
-        $par->{'aln_coloring'} = 'none';
-        $par->{'con_coloring'} = 'none';
-    }
-
-    #switch off parsing if color/groupmap listing requested
-    if ($par->{'listcolors'} or $par->{'listgroups'}) {
-	$par->{'noparse'} = 1;
-    } else {
-	$par->{'noparse'} = 0;
+    #disable style sheets unless html mode with css1
+    if ($par->{'html'} and !$par->{'css1'}) {
+        $par->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
     }
 }
 
@@ -235,7 +205,7 @@ sub usage {
     $par->{'title'} = 'MView command line options';
     my $data = $com->usage();
     my $s = '';
-    if ($par->{'html'}) {
+    if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
         $s .= copyright($par);
@@ -244,23 +214,23 @@ sub usage {
         $s .= $data;
         $s .= copyright($par);
     }
-    $s;
+    return $s;
 }
 
 sub dump_css {
-    #http://www.w3.org/TR/REC-CSS1#containment-in-html
+    my $par = shift;
     my $s = Bio::MView::Manager::dump_css(
 	'alncolor' => $par->{'alncolor'}, 'labcolor' => $par->{'labcolor'},
 	'symcolor' => $par->{'symcolor'}, 'gapcolor' => $par->{'gapcolor'},
 	);
-    $s;
+    return $s;
 }
 
 sub dump_colormaps {
     my $par = shift;
-    my $data = Bio::MView::Manager::dump_colormaps($par->{'html'});
+    my $data = Bio::MView::Manager::dump_colormaps(want_html($par));
     my $s = '';
-    if ($par->{'html'}) {
+    if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
         $s .= copyright($par);
@@ -269,14 +239,14 @@ sub dump_colormaps {
         $s .= $data;
         $s .= copyright($par);
     }
-    $s;
+    return $s;
 }
 
 sub dump_groupmaps {
     my $par = shift;
-    my $data = Bio::MView::Manager::dump_groupmaps($par->{'html'});
+    my $data = Bio::MView::Manager::dump_groupmaps(want_html($par));
     my $s = '';
-    if ($par->{'html'}) {
+    if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
         $s .= copyright($par);
@@ -285,15 +255,15 @@ sub dump_groupmaps {
         $s .= $data;
         $s .= copyright($par);
     }
-    $s;
+    return $s;
 }
 
-sub command_line {
-    my ($com, $par) = @_;
-    my $data = $com->dump_argv;
+sub echo_argv {
+    my ($par) = @_;
+    my $data = $par->{'argv'};
     $data =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
     my $s = '';
-    if ($par->{'html'}) {
+    if (want_html($par)) {
 	$s .= "<H4>command line:</H4>\n<CODE>";
 	$s .= "$PROG $data";
 	$s .= "</CODE>\n<H4>produced:</H4>\n";
@@ -302,112 +272,92 @@ sub command_line {
 	$s .= "$PROG $data\n";
 	$s .= "produced:\n\n";
     }
-    $s
+    return $s
 }
 
 sub copyright {
     my $par = shift;
-    my $s = '';
-    no strict;
+    my $message = "$PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR";
 
-    if ($par->{'outfmt'} eq 'rdb') {    #rdb files
-        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
-	$s .= "# $INVOKE\n";
-	return $s;
-    }
+    return "# $message\n"                 if want_dump_colors($par);
+    return "# $message\n"                 if want_dump_groups($par);
+    return "# $message\n# $INVOCATION\n"  if want_convert_rdb($par);
+    return "\n$message\n\n"               if want_text($par);
 
-    if ($par->{'html'}) {    #any HTML
-        $s .= "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
-        $s .= "$VERSION, Copyright \&copy; ";
-        $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
-        $s .= "</SMALL></P>\n";
-	return $s;
-    }
-
-    if ($par->{'noparse'}) {    #listcolor/listgroups without HTML
-        $s .= "# $PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n";
-	return $s;
-    }
-
-    $s = "\n$PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR\n\n";
-    $s;
+    my $s = "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
+    $s .= "$VERSION, Copyright \&copy; ";
+    $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
+    $s .= "</SMALL></P>\n";
+    return $s;
 }
 
 sub html_head {
     my $par = shift;
-
-    return ''  if $par->{'html'} == $HTML_DATA;
-
     my $s = '';
+    return $s  if only_want_html_data($par);
 
-    #want MIME type?
-    if ($par->{'html'} & $HTML_MIME) {
-	$s .= "Content-Type: text/html\n\n";
-    }
+    my $DOCTYPE = '<!DOCTYPE html>';
+    my $DOCMETA = '<META http-equiv="Content-Type" content="text/html; charset=utf-8"/>';
 
-    #want HTML HEAD?
-    if ($par->{'html'} & $HTML_HTML) {
-        my $t = "$DOCMETA\n";
+    my $title = want_title($par) ? $par->{'title'} : "MView";
 
-        #link styles
-        if ($par->{'srs'}) {
-            $t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-            $t .= "A:link{background:transparent;color:$par->{'linkcolor'}}\n";
-            $t .= "A:active{background:transparent;color:$par->{'alinkcolor'}}\n";
-            $t .= "A:visited{background:transparent;color:$par->{'vlinkcolor'}}\n";
-            $t .= "-->\n</STYLE>\n";
-        }
+    $s .= "Content-Type: text/html\n\n"  if want_html_mime($par);
 
-	#want colour definitions?
-	if ($par->{'html'} & $HTML_CSS) {
-	    #alignment styles
-	    if ($par->{'css1'} =~ /^(?:file|http):/i) {
-		#link to style sheet
-	        $t .= "<LINK REL=STYLESHEET HREF=\"$par->{'css1'}\">\n";
-	    } else {
-		#style sheet in situ
-		$t .= "<STYLE TYPE=\"text/css\">\n<!--\n";
-		$t .= Bio::MView::Manager::dump_css(
-                    'alncolor' => $par->{'alncolor'},
-                    'labcolor' => $par->{'labcolor'},
-                    'symcolor' => $par->{'symcolor'},
-                    'gapcolor' => $par->{'gapcolor'},
-		);
-		$t .= "-->\n</STYLE>\n";
-	    }
-	}
-
-        #page TITLE
-        if (defined $par->{'title'} and $par->{'title'} ne "") {
-            $t .= "<TITLE>$par->{'title'}</TITLE>\n";
-        } else {
-            $t .= "<TITLE>MView</TITLE>\n";
-        }
-
+    #http://www.w3.org/TR/REC-CSS1#containment-in-html
+    if (want_html_head($par)) {
         $s .= "$DOCTYPE\n<HTML>\n";
-        $s .= "<HEAD>\n$t</HEAD>\n"  if $t;
+        my $m = "$DOCMETA\n";
+        $m .= html_head_stylesheet_links($par)  if want_srs($par);
+        $m .= html_head_stylesheet_css($par)    if want_html_css1($par);
+        $m .= "<TITLE>$title</TITLE>\n";        #in tab/titlebar
+        $s .= "<HEAD>\n$m</HEAD>\n";
     }
 
-    #want BODY?
-    if ($par->{'html'} & $HTML_BODY) {
-        $s .= "<BODY style=\"background-color:$par->{'pagecolor'}; color:$par->{'textcolor'}\">\n";
+    if (want_html_body($par)) {
+        my $pagecolor = $par->{'pagecolor'};
+        my $textcolor = $par->{'textcolor'};
+        $s .= "<BODY style=\"background-color:$pagecolor;color:$textcolor\">\n";
     }
 
-    #want TITLE? (in document)
-    if (defined $par->{'title'} and $par->{'title'} ne "") {
-	$s .= "<H4>$par->{'title'}</H4>\n";
-    }
+    $s .= "<H4>$title</H4>\n"  if want_title($par);  #in document
 
-    $s;
+    return $s;
+}
+
+sub html_head_stylesheet_links {
+    my $par = shift;
+    my $linkcolor  = $par->{'linkcolor'};
+    my $alinkcolor = $par->{'alinkcolor'};
+    my $vlinkcolor = $par->{'vlinkcolor'};
+    my $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+    $s .= "A:link{background:transparent;color:$linkcolor}\n";
+    $s .= "A:active{background:transparent;color:$alinkcolor}\n";
+    $s .= "A:visited{background:transparent;color:$vlinkcolor}\n";
+    $s .= "-->\n</STYLE>\n";
+    return $s;
+}
+
+sub html_head_stylesheet_css {
+    my $par = shift;
+    my $css1 = $par->{'css1'};
+    my $s = '';
+    if ($css1 =~ /^(?:file|http):/i) {  #link to style sheet
+        $s .= "<LINK REL=STYLESHEET HREF=\"$css1\">\n";
+    } else {  #style sheet in situ
+        $s .= "<STYLE TYPE=\"text/css\">\n<!--\n";
+        $s .= dump_css($par);
+        $s .= "-->\n</STYLE>\n";
+    }
+    return $s;
 }
 
 sub html_foot {
     my $par = shift;
-    return ''  if $par->{'html'} == $HTML_DATA;
     my $s = '';
-    $s .= "</BODY>\n"  if $par->{'html'} & $HTML_BODY;
-    $s .= "</HTML>\n"  if $par->{'html'} & $HTML_HTML;
-    $s;
+    return $s  if only_want_html_data($par);
+    $s .= "</BODY>\n"  if want_html_body($par);
+    $s .= "</HTML>\n"  if want_html_head($par);
+    return $s;
 }
 
 sub dump_parameters {

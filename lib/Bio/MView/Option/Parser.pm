@@ -62,8 +62,7 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'argv'}    = [];
-    $self->{'param'}   = { 'prog' => $prog };
+    $self->{'param'}   = { 'prog' => $prog, 'argv' => '' };
 
     $self->{'types'}   = {};
     $self->{'options'} = {};
@@ -370,7 +369,7 @@ sub parse_argv {
     my @errors = ();
 
     #save input ARGV for posterity
-    push @{$self->{'argv'}}, @$argv;
+    $self->{'param'}->{'argv'} .= "@$argv";
 
     #look for '--' to stop option processing
     #warn "argv: [@$argv]\n";
@@ -406,8 +405,6 @@ sub parse_argv {
 
     return @errors;
 }
-
-sub dump_argv { return join(" ", @{$_[0]->{'argv'}}) }
 
 sub get_parameters { return $_[0]->{'param'} }
 

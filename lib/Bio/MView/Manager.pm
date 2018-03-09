@@ -25,7 +25,6 @@ sub new {
     $self->{'filter'}  = undef;
     $self->{'class'}   = undef;
     $self->{'quiet'}   = undef;
-    $self->{'noparse'} = undef;
 
     $self;
 }
@@ -42,8 +41,6 @@ sub parse {
     $tmp = "Bio::MView::Build::Format::$format";
     ($library = $tmp) =~ s/::/\//g;
     require "$library.pm";
-
-    return  if $self->{'noparse'};    #load the parser, but do nothing
 
     $self->{'file'}   = $file;
     $self->{'format'} = lc $format;

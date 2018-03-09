@@ -160,6 +160,8 @@ my @Known_Outformats = (
     'plain',
     'clustal',
     'msf',
+
+    #mview's native format
     'new',
 
     #tabular
