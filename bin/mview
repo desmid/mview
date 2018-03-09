@@ -21,6 +21,7 @@ $^W=1;
 BEGIN {$::COMPILE_ERROR=0}  #catch compile time method call failure
 
 use lib '/home/brown/HOME/work/MView/dev/lib';
+use Bio::MView::Option::Arguments;
 use Bio::MView::Option::Parser;
 use Bio::MView::Manager;
 use strict;
@@ -41,18 +42,13 @@ sub verbose_echo_argv       { return $_[0]->{'verbose'} & $VERB_ARGV }
 sub verbose_echo_informat   { return $_[0]->{'verbose'} & $VERB_FORM }
 sub verbose_dump_parameters { return $_[0]->{'verbose'} & $VERB_OPTS }
 
-my ($HTML_NONE, $HTML_DATA, $HTML_CSS1, $HTML_BODY, $HTML_HTML, $HTML_MIME) =
-    (0,1,2,4,8,16);
-
 sub want_text               { return $_[0]->{'html'} == $HTML_NONE }
 sub want_html               { return $_[0]->{'html'} != $HTML_NONE }
-sub want_html_head          { return $_[0]->{'html'} &  $HTML_HTML }
 sub want_html_body          { return $_[0]->{'html'} &  $HTML_BODY }
-sub want_html_mime          { return $_[0]->{'html'} &  $HTML_MIME }
-sub want_html_css1          { return $_[0]->{'html'} &  $HTML_CSS1 }
+sub want_html_head          { return $_[0]->{'html'} &  $HTML_HEAD }
+sub want_html_full          { return $_[0]->{'html'} &  $HTML_FULL }
 sub only_want_html_data     { return $_[0]->{'html'} == $HTML_DATA }
 
-sub want_convert            { return $_[0]->{'outfmt'} ne 'new' }
 sub want_convert_rdb        { return $_[0]->{'outfmt'} eq 'rdb' }
 sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'new' }
 
@@ -64,6 +60,7 @@ sub want_load_colors        { return $_[0]->{'colorfile'} ne '' }
 sub want_load_groups        { return $_[0]->{'groupfile'} ne '' }
 sub want_title              { return $_[0]->{'title'} ne '' }
 sub want_srs                { return $_[0]->{'srs'} }
+sub want_css                { return $_[0]->{'css1'} }
 sub want_in_register        { return $_[0]->{'register'} }
 
 ###########################################################################
@@ -90,7 +87,6 @@ print(usage($com, $par)), exit 0     if want_help($par);
 
 abort(@err)  if @err;
 
-tidy_parameters($par);
 dump_parameters($par)  if verbose_dump_parameters($par);
 
 if (want_load_colors($par)) {  #before listcolors
@@ -132,9 +128,8 @@ unless (@ARGV) {
 my $count = mview($par,, @ARGV);
 
 if ($count) {  #got something
-    if (!only_want_html_data($par) and want_mview_layout($par)) {
-        print copyright($par);
-    }
+    print copyright($par)
+        if want_mview_layout($par) and !only_want_html_data($par);
 } else {
     my $s = "$PROG: no alignments found\n";
     print $s  unless only_want_html_data($par);
@@ -186,18 +181,6 @@ sub mview {
 	#Universal::vmstat("print done (mview)");
     }
     return $mgr->alignment_count;
-}
-
-#direct surgery on the dict pointed to by the global $PAR object
-sub tidy_parameters {
-    my $par = shift;
-
-    $par->{'html'} = 0  if want_convert($par);
-
-    #disable style sheets unless html mode with css1
-    if ($par->{'html'} and !$par->{'css1'}) {
-        $par->{'html'} &= ($HTML_MIME|$HTML_HTML|$HTML_BODY|$HTML_DATA);
-    }
 }
 
 sub usage {
@@ -301,14 +284,14 @@ sub html_head {
 
     my $title = want_title($par) ? $par->{'title'} : "MView";
 
-    $s .= "Content-Type: text/html\n\n"  if want_html_mime($par);
+    $s .= "Content-Type: text/html\n\n"  if want_html_full($par);
 
     #http://www.w3.org/TR/REC-CSS1#containment-in-html
     if (want_html_head($par)) {
         $s .= "$DOCTYPE\n<HTML>\n";
         my $m = "$DOCMETA\n";
         $m .= html_head_stylesheet_links($par)  if want_srs($par);
-        $m .= html_head_stylesheet_css($par)    if want_html_css1($par);
+        $m .= html_head_stylesheet_css($par)    if want_css($par);
         $m .= "<TITLE>$title</TITLE>\n";        #in tab/titlebar
         $s .= "<HEAD>\n$m</HEAD>\n";
     }

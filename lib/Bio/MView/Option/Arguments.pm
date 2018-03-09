@@ -33,8 +33,10 @@ push @EXPORT, qw(list_cycle_types   check_cycle_type);
 push @EXPORT, qw(list_block_values  check_block_value);
 push @EXPORT, qw(list_chain_values  check_chain_value);
 
+push @EXPORT, qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
+
 use strict;
-use vars qw($Types);
+use vars qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
 
 ############################################################################
 my @Known_Informats = (
@@ -196,17 +198,19 @@ my @Known_HTML_Modes = (
     'off',
 );
 
+($HTML_NONE, $HTML_DATA, $HTML_BODY, $HTML_HEAD, $HTML_FULL) = (0,1,2,4,8);
+
 sub list_html_modes { return join(",", @Known_HTML_Modes) }
 
 sub check_html_mode {
     my $val = shift;
     local $_;
     foreach ($val) {  #switch
-        return 16|8|4|2|1  if $_ =~ /^full/i;
-        return 8|4|2|1     if $_ =~ /^head/i;
-        return 4|2|1       if $_ =~ /^body/i;
-        return 1           if $_ =~ /^data/i;
-        return 0           if $_ =~ /^off/i;
+        return $HTML_NONE                                   if $_ =~ /^off/i;
+        return $HTML_DATA                                   if $_ =~ /^data/i;
+        return $HTML_DATA|$HTML_BODY                        if $_ =~ /^body/i;
+        return $HTML_DATA|$HTML_BODY|$HTML_HEAD             if $_ =~ /^head/i;
+        return $HTML_DATA|$HTML_BODY|$HTML_HEAD|$HTML_FULL  if $_ =~ /^full/i;
     }
     return undef;
 }
