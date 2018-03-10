@@ -288,8 +288,24 @@ sub list_groupmap_names { Bio::MView::Groupmap::list_groupmap_names }
 sub check_groupmap      { Bio::MView::Groupmap::check_groupmap(@_) }
 
 ###########################################################################
-sub list_ignore_classes { Bio::MView::Align::Consensus::list_ignore_classes }
-sub check_ignore_class  { Bio::MView::Align::Consensus::check_ignore_class(@_) }
+my @Known_Ignore_Classes = (
+    'none',       #don't ignore
+    'class',      #ignore non-singleton, ie., class consensi
+    'singleton',  #ignore singleton, ie., self-only consensi
+);
+
+sub list_ignore_classes { return join(",", @Known_Ignore_Classes) }
+
+sub check_ignore_class {
+    my $val = shift;
+    local $_;
+    foreach ($val) {  #switch
+        return 'none'       if $_ =~ /^n/i;
+        return 'class'      if $_ =~ /^c/i;
+        return 'singleton'  if $_ =~ /^s/i;
+    }
+    return undef;
+}
 
 ###########################################################################
 my @Known_Alignment_Color_Schemes = (

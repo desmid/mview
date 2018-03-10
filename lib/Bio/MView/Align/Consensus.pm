@@ -11,31 +11,13 @@ use Bio::MView::Align::Sequence;
 @ISA = qw(Bio::MView::Align::Sequence);
 
 use strict;
-use vars qw($Group_Any $Default_Group_Any);
+use vars qw($Group_Any);
 
 #hardwire the consensus line symcolor
 my $SYMCOLOR = $Bio::MView::Colormap::Colour_Black;
 
 my $Group             = $Bio::MView::Groupmap::Group;
 my $Group_Any         = $Bio::MView::Groupmap::Group_Any;
-my $Default_Group_Any = $Bio::MView::Groupmap::Default_Group_Any;
-
-my %Known_Ignore_Class =
-    (
-     #name
-     'none'       => 1,    #don't ignore
-     'singleton'  => 1,    #ignore singleton, ie., self-only consensi
-     'class'      => 1,    #ignore non-singleton, ie., class consensi
-    );
-
-sub list_ignore_classes { return join(",", sort keys %Known_Ignore_Class) }
-
-sub check_ignore_class {
-    if (exists $Known_Ignore_Class{lc $_[0]}) {
-        return lc $_[0];
-    }
-    return undef;
-}
 
 sub get_color_identity { my $self = shift; $self->SUPER::get_color(@_) }
 
