@@ -11,11 +11,7 @@ use Bio::MView::Align::Sequence;
 @ISA = qw(Bio::MView::Align::Sequence);
 
 use strict;
-use vars qw($Default_PRO_Colormap $Default_DNA_Colormap
-	    $Group_Any $Default_Group_Any);
-
-$Default_PRO_Colormap = 'PC1';    #default colormap name
-$Default_DNA_Colormap = 'DC1';    #default colormap name
+use vars qw($Group_Any $Default_Group_Any);
 
 #hardwire the consensus line symcolor
 my $SYMCOLOR = $Bio::MView::Colormap::Colour_Black;
@@ -39,13 +35,6 @@ sub check_ignore_class {
         return lc $_[0];
     }
     return undef;
-}
-
-sub get_default_consensus_colormap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Bio::MView::Align::Consensus::Default_PRO_Colormap;
-    }
-    return $Bio::MView::Align::Consensus::Default_DNA_Colormap;
 }
 
 sub get_color_identity { my $self = shift; $self->SUPER::get_color(@_) }

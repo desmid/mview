@@ -10,33 +10,22 @@ use Bio::MView::Align::Row;
 @ISA = qw(Bio::MView::Align::Row);
 
 use strict;
-use vars qw($Wildcard_Sym $Default_PRO_Colormap $Default_DNA_Colormap
-            %Template);
+use vars qw($Wildcard_Sym %Template);
 
-$Wildcard_Sym          = '.';     #key for default colouring
-
-$Default_PRO_Colormap  = 'P1';    #default protein colormap name
-$Default_DNA_Colormap  = 'D1';    #default nucleotide colormap name
+$Wildcard_Sym = '.';  #key for default colouring
 
 %Template =
     (
-     'id'      => undef,     #identifier
-     'type'    => undef,     #information about own subtype
-     'from'    => undef,     #start number of sequence
-     'string'  => undef,     #alignment string
-     'display' => undef,     #hash of display parameters
+     'id'      => undef,  #identifier
+     'type'    => undef,  #information about own subtype
+     'from'    => undef,  #start number of sequence
+     'string'  => undef,  #alignment string
+     'display' => undef,  #hash of display parameters
     );
 
 my $FIND_WARNINGS  = 1;       #find block warnings only once
 my $FIND_SEPARATOR = ':';     #for multiple find patterns
 my $FIND_COLORMAP  = 'FIND';  #hardwired find colormap
-
-sub get_default_sequence_colormap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Bio::MView::Align::Sequence::Default_PRO_Colormap;
-    }
-    return $Bio::MView::Align::Sequence::Default_DNA_Colormap,
-}
 
 sub new {
     my $type = shift;

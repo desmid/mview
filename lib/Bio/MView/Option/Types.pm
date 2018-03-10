@@ -13,10 +13,10 @@ use vars qw($Types);
 
 ######################################################################
 sub get_default_sequence_colormap {
-    Bio::MView::Align::Sequence::get_default_sequence_colormap(@_)
+    Bio::MView::Colormap::get_default_sequence_colormap(@_)
 }
 sub get_default_consensus_colormap {
-    Bio::MView::Align::Consensus::get_default_consensus_colormap(@_)
+    Bio::MView::Colormap::get_default_consensus_colormap(@_)
 }
 sub get_default_groupmap {
     Bio::MView::Groupmap::get_default_groupmap(@_)

@@ -22,6 +22,26 @@ $Colour_Cream      = '#FFFFCC';
 $Colour_Brown      = '#aa6666';
 $Colour_Comment    = $Colour_Brown;
 
+use vars qw($Default_PRO_Aln_Colormap $Default_DNA_Aln_Colormap
+            $Default_PRO_Con_Colormap $Default_DNA_Con_Colormap);
+
+$Default_PRO_Aln_Colormap = 'P1';
+$Default_DNA_Aln_Colormap = 'D1';
+$Default_PRO_Con_Colormap = 'PC1';
+$Default_DNA_Con_Colormap = 'DC1';
+
+sub get_default_sequence_colormap {
+    return $Default_PRO_Aln_Colormap  if !defined $_[0];
+    return $Default_PRO_Aln_Colormap  if $_[0] eq 'aa';
+    return $Default_DNA_Aln_Colormap;
+}
+
+sub get_default_consensus_colormap {
+    return $Default_PRO_Con_Colormap  if !defined $_[0];
+    return $Default_PRO_Con_Colormap  if $_[0] eq 'aa';
+    return $Default_DNA_Con_Colormap;
+}
+
 my %Known_Parameter =
     (
      'alncolor'   => [ '\S+',  $Colour_White    ],
