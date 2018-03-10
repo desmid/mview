@@ -13,8 +13,7 @@ $Default_Group_Any    = '.';      #default symbol for non-consensus group
 $Default_PRO_Group    = 'P1';     #default consensus scheme name, protein
 $Default_DNA_Group    = 'D1';     #default consensus scheme name, dna
 
-#static load the $Group hash.
-eval { load_groupmaps() }; if ($@) {$::COMPILE_ERROR=1; warn $@}
+load_groupmaps(\*DATA);
 
 sub list_groupmap_names { return join(",", sort keys %$Group) }
 
@@ -33,7 +32,7 @@ sub get_default_groupmap {
 }
 
 sub load_groupmaps {
-    my ($stream, $override) = (@_, \*DATA, 1);
+    my ($stream, $override) = (@_, 1);
     my ($state, $map, $class, $sym, $members, $c, $de, $mapignore) = (0, {}, undef);
     local $_;
     while (<$stream>) {

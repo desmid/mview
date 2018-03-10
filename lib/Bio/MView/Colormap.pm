@@ -31,7 +31,7 @@ my %Known_Parameter =
     );
 
 #static load the $Colormaps hash.
-eval { load_colormaps() }; if ($@) {$::COMPILE_ERROR=1; warn $@}
+load_colormaps(\*DATA);
 
 sub list_colormap_names { return join(",", sort keys %$Colormaps) }
 
@@ -47,7 +47,7 @@ sub check_colormap {
 
 #load colormap data from stream
 sub load_colormaps {
-    my ($stream, $override) = (@_, \*DATA, 1);    #allow replacement maps
+    my ($stream, $override) = (@_, 1);    #allow replacement maps
     my ($state, $map, $c1, $c2, $seethru, $color, $de, $mapignore) = (0);
     local $_;
     while (<$stream>) {
