@@ -48,61 +48,34 @@ sub get_color_identity { my $self = shift; $self->SUPER::get_color(@_) }
 #  5. give up.
 sub get_color_type {
     my ($self, $c, $mapS, $mapG) = @_;
-    my ($index, $color, $trans);
-
     #warn "get_color_type($self, $c, $mapS, $mapG)\n";
 
-    my @tmp = keys %{$Bio::MView::Colormap::Colormaps->{$mapG}};
-
-    #colormap is preset colorname
-    if (@tmp < 1) {
-        if (exists $Bio::MView::Colormap::Palette->[0]->{$mapG}) {
-            $trans = 'T';  #ignore CSS setting
-            $index = $Bio::MView::Colormap::Palette->[0]->{$mapG};
-            $color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
-            #warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
-
-            return ($color, "$trans$index");
-        }
-    }
-
     #look in group colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapG}->{$c}) {
-
-	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapG}->{$c}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapG}->{$c}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($mapG, $c)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapG, $c);
 	#warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
+    #colormap is preset colorname
+    if ($COLORMAP->has_palette_color($mapG)) {
+        my ($color, $index, $trans) = $COLORMAP->get_palette_color($mapG);
+        $trans = 'T';  #ignore CSS setting
+        #warn "$c $mapG\{$c} [$index] [$color] [$trans]\n";
+        return ($color, "$trans$index");
+    }
+
     #look in sequence colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$c}) {
-
-	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$c}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$c}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($mapS, $c)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $c);
 	#warn "$c $mapS\{$c} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
     #look for wildcard in sequence colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}) {
-
-	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($mapS, $Group_Any)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $Group_Any);
 	#warn "$c $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
@@ -121,28 +94,16 @@ sub get_color_consensus_sequence {
     #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
 
     #lookup sequence symbol in sequence colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$cs}) {
-
-	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$cs}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$cs}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($mapS, $cs)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $cs);
 	#warn "$cs/$cg $mapS\{$cs} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
     #lookup wildcard in sequence colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}) {
-
-	#set transparent(T)/solid(S)
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($mapS, $Group_Any)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $Group_Any);
 	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
@@ -162,38 +123,23 @@ sub get_color_consensus_group {
     #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
 
     #lookup group symbol in group colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapG}->{$cg}) {
-
-	#set transparent(T)/solid(S)/color from GROUP colormap
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapG}->{$cg}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapG}->{$cg}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
+    if ($COLORMAP->has_color($mapG, $cg)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapG, $cg);
 	#warn "$cs/$cg $mapG\{$cg} [$index] [$color] [$trans]\n";
-
 	return ($color, "$trans$index");
     }
 
     #lookup group symbol in sequence colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$cg}) {
-
-	#set transparent(T)/solid(S)/color from SEQUENCE colormap
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$cg}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$cg}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
+    if ($COLORMAP->has_color($mapS, $cg)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $cg);
 	#warn "$cs/$cg $mapS\{$cg} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
     #lookup wildcard in SEQUENCE colormap
-    if (exists $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}) {
-
-	#set transparent(T)/solid(S)/color from SEQUENCE colormap
-	$trans = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$mapS}->{$Group_Any}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
+    if ($COLORMAP->has_color($mapS, $Group_Any)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $Group_Any);
 	#warn "$cs/$cg $mapS\{$Group_Any} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 

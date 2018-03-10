@@ -3,8 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Row;
 
-use Bio::MView::Colormap;
-
 use strict;
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }

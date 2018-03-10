@@ -10,9 +10,7 @@ use Bio::MView::Align::Row;
 @ISA = qw(Bio::MView::Align::Row);
 
 use strict;
-use vars qw($Wildcard_Sym %Template);
-
-$Wildcard_Sym = '.';  #key for default colouring
+use vars qw(%Template);
 
 %Template =
     (
@@ -73,44 +71,28 @@ sub reset_display {
 
 sub get_color {
     my ($self, $c, $map) = @_;
-    my ($index, $color, $trans);
-
     #warn "get_color: $c, $map";
 
     #set transparent(T)/solid(S)
-    if (exists $Bio::MView::Colormap::Colormaps->{$map}->{$c}) {
-
-	$trans = $Bio::MView::Colormap::Colormaps->{$map}->{$c}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$map}->{$c}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
+    if ($COLORMAP->has_color($map, $c)) {
+        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($map, $c);
 	#warn "CL $c $map\{$c} [$index] [$color] [$trans]\n";
-	
 	return ($color, "$trans$index");
     }
 
     #wildcard colour
-    if (exists $Bio::MView::Colormap::Colormaps->{$map}->{$Wildcard_Sym}) {
-
-	$trans = $Bio::MView::Colormap::Colormaps->{$map}->{$Wildcard_Sym}->[1];
-	$index = $Bio::MView::Colormap::Colormaps->{$map}->{$Wildcard_Sym}->[0];
-	$color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
-	#warn "WC $c $map\{$Wildcard_Sym} [$index] [$color] [$trans]\n";
-
+    if ($COLORMAP->has_wildcard_color($map)) {
+        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($map);
+	#warn "WC $c $map\{Wildcard} [$index] [$color] [$trans]\n";
 	return ($color, "$trans$index");
     }
 
     #preset colour name in $map, used for string searches or plain
     #colouring where all matches should be same colour
-    if (exists $Bio::MView::Colormap::Palette->[0]->{$map}) {
-
+    if ($COLORMAP->has_palette_color($map)) {
+        my ($color, $index, $trans) = $COLORMAP->get_palette_color($map);
 	$trans = 'S';
-	$index = $Bio::MView::Colormap::Palette->[0]->{$map};
-        $color = $Bio::MView::Colormap::Palette->[1]->[$index];
-
 	#warn "FD $c $map\{$c} [$index] [$color] [$trans]\n";
-
 	return ($color, "$trans$index");
     }
 
@@ -157,7 +139,7 @@ sub color_special {
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
-    foreach $map (keys %$Bio::MView::Colormap::Colormaps) {
+    foreach $map ($COLORMAP->list_colormap_names) {
 	if ($self->{'id'} =~ /$map/i) {
 	    if (length($&) > $size) {
 		$kw->{'aln_colormap'} = $map;
@@ -207,7 +189,7 @@ sub color_special {
 sub find_blocks {
     my ($self, $find, $colormap) = @_;
 
-    my $mapsize = Bio::MView::Colormap::get_colormap_length($colormap);
+    my $mapsize = $COLORMAP->get_colormap_length($colormap);
 
     my @patterns = split($FIND_SEPARATOR, $find);
 

@@ -3,16 +3,16 @@
 ######################################################################
 package Bio::MView::Colormap;
 
+use Exporter;
 use strict;
-use vars qw($Colormaps $Palette $Map_Text $Wildcard_Key);
+use vars qw(@ISA @EXPORT $COLORMAP);
 
-$Colormaps    = {};       #static hash of colormaps
-$Palette      = [{},[]];  #static color palette
-$Map_Text     = '';       #used as special index
-$Wildcard_Key = '.';      #key for default colouring
+@ISA = qw(Exporter);
+
+@EXPORT = qw($COLORMAP);
 
 use vars qw($Colour_Black $Colour_White $Colour_DarkGray $Colour_LightGray
-	    $Colour_Cream $Colour_Brown $Colour_Comment);
+            $Colour_Cream $Colour_Brown $Colour_Comment);
 
 $Colour_Black      = '#000000';
 $Colour_White      = '#FFFFFF';
@@ -22,13 +22,34 @@ $Colour_Cream      = '#FFFFCC';
 $Colour_Brown      = '#aa6666';
 $Colour_Comment    = $Colour_Brown;
 
-use vars qw($Default_PRO_Aln_Colormap $Default_DNA_Aln_Colormap
-            $Default_PRO_Con_Colormap $Default_DNA_Con_Colormap);
+my $Colormap = {};   #static hash of colormaps
+my $PalHash  = {};   #static palette, color by name
+my $PalList  = [];   #static palette, color by order
+my $MapText  = '';   #used as special index
+my $Wildcard = '.';  #key for default colouring
 
-$Default_PRO_Aln_Colormap = 'P1';
-$Default_DNA_Aln_Colormap = 'D1';
-$Default_PRO_Con_Colormap = 'PC1';
-$Default_DNA_Con_Colormap = 'DC1';
+my %Known_Parameter =
+    (
+     'alncolor'   => [ '\S+',  $Colour_White    ],
+     'labcolor'   => [ '\S+',  $Colour_Black    ],
+     'symcolor'   => [ '\S+',  $Colour_Black    ],
+     'gapcolor'   => [ '\S+',  $Colour_DarkGray ],
+    );
+
+my $Default_PRO_Aln_Colormap = 'P1';
+my $Default_DNA_Aln_Colormap = 'D1';
+my $Default_PRO_Con_Colormap = 'PC1';
+my $Default_DNA_Con_Colormap = 'DC1';
+
+sub list_colormap_names { return join(",", sort keys %$Colormap) }
+
+sub check_colormap {
+    my $map = uc shift;
+    return $map  if exists $Colormap->{$map};  #named colormap
+    $map = lc $map;
+    return $map  if exists $PalHash->{$map};   #predefined colour
+    return undef;
+}
 
 sub get_default_sequence_colormap {
     return $Default_PRO_Aln_Colormap  if !defined $_[0];
@@ -42,27 +63,83 @@ sub get_default_consensus_colormap {
     return $Default_DNA_Con_Colormap;
 }
 
-my %Known_Parameter =
-    (
-     'alncolor'   => [ '\S+',  $Colour_White    ],
-     'labcolor'   => [ '\S+',  $Colour_Black    ],
-     'symcolor'   => [ '\S+',  $Colour_Black    ],
-     'gapcolor'   => [ '\S+',  $Colour_DarkGray ],
-    );
+$COLORMAP = new Bio::MView::Colormap;  #unique global instance
 
-#static load the $Colormaps hash.
-load_colormaps(\*DATA);
-
-sub list_colormap_names { return join(",", sort keys %$Colormaps) }
-
-sub check_colormap {
-    if (exists $Colormaps->{uc $_[0]}) {
-        return uc $_[0];  #named colormap
+sub new {
+    my $type = shift;
+    if (defined $COLORMAP) {
+        die "Bio::MView::Colormap instance already exists\n";
     }
-    if (exists $Palette->[0]->{lc $_[0]}) {
-        return lc $_[0];  #colormap all one predefined colour
+    my $self = {};
+    bless $self, $type;
+
+    $self->{'map'}     = $Colormap;
+    $self->{'palhash'} = $PalHash;
+    $self->{'pallist'} = $PalList;
+
+    load_colormaps(\*DATA);
+
+    return $COLORMAP = $self;
+}
+
+sub has_colormap {
+    my ($self, $map) = @_;
+    return 1  if exists $self->{'map'}->{$map};
+    return 0;
+}
+
+sub has_color {
+    my ($self, $map, $c) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->{$c};
+    return 1;
+}
+
+sub has_wildcard_color {
+    my ($self, $map) = @_;
+    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
+    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
+    return 1;
+}
+
+sub has_palette_color {
+    my ($self, $map) = @_;
+    return 1  if exists $self->{'palhash'}->{$map};
+    return 0;
+}
+
+sub get_symbol_color {
+    my ($self, $map, $c) = @_;
+    my $trans = $self->{'map'}->{$map}->{$c}->[1];
+    my $index = $self->{'map'}->{$map}->{$c}->[0];
+    my $color = $self->{'pallist'}->[$index];
+    return ($color, $index, $trans);
+}
+
+sub get_wildcard_color {
+    my ($self, $map) = @_;
+    my $trans = $self->{'map'}->{$map}->{$Wildcard}->[1];
+    my $index = $self->{'map'}->{$map}->{$Wildcard}->[0];
+    my $color = $self->{'pallist'}->[$index];
+    return ($color, $index, $trans);
+}
+
+sub get_palette_color {
+    my ($self, $map) = @_;
+    my $index = $self->{'palhash'}->{$map};
+    my $color = $self->{'pallist'}->[$index];
+    return ($color, $index, 'S');
+}
+
+sub get_colormap_length {
+    my ($self, $map) = @_;
+    return 1  unless exists $self->{'map'}->{$map};
+    my $len = scalar keys %{$self->{'map'}->{$map}};
+    $len--  if defined $self->{'map'}->{$map}->{''};
+    if ($len % 2 != 0) {
+	die "get_colormap_length: divide by two error\n"
     }
-    return undef;
+    return $len / 2;
 }
 
 #load colormap data from stream
@@ -82,7 +159,7 @@ sub load_colormaps {
 	#map [name]
 	if (/^\s*\[\s*(\S+)\s*\]/) {
 	    $map = uc $1;
-	    if (exists $Colormaps->{$map} and !$override) {
+	    if (exists $Colormap->{$map} and !$override) {
 		$mapignore = 1;  #just for duration of this map
 	    } else {
 		$mapignore = 0;
@@ -96,11 +173,11 @@ sub load_colormaps {
 	#colorname MUST begin with a letter
 	if (/^\s*colou?r\s+([a-z][-a-z0-9_]*)\s*:\s*(\#[0123456789ABCDEF]{6})/i) {
             my ($clr, $rgb) = (lc $1, lc $2);
-	    if (! exists $Palette->[0]->{$clr}) {
+	    if (! exists $PalHash->{$clr}) {
 		#warn "palette: $clr => $rgb\n";
-		push @{$Palette->[1]}, $rgb;
-		$Palette->[0]->{$clr} = $#{$Palette->[1]};  #name->index
-		$Palette->[0]->{$#{$Palette->[1]}} = $clr;  #index->name
+		push @{$PalList}, $rgb;
+		$PalHash->{$clr} = $#{$PalList};  #name->index
+		$PalHash->{$#{$PalList}} = $clr;  #index->name
 	    }
 	    next;
 	}
@@ -111,7 +188,7 @@ sub load_colormaps {
 	next  if $mapignore;    #forget it if we're not allowing overrides
 
 	#save map description?
-	$Colormaps->{$map}->{$Map_Text} = $de  if $state == 1;
+	$Colormap->{$map}->{$MapText} = $de  if $state == 1;
 
 	#symbol[symbol] {->|=>} [palette_colorname|#RGB] any other text...
 	if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
@@ -123,13 +200,13 @@ sub load_colormaps {
 	    $state = 2;
 
 	    #only allow new colors in form of RGB codes
-	    if (! exists $Palette->[0]->{$color}) {
+	    if (! exists $PalHash->{$color}) {
 		if ($color =~ /\#[0123456789ABCDEF]{6}/i) {
                     $color = uc $color;
 		    #warn "new color  |$color| (transparency=$seethru)\n";
-		    push @{$Palette->[1]}, $color;
-		    $Palette->[0]->{$color} = $#{$Palette->[1]};  #name->index
-		    $Palette->[0]->{$#{$Palette->[1]}} = $color;  #index->name
+		    push @{$PalList}, $color;
+		    $PalHash->{$color} = $#{$PalList};  #name->index
+		    $PalHash->{$#{$PalList}} = $color;  #index->name
 		} else {
 		    chomp;
 		    die "load_colormaps: undefined color in line '$_'\n";
@@ -137,8 +214,8 @@ sub load_colormaps {
 	    }
 
             #any explicit coloring
-            $Colormaps->{$map}->{$c1} = [$Palette->[0]->{$color},$seethru,$de];
-            $Colormaps->{$map}->{$c2} = [$Palette->[0]->{$color},$seethru,$de]
+            $Colormap->{$map}->{$c1} = [$PalHash->{$color},$seethru,$de];
+            $Colormap->{$map}->{$c2} = [$PalHash->{$color},$seethru,$de]
                 if defined $c2;
 
 	    next;
@@ -164,34 +241,34 @@ sub dump_colormaps {
 
     $s .= "$c1#Palette:\n\n#color                     : #RGB$c2\n";
 
-    for ($u=0; $u < @{$Palette->[1]}; $u++) {
-	$rgb = $Palette->[1]->[ $u ];
+    for ($u=0; $u < @{$PalList}; $u++) {
+	$rgb = $PalList->[ $u ];
 	($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 	$s .= sprintf("color %s%-20s%s : %-7s\n",
-		      $f1, $Palette->[0]->{$u}, $f2, $Palette->[1]->[$u]);
+		      $f1, $PalHash->{$u}, $f2, $PalList->[$u]);
     }
 
     $s .= "\n\n$c1#Colormap listing - suitable for reloading.\n";
     $s .= "#Character matching is case-sensitive.$c2\n\n";
 
-    @_ = keys %$Colormaps  unless @_;
+    @_ = keys %$Colormap  unless @_;
 
     foreach $map (sort @_) {
 	$s .= "$c0\[$map]$c2\n";
-	$s .= "$c1$Colormaps->{$map}->{$Map_Text}";
+	$s .= "$c1$Colormap->{$map}->{$MapText}";
 	$s .= "#symbols =>  color                #comment$c2\n";
 
-	%p = %{$Colormaps->{$map}};    #copy colormap structure
+	%p = %{$Colormap->{$map}};    #copy colormap structure
 
 	foreach $sym (sort keys %p) {
 
-	    next    if $sym eq $Map_Text;
+	    next    if $sym eq $MapText;
 	    next    unless exists $p{$sym} and defined $p{$sym};
 
 	    ($u, $l) = (uc $sym, lc $sym);
 
-	    $col = $Palette->[0]->{ $p{$sym}->[0] };
-	    $rgb = $Palette->[1]->[ $p{$sym}->[0] ];
+	    $col = $PalHash->{ $p{$sym}->[0] };
+	    $rgb = $PalList->[ $p{$sym}->[0] ];
 
 	    ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 
@@ -245,17 +322,6 @@ sub dump_colormaps {
     $s;
 }
 
-sub get_colormap_length {
-    my $map = uc shift;
-    return 1  unless exists $Colormaps->{$map};
-    my $len = scalar keys %{$Colormaps->{$map}};
-    $len--  if defined $Colormaps->{$map}->{''};
-    if ($len % 2 != 0) {
-	die "get_colormap_length: divide by two error\n"
-    }
-    return $len / 2;
-}
-
 sub dump_css1_colormaps {
     my %color = @_;
     my ($s, $i, $rgb, $fg);
@@ -273,9 +339,9 @@ sub dump_css1_colormaps {
 
     $s = "TD {font-family:Fixed,Courier,monospace; background-color:$color{'alncolor'}; color:$color{'labcolor'}}\n";
 
-    for ($i=0; $i < @{$Palette->[1]}; $i++) {
+    for ($i=0; $i < @{$PalList}; $i++) {
 
-	$rgb = $Palette->[1]->[$i];
+	$rgb = $PalList->[$i];
 	$fg = hex(substr($rgb, 1));
 	my ($r, $g, $b) = (($fg>>16)&255, ($fg>>8)&255, $fg&255);
 
@@ -303,7 +369,7 @@ sub dump_css1_colormaps {
 	$s .= "SPAN.T${i} \{color:$rgb} ";
 
 	#comment
-	$s .= "/* $Palette->[0]->{$i} */\n";
+	$s .= "/* $PalHash->{$i} */\n";
     }
 
     $s;
