@@ -1007,6 +1007,18 @@ Xx       ->  light-gray      #unknown
 ?        ->  light-gray      #unknown
 *        =>  black           #stop
 
+[DSSP]
+#DSSP protein secondary structure assignments
+.   ->  light-gray      #loop/irregular
+Cc  ->  light-gray      #loop/irregular
+Gg  =>  orange          #3-10 helix
+Hh  =>  bright-red      #alpha helix
+Ii  =>  brown           #pi helix
+Ee  =>  bright-blue     #beta and beta bulge
+Bb  =>  dull-blue       #residue in isolated beta bridge
+Tt  =>  dark-green      #H-bonded turn
+Ss  =>  dark-gray       #bend
+
 [FIND]
 #colour successive 'find' pattern blocks
 Aa       =>  find-A
