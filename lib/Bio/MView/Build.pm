@@ -215,7 +215,7 @@ sub header {
     if ($topn) {
 	$s .= "Maximum sequences to show: $topn\n";
     }
-    Bio::MView::Display::displaytext($s);
+    return Bio::MView::Display::displaytext($s);
 }
 
 sub reset {

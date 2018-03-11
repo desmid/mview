@@ -78,7 +78,7 @@ sub adjust_parameters {
 sub header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
-    Bio::MView::Display::displaytext('');
+    return Bio::MView::Display::displaytext('');
 }
 
 
@@ -108,7 +108,7 @@ sub header {
     my $s = '';
     $s .= "Residues colored by:  property\n";
     $s .= "Structure colored by: type\n";
-    Bio::MView::Display::displaytext($s);
+    return Bio::MView::Display::displaytext($s);
 }
 
 #ignore generic colouring schemes: use our own

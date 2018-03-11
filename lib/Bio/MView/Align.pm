@@ -247,7 +247,7 @@ sub header {
     }
     $s .= "\n"  if $s ne '';
 
-    Bio::MView::Display::displaytext($s);
+    return Bio::MView::Display::displaytext($s);
 }
 
 sub set_color_scheme {
