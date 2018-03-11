@@ -283,8 +283,6 @@ sub set_color_scheme {
 
     #find overlays anything else
     $self->color_by_find_block  if $PAR->get('find') ne '';
-
-    return $self;
 }
 
 sub set_consensus_color_scheme {
@@ -304,26 +302,18 @@ sub set_consensus_color_scheme {
         warn "set_consensus_color_scheme: unknown mode '$mode'\n";
         last;
     }
-
-    return $self;
 }
 
 #propagate colour scheme to row objects
 sub color_special {
     my $self = shift;
+
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
-	next  if $r->{'type'} ne 'special';
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special($PAR);
-	$r->set_display('label0'=>'', #not label1
-                        'label2'=>'', 'label3'=>'',
-			'label4'=>'', 'label5'=>'',
-                        'label6'=>'', 'label7'=>'',
-        );
+	$r->color_special;
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -334,9 +324,8 @@ sub color_none {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none($PAR);
+	$r->color_none;
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -347,9 +336,8 @@ sub color_by_type {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type($PAR);
+	$r->color_by_type;
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -357,7 +345,8 @@ sub color_by_identity {
     my ($self, $id) = (shift, shift);
 
     my $ref = $self->item($id);
-    return $self  unless defined $ref;
+
+    return  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
@@ -365,7 +354,6 @@ sub color_by_identity {
 	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($ref, $PAR);
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -373,7 +361,8 @@ sub color_by_mismatch {
     my ($self, $id) = (shift, shift);
 
     my $ref = $self->item($id);
-    return $self  unless defined $ref;
+
+    return  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
@@ -381,7 +370,6 @@ sub color_by_mismatch {
 	next  if $self->is_hidden($r->id);
 	$r->color_by_mismatch($ref, $PAR);
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -402,9 +390,8 @@ sub color_by_consensus_sequence {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_sequence($r, $PAR);
+	$con->color_by_consensus_sequence($r);
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -424,9 +411,8 @@ sub color_by_consensus_group {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_group($r, $PAR);
+	$con->color_by_consensus_group($r);
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -437,9 +423,8 @@ sub color_by_find_block {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block($PAR);
+	$r->color_by_find_block;
     }
-    $self;
 }
 
 #propagate colour scheme to row objects
@@ -447,15 +432,15 @@ sub color_consensus_by_identity {
     my ($self, $aln, $id) = (shift, shift, shift);
 
     my $ref = $aln->item($id);
-    return $self  unless defined $ref;
+
+    return  unless defined $ref;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, $PAR);
+	$r->color_by_identity($ref);
     }
-    $self;
 }
 
 #return array of Bio::MView::Display::display constructor arguments
@@ -591,10 +576,10 @@ sub build_consensus_rows {
                                                    $thresh,
                                                    $PAR->get('con_ignore'),
         );
-	$con->set_display('label0'=>'', #not label1
-			  'label2'=>'', 'label3'=>'',
-			  'label4'=>'', 'label5'=>'',
-			  'label6'=>'', 'label7'=>'',
+	$con->set_display('label0' => '', #leave label1
+			  'label2' => '', 'label3' => '',
+			  'label4' => '', 'label5' => '',
+			  'label6' => '', 'label7' => '',
 	);
 	push @obj, $con;
     }

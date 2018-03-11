@@ -21,40 +21,36 @@ sub parse {
 
     $aln = $self->{'entry'}->parse(qw(ALIGNMENT));
 
-    my $i = 1; while ($i--) {
-        $rank++; $id  = 'res';
-        last  if $self->topn_done($rank);
-        next  if $self->skip_row($rank, $rank, $id);
+    while (1) {
+        $rank++; last  if $self->topn_done($rank);
+
         $seq = $aln->get_query;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-        #no special subtype: use default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'res', '', $seq);
         push @hit, $row;
 
-        $rank++; $id  = 'align';
-        last  if $self->topn_done($rank);
-        next  if $self->skip_row($rank, $rank, $id);
+        $rank++; last  if $self->topn_done($rank);
+
         $seq = $aln->get_align;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-        $row->set_subtype('jnet.pred'); #override the default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'align', '', $seq);
+        $row->set_subtype('jnet.pred'); #override default
         push @hit, $row;
 
-        $rank++; $id  = 'conf';
-        last  if $self->topn_done($rank);
-        next  if $self->skip_row($rank, $rank, $id);
+        $rank++; last  if $self->topn_done($rank);
+
         $seq = $aln->get_conf;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-        $row->set_subtype('jnet.conf'); #override the default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'conf', '', $seq);
+        $row->set_subtype('jnet.conf'); #override default
         push @hit, $row;
 
-        $rank++; $id  = 'final';
-        last  if $self->topn_done($rank);
-        next  if $self->skip_row($rank, $rank, $id);
+        $rank++; last  if $self->topn_done($rank);
+
         $seq = $aln->get_final;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, $id, '', $seq);
-        $row->set_subtype('jnet.pred'); #override the default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'final', '', $seq);
+        $row->set_subtype('jnet.pred'); #override default
         push @hit, $row;
-    }
 
+        last;
+    }
     #map { $_->dump } @hit;
 
     #free objects
@@ -67,7 +63,6 @@ sub parse {
 sub adjust_parameters {
     my ($self, $aln) = @_;
     bless $aln, 'Bio::MView::Build::Format::JNETZ::Align';
-    $aln->rebless_align_rows;
 
     #set parameters for this specific parse
     $PAR->set('label0', 0);  #don't report rank
@@ -106,16 +101,6 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align);
 
-#use our own Align subclass instead of the generic one
-sub rebless_align_rows {
-    my $self = shift;
-    foreach my $row (@{$self->{'index2row'}}) {
-	next  unless defined $row;
-	bless $row, 'Bio::MView::Build::Format::JNETZ::Align::Sequence';
-    }
-    $self;
-}
-
 #change the header text
 sub header {
     my ($self, $quiet) = (@_, 0);
@@ -132,12 +117,11 @@ sub set_color_scheme {
 
     return $self  if $PAR->get('aln_coloring') eq 'none';
 
-    $self->color_by_type($PAR);
-    $self;
+    $self->color_special;
 }
 
 #propagate colour scheme to row objects
-sub color_by_type {
+sub color_special {
     my $self = shift;
 
     foreach my $row (@{$self->{'index2row'}}) {
@@ -146,25 +130,24 @@ sub color_by_type {
         #sequence row: use default sequence colours, switch off css
 	if ($row->{'type'} eq 'sequence') {
             my $kw = $PAR->as_dict('css1' => 0);
-	    $row->color_jnetz_row($kw);
+            $row->color_special_body($kw);
 	    next;
 	}
 
         #structure row: use our colours
 	if ($row->{'type'} eq 'jnet.pred') {
             my $kw = $PAR->as_dict('aln_colormap' => 'JNET.PRED');
-	    $row->color_jnetz_row($kw);
+            $row->color_special_body($kw);
 	    next;
 	}
 
         #confidence row: use our colours
 	if ($row->{'type'} eq 'jnet.conf') {
             my $kw = $PAR->as_dict('aln_colormap' => 'JNET.CONF');
-	    $row->color_jnetz_row($kw);
+            $row->color_special_body($kw);
 	    next;
 	}
     }
-    $self;
 }
 
 
@@ -175,45 +158,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
+
+###########################################################################
 #the 0 here says don't override any colormap of the same name, to
 #allow earler loaded user definitions priority - crude, but it'll do.
 Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 
-sub color_jnetz_row {
-    my ($self, $kw) = (shift, shift);
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next    if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'}  = 1;
-    $self;
-}
-
-
-###########################################################################
 1;
 
 __DATA__

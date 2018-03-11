@@ -139,7 +139,7 @@ sub get_color_consensus_group {
 sub color_by_type {
     my $self = shift;
 
-    return unless $self->{'type'} eq 'consensus';
+    return  unless $self->{'type'} eq 'consensus';
 
     my $kw = $PAR->as_dict;
 
@@ -173,13 +173,12 @@ sub color_by_type {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);
 
-    return unless $self->{'type'} eq 'consensus';
+    return  unless $self->{'type'} eq 'consensus';
 
     my $kw = $PAR->as_dict;
 
@@ -218,7 +217,6 @@ sub color_by_identity {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 #this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
@@ -226,8 +224,8 @@ sub color_by_identity {
 sub color_by_consensus_sequence {
     my ($self, $othr) = (shift, shift);
 
-    return unless $othr;
-    return unless $othr->{'type'} eq 'sequence';
+    return  unless $othr;
+    return  unless $othr->{'type'} eq 'sequence';
 
     die "${self}::color_by_consensus_sequence: length mismatch\n"
 	unless $self->length == $othr->length;
@@ -277,7 +275,6 @@ sub color_by_consensus_sequence {
     }
 
     $othr->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 
@@ -286,8 +283,8 @@ sub color_by_consensus_sequence {
 sub color_by_consensus_group {
     my ($self, $othr) = (shift, shift);
 
-    return unless $othr;
-    return unless $othr->{'type'} eq 'sequence';
+    return  unless $othr;
+    return  unless $othr->{'type'} eq 'sequence';
 
     die "${self}::color_by_consensus_group: length mismatch\n"
 	unless $self->length == $othr->length;
@@ -338,7 +335,6 @@ sub color_by_consensus_group {
     }
 
     $othr->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 

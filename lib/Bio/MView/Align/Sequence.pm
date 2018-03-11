@@ -60,13 +60,14 @@ sub length   { $_[0]->{'string'}->length }
 sub seqlen   { $_[0]->{'string'}->seqlen }
 
 sub reset_display {
-    $_[0]->{'display'} = {
+    my $self = shift;
+    $self->{'display'} = {
         'type'     => 'sequence',
-        'label1'   => $_[0]->{'id'},
-        'sequence' => $_[0]->{'string'},
+        'label1'   => $self->{'id'},
+        'sequence' => $self->{'string'},
         'range'    => [],
     };
-    $_[0];
+    $self;
 }
 
 sub get_color {
@@ -122,7 +123,6 @@ sub color_none {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 sub color_tag {
@@ -134,23 +134,22 @@ sub color_tag {
     return ($i, 'color' => $symcolor);
 }
 
-sub color_special {
-    my $self = shift;
-
-    my $kw = $PAR->as_dict;
-
-    #locate a 'special' colormap'
-    my ($size, $map) = (0);
-    foreach $map ($COLORMAP->colormap_names) {
-	if ($self->{'id'} =~ /$map/i) {
+sub get_special_colormap_for_id {
+    my ($self, $kw, $id) = @_;
+    my ($size, $map) = (0, undef);
+    foreach my $m ($COLORMAP->colormap_names) {
+	if ($id =~ /$m/i) {
 	    if (length($&) > $size) {
-		$kw->{'aln_colormap'} = $map;
 		$size = length($&);
+                $map = $m;
 	    }
 	}
     }
-    return unless $size;
+    return $map;
+}
 
+sub color_special_body {
+    my ($self, $kw) = (shift, shift);
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
@@ -158,8 +157,8 @@ sub color_special {
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
 	$c = $self->{'string'}->raw($i);
-	
-	#warn "$self->{'id'}  [$i]= $c\n";
+
+	#warn "[$i]= $c\n";
 
 	#white space: no color
 	next    if $self->{'string'}->is_space($c);
@@ -169,7 +168,7 @@ sub color_special {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
@@ -178,7 +177,22 @@ sub color_special {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
+}
+
+sub color_special {
+    my $self = shift;
+
+    return  unless $self->{'type'} eq 'special';
+
+    my $kw = $PAR->as_dict;
+
+    my $map = $self->get_special_colormap_for_id($kw, $self->{'id'});
+
+    return  unless defined $map;
+
+    $kw->{'aln_colormap'} = $map;
+
+    $self->color_special_body($kw);
 }
 
 sub find_blocks {
@@ -243,7 +257,6 @@ sub color_by_find_block {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 sub color_by_type {
@@ -280,17 +293,16 @@ sub color_by_type {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 sub color_by_identity {
     my ($self, $othr) = (shift, shift);
-    return $self->color_by_identity_body($othr, 1, @_);
+    $self->color_by_identity_body($othr, 1, @_);
 }
 
 sub color_by_mismatch {
     my ($self, $othr) = (shift, shift);
-    return $self->color_by_identity_body($othr, 0, @_);
+    $self->color_by_identity_body($othr, 0, @_);
 }
 
 sub color_by_identity_body {
@@ -340,7 +352,6 @@ sub color_by_identity_body {
     }
 
     $self->{'display'}->{'paint'} = 1;
-    $self;
 }
 
 sub set_coverage {
