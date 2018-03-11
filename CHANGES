@@ -1,11 +1,13 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Branch: param
+Version: dev
 
-- rewrite option parsing mechanism.
-- fix undefined variable warnings with '-groupfile' option.
+- added DSSP colormap for protein secondary structure.
 - change '-width flat' to '-width full'.
-- fix JNETZ warnings.
+- lots of refactoring trimming redundant code.
+- rewrote and simplified option parsing mechanism.
+- fixed undefined variable warnings with '-groupfile' option.
+- fixed JNETZ warnings.
 
 Version 1.62  2017-08-06
 
