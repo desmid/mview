@@ -41,6 +41,8 @@ my $Default_DNA_Aln_Colormap = 'D1';
 my $Default_PRO_Con_Colormap = 'PC1';
 my $Default_DNA_Con_Colormap = 'DC1';
 
+sub colormap_names      { return keys %$Colormap }
+
 sub list_colormap_names { return join(",", sort keys %$Colormap) }
 
 sub check_colormap {

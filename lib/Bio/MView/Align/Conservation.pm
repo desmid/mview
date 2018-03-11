@@ -24,7 +24,7 @@ sub new {
     $self->{'type'} = 'conservation';
     $self->{'from'} = $from;
     $self->{'to'}   = $to;
-   
+
     #encode the new "sequence"
     $self->{'string'} = new Bio::MView::Sequence;
     $self->{'string'}->set_find_pad(' ');

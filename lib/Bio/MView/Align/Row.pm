@@ -33,12 +33,14 @@ sub set_display {
 
 sub get_display { $_[0]->{'display'} }
 
-sub color_special {}
-sub color_by_type {}
-sub color_by_identity {}
-sub color_by_mismatch {}
-sub color_by_consensus_sequence {}
-sub color_by_consensus_group {}
+sub color_none { die "function not implemented\n" }
+sub color_special { die "function not implemented\n" }
+sub color_by_type { die "function not implemented\n" }
+sub color_by_identity { die "function not implemented\n" }
+sub color_by_mismatch { die "function not implemented\n" }
+sub color_by_consensus_sequence { die "function not implemented\n" }
+sub color_by_consensus_group { die "function not implemented\n" }
+sub color_by_find_block { die "function not implemented\n" }
 
 
 ###########################################################################

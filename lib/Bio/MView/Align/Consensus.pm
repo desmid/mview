@@ -55,12 +55,11 @@ sub new {
 }
 
 #colours a row of consensus sequence.
-#philosophy:
-#  1. the consensus colormap is just one colour name, use that and ignore CSS.
-#  2. give consensus symbols their own colour.
-#  3. the consensus may be a residue name: use prevailing residue colour.
-#  4. use the prevailing wildcard residue colour.
-#  5. give up.
+# 1. give consensus symbols their own colour.
+# 2. the consensus colormap is just one colour name, use that and ignore CSS.
+# 3. the consensus may be a residue name: use prevailing residue colour.
+# 4. use the prevailing wildcard residue colour.
+# 5. give up.
 sub get_color_type {
     my ($self, $c, $mapS, $mapG) = @_;
     #warn "get_color_type($self, $c, $mapS, $mapG)\n";
@@ -90,10 +89,9 @@ sub get_color_type {
 }
 
 #colours a row of 'normal' sequence only where there is a consensus symbol.
-#philosophy:
-#  1. give residues their own colour.
-#  2. use the prevailing wildcard residue colour.
-#  3. give up.
+# 1. give residues their own colour.
+# 2. use the prevailing wildcard residue colour.
+# 3. give up.
 sub get_color_consensus_sequence {
     my ($self, $cs, $cg, $mapS, $mapG) = @_;
     #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
@@ -112,11 +110,10 @@ sub get_color_consensus_sequence {
 }
 
 #colours a row of 'normal' sequence using colour of consensus symbol.
-#philosophy:
-#  1. give residues the colour of the consensus symbol.
-#  2. the consensus may be a residue name: use prevailing residue colour.
-#  3. use the prevailing wildcard residue colour.
-#  4. give up.
+# 1. give residues the colour of the consensus symbol.
+# 2. the consensus may be a residue name: use prevailing residue colour.
+# 3. use the prevailing wildcard residue colour.
+# 4. give up.
 sub get_color_consensus_group {
     my ($self, $cs, $cg, $mapS, $mapG) = @_;
     #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
@@ -148,7 +145,7 @@ sub color_by_type {
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+    push @$color, 1, $self->length, 'color' => $SYMCOLOR;
 
     #warn "color_by_type($self) 1=$kw->{'aln_colormap'} 2=$kw->{'con_colormap'}\n";
 
@@ -171,18 +168,11 @@ sub color_by_type {
 	@tmp = $self->get_color_type($cg,
 				     $kw->{'aln_colormap'},
 				     $kw->{'con_colormap'});
-	if (@tmp) {
-	    if ($kw->{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $kw->{'symcolor'};
-	}
+
+        push @$color, $self->color_tag($kw->{'css1'}, $SYMCOLOR, $i, @tmp);
     }
 
-    $self->{'display'}->{'paint'}  = 1;
+    $self->{'display'}->{'paint'} = 1;
     $self;
 }
 
@@ -218,15 +208,8 @@ sub color_by_identity {
            #refer to reference colormap NOT the consensus colormap
            @tmp = $self->get_color($cg, $kw->{'aln_colormap'});
 
-           if (@tmp) {
-               if ($kw->{'css1'}) {
-                   push @$color, $i, 'class' => $tmp[1];
-               } else {
-                   push @$color, $i, 'color' => $tmp[0];
-               }
-           } else {
-               push @$color, $i, 'color' => $SYMCOLOR;
-           }
+           push @$color, $self->color_tag($kw->{'css1'}, $SYMCOLOR, $i, @tmp);
+
            next;
        }
 
@@ -237,8 +220,6 @@ sub color_by_identity {
     $self->{'display'}->{'paint'} = 1;
     $self;
 }
-
-sub color_by_mismatch { die "function undefined\n"; }
 
 #this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
@@ -284,15 +265,10 @@ sub color_by_consensus_sequence {
             @tmp = $self->get_color_consensus_sequence($cs, $cg,
                                                        $kw->{'aln_colormap'},
                                                        $kw->{'con_colormap'});
-            if (@tmp) {
-                if ($kw->{'css1'}) {
-                    push @$color, $i, 'class' => $tmp[1];
-                } else {
-                    push @$color, $i, 'color' => $tmp[0];
-                }
-            } else {
-                push @$color, $i, 'color' => $kw->{'symcolor'};
-            }
+
+            push @$color,
+                $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
+
             next;
 	}
 
@@ -350,15 +326,10 @@ sub color_by_consensus_group {
             @tmp = $self->get_color_consensus_group($cs, $cg,
                                                     $kw->{'aln_colormap'},
                                                     $kw->{'con_colormap'});
-            if (@tmp) {
-                if ($kw->{'css1'}) {
-                    push @$color, $i, 'class' => $tmp[1];
-                } else {
-                    push @$color, $i, 'color' => $tmp[0];
-                }
-            } else {
-                push @$color, $i, 'color' => $kw->{'symcolor'};
-            }
+
+            push @$color,
+                $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
+
             next;
 	}
 	

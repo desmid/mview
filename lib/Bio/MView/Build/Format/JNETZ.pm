@@ -131,7 +131,7 @@ sub set_color_scheme {
     my $self = shift;
 
     return $self  if $PAR->get('aln_coloring') eq 'none';
-    
+
     $self->color_by_type($PAR);
     $self;
 }
@@ -143,22 +143,24 @@ sub color_by_type {
     foreach my $row (@{$self->{'index2row'}}) {
 	next  unless defined $row;
 
+        #sequence row: use default sequence colours, switch off css
 	if ($row->{'type'} eq 'sequence') {
-	    #sequence row: use default sequence colours, switch off css
             my $kw = $PAR->as_dict('css1' => 0);
-	    $row->color_row($kw);
+	    $row->color_jnetz_row($kw);
 	    next;
 	}
+
+        #structure row: use our colours
 	if ($row->{'type'} eq 'jnet.pred') {
-	    #structure row: use our colours
             my $kw = $PAR->as_dict('aln_colormap' => 'JNET.PRED');
-	    $row->color_row($kw);
+	    $row->color_jnetz_row($kw);
 	    next;
 	}
+
+        #confidence row: use our colours
 	if ($row->{'type'} eq 'jnet.conf') {
-	    #confidence row: use our colours
             my $kw = $PAR->as_dict('aln_colormap' => 'JNET.CONF');
-	    $row->color_row($kw);
+	    $row->color_jnetz_row($kw);
 	    next;
 	}
     }
@@ -177,7 +179,7 @@ use vars qw(@ISA);
 #allow earler loaded user definitions priority - crude, but it'll do.
 Bio::MView::Colormap::load_colormaps(\*DATA, 0);
 
-sub color_row {
+sub color_jnetz_row {
     my ($self, $kw) = (shift, shift);
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
@@ -202,15 +204,8 @@ sub color_row {
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
-	if (@tmp) {
-	    if ($kw->{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $kw->{'symcolor'};
-	}
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
 
     $self->{'display'}->{'paint'}  = 1;

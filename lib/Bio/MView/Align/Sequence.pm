@@ -121,8 +121,17 @@ sub color_none {
         push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 
-    $self->{'display'}->{'paint'}  = 1;
+    $self->{'display'}->{'paint'} = 1;
     $self;
+}
+
+sub color_tag {
+    my ($self, $css, $symcolor, $i) = (shift, shift, shift, shift);
+    if (@_) {
+        return ($i, 'class' => $_[1])  if $css;
+        return ($i, 'color' => $_[0]);
+    }
+    return ($i, 'color' => $symcolor);
 }
 
 sub color_special {
@@ -132,7 +141,7 @@ sub color_special {
 
     #locate a 'special' colormap'
     my ($size, $map) = (0);
-    foreach $map ($COLORMAP->list_colormap_names) {
+    foreach $map ($COLORMAP->colormap_names) {
 	if ($self->{'id'} =~ /$map/i) {
 	    if (length($&) > $size) {
 		$kw->{'aln_colormap'} = $map;
@@ -164,18 +173,11 @@ sub color_special {
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
-	if (@tmp) {
-	    if ($kw->{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $kw->{'symcolor'};
-	}
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
 
-    $self->{'display'}->{'paint'}  = 1;
+    $self->{'display'}->{'paint'} = 1;
     $self;
 }
 
@@ -236,15 +238,8 @@ sub color_by_find_block {
             @tmp = ();
         }
 	
-	if (@tmp) {
-	    if ($kw->{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $kw->{'symcolor'};
-	}
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
 
     $self->{'display'}->{'paint'} = 1;
@@ -280,18 +275,11 @@ sub color_by_type {
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
-	if (@tmp) {
-	    if ($kw->{'css1'}) {
-		push @$color, $i, 'class' => $tmp[1];
-	    } else {
-		push @$color, $i, 'color' => $tmp[0];
-	    }
-	} else {
-	    push @$color, $i, 'color' => $kw->{'symcolor'};
-	}
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
 
-    $self->{'display'}->{'paint'}  = 1;
+    $self->{'display'}->{'paint'} = 1;
     $self;
 }
 
@@ -347,18 +335,11 @@ sub color_by_identity_body {
                 if uc $c1 ne uc $c2; #different symbol or symcolor
         }
 
-        if (@tmp) {
-            if ($kw->{'css1'}) {
-                push @$color, $i, 'class' => $tmp[1];
-            } else {
-                push @$color, $i, 'color' => $tmp[0];
-            }
-        } else { #default color
-            push @$color, $i, 'color' => $kw->{'symcolor'};
-        }
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
 
-    $self->{'display'}->{'paint'}  = 1;
+    $self->{'display'}->{'paint'} = 1;
     $self;
 }
 
