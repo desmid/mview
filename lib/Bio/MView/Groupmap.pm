@@ -3,32 +3,73 @@
 ###########################################################################
 package Bio::MView::Groupmap;
 
+use Exporter;
+use Bio::MView::Sequence;
 use strict;
-use vars qw($Default_PRO_Group $Default_DNA_Group
-	    $Group_Any $Default_Group_Any $Group);
+use vars qw(@ISA @EXPORT $GROUPMAP);
 
-$Group                = {};       #static hash of consensus schemes
-$Group_Any            = '.';      #key for non-consensus group
-$Default_Group_Any    = '.';      #default symbol for non-consensus group
-$Default_PRO_Group    = 'P1';     #default consensus scheme name, protein
-$Default_DNA_Group    = 'D1';     #default consensus scheme name, dna
+@ISA = qw(Exporter);
 
-load_groupmaps(\*DATA);
+@EXPORT = qw($GROUPMAP);
 
-sub list_groupmap_names { return join(",", sort keys %$Group) }
+my $Groupmap          = {};   #static hash of consensus schemes
+my $Group_Any         = '.';  #key for non-consensus group
+my $Default_Group_Any = '.';  #default symbol for non-consensus group
+
+my $Default_PRO_Group = 'P1';
+my $Default_DNA_Group = 'D1';
+
+sub list_groupmap_names { return join(",", sort keys %$Groupmap) }
 
 sub check_groupmap {
-    if (exists $Group->{uc $_[0]}) {
-        return uc $_[0];
-    }
+    my $map = uc shift;
+    return $map  if exists $Groupmap->{$map};
     return undef;
 }
 
 sub get_default_groupmap {
-    if (! defined $_[0] or $_[0] eq 'aa') {  #default to protein
-	return $Default_PRO_Group;
-    }
+    return $Default_PRO_Group  if !defined $_[0];
+    return $Default_PRO_Group  if $_[0] eq 'aa';
     return $Default_DNA_Group;
+}
+
+$GROUPMAP = new Bio::MView::Groupmap;  #unique global instance
+
+sub new {
+    my $type = shift;
+    if (defined $GROUPMAP) {
+        die "Bio::MView::Groupmap instance already exists\n";
+    }
+    my $self = {};
+    bless $self, $type;
+
+    $self->{'map'} = $Groupmap;
+
+    load_groupmaps(\*DATA);
+
+    return $GROUPMAP = $self;
+}
+
+sub has_groupmap {
+    my ($self, $map) = @_;
+    return 1  if exists $self->{'map'}->{$map};
+    return 0;
+}
+
+sub is_singleton {
+    my ($self, $map, $cg) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->[2]->{$cg};
+    return 0  unless keys %{ $self->{'map'}->{$map}->[2]->{$cg} } == 1;
+    return 1;
+}
+
+sub in_consensus_group {
+    my ($self, $map, $cg, $c) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c};
+    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c}->{$cg};
+    return 1;
 }
 
 sub load_groupmaps {
@@ -47,7 +88,7 @@ sub load_groupmaps {
 	#group [name]
 	if (/^\s*\[\s*(\S+)\s*\]/) {
 	    $map = uc $1;
-	    if (exists $Group->{$map} and !$override) {
+	    if (exists $Groupmap->{$map} and !$override) {
 		$mapignore = 1;  #just for duration of this map
 	    } else {
 		$mapignore = 0;
@@ -63,7 +104,7 @@ sub load_groupmaps {
 	next  if $mapignore;    #forget it if we're not allowing overrides
 
 	#save map description?
-	$Group->{$map}->[3] = $de  if $state == 1;
+	$Groupmap->{$map}->[3] = $de  if $state == 1;
 
 	#Group_Any symbol (literal in regexp)
 	if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
@@ -117,9 +158,9 @@ sub load_groupmaps {
     }
     close $stream;
 
-    foreach $map (keys %$Group) {
+    foreach $map (keys %$Groupmap) {
 	make_group($map, $Group_Any, $Default_Group_Any, [])
-	    unless exists $Group->{$map}->[0]->{$Group_Any};
+	    unless exists $Groupmap->{$map}->[0]->{$Group_Any};
 	make_group($map, '', $Bio::MView::Sequence::Mark_Spc,
 		   [
 		    $Bio::MView::Sequence::Mark_Pad,
@@ -133,26 +174,26 @@ sub make_group {
     local $_;
 
     #class => symbol
-    $Group->{$group}->[0]->{$class}->[0] = $sym;
+    $Groupmap->{$group}->[0]->{$class}->[0] = $sym;
 
     foreach (@$members) {
         next  unless defined $_;
 	#class  => member existence
-	$Group->{$group}->[0]->{$class}->[1]->{$_} = 1;
+	$Groupmap->{$group}->[0]->{$class}->[1]->{$_} = 1;
 	#member => symbol existence
-	$Group->{$group}->[1]->{$_}->{$sym} = 1;
+	$Groupmap->{$group}->[1]->{$_}->{$sym} = 1;
 	#symbol => members
-	$Group->{$group}->[2]->{$sym}->{$_} = 1;
+	$Groupmap->{$group}->[2]->{$sym}->{$_} = 1;
     }
 }
 
 sub dump_group {
     my ($group, $class, $mem, $p);
-    push @_, keys %$Group    unless @_;
+    push @_, keys %$Groupmap    unless @_;
     warn "Groups by class\n";
     foreach $group (@_) {
 	warn "[$group]\n";
-	$p = $Group->{$group}->[0];
+	$p = $Groupmap->{$group}->[0];
 	foreach $class (keys %{$p}) {
 	    warn "$class  =>  $p->{$class}->[0]  { ",
 		join(" ", keys %{$p->{$class}->[1]}), " }\n";
@@ -161,7 +202,7 @@ sub dump_group {
     warn "Groups by membership\n";
     foreach $group (@_) {
 	warn "[$group]\n";
-	$p = $Group->{$group}->[1];
+	$p = $Groupmap->{$group}->[1];
 	foreach $mem (keys %{$p}) {
 	    warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
 	}
@@ -184,14 +225,14 @@ sub dump_groupmaps {
     $s .= "#Non-consensus positions default to '$Default_Group_Any' symbol.\n";
     $s .= "#Sequence gaps are shown as ' ' (space) symbols.$c2\n\n";
 
-    @_ = keys %$Group  unless @_;
+    @_ = keys %$Groupmap  unless @_;
 
     foreach $group (sort @_) {
 	$s .= "$c0\[$group]$c2\n";
-	$s .= "$c1$Group->{$group}->[3]";
+	$s .= "$c1$Groupmap->{$group}->[3]";
         $s .= "#description =>  symbol  members$c2\n";
 
-	$p = $Group->{$group}->[0];
+	$p = $Groupmap->{$group}->[0];
 	foreach $class (sort keys %{$p}) {
 
 	    next    if $class eq '';    #gap character
@@ -213,6 +254,131 @@ sub dump_groupmaps {
 	$s .= "\n";
     }
     $s;
+}
+
+#compute consensus group membership for one alignment column;
+#returns a hash of consensus group percentages
+sub tally_column {
+    my ($gname, $col, $gaps) = (@_, 1);
+    my ($score, $class, $sym, $depth) = ({});
+
+    unless ($GROUPMAP->has_groupmap($gname)) {
+        die "Bio::MView::Groupmap::tally_column: unknown consensus group '$gname'\n";
+    }
+
+    #warn "tally_column: $gname\n";
+
+    my $group = $GROUPMAP->{'map'}->{$gname}->[0];
+
+    #initialise tallies
+    foreach $class (keys %$group) { $score->{$class} = 0 }
+
+    #select score normalization
+    if ($gaps) {
+	#by total number of rows (sequence + non-sequence)
+	$depth = @$col;
+    } else {
+	#by rows containing sequence in this column
+	$depth = 0;
+	map { $depth++  if Bio::MView::Sequence::is_char(0, $_) } @$col;
+    }
+    #warn "($group, [@$col], $gaps, $depth)\n";
+
+    #empty column? use gap symbol
+    if ($depth < 1) {
+	$score->{''} = 100;
+	return $score;
+    }
+
+    #tally class scores by column symbol (except gaps), which is upcased
+    foreach $class (keys %$group) {
+	foreach $sym (@$col) {
+	    next  unless Bio::MView::Sequence::is_char(0, $sym) or $gaps;
+	    $score->{$class}++  if exists $group->{$class}->[1]->{uc $sym};
+	}
+	$score->{$class} = 100.0 * $score->{$class} / $depth;
+    }
+    $score;
+}
+
+#given a columnwise consensus group tally hash, return the consensus string
+#for this particular row
+sub consensus {
+    my ($tally, $gname, $threshold, $ignore) = @_;
+
+    unless ($GROUPMAP->has_groupmap($gname)) {
+	die "Bio::MView::Align::Consensus::consensus: unknown consensus group '$gname'\n";
+    }
+
+    my $group = $GROUPMAP->{'map'}->{$gname}->[0];
+
+    my $consensus = '';
+
+    #iterate over all columns
+    for (my $i=0; $i<@$tally; $i++) {
+	
+	my ($score, $class, $bstclass, $bstscore) = ($tally->[$i], "", undef, 0);
+	
+	#iterate over all allowed subsets
+	foreach $class (keys %$group) {
+
+	    next  if $class eq $Group_Any; #wildcard
+	
+	    if ($class ne '') {
+		#non-gap classes: may want to ignore certain classes
+		next  if $ignore eq 'singleton' and $class eq $group->{$class}->[0];
+		
+		next  if $ignore eq 'class'     and $class ne $group->{$class}->[0];
+	    }
+	
+	    #choose smallest class exceeding threshold and
+	    #highest score percentage when same size
+	
+	    #warn "[$i] $class, $score->{$class}\n";
+
+	    if ($score->{$class} >= $threshold) {
+		
+		#first pass
+		if (! defined $bstclass) {
+		    $bstclass = $class;
+		    $bstscore = $score->{$class};
+		    next;
+		}
+		
+		#larger? this set should be rejected
+		if (keys %{$group->{$class}->[1]} >
+		    keys %{$group->{$bstclass}->[1]}) {
+		    next;
+		}
+		
+		#smaller? this set should be kept
+		if (keys %{$group->{$class}->[1]} <
+		    keys %{$group->{$bstclass}->[1]}) {
+		    $bstclass = $class;
+		    $bstscore = $score->{$class};
+		    next;
+		}
+		
+		#same size: new set has better score?
+		if ($score->{$class} > $bstscore) {
+		    $bstclass = $class;
+		    $bstscore = $score->{$class};
+		    next;
+		}
+	    }
+	}
+
+	if (defined $bstclass) {
+	    if ($bstclass eq '' and $bstscore < 100) {
+		$bstclass = $Group_Any #some non-gaps
+	    }
+	} else {
+	    $bstclass = $Group_Any #wildcard
+	}
+	#warn "DECIDE [$i] '$bstclass' $bstscore [$group->{$bstclass}->[0]]\n";
+	$consensus .= $group->{$bstclass}->[0];
+    }
+    \$consensus;
 }
 
 ######################################################################

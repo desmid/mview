@@ -73,30 +73,23 @@ sub get_color {
     my ($self, $c, $map) = @_;
     #warn "get_color: $c, $map";
 
-    #set transparent(T)/solid(S)
-    if ($COLORMAP->has_color($map, $c)) {
+    if ($COLORMAP->has_symbol_color($map, $c)) {
         my ($color, $index, $trans) = $COLORMAP->get_symbol_color($map, $c);
-	#warn "CL $c $map\{$c} [$index] [$color] [$trans]\n";
 	return ($color, "$trans$index");
     }
 
-    #wildcard colour
     if ($COLORMAP->has_wildcard_color($map)) {
         my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($map);
-	#warn "WC $c $map\{Wildcard} [$index] [$color] [$trans]\n";
 	return ($color, "$trans$index");
     }
 
-    #preset colour name in $map, used for string searches or plain
-    #colouring where all matches should be same colour
     if ($COLORMAP->has_palette_color($map)) {
         my ($color, $index, $trans) = $COLORMAP->get_palette_color($map);
-	$trans = 'S';
-	#warn "FD $c $map\{$c} [$index] [$color] [$trans]\n";
+	$trans = 'S';  #ignore CSS setting
 	return ($color, "$trans$index");
     }
 
-    return 0;    #no match
+    return 0;  #no match
 }
 
 sub color_none {

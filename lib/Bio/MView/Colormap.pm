@@ -88,7 +88,7 @@ sub has_colormap {
     return 0;
 }
 
-sub has_color {
+sub has_symbol_color {
     my ($self, $map, $c) = @_;
     return 0  unless exists $self->{'map'}->{$map};
     return 0  unless exists $self->{'map'}->{$map}->{$c};

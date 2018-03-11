@@ -633,7 +633,7 @@ sub compute_tallies {
 	#warn "compute_tallies: @$column\n";
 
 	push @{$self->{'tally'}->{$key}},
-	    Bio::MView::Align::Consensus::tally($gname, $column, $gaps);
+	    Bio::MView::Groupmap::tally_column($gname, $column, $gaps);
     }
 
     return $self->{'tally'}->{$key};
