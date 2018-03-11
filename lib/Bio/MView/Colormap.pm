@@ -79,8 +79,6 @@ sub new {
     $self->{'palhash'} = $PalHash;
     $self->{'pallist'} = $PalList;
 
-    load_colormaps(\*DATA);
-
     return $COLORMAP = $self;
 }
 
@@ -379,6 +377,8 @@ sub dump_css1_colormaps {
 
 
 ######################################################################
+load_colormaps(\*DATA);
+
 1;
 
 __DATA__

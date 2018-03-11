@@ -45,8 +45,6 @@ sub new {
 
     $self->{'map'} = $Groupmap;
 
-    load_groupmaps(\*DATA);
-
     return $GROUPMAP = $self;
 }
 
@@ -382,6 +380,8 @@ sub consensus {
 }
 
 ######################################################################
+load_groupmaps(\*DATA);
+
 1;
 
 __DATA__
