@@ -4,6 +4,8 @@ Version: dev
 
 - Added DSSP colormap for protein secondary structure.
 - Changed '-width flat' to '-width full'.
+- Tested with BLAST 2.7.1+
+- Tested with FASTA 36.3.8f, 36.3.8g
 - Fixed undefined variable warnings with '-groupfile' option.
 - Fixed JNETZ warnings.
 - Rewrote and extended option parsing mechanism.
