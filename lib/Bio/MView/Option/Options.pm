@@ -35,7 +35,8 @@ $Options = [
             {
                 'option'  => "verbose",
                 'type'    => "u_int",
-                'default' =>  0,
+                'default' => 0,
+                'order'   => 0,
             },
         ],
     },
@@ -101,7 +102,6 @@ $Options = [
                 'usage'   => "Paginate alignment in blocks of width",
                 'type'    => "content::width",
             },
-
         ],
     },
 
@@ -177,7 +177,6 @@ $Options = [
                 'type'    => "integer_range",
                 'default' => "all",
             },
-
         ],
     },
 
@@ -189,8 +188,19 @@ $Options = [
                 'option'  => "moltype",
                 'usage'   => "Affects coloring and format converions",
                 'type'    => "moltype::type",
+                'action'  => sub {
+                    my ($self, $pn, $pv, $e) = @_;
+                    #reset default coloring schemes for subsequent options
+                    $self->update_option('ALIGNMENT::colormap',
+                                         get_default_sequence_colormap($pv));
+                    $self->update_option('CONSENSUS::con_colormap',
+                                         get_default_consensus_colormap($pv));
+                    $self->update_option('ALIGNMENT::groupmap',
+                                         get_default_groupmap($pv));
+                    $self->update_option('CONSENSUS::con_groupmap',
+                                         get_default_groupmap($pv));  #same
+                },
             },
-
         ],
     },
 
@@ -233,7 +243,6 @@ $Options = [
                 'type'    => "alignment::ignore",
                 'param'   => "aln_ignore",
             },
-
         ],
     },
 
@@ -277,7 +286,6 @@ $Options = [
                 'type'    => "binary",
                 'default' => "on",
             },
-
         ],
     },
 
@@ -291,7 +299,6 @@ $Options = [
                 'type'    => "string",
                 'label'   => "pattern",
             },
-
         ],
     },
 
@@ -627,12 +634,30 @@ $Options = [
                 'option'  => "colorfile",
                 'usage'   => "Load more colormaps from file",
                 'type'    => "infile",
+                'order'   => -1,  #done before -listcolors
+                'action'  => sub {
+                    my ($self, $pn, $pv, $e) = @_;
+                    local *TMP;
+                    return  unless $pv;
+                    return unless open(TMP, "< $pv");
+                    Bio::MView::Manager::load_colormaps(\*TMP);
+                    close TMP;
+                },
             },
 
             {
                 'option'  => "groupfile",
                 'usage'   => "Load more groupmaps from file",
                 'type'    => "infile",
+                'order'   => -1,  #done before -listgroups
+                'action'  => sub {
+                    my ($self, $pn, $pv, $e) = @_;
+                    local *TMP;
+                    return  unless $pv;
+                    return unless open(TMP, "< $pv");
+                    Bio::MView::Manager::load_groupmaps(\*TMP);
+                    close TMP;
+                },
             },
         ],
     },
@@ -649,24 +674,28 @@ $Options = [
                 'option'  => "help",
                 'usage'   => "This help",
                 'type'    => "flag::silent",
+                'order'   => -1,
             },
 
             {
                 'option'  => "listcolors",
                 'usage'   => "Print listing of known colormaps",
                 'type'    => "flag::silent",
+                'order'   => 0,
             },
 
             {
                 'option'  => "listgroups",
                 'usage'   => "Print listing of known consensus groups",
                 'type'    => "flag::silent",
+                'order'   => 0,
             },
 
             {
                 'option'  => "listcss",
                 'usage'   => "Print style sheet",
                 'type'    => "flag::silent",
+                'order'   => 0,
             },
         ],
     },

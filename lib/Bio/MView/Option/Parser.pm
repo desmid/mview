@@ -161,6 +161,11 @@ sub initialise_option {
         die "Options: option '$gn.$on' has unbound type\n";
     }
 
+    #set an option ordering
+    if (! exists $opt->{'order'}) {
+        $opt->{'order'} = keys %{$self->{'options'}};
+    }
+
     #set a default value, unless set already
     if (! exists $opt->{'default'}) {
 
@@ -171,6 +176,9 @@ sub initialise_option {
 
         $opt->{'default'} = $type->{'default'};
     }
+
+    #set the default action, unless one specified
+    $opt->{'action'} = undef  unless exists $opt->{'action'};
 
     #set the option value from the default: will be overwritten from CL
     $opt->{'option_value'} = $opt->{'default'};
@@ -197,6 +205,7 @@ sub update_option {
     my ($self, $on, $ov) = @_;
 
     return  unless exists $self->{'options'}->{$on};
+
     my $opt = $self->{'options'}->{$on};
 
     $opt->{'option_value'} = $ov;
@@ -277,26 +286,15 @@ sub get_option_usage {
     return $s;
 }
 
-sub get_available_group_options {
-    my ($self, $grp) = @_;
-    my @tmp = ();
+sub get_option_format {
+    my ($self, $opt) = @_;
+    my $on = $opt->{'option'};
 
-    foreach my $opt (@{$grp->{'options'}}) {
-        my $o = $opt->{'option'};
+    #flag: no argument
+    return $on  if $opt->{'type'} =~/^flag/;
 
-        #dump_option($opt);
-
-        #flag: no argument
-	if ($opt->{'type'} =~/^flag/) {
-	    push @tmp, $o;
-            next;
-        }
-
-        #option: takes argument
-        push @tmp, "$o=s";
-    }
-
-    return @tmp;
+    #option: takes argument
+    return "$on=s";
 }
 
 sub test_type {
@@ -314,19 +312,37 @@ sub test_type {
     return $pv;
 }
 
+sub perform_action {
+    my ($self, $opt, $pn, $pv, $e) = @_;
+
+    #only look in $opt; search $typet currently not needed
+    my $action = $opt->{'action'};
+
+    return  unless ref $action eq 'CODE';
+    return  unless defined $pv;
+
+    &{$action}($self, $pn, $pv, $e);
+}
+
 sub test_and_set_option {
     my ($self, $opt) = @_;
     my @errors = ();
 
     #update the parameter hash with this option
-    my $on  = $opt->{'option'};
-    my $ov  = $opt->{'option_value'};
+    my $on = $opt->{'option'};
+    my $ov = $opt->{'option_value'};
 
     #type tests and simple parameter conversion
+    my $pn = $opt->{'param'};
     my $pv = $self->test_type($opt, $on, $ov, \@errors);
 
     #update the parameter hash
-    $self->{'param'}->{$opt->{'param'}} = $pv;
+    $self->{'param'}->{$pn} = $pv;
+
+    #immediately perform associated action if any
+    if (defined $opt->{'action'}) {
+        $self->perform_action($opt, $pn, $pv, \@errors);
+    }
 
     if ($DEBUG) {
         printf STDERR "opt:%15s => %-10s    par:%15s => %-10s\n",
@@ -336,21 +352,22 @@ sub test_and_set_option {
     return @errors;
 }
 
-sub parse_group {
-    my ($self, $argv, $grp) = @_;
-
-    my @avail = $self->get_available_group_options($grp);
-
-    return ()  unless @avail;
+sub parse_options {
+    my ($self, $argv) = @_;
 
     my @errors = (); my $scan = {};
 
-    GetOptionsFromArray($argv, $scan, @avail);
+    #process options in specific order; don't abort on error:
+    foreach my $opt ($self->option_order) {
 
-    #map { print STDERR "$_ => $scan->{$_}\n" } %$scan;
+        my $format = $self->get_option_format($opt);
 
-    #process this group's CL options
-    foreach my $opt (@{$grp->{'options'}}) {
+        next  unless $format;
+
+        GetOptionsFromArray($argv, $scan, $format);
+
+        #map { print STDERR "$_ => $scan->{$_}\n" } %$scan;
+
         my $on = $opt->{'option'};
 
         next  unless exists $scan->{$on};
@@ -362,6 +379,12 @@ sub parse_group {
     }
 
     return @errors;
+}
+
+sub option_order {
+    my $self = shift;
+    return sort { $a->{'order'} <=> $b->{'order'} }
+        values %{$self->{'options'}};
 }
 
 sub parse_argv {
@@ -382,11 +405,7 @@ sub parse_argv {
     }
     #warn "lhs/rhs: [@lhs] [@rhs]\n";
 
-    #process options in specified group order; don't abort on error:
-    #allows caller to find 'help' option first
-    foreach my $grp (@{$self->{'groups'}}) {
-        push @errors, $self->parse_group(\@lhs, $grp);
-    }
+    push @errors, $self->parse_options(\@lhs);
 
     #fail unprocessed options; leave implicit non-options
     @$argv = ();

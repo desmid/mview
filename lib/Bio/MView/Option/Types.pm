@@ -3,11 +3,21 @@
 ######################################################################
 package Bio::MView::Option::Types;
 
+use Exporter;
 use Bio::MView::Option::Arguments;
 use Bio::MView::Groupmap;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
 use NPB::Parse::Regexps;
+
+@ISA = qw(Exporter);
+
+push @EXPORT, qw(
+    get_default_sequence_colormap
+    get_default_consensus_colormap
+    get_default_groupmap
+);
+
 use strict;
 use vars qw($Types);
 
@@ -389,19 +399,6 @@ $Types = [
                 push @$e, "valid values are: @{[list_molecule_types]}";
                 return $ov;
             }
-            #warn "Setting moltype: $pv";
-            #reset the default coloring schemes for subsequent options
-            $self->update_option('ALIGNMENT::colormap',
-                                 get_default_sequence_colormap($pv));
-
-            $self->update_option('CONSENSUS::con_colormap',
-                                 get_default_consensus_colormap($pv));
-
-            $self->update_option('ALIGNMENT::groupmap',
-                                 get_default_groupmap($pv));
-
-            $self->update_option('CONSENSUS::con_groupmap',
-                                 get_default_groupmap($pv));  #same
             return $pv;
         },
     },

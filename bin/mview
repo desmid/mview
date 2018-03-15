@@ -57,8 +57,6 @@ sub want_help               { return $_[0]->{'help'} }
 sub want_dump_css           { return $_[0]->{'listcss'} }
 sub want_dump_colors        { return $_[0]->{'listcolors'} }
 sub want_dump_groups        { return $_[0]->{'listgroups'} }
-sub want_load_colormaps     { return $_[0]->{'colorfile'} ne '' }
-sub want_load_groupmaps     { return $_[0]->{'groupfile'} ne '' }
 sub want_title              { return $_[0]->{'title'} ne '' }
 sub want_srs                { return $_[0]->{'srs'} }
 sub want_css                { return $_[0]->{'css1'} }
@@ -89,9 +87,6 @@ dump_parameters($par)  if verbose_dump_parameters($par);
 print(usage($com, $par)), exit 0     if want_help($par);
 
 abort(@err)                          if @err;
-
-load_colormaps($par)                 if want_load_colormaps($par);
-load_groupmaps($par)                 if want_load_groupmaps($par);
 
 print(dump_colormaps($par)), exit 0  if want_dump_colors($par);
 print(dump_groupmaps($par)), exit 0  if want_dump_groups($par);
@@ -186,22 +181,6 @@ sub capture_stdin {
     while (<>) { print TMP }
     close TMP;
     push @ARGV, $file;
-}
-
-sub load_colormaps {
-    my $par = shift;
-    local *TMP;
-    open(TMP, "< $par->{'colorfile'}");
-    Bio::MView::Manager::load_colormaps(\*TMP);
-    close TMP;
-}
-
-sub load_groupmaps {
-    my $par = shift;
-    local *TMP;
-    open(TMP, "< $par->{'groupfile'}");
-    Bio::MView::Manager::load_groupmaps(\*TMP);
-    close TMP;
 }
 
 sub dump_css {
