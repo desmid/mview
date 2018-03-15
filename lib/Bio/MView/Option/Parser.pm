@@ -30,7 +30,7 @@ sub load_scalar {
     return eval '$' . $lib . '::' . $var;
 }
 
-sub _dump_item {
+sub dump_item {
     my ($item, $stm) = (shift, shift);
     foreach my $key (@_) {
         next  unless exists $item->{$key};
@@ -46,14 +46,14 @@ sub _dump_item {
 sub dump_type {
     my ($type, $stm) = (@_, \*STDERR);
     my @fields = qw(type label usage default test);
-    _dump_item($type, $stm, @fields);
+    dump_item($type, $stm, @fields);
 }
 
 sub dump_option {
     my ($opt, $stm) = (@_, \*STDERR);
     my @fields = qw(group option option_value usage default type test
                     label param);
-    _dump_item($opt, $stm, @fields);
+    dump_item($opt, $stm, @fields);
 }
 
 ###########################################################################

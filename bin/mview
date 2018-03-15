@@ -26,8 +26,8 @@ use Bio::MView::Manager;
 use strict;
 
 ###########################################################################
-my $PROG    = Universal::basename($0);
-my $SCRATCH = Universal::tmpfile("mview_$$");
+my $PROG = Universal::basename($0);
+my $TMPFILE = Universal::tmpfile("mview_$$");
 my $INVOCATION = "$PROG @ARGV";
 
 ###########################################################################
@@ -49,26 +49,30 @@ sub only_want_html_data     { return $_[0]->{'html'} == $HTML_DATA }
 sub want_convert_rdb        { return $_[0]->{'outfmt'} eq 'rdb' }
 sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'new' }
 
+sub want_leading_copyright  { return want_convert_rdb(@_) }
+sub want_trailing_copyright { return (want_mview_layout(@_) and
+                                      ! only_want_html_data(@_)) }
+
 sub want_help               { return $_[0]->{'help'} }
 sub want_dump_css           { return $_[0]->{'listcss'} }
 sub want_dump_colors        { return $_[0]->{'listcolors'} }
 sub want_dump_groups        { return $_[0]->{'listgroups'} }
-sub want_load_colors        { return $_[0]->{'colorfile'} ne '' }
-sub want_load_groups        { return $_[0]->{'groupfile'} ne '' }
+sub want_load_colormaps     { return $_[0]->{'colorfile'} ne '' }
+sub want_load_groupmaps     { return $_[0]->{'groupfile'} ne '' }
 sub want_title              { return $_[0]->{'title'} ne '' }
 sub want_srs                { return $_[0]->{'srs'} }
 sub want_css                { return $_[0]->{'css1'} }
 sub want_in_register        { return $_[0]->{'register'} }
 
 ###########################################################################
-sub cleanup { unlink "$SCRATCH"  if -f "$SCRATCH" }
+sub cleanup { unlink "$TMPFILE"  if -f "$TMPFILE" }
 
 sub abort {
     foreach my $e (@_) {
         warn "$PROG: $e\n";
     }
     warn "$PROG: aborting\n";
-    cleanup();
+    cleanup;
     exit 1;
 }
 
@@ -80,64 +84,42 @@ my $com = new Bio::MView::Option::Parser($PROG);
 my @err = $com->parse_argv(\@ARGV);
 my $par = $com->get_parameters;
 
-print(usage($com, $par)), exit 0     if want_help($par);
-
-abort(@err)  if @err;
-
 dump_parameters($par)  if verbose_dump_parameters($par);
 
-if (want_load_colors($par)) {  #before listcolors
-    local *TMP;
-    open(TMP, "< $par->{'colorfile'}");
-    Bio::MView::Manager::load_colormaps(\*TMP);
-    close TMP;
-}
+print(usage($com, $par)), exit 0     if want_help($par);
+
+abort(@err)                          if @err;
+
+load_colormaps($par)                 if want_load_colormaps($par);
+load_groupmaps($par)                 if want_load_groupmaps($par);
 
 print(dump_colormaps($par)), exit 0  if want_dump_colors($par);
-
-if (want_load_groups($par)) {  #before listgroups
-    local *TMP;
-    open(TMP, "< $par->{'groupfile'}");
-    Bio::MView::Manager::load_groupmaps(\*TMP);
-    close TMP;
-}
-
 print(dump_groupmaps($par)), exit 0  if want_dump_groups($par);
-
 print(dump_css($par)), exit 0        if want_dump_css($par);
 
 print(html_head($par))               if want_html($par);
 
 print(echo_argv($par))               if verbose_echo_argv($par);
 
-print(copyright($par))               if want_convert_rdb($par);
+print(copyright($par))               if want_leading_copyright($par);
 
-#read from stdin?
-unless (@ARGV) {
-    warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
-    open(TMP, ">$SCRATCH") or abort("can't save to temporary file");
-    while (<>) { print TMP }
-    close TMP;
-    push @ARGV, $SCRATCH;
-}
+capture_stdin($TMPFILE)              unless @ARGV;
 
-#run mview and count alignments
-my $count = mview($par,, @ARGV);
+my $count = mview($par, @ARGV);
 
 if ($count) {  #got something
-    print copyright($par)
-        if want_mview_layout($par) and !only_want_html_data($par);
+    print copyright($par)            if want_trailing_copyright($par);
 } else {
     my $s = "$PROG: no alignments found\n";
-    print $s  unless only_want_html_data($par);
+    print $s                         unless only_want_html_data($par);
     warn $s;
 }
 
-print html_foot($par)  if want_html($par);
+print html_foot($par)                if want_html($par);
 
 #Universal::vmstat("FINISHED.");
 
-cleanup();
+cleanup;
 
 exit 0;
 
@@ -195,6 +177,31 @@ sub usage {
         $s .= copyright($par);
     }
     return $s;
+}
+
+sub capture_stdin {
+    my $file = shift;
+    warn "$PROG: reading from standard input (Ctrl-C to cancel)\n";
+    open(TMP, "> $file") or abort("can't save to temporary file");
+    while (<>) { print TMP }
+    close TMP;
+    push @ARGV, $file;
+}
+
+sub load_colormaps {
+    my $par = shift;
+    local *TMP;
+    open(TMP, "< $par->{'colorfile'}");
+    Bio::MView::Manager::load_colormaps(\*TMP);
+    close TMP;
+}
+
+sub load_groupmaps {
+    my $par = shift;
+    local *TMP;
+    open(TMP, "< $par->{'groupfile'}");
+    Bio::MView::Manager::load_groupmaps(\*TMP);
+    close TMP;
 }
 
 sub dump_css {
