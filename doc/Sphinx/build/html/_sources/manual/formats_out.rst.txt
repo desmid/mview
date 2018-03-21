@@ -25,15 +25,38 @@ This is composed of rows of identifier and sequence in two columns like:
 .. raw:: html
 
   <PRE>
-  identifier1   sequence1
-  identifier2   sequence2
-  identifier3   sequence3
+  id1   sequence1
+  id2   sequence2
+  id3   sequence3
   </pre>
 
 and can contain comment lines starting with ``#``. Identifiers and sequences
 must not contain any whitespace as this is used to separate the columns. The
-sequences need not be aligned vertically, but they must all be the same
+input sequences need not be aligned vertically, but they must all be the same
 length. Use ``-`` and/or ``.`` characters for gaps.
+
+
+mview
+=====
+
+An annotated multiple sequence alignment format (the default).
+
+MView option: ``-out mview``
+
+This is composed of rows of row number, identifier, annotations and sequence
+in multiple columns like:
+
+.. raw:: html
+
+  <PRE>
+  num1 id1 annotation1a annotation1b ... sequence1
+  num2 id2 annotation2a annotation2b ... sequence2
+  num3 id3 annotation3a annotation3b ... sequence3
+  </pre>
+
+with the same restraints as ``plain`` format. The annotation columns are
+things like percent coverage, percent identity, sequence description,
+orientation, etc., and vary with input data source.
 
 
 FASTA

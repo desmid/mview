@@ -130,14 +130,14 @@ Basic HTML
 
 To add some HTML markup a few extra options are needed, for example::
 
-        mview -in fasta -html head data.dat > data.html
+  mview -in fasta -html head data.dat > data.html
 
 produces a complete page of HTML and you can load this into your Web browser
 with a URL like ``file:///full/path/to/the/folder/data.html``.
 
 To colour all the residues using the default built-in colourmap for proteins::
 
-    mview -in fasta -html head -coloring any data.dat > data.html
+  mview -in fasta -html head -coloring any data.dat > data.html
 
 produces:
 
@@ -672,7 +672,7 @@ to produce:
   5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S2>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S2>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S2>NHQPVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S2>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S2>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>VA</SPAN>   
   </PRE>
 
-This approach of using a single colour works with any of the coloring modes
+This approach of using a single colour works with any of the colouring modes
 listed above. To see colours and colormaps use ``mview -listcolors``.
 
 You can add new colours or build your own multicoloured specialist
@@ -754,8 +754,8 @@ Note: it is also possible to colour the consensus sequences themselves
 independently of the alignment (see :ref:`ref_consensus_colouring`).
 
 
-Colouring only conserved residues
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Conserved residue colouring
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The colouring of an alignment under the ``consensus`` or ``group`` colouring
 modes (see :ref:`ref_alignment_colouring`) can be tuned to ignore the
@@ -814,7 +814,7 @@ Regular expressions containing any of the shell metacharacters in the set ``[
 ] { } ( ) | ^ $ ? *`` must be enclosed in quotes. This example finds V A
 followed by either I or V then K::
 
-   mview ... -find 'VA[IV]K'
+  mview ... -find 'VA[IV]K'
 
 .. raw:: html
 
@@ -854,7 +854,7 @@ two rows, but also spans a gap in the first three rows::
 Patterns are greedy and try to find the longest possible match. This looks for
 a subsequence starting with by V and ending with G::
 
-   mview ... -find 'V.*G'
+  mview ... -find 'V.*G'
 
 .. raw:: html
 
@@ -873,7 +873,7 @@ a subsequence starting with by V and ending with G::
 
 Alternative patterns separated by ``|`` characters receive the same colouring::
 
-   mview ... -find 'VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L'
+  mview ... -find 'VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L'
 
 .. raw:: html
 
@@ -892,7 +892,7 @@ Alternative patterns separated by ``|`` characters receive the same colouring::
 
 Alternative patterns separated by ``:`` characters receive a different colouring::
 
-   mview ... -find 'VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L'
+  mview ... -find 'VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L'
 
 .. raw:: html
 
@@ -917,7 +917,7 @@ precedence. That is, all neighbouring patterns separated by ``|`` are treated
 as one colour group, and groups separated by ``:`` are given different
 colours::
 
-   mview ... -find 'VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L'
+  mview ... -find 'VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L'
 
 .. raw:: html
 
@@ -934,14 +934,14 @@ colours::
 
 
 
-Combining alignment and motif coloring
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Combining alignment and motif colouring
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to combine the alignment colouring mode with a motif
 search. For example, this shows mismatches to the query in a light grey
 overlaid with two coloured motifs::
 
-   mview ... -coloring mismatch -colormap gray5 -find 'G.G.FG.V:VA.K'
+  mview ... -coloring mismatch -colormap gray5 -find 'G.G.FG.V:VA.K'
 
 .. raw:: html
 
@@ -955,6 +955,44 @@ overlaid with two coloured motifs::
   4 PTK7_HUMAN   97.1%  21.2%    <SPAN CLASS=S26>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>QI</SPAN><SPAN CLASS=S94>GVGQFGAV</SPAN><SPAN CLASS=S26>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S26>A</SPAN><SPAN style="color:#666666">IC</SPAN>   
   5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S26>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GEGAFGEV</SPAN><SPAN CLASS=S26>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S26>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S26>NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S26>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S26>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S26>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VA</SPAN>   
   </PRE>
+
+
+.. _ref_special_colouring:
+
+Special row colouring
+^^^^^^^^^^^^^^^^^^^^^
+
+Individual rows can be coloured following a particular scheme by embedding the
+name of a colourmap in the sequence identifier. The sequence identifier must
+begin with a ``#`` character followed by the name of a colourmap and a colon
+separator. For example, ``#MAP`` or ``#MAP:id`` will cause the MAP colourmap
+to be used if it exists. Otherwise, the row will be displayed uncoloured.
+
+One use of this might be to colour rows of protein secondary structure
+assignments. Here is a fragment of an HSSP multiple sequence alignment, which
+also shows a DSSP-derived secondary structure assignment under the dummy
+identifier ``#DSSP``:
+
+.. raw:: html
+
+  <PRE>
+                                 cov    pid   1 [        .         .         .         .         :         .         .         . 80 
+  1 0:9wga                    100.0% 100.0%     <SPAN style="color:#666666">XRCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCPNNHCCSQYGHCGFGAEYCGAGCQG</SPAN>    
+  2 2:uniprot|P02876|agi2_whe  99.4% 100.0%     <SPAN style="color:#666666">-RCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCPNNHCCSQYGHCGFGAEYCGAGCQG</SPAN>    
+  3 4:uniprot|P10968|agi1_whe  98.8%  97.6%     <SPAN style="color:#666666">-RCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCTNNQCCSQYGYCGFGAEYCGAGCQG</SPAN>    
+    DSSP                                        <SPAN style="color:#666666">---</SPAN><SPAN CLASS=S9>B</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S9>B</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S20>S</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S18>HHHH</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S20>SSS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>SS</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S9>B</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S15>GGGG</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S9>B</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S18>HHHH</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S9>B</SPAN>    
+  </PRE>
+
+Note 1: MView strips the ``#`` character from the row identifier in the
+display, but leaves the name of the colourmap. The intention is that the user
+can define various specialized colourmaps with informative names, as here with
+DSSP.
+
+Note 2: Any number of these rows is allowed, using the same or different
+colourmaps, and they can be placed anywhere in the alignment.
+
+Note 3: These kind of rows are ignored in the percent coverage and percent
+identity calculations for the alignment - they are treated as comment lines.
 
 
 .. _ref_consensus_colouring:
@@ -1119,7 +1157,7 @@ Colours
 -------
 
 Colourmaps
-^^^^^^^^^^^^^^^
+^^^^^^^^^^
 
 There are default colourmaps for protein and nucleotide (either DNA or RNA)
 alignments and consensus lines. MView starts up with the default protein

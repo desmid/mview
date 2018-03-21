@@ -76,10 +76,11 @@
 </li>
 <li><a class="reference internal" href="#colouring-modes">Colouring modes</a><ul>
 <li><a class="reference internal" href="#alignment-colouring">Alignment colouring</a></li>
-<li><a class="reference internal" href="#colouring-only-conserved-residues">Colouring only conserved residues</a></li>
-<li><a class="reference internal" href="#consensus-pattern-colouring">Consensus pattern colouring</a></li>
+<li><a class="reference internal" href="#conserved-residue-colouring">Conserved residue colouring</a></li>
 <li><a class="reference internal" href="#finding-and-colouring-motifs">Finding and colouring motifs</a></li>
-<li><a class="reference internal" href="#combining-alignment-and-motif-coloring">Combining alignment and motif coloring</a></li>
+<li><a class="reference internal" href="#combining-alignment-and-motif-colouring">Combining alignment and motif colouring</a></li>
+<li><a class="reference internal" href="#special-row-colouring">Special row colouring</a></li>
+<li><a class="reference internal" href="#consensus-pattern-colouring">Consensus pattern colouring</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#colours">Colours</a><ul>
@@ -633,7 +634,7 @@ Colored by: mismatch
 3 ITK_HUMAN    90.0%  32.9%    <SPAN CLASS=S2>LTFVQEI</SPAN><SPAN style="color:#666666">GSG</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>L</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S2>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S2>DK</SPAN><SPAN style="color:#666666">VAIK</SPAN><SPAN CLASS=S2>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S2>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S2>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S2>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S2>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">C</SPAN>
 4 PTK7_HUMAN   97.1%  21.2%    <SPAN CLASS=S2>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>QI</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>Q</SPAN><SPAN style="color:#666666">FG</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>XLPKGSMNADGVAL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S2>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S2>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S2>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S2>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S2>A</SPAN><SPAN style="color:#666666">IC</SPAN>
 5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S2>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>K</SPAN><SPAN style="color:#666666">LG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">GAFG</SPAN><SPAN CLASS=S2>E</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S2>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S2>NHQPVL</SPAN><SPAN style="color:#666666">VA</SPAN><SPAN CLASS=S2>V</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S2>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S2>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S2>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S2>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S2>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S2>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S2>VA</SPAN>
-</PRE><p>This approach of using a single colour works with any of the coloring modes
+</PRE><p>This approach of using a single colour works with any of the colouring modes
 listed above. To see colours and colormaps use <code class="docutils literal"><span class="pre">mview</span> <span class="pre">-listcolors</span></code>.</p>
 <p>You can add new colours or build your own multicoloured specialist
 colourmap. For example, you might want certain important mismatched residues
@@ -695,8 +696,8 @@ using the <code class="docutils literal"><span class="pre">-listgroups</span></c
 <p>Note: it is also possible to colour the consensus sequences themselves
 independently of the alignment (see <a class="reference internal" href="#ref-consensus-colouring"><span class="std std-ref">Consensus pattern colouring</span></a>).</p>
 </div>
-<div class="section" id="colouring-only-conserved-residues">
-<h3>Colouring only conserved residues<a class="headerlink" href="#colouring-only-conserved-residues" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="conserved-residue-colouring">
+<h3>Conserved residue colouring<a class="headerlink" href="#conserved-residue-colouring" title="Permalink to this headline">¶</a></h3>
 <p>The colouring of an alignment under the <code class="docutils literal"><span class="pre">consensus</span></code> or <code class="docutils literal"><span class="pre">group</span></code> colouring
 modes (see <a class="reference internal" href="#ref-alignment-colouring"><span class="std std-ref">Alignment colouring</span></a>) can be tuned to ignore the
 consensus classes with <code class="docutils literal"><span class="pre">-ignore</span> <span class="pre">class</span></code> for the purposes of colouring:</p>
@@ -716,6 +717,163 @@ Colored by: consensus group/90%
   consensus/90%                  hp..p.lG.GtFG.V..u.h...................VAlKphp.t........ph.cEh.hM.plpp.plsphhuls
 </PRE><p>which highlights the conserved residues (at least 90% of a column) in the
 alignment by applying the default consensus group colouring scheme to them.</p>
+</div>
+<div class="section" id="finding-and-colouring-motifs">
+<h3>Finding and colouring motifs<a class="headerlink" href="#finding-and-colouring-motifs" title="Permalink to this headline">¶</a></h3>
+<p>Occurrences of a string or pattern defined by a regular expression can be
+coloured using the <code class="docutils literal"><span class="pre">-find</span> <span class="pre">'pattern'</span></code> option. This will cause all instances
+of the pattern to be highlighted using the user selected colourmap. Patterns
+are case-insensitive.</p>
+<p><strong>Exact strings</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">css</span> <span class="n">on</span> <span class="o">-</span><span class="n">find</span> <span class="n">VAIK</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'VAIK'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
+</PRE><p><strong>Regular expressions</strong></p>
+<p>Regular expressions containing any of the shell metacharacters in the set <code class="docutils literal"><span class="pre">[</span>
+<span class="pre">]</span> <span class="pre">{</span> <span class="pre">}</span> <span class="pre">(</span> <span class="pre">)</span> <span class="pre">|</span> <span class="pre">^</span> <span class="pre">$</span> <span class="pre">?</span> <span class="pre">*</span></code> must be enclosed in quotes. This example finds V A
+followed by either I or V then K:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VA[IV]K&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'VA[IV]K'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
+</PRE><p><strong>Patterns can span gaps in the sequence</strong></p>
+<p>The pattern (any 5 residues followed by V A) has intact instances in the last
+two rows, but also spans a gap in the first three rows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;.</span><span class="si">{5}</span><span class="s1">VA&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern '.{5}VA'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGE</SPAN><SPAN CLASS=S94>K</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S94>VKIPVA</SPAN><SPAN style="color:#666666">IKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNG</SPAN><SPAN CLASS=S94>NE</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S94>RIQVA</SPAN><SPAN style="color:#666666">IKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYW</SPAN><SPAN CLASS=S94>LN</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S94>KDKVA</SPAN><SPAN style="color:#666666">IKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGS</SPAN><SPAN CLASS=S94>MNADGVALVA</SPAN><SPAN style="color:#666666">VKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------N</SPAN><SPAN CLASS=S94>HQPVLVA</SPAN><SPAN style="color:#666666">VKTAKLESMTKEQIKEIMREARLMRNLDHINV</SPAN><SPAN CLASS=S94>VKFFGVA</SPAN>
+</PRE><p><strong>Patterns find the longest match</strong></p>
+<p>Patterns are greedy and try to find the longest possible match. This looks for
+a subsequence starting with by V and ending with G:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;V.*G&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'V.*G'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIK</SPAN><SPAN CLASS=S94>VLGSGAFGTVYKGLWIPEGEK</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S94>VKIPVAIKELREATSPK</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>ANKEILDEAYVMASVDNPHVCRLLG</SPAN><SPAN style="color:#666666">IC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">IS</SPAN><SPAN CLASS=S94>VNKQLGTGEFGIVQQGVWSNGNE</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S94>RIQVAIKCLCRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>NPMEFLKEAAIMHSIEHENIVRLYG</SPAN><SPAN style="color:#666666">VV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTF</SPAN><SPAN CLASS=S94>VQEIGSGQFGLVHLGYWLN</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S94>KDKVAIKTIREGAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S94>EEDFIEEAEVMMKLSHPKLVQLYG</SPAN><SPAN style="color:#666666">VC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IRE</SPAN><SPAN CLASS=S94>VKQIGVGQFGAVVLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>XLPKGSMNADG</SPAN><SPAN style="color:#666666">VALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S94>VELTKKLGEGAFGEVWKGKLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S94>NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFG</SPAN><SPAN style="color:#666666">VA</SPAN>
+</PRE><p><strong>Alternative patterns</strong></p>
+<p>Alternative patterns separated by <code class="docutils literal"><span class="pre">|</span></code> characters receive the same colouring:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S94>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S94>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S94>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S94>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S94>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S94>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S94>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S94>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S94>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S94>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S94>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S94>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S94>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
+</PRE><p><strong>Alternative patterns with different colours</strong></p>
+<p>Alternative patterns separated by <code class="docutils literal"><span class="pre">:</span></code> characters receive a different colouring:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S96>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S97>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S96>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S97>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S98>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S96>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S97>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S98>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S96>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S97>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S98>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S96>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S97>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
+</PRE><p>Note: if you specify more patterns than the number of colours available
+(currently 20) the colours are cycled.</p>
+<p><strong>Combining both types of alternative pattern</strong></p>
+<p>Patterns containing both <code class="docutils literal"><span class="pre">|</span></code> and <code class="docutils literal"><span class="pre">:</span></code> are allowed, with <code class="docutils literal"><span class="pre">|</span></code> taking
+precedence. That is, all neighbouring patterns separated by <code class="docutils literal"><span class="pre">|</span></code> are treated
+as one colour group, and groups separated by <code class="docutils literal"><span class="pre">:</span></code> are given different
+colours:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: search pattern 'VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S94>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S95>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S94>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S95>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S95>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S94>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S95>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S95>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S94>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S95>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S95>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S94>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S95>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
+</PRE></div>
+<div class="section" id="combining-alignment-and-motif-colouring">
+<h3>Combining alignment and motif colouring<a class="headerlink" href="#combining-alignment-and-motif-colouring" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to combine the alignment colouring mode with a motif
+search. For example, this shows mismatches to the query in a light grey
+overlaid with two coloured motifs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">mismatch</span> <span class="o">-</span><span class="n">colormap</span> <span class="n">gray5</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;G.G.FG.V:VA.K&#39;</span>
+</pre></div>
+</div>
+<PRE>
+Colored by: mismatch; search pattern 'G.G.FG.V:VA.K'
+
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVL</SPAN><SPAN CLASS=S94>GSGAFGTV</SPAN><SPAN style="color:#666666">YKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
+2 PR2_DROME    97.1%  35.7%    <SPAN CLASS=S26>ISVN</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>Q</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GTGEFGIV</SPAN><SPAN CLASS=S26>QQ</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>V</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S26>SNGN</SPAN><SPAN style="color:#666666">E-----------</SPAN><SPAN CLASS=S26>R</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S26>Q</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S26>C</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>CRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>NPM</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>F</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>AI</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>H</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>IEHENIV</SPAN><SPAN style="color:#666666">RL</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VV</SPAN>
+3 ITK_HUMAN    90.0%  32.9%    <SPAN CLASS=S26>LTFVQEI</SPAN><SPAN CLASS=S94>GSGQFGLV</SPAN><SPAN CLASS=S26>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S26>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S26>DK</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S26>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S26>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S26>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S26>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S26>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>V</SPAN><SPAN style="color:#666666">C</SPAN>
+4 PTK7_HUMAN   97.1%  21.2%    <SPAN CLASS=S26>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>QI</SPAN><SPAN CLASS=S94>GVGQFGAV</SPAN><SPAN CLASS=S26>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S26>A</SPAN><SPAN style="color:#666666">IC</SPAN>
+5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S26>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GEGAFGEV</SPAN><SPAN CLASS=S26>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S26>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S26>NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S26>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S26>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S26>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VA</SPAN>
+</PRE></div>
+<div class="section" id="special-row-colouring">
+<span id="ref-special-colouring"></span><h3>Special row colouring<a class="headerlink" href="#special-row-colouring" title="Permalink to this headline">¶</a></h3>
+<p>Individual rows can be coloured following a particular scheme by embedding the
+name of a colourmap in the sequence identifier. The sequence identifier must
+begin with a <code class="docutils literal"><span class="pre">#</span></code> character followed by the name of a colourmap and a colon
+separator. For example, <code class="docutils literal"><span class="pre">#MAP</span></code> or <code class="docutils literal"><span class="pre">#MAP:id</span></code> will cause the MAP colourmap
+to be used if it exists. Otherwise, the row will be displayed uncoloured.</p>
+<p>One use of this might be to colour rows of protein secondary structure
+assignments. Here is a fragment of an HSSP multiple sequence alignment, which
+also shows a DSSP-derived secondary structure assignment under the dummy
+identifier <code class="docutils literal"><span class="pre">#DSSP</span></code>:</p>
+<PRE>
+                               cov    pid   1 [        .         .         .         .         :         .         .         . 80
+1 0:9wga                    100.0% 100.0%     <SPAN style="color:#666666">XRCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCPNNHCCSQYGHCGFGAEYCGAGCQG</SPAN>
+2 2:uniprot|P02876|agi2_whe  99.4% 100.0%     <SPAN style="color:#666666">-RCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCPNNHCCSQYGHCGFGAEYCGAGCQG</SPAN>
+3 4:uniprot|P10968|agi1_whe  98.8%  97.6%     <SPAN style="color:#666666">-RCGEQGSNMECPNNLCCSQYGYCGMGGDYCGKGCQNGACWTSKRCGSQAGGATCTNNQCCSQYGYCGFGAEYCGAGCQG</SPAN>
+  DSSP                                        <SPAN style="color:#666666">---</SPAN><SPAN CLASS=S9>B</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S9>B</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S20>S</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S18>HHHH</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S20>SSS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>SS</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S9>B</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S15>GGGG</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S15>GGG</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S9>B</SPAN><SPAN CLASS=S12>EE</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S18>HHHH</SPAN><SPAN CLASS=S20>S</SPAN><SPAN CLASS=S13>TT</SPAN><SPAN style="color:#666666">--</SPAN><SPAN CLASS=S9>B</SPAN>
+</PRE><p>Note 1: MView strips the <code class="docutils literal"><span class="pre">#</span></code> character from the row identifier in the
+display, but leaves the name of the colourmap. The intention is that the user
+can define various specialized colourmaps with informative names, as here with
+DSSP.</p>
+<p>Note 2: Any number of these rows is allowed, using the same or different
+colourmaps, and they can be placed anywhere in the alignment.</p>
+<p>Note 3: These kind of rows are ignored in the percent coverage and percent
+identity calculations for the alignment - they are treated as comment lines.</p>
 </div>
 <div class="section" id="consensus-pattern-colouring">
 <span id="ref-consensus-colouring"></span><h3>Consensus pattern colouring<a class="headerlink" href="#consensus-pattern-colouring" title="Permalink to this headline">¶</a></h3>
@@ -832,137 +990,6 @@ conserved residue names can be replaced with their consensus classes:</p>
   consensus/90%                   <SPAN style="color:#666666">.......</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">........................</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S18>K</SPAN><SPAN style="color:#666666">.................</SPAN><SPAN CLASS=S12>E</SPAN><SPAN style="color:#666666">...</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#666666">...............</SPAN>
   consensus/80%                   <SPAN style="color:#666666">....</SPAN><SPAN CLASS=S18>K</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.....................</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S18>K</SPAN><SPAN style="color:#666666">.................</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#666666">....</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">...</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">..</SPAN>
   consensus/70%                   <SPAN style="color:#666666">....</SPAN><SPAN CLASS=S18>K</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S13>F</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">.....................</SPAN><SPAN CLASS=S14>VA</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S18>K</SPAN><SPAN style="color:#666666">.................</SPAN><SPAN CLASS=S12>E</SPAN><SPAN CLASS=S14>A</SPAN><SPAN style="color:#666666">..</SPAN><SPAN CLASS=S14>M</SPAN><SPAN style="color:#666666">....</SPAN><SPAN CLASS=S13>H</SPAN><SPAN style="color:#666666">...</SPAN><SPAN CLASS=S14>V</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>L</SPAN><SPAN style="color:#666666">.</SPAN><SPAN CLASS=S14>G</SPAN><SPAN style="color:#666666">..</SPAN>
-</PRE></div>
-<div class="section" id="finding-and-colouring-motifs">
-<h3>Finding and colouring motifs<a class="headerlink" href="#finding-and-colouring-motifs" title="Permalink to this headline">¶</a></h3>
-<p>Occurrences of a string or pattern defined by a regular expression can be
-coloured using the <code class="docutils literal"><span class="pre">-find</span> <span class="pre">'pattern'</span></code> option. This will cause all instances
-of the pattern to be highlighted using the user selected colourmap. Patterns
-are case-insensitive.</p>
-<p><strong>Exact strings</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">html</span> <span class="n">head</span> <span class="o">-</span><span class="n">css</span> <span class="n">on</span> <span class="o">-</span><span class="n">find</span> <span class="n">VAIK</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'VAIK'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
-</PRE><p><strong>Regular expressions</strong></p>
-<p>Regular expressions containing any of the shell metacharacters in the set <code class="docutils literal"><span class="pre">[</span>
-<span class="pre">]</span> <span class="pre">{</span> <span class="pre">}</span> <span class="pre">(</span> <span class="pre">)</span> <span class="pre">|</span> <span class="pre">^</span> <span class="pre">$</span> <span class="pre">?</span> <span class="pre">*</span></code> must be enclosed in quotes. This example finds V A
-followed by either I or V then K:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VA[IV]K&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'VA[IV]K'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA</SPAN>
-</PRE><p><strong>Patterns can span gaps in the sequence</strong></p>
-<p>The pattern (any 5 residues followed by V A) has intact instances in the last
-two rows, but also spans a gap in the first three rows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;.</span><span class="si">{5}</span><span class="s1">VA&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern '.{5}VA'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVLGSGAFGTVYKGLWIPEGE</SPAN><SPAN CLASS=S94>K</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S94>VKIPVA</SPAN><SPAN style="color:#666666">IKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQLGTGEFGIVQQGVWSNG</SPAN><SPAN CLASS=S94>NE</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S94>RIQVA</SPAN><SPAN style="color:#666666">IKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQEIGSGQFGLVHLGYW</SPAN><SPAN CLASS=S94>LN</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S94>KDKVA</SPAN><SPAN style="color:#666666">IKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQIGVGQFGAVVLAEMTGLS-XLPKGS</SPAN><SPAN CLASS=S94>MNADGVALVA</SPAN><SPAN style="color:#666666">VKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKKLGEGAFGEVWKGKLLKILDA-------N</SPAN><SPAN CLASS=S94>HQPVLVA</SPAN><SPAN style="color:#666666">VKTAKLESMTKEQIKEIMREARLMRNLDHINV</SPAN><SPAN CLASS=S94>VKFFGVA</SPAN>
-</PRE><p><strong>Patterns find the longest match</strong></p>
-<p>Patterns are greedy and try to find the longest possible match. This looks for
-a subsequence starting with by V and ending with G:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;V.*G&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'V.*G'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIK</SPAN><SPAN CLASS=S94>VLGSGAFGTVYKGLWIPEGEK</SPAN><SPAN style="color:#666666">---------</SPAN><SPAN CLASS=S94>VKIPVAIKELREATSPK</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>ANKEILDEAYVMASVDNPHVCRLLG</SPAN><SPAN style="color:#666666">IC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">IS</SPAN><SPAN CLASS=S94>VNKQLGTGEFGIVQQGVWSNGNE</SPAN><SPAN style="color:#666666">-----------</SPAN><SPAN CLASS=S94>RIQVAIKCLCRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>NPMEFLKEAAIMHSIEHENIVRLYG</SPAN><SPAN style="color:#666666">VV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTF</SPAN><SPAN CLASS=S94>VQEIGSGQFGLVHLGYWLN</SPAN><SPAN style="color:#666666">--------------</SPAN><SPAN CLASS=S94>KDKVAIKTIREGAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S94>EEDFIEEAEVMMKLSHPKLVQLYG</SPAN><SPAN style="color:#666666">VC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IRE</SPAN><SPAN CLASS=S94>VKQIGVGQFGAVVLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S94>XLPKGSMNADG</SPAN><SPAN style="color:#666666">VALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S94>VELTKKLGEGAFGEVWKGKLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S94>NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFG</SPAN><SPAN style="color:#666666">VA</SPAN>
-</PRE><p><strong>Alternative patterns</strong></p>
-<p>Alternative patterns separated by <code class="docutils literal"><span class="pre">|</span></code> characters receive the same colouring:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'VAIK|VAVK|[LI]G.G|[DKER]E[AI]..M|[VIL]V[QR]L'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S94>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S94>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S94>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S94>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S94>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S94>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S94>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S94>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S94>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S94>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S94>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S94>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S94>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
-</PRE><p><strong>Alternative patterns with different colours</strong></p>
-<p>Alternative patterns separated by <code class="docutils literal"><span class="pre">:</span></code> characters receive a different colouring:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'VAIK:VAVK:[LI]G.G:[DKER]E[AI]..M:[VIL]V[QR]L'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S96>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S97>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S96>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S97>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S98>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S96>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S97>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S98>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S96>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S97>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S98>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S96>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S97>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
-</PRE><p>Note: if you specify more patterns than the number of colours available
-(currently 20) the colours are cycled.</p>
-<p><strong>Combining both types of alternative pattern</strong></p>
-<p>Patterns containing both <code class="docutils literal"><span class="pre">|</span></code> and <code class="docutils literal"><span class="pre">:</span></code> are allowed, with <code class="docutils literal"><span class="pre">|</span></code> taking
-precedence. That is, all neighbouring patterns separated by <code class="docutils literal"><span class="pre">|</span></code> are treated
-as one colour group, and groups separated by <code class="docutils literal"><span class="pre">:</span></code> are given different
-colours:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: search pattern 'VAIK|VAVK|[LI]G.G:[DKER]E[AI]..M|[VIL]V[QR]L'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKV</SPAN><SPAN CLASS=S94>LGSG</SPAN><SPAN style="color:#666666">AFGTVYKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEIL</SPAN><SPAN CLASS=S95>DEAYVM</SPAN><SPAN style="color:#666666">ASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN style="color:#666666">ISVNKQ</SPAN><SPAN CLASS=S94>LGTG</SPAN><SPAN style="color:#666666">EFGIVQQGVWSNGNE-----------RIQ</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">CLCRERMQS-NPMEFL</SPAN><SPAN CLASS=S95>KEAAIM</SPAN><SPAN style="color:#666666">HSIEHEN</SPAN><SPAN CLASS=S95>IVRL</SPAN><SPAN style="color:#666666">YGVV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN style="color:#666666">LTFVQE</SPAN><SPAN CLASS=S94>IGSG</SPAN><SPAN style="color:#666666">QFGLVHLGYWLN--------------KDK</SPAN><SPAN CLASS=S94>VAIK</SPAN><SPAN style="color:#666666">TIREGAMS---EEDFI</SPAN><SPAN CLASS=S95>EEAEVM</SPAN><SPAN style="color:#666666">MKLSHPK</SPAN><SPAN CLASS=S95>LVQL</SPAN><SPAN style="color:#666666">YGVC</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN style="color:#666666">IREVKQ</SPAN><SPAN CLASS=S94>IGVG</SPAN><SPAN style="color:#666666">QFGAVVLAEMTGLS-XLPKGSMNADGVAL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">KLKPDVSD-EVLQSFD</SPAN><SPAN CLASS=S95>KEIKFM</SPAN><SPAN style="color:#666666">SQLQHDS</SPAN><SPAN CLASS=S95>IVQL</SPAN><SPAN style="color:#666666">LAIC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN style="color:#666666">VELTKK</SPAN><SPAN CLASS=S94>LGEG</SPAN><SPAN style="color:#666666">AFGEVWKGKLLKILDA-------NHQPVL</SPAN><SPAN CLASS=S94>VAVK</SPAN><SPAN style="color:#666666">TAKLESMTKEQIKEIM</SPAN><SPAN CLASS=S95>REARLM</SPAN><SPAN style="color:#666666">RNLDHINVVKFFGVA</SPAN>
-</PRE></div>
-<div class="section" id="combining-alignment-and-motif-coloring">
-<h3>Combining alignment and motif coloring<a class="headerlink" href="#combining-alignment-and-motif-coloring" title="Permalink to this headline">¶</a></h3>
-<p>It is possible to combine the alignment colouring mode with a motif
-search. For example, this shows mismatches to the query in a light grey
-overlaid with two coloured motifs:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">...</span> <span class="o">-</span><span class="n">coloring</span> <span class="n">mismatch</span> <span class="o">-</span><span class="n">colormap</span> <span class="n">gray5</span> <span class="o">-</span><span class="n">find</span> <span class="s1">&#39;G.G.FG.V:VA.K&#39;</span>
-</pre></div>
-</div>
-<PRE>
-Colored by: mismatch; search pattern 'G.G.FG.V:VA.K'
-
-                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
-1 EGFR_HUMAN  100.0% 100.0%    <SPAN style="color:#666666">FKKIKVL</SPAN><SPAN CLASS=S94>GSGAFGTV</SPAN><SPAN style="color:#666666">YKGLWIPEGEK---------VKIP</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN style="color:#666666">ELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC</SPAN>
-2 PR2_DROME    97.1%  35.7%    <SPAN CLASS=S26>ISVN</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>Q</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GTGEFGIV</SPAN><SPAN CLASS=S26>QQ</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>V</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S26>SNGN</SPAN><SPAN style="color:#666666">E-----------</SPAN><SPAN CLASS=S26>R</SPAN><SPAN style="color:#666666">I</SPAN><SPAN CLASS=S26>Q</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S26>C</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>CRERMQS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>NPM</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>F</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>AI</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>H</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>IEHENIV</SPAN><SPAN style="color:#666666">RL</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VV</SPAN>
-3 ITK_HUMAN    90.0%  32.9%    <SPAN CLASS=S26>LTFVQEI</SPAN><SPAN CLASS=S94>GSGQFGLV</SPAN><SPAN CLASS=S26>HL</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">W</SPAN><SPAN CLASS=S26>LN</SPAN><SPAN style="color:#666666">--------------K</SPAN><SPAN CLASS=S26>DK</SPAN><SPAN CLASS=S95>VAIK</SPAN><SPAN CLASS=S26>TI</SPAN><SPAN style="color:#666666">RE</SPAN><SPAN CLASS=S26>GAMS</SPAN><SPAN style="color:#666666">---</SPAN><SPAN CLASS=S26>EEDFIE</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>E</SPAN><SPAN style="color:#666666">VM</SPAN><SPAN CLASS=S26>MKLSH</SPAN><SPAN style="color:#666666">P</SPAN><SPAN CLASS=S26>KLVQ</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>Y</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>V</SPAN><SPAN style="color:#666666">C</SPAN>
-4 PTK7_HUMAN   97.1%  21.2%    <SPAN CLASS=S26>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>QI</SPAN><SPAN CLASS=S94>GVGQFGAV</SPAN><SPAN CLASS=S26>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S26>A</SPAN><SPAN style="color:#666666">IC</SPAN>
-5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S26>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GEGAFGEV</SPAN><SPAN CLASS=S26>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S26>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S26>NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S26>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S26>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S26>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VA</SPAN>
 </PRE></div>
 </div>
 <div class="section" id="colours">
@@ -1361,7 +1388,7 @@ perl may affect memory use.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 06 Aug 2017.
+      Last updated on 22 Mar 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

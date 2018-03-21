@@ -53,6 +53,7 @@
   <ul>
 <li><a class="reference internal" href="#">Output formats</a><ul>
 <li><a class="reference internal" href="#plain">plain</a></li>
+<li><a class="reference internal" href="#mview">mview</a></li>
 <li><a class="reference internal" href="#fasta">FASTA</a></li>
 <li><a class="reference internal" href="#clustal-aln">CLUSTAL/aln</a></li>
 <li><a class="reference internal" href="#pir">PIR</a></li>
@@ -107,13 +108,27 @@ database search input formats).</p>
 <p>MView option: <code class="docutils literal"><span class="pre">-out</span> <span class="pre">plain</span></code></p>
 <p>This is composed of rows of identifier and sequence in two columns like:</p>
 <PRE>
-identifier1   sequence1
-identifier2   sequence2
-identifier3   sequence3
+id1   sequence1
+id2   sequence2
+id3   sequence3
 </pre><p>and can contain comment lines starting with <code class="docutils literal"><span class="pre">#</span></code>. Identifiers and sequences
 must not contain any whitespace as this is used to separate the columns. The
-sequences need not be aligned vertically, but they must all be the same
+input sequences need not be aligned vertically, but they must all be the same
 length. Use <code class="docutils literal"><span class="pre">-</span></code> and/or <code class="docutils literal"><span class="pre">.</span></code> characters for gaps.</p>
+</div>
+<div class="section" id="mview">
+<h2>mview<a class="headerlink" href="#mview" title="Permalink to this headline">¶</a></h2>
+<p>An annotated multiple sequence alignment format (the default).</p>
+<p>MView option: <code class="docutils literal"><span class="pre">-out</span> <span class="pre">mview</span></code></p>
+<p>This is composed of rows of row number, identifier, annotations and sequence
+in multiple columns like:</p>
+<PRE>
+num1 id1 annotation1a annotation1b ... sequence1
+num2 id2 annotation2a annotation2b ... sequence2
+num3 id3 annotation3a annotation3b ... sequence3
+</pre><p>with the same restraints as <code class="docutils literal"><span class="pre">plain</span></code> format. The annotation columns are
+things like percent coverage, percent identity, sequence description,
+orientation, etc., and vary with input data source.</p>
 </div>
 <div class="section" id="fasta">
 <h2>FASTA<a class="headerlink" href="#fasta" title="Permalink to this headline">¶</a></h2>
@@ -181,7 +196,7 @@ format with header lines giving column name and type information (see <a class="
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 30 Jul 2017.
+      Last updated on 21 Mar 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
