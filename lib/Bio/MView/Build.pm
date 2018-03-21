@@ -299,7 +299,7 @@ sub build_block {
 
     return undef  unless $aln->all_ids > 0;
 
-    if ($outfmt eq 'new') {
+    if ($outfmt eq 'mview') {
         $aln = $self->build_new_alignment($aln);
     }
     $aln;

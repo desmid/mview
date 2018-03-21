@@ -1,15 +1,23 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version: dev
+Version: 1.63  2018-03-21
 
-- Added DSSP colormap for protein secondary structure.
-- Changed '-width flat' to '-width full'.
 - Tested with BLAST 2.7.1+
 - Tested with FASTA 36.3.8f, 36.3.8g
-- Fixed undefined variable warnings with '-groupfile' option.
-- Fixed JNETZ warnings.
-- Rewrote and extended option parsing mechanism.
-- Refactored and trimmed redundant code.
+
+- Changed option '-width flat' to '-width full'. WARNING! BACKWARDS
+  INCOMPATIBILITY: this is the default so probably not an issue.
+
+- Changed name of output format '-outfmt new' to '-outfmt mview' WARNING!
+  BACKWARDS INCOMPATIBILITY: the default so probably not an issue.
+
+- Added DSSP colormap for protein secondary structure.
+
+- Fixed undefined variable warnings when using '-groupfile' option.
+- Fixed JNETZ parser warnings.
+
+- Complete rewrite of option parsing mechanism.
+- Ongoing refactoring and trimming of redundant code.
 
 Version 1.62  2017-08-06
 

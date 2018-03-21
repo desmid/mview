@@ -5,11 +5,11 @@
 ###########################################################################
 # Release information
 ###########################################################################
-my $VERSION  = '1.62';
-my $PATCH    = '1';
+my $VERSION  = '1.63';
+my $PATCH    = '';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
-my $VERSION  = $VERSION . ($PATCH?".$PATCH":"");
+my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
 my $COPYYRS  = "1997-2018";
 my $PROJPTH  = 'https://desmid.github.io/mview/';
 my $AUTHMAIL = 'biomview@gmail.com';
@@ -47,7 +47,7 @@ sub want_html_full          { return $_[0]->{'html'} &  $HTML_FULL }
 sub only_want_html_data     { return $_[0]->{'html'} == $HTML_DATA }
 
 sub want_convert_rdb        { return $_[0]->{'outfmt'} eq 'rdb' }
-sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'new' }
+sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'mview' }
 
 sub want_leading_copyright  { return want_convert_rdb(@_) }
 sub want_trailing_copyright { return (want_mview_layout(@_) and

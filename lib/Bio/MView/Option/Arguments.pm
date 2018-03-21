@@ -164,7 +164,7 @@ my @Known_Outformats = (
     'msf',
 
     #mview's native format
-    'new',
+    'mview',
 
     #tabular
     'rdb',
@@ -176,7 +176,7 @@ sub check_outformat {
     my $val = shift;
     local $_;
     foreach ($val) {  #switch
-        return 'new'      if $_ =~ /^ne/i;
+        return 'mview'    if $_ =~ /^mv/i;
         return 'plain'    if $_ =~ /^pl/i;
         return 'pearson'  if $_ =~ /^fa/i;
         return 'pearson'  if $_ =~ /^pe/i;

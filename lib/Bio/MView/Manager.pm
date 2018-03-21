@@ -80,7 +80,7 @@ sub parse {
 
 	    $self->{'acount'}++;
 
-            if ($PAR->get('outfmt') ne 'new') {
+            if ($PAR->get('outfmt') ne 'mview') {
                 $self->print_format_conversion($PAR, $bld, $aln);
                 next;
             }
