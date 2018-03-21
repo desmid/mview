@@ -16,9 +16,9 @@ sub parser { 'Plain' }
 sub parse {
     my $self = shift;
     my ($rank, $use, $entry, $id, $seq, @hit) = (0);
-    
+
     return  unless defined $self->{scheduler}->next;
-    
+
     $entry = $self->{'entry'};
 
     foreach $id (@{$entry->parse(qw(ALIGNMENT))->{'id'}}) {

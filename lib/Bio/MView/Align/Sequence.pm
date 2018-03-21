@@ -134,11 +134,14 @@ sub color_tag {
     return ($i, 'color' => $symcolor);
 }
 
+#Match row identifier like /#MAP/ or /#MAP:/ or /#MAP:stuff/
+#where MAP is some known colormap, and return the colormap;
+#note: the identifier may have leading text before the hash.
 sub get_special_colormap_for_id {
     my ($self, $kw, $id) = @_;
     my ($size, $map) = (0, undef);
     foreach my $m ($COLORMAP->colormap_names) {
-	if ($id =~ /$m/i) {
+	if ($id =~ /\#$m(|:|:.*)$/i) {
 	    if (length($&) > $size) {
 		$size = length($&);
                 $map = $m;
