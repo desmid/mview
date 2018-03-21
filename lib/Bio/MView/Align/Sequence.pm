@@ -236,7 +236,7 @@ sub color_by_find_block {
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
 	$c = $self->{'string'}->raw($i);
-	
+
 	#warn "[$i]= $c\n";
 
 	#white space: no color
@@ -247,14 +247,14 @@ sub color_by_find_block {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
         if (exists $block->{$i}) {
             #use symbol color/wildcard colour
             @tmp = $self->get_color($block->{$i}, $FIND_COLORMAP);
         } else {
             @tmp = ();
         }
-	
+
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
@@ -276,7 +276,7 @@ sub color_by_type {
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
 	$c = $self->{'string'}->raw($i);
-	
+
 	#warn "[$i]= $c\n";
 
 	#white space: no color
@@ -287,7 +287,7 @@ sub color_by_type {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
@@ -453,7 +453,7 @@ sub compute_identity_to {
 
     for (my $i=1; $i<$end; $i++) {
 	my $cnt = 0;
-	
+
 	my $c1 = $self->{'string'}->raw($i);
 	my $c2 = $othr->{'string'}->raw($i);
 

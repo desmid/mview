@@ -85,7 +85,7 @@ sub map_id {
     #warn "map_id($ref)\n";
 
     for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
-	
+
 	#major row number = query
 	if ($ref =~ /^0$/) {
 	    if ($self->{'index2row'}->[$i]->num eq '' or
@@ -94,7 +94,7 @@ sub map_id {
 	    }
 	    next;
 	}
-	
+
 	#major row number
 	if ($ref =~ /^\d+$/) {
 	    #exact match
@@ -109,7 +109,7 @@ sub map_id {
 	    }
 	    next;
 	}
-	
+
 	#major.minor row number
 	if ($ref =~ /^\d+\.\d+$/) {
 	    if ($self->{'index2row'}->[$i]->num eq $ref) {
@@ -117,14 +117,14 @@ sub map_id {
 	    }
 	    next;
 	}
-	
+
 	#string identifier
 	if ($ref eq $self->{'index2row'}->[$i]->rid or
 	    $ref eq $self->{'index2row'}->[$i]->cid) {
 	    push @rowref, $self->{'index2row'}->[$i];
 	    next;
 	}
-	
+
 	#regex inside // pair, applied case-insensitive
 	if ($ref =~ /^\/.*\/$/) {
 	    my $r = $ref;
@@ -141,7 +141,7 @@ sub map_id {
 	    push @rowref, $self->{'index2row'}->[$i];
 	    next;
 	}
-	
+
     }
     #warn "${self}::map_id (@rowref)\n";
     return @rowref;
@@ -397,7 +397,7 @@ sub get_range {
 sub build_base_alignment {
     my $self = shift;
     my ($i, $row, $aln, @list) = ();
-	
+
     for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
 	$row = $self->{'index2row'}->[$i];
 	if (defined $row->{'type'}) {
@@ -514,23 +514,23 @@ sub strip_query_gaps {
 
     #iterate over query frag symbols
     while ( ($i = index($$query, '-')) >= 0 ) {
-	
+
 	#downcase preceding symbol in hit
 	if (defined substr($$query, $i-1, 1)) {
 	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
 	}
-	
+
 	#consume gap symbols in query and hit
 	while (substr($$query, $i, 1) eq '-') {
 	    substr($$query, $i, 1) = "";
 	    substr($$sbjct, $i, 1) = "";
 	}
-	
+
 	#downcase succeeding symbol in hit
 	if (defined substr($$query, $i, 1)) {
 	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
 	}
-	
+
 	#warn "sqg(out q)=[$$query]\n";
 	#warn "sqg(out h)=[$$sbjct]\n";
     }

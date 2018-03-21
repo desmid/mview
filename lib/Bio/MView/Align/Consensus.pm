@@ -152,7 +152,7 @@ sub color_by_type {
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
 	$cg = $self->{'string'}->raw($i);
-	
+
 	#warn "[$i]= $cg\n";
 
 	#white space: no color
@@ -163,7 +163,7 @@ sub color_by_type {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#use symbol color/wildcard colour
 	@tmp = $self->get_color_type($cg,
 				     $kw->{'aln_colormap'},
@@ -246,13 +246,13 @@ sub color_by_consensus_sequence {
 
 	#white space: no colour
 	next    if $self->{'string'}->is_space($cs);
-					
+
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#symbols in consensus group are stored upcased
 	$c = uc $cs;
 
@@ -302,7 +302,7 @@ sub color_by_consensus_group {
 	$cg = $self->{'string'}->raw($i); $cs = $othr->{'string'}->raw($i);
 
 	#warn "[$i]= $cg <=> $cs\n";
-	
+
 	#no sequence symbol: whitespace: no colour
 	next    if $self->{'string'}->is_space($cs);
 
@@ -311,7 +311,7 @@ sub color_by_consensus_group {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
-	
+
 	#symbols in consensus group are stored upcased
 	$c = uc $cs;
 
@@ -329,7 +329,7 @@ sub color_by_consensus_group {
 
             next;
 	}
-	
+
 	#symbol not in consensus group: use contrast colour
 	push @$color, $i, 'color' => $kw->{'symcolor'};
     }
