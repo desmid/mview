@@ -233,7 +233,7 @@ sub reset {
 sub subheader {''}
 
 #return the block of sequences, 0 if empty block, or undef if no more work
-sub next {
+sub next_align {
     my $self = shift;
 
     #drop old data structures: GC *before* next assignment!

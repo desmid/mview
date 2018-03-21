@@ -151,10 +151,10 @@ sub mview {
 
     #save printing until end?
     if (want_in_register($par) and want_mview_layout($par)) {
-	$mgr->print;
+	$mgr->print_alignment;
 	#Universal::vmstat("print done (mview)");
     }
-    return $mgr->alignment_count;
+    return $mgr->get_alignment_count;
 }
 
 sub usage {

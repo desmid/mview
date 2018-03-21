@@ -12,6 +12,22 @@ use Bio::MView::SRS qw(srsLink);
 
 use strict;
 
+sub load_format_library {
+    my $class = "Bio::MView::Build::Format::$_[0]";
+    my $library = $class;
+    $library =~ s/::/\//g;
+    require "$library.pm";
+    return $class;
+}
+
+sub get_format_parser {
+    my $parser = $_[0] . "::parser";
+    no strict 'refs';
+    $parser = &$parser();
+    use strict 'refs';
+    return $parser;
+}
+
 sub new {
     my $type = shift;
     my $self = {};
@@ -24,47 +40,38 @@ sub new {
     $self->{'stream'}  = undef;
     $self->{'filter'}  = undef;
     $self->{'class'}   = undef;
-    $self->{'quiet'}   = undef;
 
     $self;
 }
 
-sub alignment_count { $_[0]->{'acount'} }
+sub get_alignment_count { $_[0]->{'acount'} }
 
 #Called with the desired format to be parsed: either a string 'X' naming a
 #Parse::Format::X or a hint which will be recognised by that class.
 sub parse {
-    my ($self, $file, $format) = (shift, shift, shift);
-    my ($library, $tmp, $bld, $aln, $dis, $header1, $header2, $header3, $loop);
-
-    #load a parser for the desired format
-    $tmp = "Bio::MView::Build::Format::$format";
-    ($library = $tmp) =~ s/::/\//g;
-    require "$library.pm";
+    my ($self, $file, $format) = @_;
 
     $self->{'file'}   = $file;
     $self->{'format'} = lc $format;
-    $self->{'class'}  = $tmp;
+    $self->{'class'}  = load_format_library($format);
 
     #warn $self->{'format'}, "\n";
 
-    no strict 'refs';
-    $tmp = &{"${tmp}::parser"}();
-    use strict 'refs';
+    my $parser = get_format_parser($self->{'class'});
 
-    $self->{'stream'} = new NPB::Parse::Stream($file, $tmp);
+    $self->{'stream'} = new NPB::Parse::Stream($file, $parser);
 
     return undef  unless defined $self->{'stream'};
 
-    ($loop, $header1, $header2, $header3) = (0, '', '', '');
+    my ($first, $header1, $header2, $header3) = (1, '', '', '');
 
-    #$header1 = $self->header($self->{'quiet'});
+    #$header1 = $self->header;
 
-    while (defined ($bld = $self->next)) {
+    while (defined (my $bld = $self->next_build)) {
 
         $bld->reset;
 
-        while (defined ($aln = $bld->next)) {
+        while (defined (my $aln = $bld->next_align)) {
 
 	    if ($aln < 1) {  #null alignment
                 #warn $PAR->get('prog') . ": empty alignment\n";
@@ -73,37 +80,24 @@ sub parse {
 
 	    $self->{'acount'}++;
 
-            my $outfmt = $PAR->get('outfmt');
-
-            if ($outfmt ne 'new') {
-                my $conv = new Bio::MView::Convert($bld, $aln,
-                                                   $PAR->get('moltype'));
-                my $s;
-
-                $s = $conv->plain    if $outfmt eq 'plain';
-                $s = $conv->pearson  if $outfmt eq 'pearson';
-                $s = $conv->pir      if $outfmt eq 'pir';
-                $s = $conv->clustal  if $outfmt eq 'clustal';
-                $s = $conv->msf      if $outfmt eq 'msf';
-                $s = $conv->rdb      if $outfmt eq 'rdb';
-
-                print $$s  if defined $s;
+            if ($PAR->get('outfmt') ne 'new') {
+                $self->print_format_conversion($PAR, $bld, $aln);
                 next;
             }
 
-            $dis = $self->add_display($bld, $aln);
+            my $dis = $self->add_display($bld, $aln);
 
-	    if ($loop++ < 1) {
-		$header2 = $bld->header($self->{'quiet'}) . $aln->header($self->{'quiet'});
+	    if ($first-- > 0) {
+		$header2 = $bld->header . $aln->header;
 	    }
-	    $header3 = $bld->subheader($self->{'quiet'});
+	    $header3 = $bld->subheader;
 
 	    #add to display list
 	    push @{$self->{'display'}}, [ $dis, $header1, $header2, $header3 ];
 
 	    #display item now?
 	    unless ($PAR->get('register')) {
-		$self->print;
+		$self->print_alignment;
 		@{$self->{'display'}} = ();  #garbage collect
 		#Universal::vmstat("print done (Manager)");
 	    }
@@ -117,14 +111,14 @@ sub parse {
 	#drop old Build object: GC *before* next iteration!
 	$bld = undef;
     }
-    $self;
+
+    return $self;
 }
 
 #return next entry worth of parse data as in a Bio::MView::Build object
 #ready for parsing, or undef if no more data.
-sub next {
+sub next_build {
     my $self = shift;
-    my ($entry, $tmp);
 
     #free the last entry and garbage its Bio::MView::Build
     if (defined $self->{'filter'}) {
@@ -133,7 +127,7 @@ sub next {
     }
 
     #read the next chunk of data
-    $entry = $self->{'stream'}->get_entry;
+    my $entry = $self->{'stream'}->get_entry;
     if (! defined $entry) {
         $self->{'stream'}->close;
         return undef;
@@ -142,7 +136,6 @@ sub next {
     #construct a new Bio::MView::Build
     return $self->{'filter'} = $self->{'class'}->new($entry);
 }
-
 
 #construct a header string describing this alignment
 sub header {
@@ -155,7 +148,7 @@ sub header {
 sub gc_flag {
     return 0  if $PAR->get('consensus');
     return 0  if $PAR->get('conservation');
-    1;
+    return 1;
 }
 
 sub add_display {
@@ -232,7 +225,24 @@ sub dump_css       { Bio::MView::Colormap::dump_css1_colormaps(@_) }
 sub load_groupmaps { Bio::MView::Groupmap::load_groupmaps(@_) }
 sub dump_groupmaps { Bio::MView::Groupmap::dump_groupmaps(@_) }
 
-sub print {
+sub print_format_conversion {
+    my ($self, $par, $bld, $aln, $stm) = (@_, \*STDOUT);
+    my $conv = new Bio::MView::Convert($bld, $aln, $par->get('moltype'));
+    my $outfmt = $par->get('outfmt');
+    my $s;
+    while (1) {
+        $s = $conv->clustal,  last  if $outfmt eq 'clustal';
+        $s = $conv->msf,      last  if $outfmt eq 'msf';
+        $s = $conv->pearson,  last  if $outfmt eq 'pearson';
+        $s = $conv->pir,      last  if $outfmt eq 'pir';
+        $s = $conv->plain,    last  if $outfmt eq 'plain';
+        $s = $conv->rdb,      last  if $outfmt eq 'rdb';
+        last;
+    }
+    print $stm $$s  if defined $s;
+}
+
+sub print_alignment {
     my ($self, $stm) = (@_, \*STDOUT);
 
     $self->{'posnwidth'} = 0;
@@ -262,25 +272,25 @@ sub print {
     #     "\n"   ;
 
     #consolidate field widths
-    foreach (@{$self->{'display'}}) {
-        $self->{'posnwidth'} = $_->[0]->{'posnwidth'}
-            if $_->[0]->{'posnwidth'} > $self->{'posnwidth'};
-        $self->{'labwidth0'} = $_->[0]->{'labwidth0'}
-            if $_->[0]->{'labwidth0'} > $self->{'labwidth0'};
-        $self->{'labwidth1'} = $_->[0]->{'labwidth1'}
-            if $_->[0]->{'labwidth1'} > $self->{'labwidth1'};
-        $self->{'labwidth2'} = $_->[0]->{'labwidth2'}
-            if $_->[0]->{'labwidth2'} > $self->{'labwidth2'};
-        $self->{'labwidth3'} = $_->[0]->{'labwidth3'}
-            if $_->[0]->{'labwidth3'} > $self->{'labwidth3'};
-        $self->{'labwidth4'} = $_->[0]->{'labwidth4'}
-            if $_->[0]->{'labwidth4'} > $self->{'labwidth4'};
-        $self->{'labwidth5'} = $_->[0]->{'labwidth5'}
-            if $_->[0]->{'labwidth5'} > $self->{'labwidth5'};
-        $self->{'labwidth6'} = $_->[0]->{'labwidth6'}
-            if $_->[0]->{'labwidth6'} > $self->{'labwidth6'};
-        $self->{'labwidth7'} = $_->[0]->{'labwidth7'}
-            if $_->[0]->{'labwidth7'} > $self->{'labwidth7'};
+    foreach my $d (@{$self->{'display'}}) {
+        $self->{'posnwidth'} = Universal::max($d->[0]->{'posnwidth'},
+                                              $self->{'posnwidth'});
+        $self->{'labwidth0'} = Universal::max($d->[0]->{'labwidth0'},
+                                              $self->{'labwidth0'});
+        $self->{'labwidth1'} = Universal::max($d->[0]->{'labwidth1'},
+                                              $self->{'labwidth1'});
+        $self->{'labwidth2'} = Universal::max($d->[0]->{'labwidth2'},
+                                              $self->{'labwidth2'});
+        $self->{'labwidth3'} = Universal::max($d->[0]->{'labwidth3'},
+                                              $self->{'labwidth3'});
+        $self->{'labwidth4'} = Universal::max($d->[0]->{'labwidth4'},
+                                              $self->{'labwidth4'});
+        $self->{'labwidth5'} = Universal::max($d->[0]->{'labwidth5'},
+                                              $self->{'labwidth5'});
+        $self->{'labwidth6'} = Universal::max($d->[0]->{'labwidth6'},
+                                              $self->{'labwidth6'});
+        $self->{'labwidth7'} = Universal::max($d->[0]->{'labwidth7'},
+                                              $self->{'labwidth7'});
     }
 
     # warn
@@ -297,7 +307,7 @@ sub print {
 
     my $first = 1;
     #output
-    while ($_ = shift @{$self->{'display'}}) {
+    while (my $d = shift @{$self->{'display'}}) {
 	#Universal::vmstat("display");
 	if ($PAR->get('html')) {
             my $s = "style=\"border:0px;";
@@ -320,27 +330,27 @@ sub print {
 	    print $stm "<TABLE $s>\n";
 	    #header
 	    print $stm "<TR><TD><PRE>\n";
-	    print $stm ($_->[1] ? $_->[1] : '');
-	    print $stm ($_->[2] ? $_->[2] : '');
+	    print $stm ($d->[1] ? $d->[1] : '');
+	    print $stm ($d->[2] ? $d->[2] : '');
 	    print $stm "</PRE></TD></TR>\n";
 	    #subheader
-	    if ($_->[3]) {
+	    if ($d->[3]) {
 		print $stm "<TR><TD><PRE>\n";
-		print $stm $_->[3];
+		print $stm $d->[3];
 		print $stm "</PRE></TD></TR>\n";
 	    }
 	    #alignment start
 	    print $stm "<TR><TD>\n";
 	} else {
 	    #header
-	    print $stm "\n"           if $_->[1] or $_->[2];
-	    print $stm $_->[1],       if $_->[1];
-	    print $stm $_->[2]        if $_->[2];
+	    print $stm "\n"           if $d->[1] or $d->[2];
+	    print $stm $d->[1],       if $d->[1];
+	    print $stm $d->[2]        if $d->[2];
 	    print "\n";
-	    print $stm $_->[3], "\n"  if $_->[3];
+	    print $stm $d->[3], "\n"  if $d->[3];
 	}
 	#alignment
-	$_->[0]->display(
+	$d->[0]->display(
 			 'stream'    => $stm,
 			 'html'      => $PAR->get('html'),
 			 'bold'      => $PAR->get('bold'),
@@ -370,7 +380,7 @@ sub print {
 	    print $stm "</P>\n"  unless $first;
 	}
 	#Universal::vmstat("display done");
-	$_->[0]->free;
+	$d->[0]->free;
 	#Universal::vmstat("display free done");
 
 	$first = 0;
