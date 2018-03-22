@@ -217,6 +217,8 @@ sub color_header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
 
+    return ''  unless $PAR->get('html');
+
     my $mode      = $PAR->get('aln_coloring');
     my $threshold = $PAR->get('aln_threshold');
     my $ref_id    = $PAR->get('ref_id');
@@ -253,6 +255,8 @@ sub color_header {
 sub set_color_scheme {
     my ($self, $ref) = (shift, shift);
 
+    return  unless $PAR->get('html');
+
     my $mode = $PAR->get('aln_coloring');
 
     #user-defined colouring?
@@ -287,6 +291,8 @@ sub set_color_scheme {
 
 sub set_consensus_color_scheme {
     my ($self, $aln, $ref) = (shift, shift, shift);
+
+    return  unless $PAR->get('html');
 
     my $mode = $PAR->get('con_coloring');
 

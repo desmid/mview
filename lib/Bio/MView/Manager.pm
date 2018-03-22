@@ -88,10 +88,7 @@ sub parse {
             my $dis = $self->add_display($bld, $aln);
 
 	    if ($first-- > 0) {
-		$header2 = $bld->header;
-                if ($PAR->get('html')) {
-                    $header2 .= $aln->color_header;
-                }
+		$header2 = $bld->header . $aln->color_header;
 	    }
 	    $header3 = $bld->subheader;
 
@@ -181,9 +178,7 @@ sub add_display {
 
     #attach the alignment
     if ($PAR->get('alignment')) {
-        if ($PAR->get('html')) {
-            $aln->set_color_scheme($ref);
-        }
+        $aln->set_color_scheme($ref);
         #Universal::vmstat("set_color_scheme done");
 	$aln->append_display($dis, $self->gc_flag);
         #Universal::vmstat("alignment added");
