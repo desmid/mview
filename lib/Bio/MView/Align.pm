@@ -213,7 +213,7 @@ sub set_coverage {
     }
 }
 
-sub header {
+sub color_header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
 

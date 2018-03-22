@@ -88,7 +88,10 @@ sub parse {
             my $dis = $self->add_display($bld, $aln);
 
 	    if ($first-- > 0) {
-		$header2 = $bld->header . $aln->header;
+		$header2 = $bld->header;
+                if ($PAR->get('html')) {
+                    $header2 .= $aln->color_header;
+                }
 	    }
 	    $header3 = $bld->subheader;
 

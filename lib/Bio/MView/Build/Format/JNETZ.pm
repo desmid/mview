@@ -75,11 +75,7 @@ sub adjust_parameters {
 }
 
 #construct a header string describing this alignment
-sub header {
-    my ($self, $quiet) = (@_, 0);
-    return ''  if $quiet;
-    return Bio::MView::Display::displaytext('');
-}
+sub header {''}
 
 
 ###########################################################################
@@ -102,11 +98,12 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Align);
 
 #change the header text
-sub header {
+sub color_header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
+    return ''  if $PAR->get('aln_coloring') eq 'none';
     my $s = '';
-    $s .= "Residues colored by:  property\n";
+    $s .= "Residues colored by: property\n";
     $s .= "Structure colored by: type\n";
     return Bio::MView::Display::displaytext($s);
 }
@@ -114,9 +111,7 @@ sub header {
 #ignore generic colouring schemes: use our own
 sub set_color_scheme {
     my $self = shift;
-
-    return $self  if $PAR->get('aln_coloring') eq 'none';
-
+    return  if $PAR->get('aln_coloring') eq 'none';
     $self->color_special;
 }
 
