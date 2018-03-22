@@ -1,9 +1,8 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version: 1.63  2018-03-21
+Version: 1.63  2018-03-22
 
 - Tested with BLAST 2.7.1+
-
 - Tested with FASTA 36.3.8f, 36.3.8g
 
 - Changed option '-width flat' to '-width full'. WARNING! BACKWARDS
@@ -17,12 +16,14 @@ Version: 1.63  2018-03-21
 
 - Added DSSP colormap for protein secondary structure rows.
 
+- Added GNU-style '--' end of command line options flag.
+
 - Fixed undefined variable warnings when using '-groupfile' option.
 
 - Fixed JNETZ parser warnings.
+- Fixed JNETZ reporting colours even when no colouring set.
 
 - Complete rewrite of option parsing mechanism.
-
 - Ongoing refactoring.
 
 Version 1.62  2017-08-06
