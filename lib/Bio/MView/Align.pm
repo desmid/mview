@@ -545,7 +545,9 @@ sub build_ruler {
 #generate a new alignment using an existing one but with a line of
 #clustal-style conservation string (*:.)
 sub build_conservation_row {
-    my ($self, $moltype) = @_;
+    my $self = shift;
+
+    my $moltype = $PAR->get('moltype');
 
     #extract sequence rows
     my @ids = $self->visible_ids;
@@ -566,7 +568,12 @@ sub build_conservation_row {
 #generate a new alignment using an existing one but with lines showing
 #consensus sequences at specified percent thresholds
 sub build_consensus_rows {
-    my ($self, $group, $threshold, $ignore, $con_gaps) = @_;
+    my $self = shift;
+
+    my $group     = $PAR->get('con_groupmap');
+    my $threshold = $PAR->get('con_threshold');
+    my $ignore    = $PAR->get('con_ignore');
+    my $con_gaps  = $PAR->get('con_gaps');
 
     my $tally = $self->compute_tallies($PAR->get('con_groupmap'));
 

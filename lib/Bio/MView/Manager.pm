@@ -186,17 +186,14 @@ sub add_display {
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
-	my $tmp = $aln->build_conservation_row($PAR->get('moltype'));
+	my $tmp = $aln->build_conservation_row;
 	$tmp->append_display($dis);
         #Universal::vmstat("conservation added");
     }
 
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
-	my $tmp = $aln->build_consensus_rows($PAR->get('con_groupmap'),
-                                             $PAR->get('con_threshold'),
-                                             $PAR->get('con_ignore'),
-                                             $PAR->get('con_gaps'));
+	my $tmp = $aln->build_consensus_rows;
         $tmp->set_consensus_color_scheme($aln, $ref);
 	$tmp->append_display($dis);
         #Universal::vmstat("consensi added");
