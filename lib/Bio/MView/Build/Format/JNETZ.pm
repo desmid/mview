@@ -99,9 +99,7 @@ use vars qw(@ISA);
 
 #change the header text
 sub color_header {
-    my ($self, $quiet) = (@_, 0);
-    return ''  if $quiet;
-    return ''  if $PAR->get('aln_coloring') eq 'none';
+    my $self = shift;
     my $s = '';
     $s .= "Residues colored by: property\n";
     $s .= "Structure colored by: type\n";
@@ -111,7 +109,7 @@ sub color_header {
 #ignore generic colouring schemes: use our own
 sub set_color_scheme {
     my $self = shift;
-    return  if $PAR->get('aln_coloring') eq 'none';
+    return  unless $PAR->get('html');
     $self->color_special;
 }
 

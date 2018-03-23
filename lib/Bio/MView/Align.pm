@@ -213,11 +213,15 @@ sub set_coverage {
     }
 }
 
-sub color_header {
-    my ($self, $quiet) = (@_, 0);
+sub header {
+    my ($self, $quiet) = @_;
     return ''  if $quiet;
-
     return ''  unless $PAR->get('html');
+    return $self->color_header;
+}
+
+sub color_header {
+    my $self = shift;
 
     my $mode      = $PAR->get('aln_coloring');
     my $threshold = $PAR->get('aln_threshold');
@@ -259,7 +263,6 @@ sub set_color_scheme {
 
     my $mode = $PAR->get('aln_coloring');
 
-    #user-defined colouring?
     $self->color_special;
 
     while (1) {
