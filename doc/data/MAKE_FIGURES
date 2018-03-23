@@ -118,7 +118,7 @@ txt "Combining alignment and motif coloring"
 run mview -in fasta data.dat -html head -css on -coloring mismatch -colormap gray5 -find 'G.G.FG.V:VA.K'
 
 txt "Special row colouring"
-run mview hssp.dat -in plain -html head -css on -width 80
+run mview dssp.dat -in plain -html head -css on -width 80
 
 txt "Consensus pattern colouring"
 txt "**Mode** ``any``"
