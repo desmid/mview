@@ -9,26 +9,22 @@ use strict;
 
 sub set_display {
     my $self = shift;
-    my ($key, $val, @tmp, %tmp);
 
-    while ($key = shift @_) {
+    while (@_) {
+	my ($key, $val) = (shift, shift);
 
-	$val = shift @_;
+        my $ref = ref $val;
 
-	#have to copy referenced data in case caller iterates over
-	#many instances of self and passes the same data to each!
-	if (ref $val eq 'HASH') {
-	    %tmp = %$val;
-	    $val = \%tmp;
-	} elsif (ref $val eq 'ARRAY') {
-	    @tmp = @$val;
-	    $val = \@tmp;
+	#shallow copy referenced data
+	if ($ref eq 'HASH') {
+	    $val = { %$val }
 	}
-	#warn "($key) $self->{'display'}->{$key} --> $val\n";
+        elsif ($ref eq 'ARRAY') {
+	    $val = [ @$val ];
+	}
+
 	$self->{'display'}->{$key} = $val;
     }
-
-    $self;
 }
 
 sub get_display { $_[0]->{'display'} }

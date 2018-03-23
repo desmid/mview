@@ -10,16 +10,6 @@ use Bio::MView::Align::Row;
 @ISA = qw(Bio::MView::Align::Row);
 
 use strict;
-use vars qw(%Template);
-
-%Template =
-    (
-     'id'      => undef,  #identifier
-     'type'    => undef,  #information about own subtype
-     'from'    => undef,  #start number of sequence
-     'string'  => undef,  #alignment string
-     'display' => undef,  #hash of display parameters
-    );
 
 my $FIND_WARNINGS  = 1;       #find block warnings only once
 my $FIND_SEPARATOR = ':';     #for multiple find patterns
@@ -33,16 +23,16 @@ sub new {
     }
     my ($id, $string, $subtype) = (@_, 'sequence');
 
-    my $self = { %Template };
-
-    $self->{'id'}     = $id;
-    $self->{'type'}   = $subtype;
-    $self->{'from'}   = $string->lo;
-    $self->{'string'} = $string;
+    my $self = {};
 
     bless $self, $type;
 
-    $self->reset_display;
+    $self->{'id'}     = $id;          #identifier
+    $self->{'type'}   = $subtype;     #information about own subtype
+    $self->{'from'}   = $string->lo;  #start number of sequence
+    $self->{'string'} = $string;      #alignment string
+
+    $self->reset_display;             #hash of display parameters
 
     $FIND_WARNINGS = 1;   #reset
 
@@ -67,7 +57,6 @@ sub reset_display {
         'sequence' => $self->{'string'},
         'range'    => [],
     };
-    $self;
 }
 
 sub get_color {
@@ -111,7 +100,7 @@ sub color_none {
 	#warn "[$i]= $c\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($c);
+	next  if $self->{'string'}->is_space($c);
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
@@ -136,7 +125,7 @@ sub color_tag {
 
 #Match row identifier like /#MAP/ or /#MAP:/ or /#MAP:stuff/
 #where MAP is some known colormap, and return the colormap;
-#note: the identifier may have leading text before the hash.
+#note: the internal id may have leading text before the hash.
 sub get_special_colormap_for_id {
     my ($self, $kw, $id) = @_;
     my ($size, $map) = (0, undef);
@@ -164,7 +153,7 @@ sub color_special_body {
 	#warn "[$i]= $c\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($c);
+	next  if $self->{'string'}->is_space($c);
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
@@ -240,7 +229,7 @@ sub color_by_find_block {
 	#warn "[$i]= $c\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($c);
+	next  if $self->{'string'}->is_space($c);
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
@@ -280,7 +269,7 @@ sub color_by_type {
 	#warn "[$i]= $c\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($c);
+	next  if $self->{'string'}->is_space($c);
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
@@ -361,7 +350,7 @@ sub set_coverage {
     #warn "Bio::MView::Align::Sequence::set_coverage(@_)\n";
     my ($self, $ref) = @_;
     my $val = $self->compute_coverage_wrt($ref);
-    $self->set_display('label4'=>sprintf("%.1f%%", $val));
+    $self->set_display('label4' => sprintf("%.1f%%", $val));
 }
 
 sub get_coverage {
@@ -413,7 +402,7 @@ sub set_identity {
     #warn "Bio::MView::Align::Sequence::set_identity(@_)\n";
     my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
-    $self->set_display('label5'=>sprintf("%.1f%%", $val));
+    $self->set_display('label5' => sprintf("%.1f%%", $val));
 }
 
 sub get_identity {

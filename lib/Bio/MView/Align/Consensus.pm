@@ -27,12 +27,15 @@ sub new {
 	die "${type}::new: threshold '$threshold\%' outside valid range [50..100]\n";
     }
 
-    my $self = { %Bio::MView::Align::Sequence::Template };
+    my $self = {};
+
+    bless $self, $type;
 
     $self->{'id'}        = "consensus/$threshold\%";
     $self->{'type'}      = 'consensus';
     $self->{'from'}      = $from;
     $self->{'to'}        = $to;
+
     $self->{'threshold'} = $threshold;
     $self->{'group'}     = $group;
 
@@ -46,8 +49,6 @@ sub new {
     $self->{'string'}->set_pad('.');
     $self->{'string'}->set_gap('.');
     $self->{'string'}->insert([$string, $from, $to]);
-
-    bless $self, $type;
 
     $self->reset_display;
 
@@ -156,7 +157,7 @@ sub color_by_type {
 	#warn "[$i]= $cg\n";
 
 	#white space: no color
-	next    if $self->{'string'}->is_space($cg);
+	next  if $self->{'string'}->is_space($cg);
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cg)) {
@@ -193,7 +194,7 @@ sub color_by_identity {
        $cg = $self->{'string'}->raw($i);
 
        #white space: no colour
-       next    if $self->{'string'}->is_space($cg);
+       next  if $self->{'string'}->is_space($cg);
 
        #gap: gapcolour
        if ($self->{'string'}->is_non_char($cg)) {
@@ -219,7 +220,7 @@ sub color_by_identity {
     $self->{'display'}->{'paint'} = 1;
 }
 
-#this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
+#this is analogous to Bio::MView::Align::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
 sub color_by_consensus_sequence {
     my ($self, $othr) = (shift, shift);
@@ -245,7 +246,7 @@ sub color_by_consensus_sequence {
 	#warn "[$i]= $cg <=> $cs\n";
 
 	#white space: no colour
-	next    if $self->{'string'}->is_space($cs);
+	next  if $self->{'string'}->is_space($cs);
 
 	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {
@@ -278,7 +279,7 @@ sub color_by_consensus_sequence {
 }
 
 
-#this is analogous to Bio::MView::Align::Row::Sequence::color_by_identity()
+#this is analogous to Bio::MView::Align::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
 sub color_by_consensus_group {
     my ($self, $othr) = (shift, shift);
@@ -304,7 +305,7 @@ sub color_by_consensus_group {
 	#warn "[$i]= $cg <=> $cs\n";
 
 	#no sequence symbol: whitespace: no colour
-	next    if $self->{'string'}->is_space($cs);
+	next  if $self->{'string'}->is_space($cs);
 
 	#gap or frameshift: gapcolour
 	if ($self->{'string'}->is_non_char($cs)) {

@@ -18,7 +18,9 @@ sub new {
     }
     my ($from, $to, $string) = @_;
 
-    my $self = { %Bio::MView::Align::Sequence::Template };
+    my $self = {};
+
+    bless $self, $type;
 
     $self->{'id'}   = "clustal";
     $self->{'type'} = 'conservation';
@@ -32,8 +34,6 @@ sub new {
     $self->{'string'}->set_pad(' ');
     $self->{'string'}->set_gap(' ');
     $self->{'string'}->insert([$string, $from, $to]);
-
-    bless $self, $type;
 
     $self->reset_display;
 

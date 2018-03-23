@@ -145,14 +145,6 @@ sub color_special {
 
 
 ###########################################################################
-package Bio::MView::Build::Format::JNETZ::Align::Sequence;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Align::Sequence);
-
-
-###########################################################################
 #the 0 here says don't override any colormap of the same name, to
 #allow earler loaded user definitions priority - crude, but it'll do.
 Bio::MView::Colormap::load_colormaps(\*DATA, 0);

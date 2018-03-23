@@ -47,8 +47,6 @@ sub reset_display {
         'label6' => $labels->[6],
         'label7' => $labels->[7],
     };
-
-    $self;
 }
 
 
