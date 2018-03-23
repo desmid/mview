@@ -447,11 +447,6 @@ LOOP:
     $self;
 }
 
-sub displaytext {
-    return $_[0]    if defined $_[0] and $_[0] ne '';
-    return '';
-}
-
 sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 
 

@@ -103,7 +103,7 @@ sub color_header {
     my $s = '';
     $s .= "Residues colored by: property\n";
     $s .= "Structure colored by: type\n";
-    return Bio::MView::Display::displaytext($s);
+    return $s;
 }
 
 #ignore generic colouring schemes: use our own

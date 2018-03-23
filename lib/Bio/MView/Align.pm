@@ -4,7 +4,6 @@
 package Bio::MView::Align;
 
 use Bio::MView::Option::Parameters;  #for $PAR
-use Bio::MView::Display;
 use Bio::MView::Align::Ruler;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
@@ -253,7 +252,7 @@ sub color_header {
     }
     $s .= "\n"  if $s ne '';
 
-    return Bio::MView::Display::displaytext($s);
+    return $s;
 }
 
 sub set_color_scheme {
@@ -361,7 +360,7 @@ sub color_by_identity {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref, $PAR);
+	$r->color_by_identity($ref);
     }
 }
 
@@ -377,7 +376,7 @@ sub color_by_mismatch {
 	next  unless defined $r;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_mismatch($ref, $PAR);
+	$r->color_by_mismatch($ref);
     }
 }
 

@@ -142,7 +142,7 @@ sub header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
     my $s = "File: $self->{'file'}  Format: $self->{'format'}\n";
-    return Bio::MView::Display::displaytext($s);
+    return $s;
 }
 
 sub gc_flag {

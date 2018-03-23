@@ -8,7 +8,6 @@ use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align;
-use Bio::MView::Display;
 use Bio::MView::Build::Scheduler;
 use strict;
 
@@ -215,7 +214,8 @@ sub header {
     if ($topn) {
 	$s .= "Maximum sequences to show: $topn\n";
     }
-    return Bio::MView::Display::displaytext($s);
+
+    return $s;
 }
 
 sub reset {
