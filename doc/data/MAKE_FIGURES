@@ -13,7 +13,7 @@ txt () {
 run () {
     echo "% $*"
     shift #discard "mview"
-    mview -html head $*
+    mview -html head -width 80 $*
 }
 
 ###########################################################################
