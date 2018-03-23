@@ -25,28 +25,28 @@ sub parse {
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_query;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'res', '', $seq);
+        $row = new Bio::MView::Build::Simple_Row($rank, 'res', '', $seq);
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_align;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'align', '', $seq);
-        $row->set_subtype('jnet.pred'); #override default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'align', '', $seq,
+                                                 'jnet.pred');
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_conf;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'conf', '', $seq);
-        $row->set_subtype('jnet.conf'); #override default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'conf', '', $seq,
+                                                 'jnet.conf');
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_final;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'final', '', $seq);
-        $row->set_subtype('jnet.pred'); #override default
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'final', '', $seq,
+                                                 'jnet.pred');
         push @hit, $row;
 
         last;
@@ -88,6 +88,21 @@ use vars qw(@ISA);
 
 sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 
+sub new {
+    my $type = shift;
+    my ($num, $id, $desc, $seq, $subtype) = @_;
+
+    my $self = new Bio::MView::Build::Simple_Row($num, $id, $desc);
+
+    bless $self, $type;
+
+    $self->{'subtype'} = $subtype;
+
+    $self->add_frag($seq)  if defined $seq;
+
+    $self;
+}
+
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align;
@@ -120,10 +135,10 @@ sub color_special {
     foreach my $row (@{$self->{'index2row'}}) {
 	next  unless defined $row;
 
-        #sequence row: use default sequence colours, switch off css
+        #sequence row: use default sequence colours
 	if ($row->{'type'} eq 'sequence') {
             my $kw = $PAR->as_dict('css1' => 0);
-            $row->color_special_body($kw);
+            $row->color_by_type($kw);
 	    next;
 	}
 

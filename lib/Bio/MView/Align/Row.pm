@@ -29,6 +29,10 @@ sub set_display {
 
 sub get_display { $_[0]->{'display'} }
 
+sub is_sequence  { 0 }
+sub is_consensus { 0 }
+sub is_special   { 0 }
+
 sub color_none { die "function not implemented\n" }
 sub color_special { die "function not implemented\n" }
 sub color_by_type { die "function not implemented\n" }

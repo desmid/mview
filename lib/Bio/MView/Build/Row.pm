@@ -21,16 +21,15 @@ sub new {
 
     $self->{'rid'}  = $id;                      #supplied identifier
     $self->{'uid'}  = $self->uniqid($num, $id); #unique compound identifier
-    
+
     #ensure identifier is non-null (for Build::map_id())
     $id = ' '  unless $id =~ /./;
 
     #set row 'subtype' information
-    if ($id =~ /^\#/) {
-	$self->{'type'} = 'special';  #leading hash: user supplied row
-	$id =~ s/^\#//;               #and strip it
-    } else {
-	$self->{'type'} = undef;                    
+    $self->{'subtype'} = '';
+    if ($id =~ /^\#/) {  #leading hash: user supplied row
+	$id =~ s/^\#//;  #strip it
+	$self->{'subtype'} = 'special';
     }
 
     $self->{'num'}  = $num;                     #row number/string
@@ -123,9 +122,6 @@ sub dump {
 
 #routine to sort 'frag' list: default is null
 sub sort {$_[0]}
-
-#modify the extra 'type' information
-sub set_subtype { $_[0]->{'type'} = $_[1] }
 
 #add a sequence fragment to the 'frag' list with value and positions given
 #by first three args. use default positions if called with one arg. other

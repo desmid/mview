@@ -7,6 +7,8 @@ use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align::Ruler;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Conservation;
+use Bio::MView::Align::Sequence;
+use Bio::MView::Align::Special;
 
 use strict;
 
@@ -135,7 +137,7 @@ sub visible_and_scoreable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
-        next  unless $r->{'type'} eq 'sequence';
+        next  unless $r->is_sequence;
 	next  if $_[0]->is_hidden($r->id);
 	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r->id;
@@ -193,6 +195,7 @@ sub set_identity {
 
     foreach my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	$r->set_identity($ref, $mode);
     }
@@ -208,6 +211,7 @@ sub set_coverage {
 
     foreach my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	$r->set_coverage($ref);
     }
@@ -257,31 +261,33 @@ sub color_header {
 }
 
 sub set_color_scheme {
-    my ($self, $ref) = (shift, shift);
+    my ($self, $ref) = @_;
 
-    return  unless $PAR->get('html');
+    my $kw = $PAR->as_dict;
 
-    my $mode = $PAR->get('aln_coloring');
+    return  unless $kw->{'html'};
 
-    $self->color_special;
+    my $mode = $kw->{'aln_coloring'};
+
+    $self->color_special($kw);
 
     while (1) {
-        $self->color_none,
+        $self->color_none($kw),
             last  if $mode eq 'none';
 
-        $self->color_by_type,
+        $self->color_by_type($kw),
             last  if $mode eq 'any';
 
-        $self->color_by_identity($ref),
+        $self->color_by_identity($kw, $ref),
             last  if $mode eq 'identity';
 
-        $self->color_by_mismatch($ref),
+        $self->color_by_mismatch($kw, $ref),
             last  if $mode eq 'mismatch';
 
-        $self->color_by_consensus_sequence,
+        $self->color_by_consensus_sequence($kw),
             last  if $mode eq 'consensus';
 
-        $self->color_by_consensus_group,
+        $self->color_by_consensus_group($kw),
             last  if $mode eq 'group';
 
         warn "set_color_scheme: unknown mode '$mode'\n";
@@ -289,23 +295,25 @@ sub set_color_scheme {
     }
 
     #find overlays anything else
-    $self->color_by_find_block  if $PAR->get('find') ne '';
+    $self->color_by_find_block($kw)  if $kw->{'find'} ne '';
 }
 
 sub set_consensus_color_scheme {
-    my ($self, $aln, $ref) = (shift, shift, shift);
+    my ($self, $aln, $ref) = @_;
 
-    return  unless $PAR->get('html');
+    my $kw = $PAR->as_dict;
 
-    my $mode = $PAR->get('con_coloring');
+    return  unless $kw->{'html'};
+
+    my $mode = $kw->{'con_coloring'};
 
     while (1) {
         last  if $mode eq 'none';
 
-        $self->color_by_type,
+        $self->color_by_type($kw),
             last  if $mode eq 'any';
 
-        $self->color_consensus_by_identity($aln, $ref),
+        $self->color_consensus_by_identity($kw, $aln, $ref),
             last  if $mode eq 'identity';
 
         warn "set_consensus_color_scheme: unknown mode '$mode'\n";
@@ -315,43 +323,46 @@ sub set_consensus_color_scheme {
 
 #propagate colour scheme to row objects
 sub color_special {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_special;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_special;
+	$r->color_special($kw);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_none {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_none;
+	$r->color_none($kw);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_type {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence or $r->is_consensus;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_type;
+	$r->color_by_type($kw);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_identity {
-    my ($self, $id) = (shift, shift);
+    my ($self, $kw, $id) = @_;
 
     my $ref = $self->item($id);
 
@@ -359,15 +370,16 @@ sub color_by_identity {
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref);
+	$r->color_by_identity($kw, $ref);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_mismatch {
-    my ($self, $id) = (shift, shift);
+    my ($self, $kw, $id) = @_;
 
     my $ref = $self->item($id);
 
@@ -375,69 +387,73 @@ sub color_by_mismatch {
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_mismatch($ref);
+	$r->color_by_mismatch($kw, $ref);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_consensus_sequence {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
-    my $tally = $self->compute_tallies($PAR->get('aln_groupmap'));
+    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $PAR->get('aln_groupmap'),
-					       $PAR->get('aln_threshold'),
-					       $PAR->get('aln_ignore'));
+					       $kw->{'aln_groupmap'},
+					       $kw->{'aln_threshold'},
+					       $kw->{'aln_ignore'});
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_sequence($r);
+	$con->color_by_consensus_sequence($kw, $r);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_consensus_group {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
-    my $tally = $self->compute_tallies($PAR->get('aln_groupmap'));
+    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $PAR->get('aln_groupmap'),
-					       $PAR->get('aln_threshold'),
-					       $PAR->get('aln_ignore'));
+					       $kw->{'aln_groupmap'},
+					       $kw->{'aln_threshold'},
+					       $kw->{'aln_ignore'});
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$con->color_by_consensus_group($r);
+	$con->color_by_consensus_group($kw, $r);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_by_find_block {
-    my $self = shift;
+    my ($self, $kw) = @_;
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_sequence;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_find_block;
+	$r->color_by_find_block($kw);
     }
 }
 
 #propagate colour scheme to row objects
 sub color_consensus_by_identity {
-    my ($self, $aln, $id) = (shift, shift, shift);
+    my ($self, $kw, $aln, $id) = @_;
 
     my $ref = $aln->item($id);
 
@@ -445,9 +461,10 @@ sub color_consensus_by_identity {
 
     for my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->is_consensus;
 	next  if $self->is_nop($r->id);
 	next  if $self->is_hidden($r->id);
-	$r->color_by_identity($ref);
+	$r->color_by_identity($kw, $ref);
     }
 }
 
@@ -623,7 +640,7 @@ sub compute_tallies {
 	#iterate over rows
 	for my $r (@{$self->{'index2row'}}) {
 	    next  unless defined $r;
-            next  unless $r->{'type'} eq 'sequence';
+            next  unless $r->is_sequence;
 	    next  if $self->is_nop($r->id);
 	    next  if $self->is_hidden($r->id);
 

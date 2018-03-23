@@ -3,7 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Sequence;
 
-use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
 
@@ -21,14 +20,14 @@ sub new {
     if (@_ < 2) {
 	die "${type}::new: missing arguments\n";
     }
-    my ($id, $string, $subtype) = (@_, 'sequence');
+    my ($id, $string) = @_;
 
     my $self = {};
 
     bless $self, $type;
 
     $self->{'id'}     = $id;          #identifier
-    $self->{'type'}   = $subtype;     #information about own subtype
+    $self->{'type'}   = 'sequence';   #information about own subtype
     $self->{'from'}   = $string->lo;  #start number of sequence
     $self->{'string'} = $string;      #alignment string
 
@@ -59,6 +58,9 @@ sub reset_display {
     };
 }
 
+#override
+sub is_sequence { 1 }
+
 sub get_color {
     my ($self, $c, $map) = @_;
     #warn "get_color: $c, $map";
@@ -83,11 +85,7 @@ sub get_color {
 }
 
 sub color_none {
-    my $self = shift;
-
-    return  unless $self->{'type'} eq 'sequence';
-
-    my $kw = $PAR->as_dict;
+    my ($self, $kw) = @_;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -123,70 +121,6 @@ sub color_tag {
     return ($i, 'color' => $symcolor);
 }
 
-#Match row identifier like /#MAP/ or /#MAP:/ or /#MAP:stuff/
-#where MAP is some known colormap, and return the colormap;
-#note: the internal id may have leading text before the hash.
-sub get_special_colormap_for_id {
-    my ($self, $kw, $id) = @_;
-    my ($size, $map) = (0, undef);
-    foreach my $m ($COLORMAP->colormap_names) {
-	if ($id =~ /\#$m(|:|:.*)$/i) {
-	    if (length($&) > $size) {
-		$size = length($&);
-                $map = $m;
-	    }
-	}
-    }
-    return $map;
-}
-
-sub color_special_body {
-    my ($self, $kw) = (shift, shift);
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-sub color_special {
-    my $self = shift;
-
-    return  unless $self->{'type'} eq 'special';
-
-    my $kw = $PAR->as_dict;
-
-    my $map = $self->get_special_colormap_for_id($kw, $self->{'id'});
-
-    return  unless defined $map;
-
-    $kw->{'aln_colormap'} = $map;
-
-    $self->color_special_body($kw);
-}
-
 sub find_blocks {
     my ($self, $find, $colormap) = @_;
 
@@ -210,11 +144,7 @@ sub find_blocks {
 }
 
 sub color_by_find_block {
-    my $self = shift;
-
-    return  unless $self->{'type'} eq 'sequence';
-
-    my $kw = $PAR->as_dict;
+    my ($self, $kw) = @_;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -252,11 +182,7 @@ sub color_by_find_block {
 }
 
 sub color_by_type {
-    my $self = shift;
-
-    return  unless $self->{'type'} eq 'sequence';
-
-    my $kw = $PAR->as_dict;
+    my ($self, $kw) = @_;
 
     my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
 
@@ -288,25 +214,22 @@ sub color_by_type {
 }
 
 sub color_by_identity {
-    my ($self, $othr) = (shift, shift);
-    $self->color_by_identity_body($othr, 1, @_);
+    my $self = shift;
+    $self->color_by_identity_body(1, @_);
 }
 
 sub color_by_mismatch {
-    my ($self, $othr) = (shift, shift);
-    $self->color_by_identity_body($othr, 0, @_);
+    my $self = shift;
+    $self->color_by_identity_body(0, @_);
 }
 
 sub color_by_identity_body {
-    my ($self, $othr, $byidentity) = @_;
+    my ($self, $byidentity, $kw, $othr) = @_;
 
-    return  unless $self->{'type'} eq 'sequence';
     return  unless defined $othr;
 
     die "${self}::color_by_identity: length mismatch\n"
 	unless $self->length == $othr->length;
-
-    my $kw = $PAR->as_dict;
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 
@@ -331,10 +254,10 @@ sub color_by_identity_body {
         my @tmp = ();
 
         #compare symbols, case-insensitive
-        if ($byidentity) { #mismatch coloring mode
+        if ($byidentity) {  #identity coloring mode
             @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
                 if uc $c1 eq uc $c2; #same symbol or symcolor
-        } else { #identity coloring mode
+        } else {  #mismatch coloring mode
             @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
                 if uc $c1 ne uc $c2; #different symbol or symcolor
         }

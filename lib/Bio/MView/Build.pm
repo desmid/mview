@@ -400,9 +400,9 @@ sub build_base_alignment {
 
     for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
 	$row = $self->{'index2row'}->[$i];
-	if (defined $row->{'type'}) {
-	    $row = new Bio::MView::Align::Sequence($row->uid, $row->sob,
-						   $row->{'type'});
+	if ($row->{'subtype'} ne '') {
+	    $row = new Bio::MView::Align::Special($row->uid, $row->sob,
+                                                  $row->{'subtype'});
 	} else {
 	    $row = new Bio::MView::Align::Sequence($row->uid, $row->sob);
 	}
@@ -467,7 +467,7 @@ sub build_new_alignment {
 	next  unless defined $arow;
 
 	if (exists $self->{'nops_uid'}->{$brow->uid} or
-	    (defined $brow->{'type'} and $brow->{'type'} eq 'special')) {
+            $brow->{'subtype'} ne '') {
 
 	    $arow->set_display('label0' => '',
 			       'label1' => $brow->cid,

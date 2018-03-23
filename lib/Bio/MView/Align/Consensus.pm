@@ -3,7 +3,6 @@
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
-use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Colormap;
 use Bio::MView::Groupmap;
 use Bio::MView::Align::Sequence;
@@ -54,6 +53,12 @@ sub new {
 
     $self;
 }
+
+#override
+sub is_sequence { 0 }
+
+#override
+sub is_consensus { 1 }
 
 #colours a row of consensus sequence.
 # 1. give consensus symbols their own colour.
@@ -138,11 +143,7 @@ sub get_color_consensus_group {
 }
 
 sub color_by_type {
-    my $self = shift;
-
-    return  unless $self->{'type'} eq 'consensus';
-
-    my $kw = $PAR->as_dict;
+    my ($self, $kw) = @_;
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -177,11 +178,7 @@ sub color_by_type {
 }
 
 sub color_by_identity {
-    my ($self, $othr) = (shift, shift);
-
-    return  unless $self->{'type'} eq 'consensus';
-
-    my $kw = $PAR->as_dict;
+    my ($self, $kw, $othr) = @_;
 
     my ($color, $end, $i, $cg, @tmp) = ($self->{'display'}->{'range'});
 
@@ -223,15 +220,13 @@ sub color_by_identity {
 #this is analogous to Bio::MView::Align::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
 sub color_by_consensus_sequence {
-    my ($self, $othr) = (shift, shift);
+    my ($self, $kw, $othr) = @_;
 
     return  unless $othr;
-    return  unless $othr->{'type'} eq 'sequence';
+    return  unless $othr->is_sequence;
 
     die "${self}::color_by_consensus_sequence: length mismatch\n"
 	unless $self->length == $othr->length;
-
-    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -281,15 +276,13 @@ sub color_by_consensus_sequence {
 #this is analogous to Bio::MView::Align::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
 sub color_by_consensus_group {
-    my ($self, $othr) = (shift, shift);
+    my ($self, $kw, $othr) = @_;
 
     return  unless $othr;
-    return  unless $othr->{'type'} eq 'sequence';
+    return  unless $othr->is_sequence;
 
     die "${self}::color_by_consensus_group: length mismatch\n"
 	unless $self->length == $othr->length;
-
-    my $kw = $PAR->as_dict;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
