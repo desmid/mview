@@ -135,6 +135,7 @@ sub visible_and_scoreable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
+        next  unless $r->{'type'} eq 'sequence';
 	next  if $_[0]->is_hidden($r->id);
 	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r->id;
@@ -389,8 +390,7 @@ sub color_by_consensus_sequence {
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->length - 1;
 
-    my $con = new Bio::MView::Align::Consensus($from, $to,
-					       $tally,
+    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
 					       $PAR->get('aln_groupmap'),
 					       $PAR->get('aln_threshold'),
 					       $PAR->get('aln_ignore'));
@@ -622,10 +622,10 @@ sub compute_tallies {
 
 	#iterate over rows
 	for my $r (@{$self->{'index2row'}}) {
-	    next unless defined $r;
-	    next if $r->{'type'} ne 'sequence';
-	    next if $self->is_nop($r->id);
-	    next if $self->is_hidden($r->id);
+	    next  unless defined $r;
+            next  unless $r->{'type'} eq 'sequence';
+	    next  if $self->is_nop($r->id);
+	    next  if $self->is_hidden($r->id);
 
 	    push @$column, $r->{'string'}->raw($c);
 	}
@@ -651,6 +651,7 @@ sub conservation {
     return ''  unless @$ids; #empty alignment
 
     my @tmp = $self->visible_and_scoreable_ids;
+
     my $refseq = $self->id2row($tmp[0])->seqobj;
     my $depth = scalar @tmp;
     my $s = '';

@@ -278,7 +278,6 @@ sub color_by_consensus_sequence {
     $othr->{'display'}->{'paint'} = 1;
 }
 
-
 #this is analogous to Bio::MView::Align::Sequence::color_by_identity()
 #but the roles of self (consensus) and other (sequence) are reversed.
 sub color_by_consensus_group {
