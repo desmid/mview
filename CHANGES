@@ -1,6 +1,6 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
-Version: 1.63  2018-03-23
+Version: 1.63  2018-03-25
 
 Input formats:
 
@@ -10,24 +10,23 @@ Input formats:
 Changes:
 
 - Changed option '-width flat' to '-width full'.
-  WARNING! BACKWARDS INCOMPATIBILITY: the default setting so probably not
+  WARNING! BACKWARDS INCOMPATIBILITY: the default setting, so probably not
   an issue.
-
 - Changed name of output format '-outfmt new' to '-outfmt mview'.
-  WARNING! BACKWARDS INCOMPATIBILITY: the default setting so probably not
+  WARNING! BACKWARDS INCOMPATIBILITY: the default setting, so probably not
   an issue.
 
-- Added new "special" row colouring mode based on a colormap name embedded
-  in the row sequence identifier, like #DSSP:id
+New features:
 
-- Added DSSP colormap for protein secondary structure rows.
-
+- Added "comment" mode for rows starting with hash, '#'.
+- Added "comment" row colouring mode that reads a colormap name embedded in
+  the row comment identifier, like '#DSSP:id'
+- Added 'DSSP' colormap for protein secondary structure rows.
 - Added GNU-style '--' end of command line options flag.
 
 Bug fixes:
 
 - Fixed undefined variable warnings when using '-groupfile' option.
-
 - Fixed JNETZ parser warnings.
 - Fixed JNETZ reporting colours even when no colouring set.
 
