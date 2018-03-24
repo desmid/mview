@@ -13,7 +13,7 @@ txt () {
 run () {
     echo "% $*"
     shift #discard "mview"
-    mview -html head -width 80 $*
+    mview -width 80 $*
 }
 
 ###########################################################################
@@ -27,6 +27,9 @@ run mview -in fasta data.dat
 
 txt "The ruler line"
 run mview -in fasta -ruler off data.dat
+
+txt "Here is an example where one line of input data began with a dummy identifier``#comment``:"
+run mview -in fasta commented.dat
 
 txt "Basic HTML"
 run mview -in fasta -html head -coloring any data.dat
