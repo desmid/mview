@@ -22,15 +22,10 @@ sub new {
     $self->{'rid'}  = $id;                      #supplied identifier
     $self->{'uid'}  = $self->uniqid($num, $id); #unique compound identifier
 
+    $id =~ s/^\#//;                             #comment: special row
+
     #ensure identifier is non-null (for Build::map_id())
     $id = ' '  unless $id =~ /./;
-
-    #set row 'subtype' information
-    $self->{'subtype'} = '';
-    if ($id =~ /^\#/) {  #leading hash: user supplied row
-	$id =~ s/^\#//;  #strip it
-	$self->{'subtype'} = 'special';
-    }
 
     $self->{'num'}  = $num;                     #row number/string
     $self->{'cid'}  = $id;                      #cleaned identifier

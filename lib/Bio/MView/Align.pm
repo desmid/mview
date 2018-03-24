@@ -12,64 +12,82 @@ use Bio::MView::Align::Special;
 
 use strict;
 
-my %Template =
-    (
-     'length'     => 0,     #alignment width
-     'id2index'   => undef, #hash of identifiers giving row numbers
-     'index2row'  => undef, #list of aligned rows, from zero
-     'parent'     => undef, #identifier of parent sequence
-     'cursor'     => -1,    #index2row iterator
-     'tally'      => undef, #column tallies for consensus
-     'nopshash'   => undef, #id's to ignore for computations/colouring
-     'hidehash'   => undef, #id's to ignore for display
-    );
-
 sub new {
     my $type = shift;
     #warn "${type}::new: @_\n";
-    if (@_ < 1) {
+    if (@_ < 2) {
 	die "${type}::new: missing arguments\n";
     }
-    my ($obj, $aligned, $parent) = (@_, undef);
-    my $i;
+    my ($aligned, $parent) = (shift, shift);
 
-    my $self = { %Template };
-
-    $self->{'id2index'}  = {};
-    $self->{'index2row'} = [];
-    $self->{'aligned'}   = $aligned;
-    $self->{'tally'}     = {};
-    $self->{'nopshash'}  = {};
-    $self->{'hidehash'}  = {};
-
-    #warn "Align: [$obj][$aligned]\n";
-
-    for ($i=0; $i<@$obj; $i++) {
-
-	if (defined $obj->[$i]) {
-	    #warn "[$i] ",  $obj->[$i]->id, " ", $obj->[$i]->string, "\n";
-
-	    $self->{'id2index'}->{$obj->[$i]->id} = $i;
-	    $self->{'index2row'}->[$i] = $obj->[$i];
-
-	    $self->{'length'} = $obj->[$i]->length  if $self->{'length'} < 1;
-
-	    if ($aligned and $obj->[$i]->length != $self->{'length'}) {
-		#warn "[@{[$obj->[$i]->string]}]\n";
-		die "${type}::new: incompatible alignment lengths, row $i, expect $self->{'length'}, got @{[$obj->[$i]->length]}\n";
-	    }
-	}
-    }
-
-    if (defined $parent) {
-	$self->{'parent'} = $parent;
-    } else {
-	$self->{'parent'} = $self->{'index2row'}->[0];
-    }
+    my $self = {};
 
     bless $self, $type;
 
+    $self->{'id2index'}  = {};        #hash of identifiers giving row numbers
+    $self->{'index2row'} = [];        #list of aligned rows, from zero
+    $self->{'cursor'}    = -1,        #index2row iterator
+    $self->{'parent'}    = $parent;   #identifier of parent sequence
+    $self->{'aligned'}   = $aligned;  #sequences are aligned flag
+    $self->{'length'}    = 0;         #alignment width
+    $self->{'tally'}     = {};        #column tallies for consensus
+    $self->{'nopshash'}  = {};        #id's to ignore for computations/colours
+    $self->{'hidehash'}  = {};        #id's to ignore for display
+
+    #warn "Align.aligned: $aligned\n";
+    #warn "Align.parent:  @{[defined $parent ? $parent : 'undef']}\n";
+
+    $self->append(@_);
+
     $self;
+}
+
+#sequence factory
+sub make_sequence {
+    my ($self, $row) = @_;
+
+    my $rid = $row->rid;
+    my $uid = $row->uid;
+    my $sob = $row->sob;
+
+    my $subtype = '';
+    $subtype = 'special'  if $rid =~ /^\#/; #leading hash: special row
+
+    #warn "make_sequence: $rid => @{[$subtype ne '' ? $subtype : \"''\"]}\n";
+
+    if ($subtype eq '') {
+        return new Bio::MView::Align::Sequence($uid, $sob);
+    }
+
+    if ($subtype ne '') {
+        return new Bio::MView::Align::Special($uid, $sob, $subtype);
+    }
+
+    die "${self}::make_sequence: unknown type '$subtype'\n";
+}
+
+sub append {
+    my $self = shift;
+
+    my $i = @{$self->{'index2row'}};  #number of rows so far
+
+    foreach my $obj (@_) {
+        #warn "append: [$i]\t@{[$obj->id]}\t@{[$obj->string]}\n";
+
+        if ($i < 1) {  #empty
+            $self->{'length'} = $obj->length;
+            $self->{'parent'} = $obj  unless defined $self->{'parent'};
+        }
+
+        if ($self->{'aligned'} and $obj->length != $self->{'length'}) {
+            die "${self}::append: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
+        }
+
+        $self->{'id2index'}->{$obj->id} = $i;
+        $self->{'index2row'}->[$i] = $obj;
+
+        $i++;
+    }
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
@@ -84,8 +102,15 @@ sub dump {
     my $self = shift;
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-    foreach my $r (@{$self->{'index2row'}}) {
-	$r->dump  if defined $r;
+    warn "  sequence rows:\n";
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+        my $r = $self->{'index2row'}->[$i];
+        print STDERR "  $i: ";
+        if (defined $r) {
+            $r->dump;
+        } else {
+            print STDERR "\n";
+        }
     }
     warn "\n";
     $self;
@@ -99,6 +124,8 @@ sub set_parameters {
     }
     $self;
 }
+
+sub size { scalar @{$_[0]->{'index2row'}} }
 
 sub length { $_[0]->{'length'} }
 
@@ -120,7 +147,7 @@ sub all_ids {
     @tmp;
 }
 
-#return list of visible rows as internal ids
+#return list of visible rows as internal ids: rows will be displayed
 sub visible_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
@@ -131,9 +158,9 @@ sub visible_ids {
     @tmp;
 }
 
-#return list of visible and not nops rows as internal ids;
-#these are rows that will be displayed AND have consensus calculations done
-sub visible_and_scoreable_ids {
+#return list of visible sequence rows excluding nops as internal ids:
+#rows will be displayed and have consensus calculations done
+sub visible_sequence_computable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
@@ -196,6 +223,7 @@ sub set_identity {
     foreach my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
         next  unless $r->is_sequence;
+	next  if $self->is_hidden($r->id);
 	next  if $self->is_nop($r->id);
 	$r->set_identity($ref, $mode);
     }
@@ -212,6 +240,7 @@ sub set_coverage {
     foreach my $r (@{$self->{'index2row'}}) {
 	next  unless defined $r;
         next  unless $r->is_sequence;
+	next  if $self->is_hidden($r->id);
 	next  if $self->is_nop($r->id);
 	$r->set_coverage($ref);
     }
@@ -510,27 +539,28 @@ sub do_gc {
 }
 
 sub prune_identities {
-    my ($self, $refid, $mode, $min, $max, $topn) = (shift, shift, shift, shift,
-                                                    shift, shift);
+    my ($self, $refid, $mode, $min, $max, $topn) =
+        (shift, shift, shift, shift, shift, shift);
+
     $min = 0    if $min < 0;
     $max = 100  if $max > 100;
 
     #special case
     return $self  unless $min > 0 or $max < 100;
-    #return $self  if $min > $max;  #silly combination
+    return $self  if $min > $max;
 
-    #ensure no replicates in show list
-    my %show;
+    #ensure no replicates in keep list
+    my %keep;
     foreach my $i (@_) {
 	my $j = $self->id2row($i);
-	$show{$j} = $j  if defined $j;
+	$keep{$j} = $j  if defined $j;
     }
 
     #the reference row
     my $ref = $self->item($refid);
     return $self  unless defined $ref;
 
-    #prime show list
+    #prime keep list
     my @obj = ();
 
     foreach my $r (@{$self->{'index2row'}}) {
@@ -539,26 +569,28 @@ sub prune_identities {
 	#enforce limit on number of rows
 	last  if $topn > 0 and @obj == $topn;
 
-	if (exists $show{$r}) {
-	    push @obj, $r;
+	if (exists $keep{$r}) {
+            push @obj, $r;
 	    next;
 	}
 
-	#store object if %identity satisfies cutoff
         my $pcid = $r->compute_identity_to($ref, $mode);
+
+	#percent identity outside cutoff?
         next  if $pcid < $min or $pcid > $max;
+
         push @obj, $r;
     }
-    #warn join(" ", map { $_->id } @obj), "\n";
 
-    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
+    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'},
+                                 @obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
 sub build_ruler {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Ruler($self->length, $refobj);
-    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
+    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with a line of
@@ -569,7 +601,7 @@ sub build_conservation_row {
     my $moltype = $PAR->get('moltype');
 
     #extract sequence rows
-    my @ids = $self->visible_ids;
+    my @ids = $self->visible_sequence_computable_ids;
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->{'length'} - 1;
@@ -581,7 +613,7 @@ sub build_conservation_row {
     #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
-    new Bio::MView::Align([$obj], $self->{'aligned'}, $self->{'parent'});
+    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with lines showing
@@ -616,7 +648,7 @@ sub build_consensus_rows {
 	push @obj, $con;
     }
 
-    new Bio::MView::Align(\@obj, $self->{'aligned'}, $self->{'parent'});
+    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
 }
 
 sub compute_tallies {
@@ -667,7 +699,7 @@ sub conservation {
 
     return ''  unless @$ids; #empty alignment
 
-    my @tmp = $self->visible_and_scoreable_ids;
+    my @tmp = $self->visible_sequence_computable_ids;
 
     my $refseq = $self->id2row($tmp[0])->seqobj;
     my $depth = scalar @tmp;

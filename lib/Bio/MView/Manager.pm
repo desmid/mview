@@ -160,11 +160,6 @@ sub add_display {
     #collect all the column labels
     $self->{'labelwidths'} = [ $refobj->display_column_widths ];
 
-    #allow the Build instance to override the normal parameter
-    #settings and to substitute specialised handlers for
-    #'peculiar' alignments, eg., sequence versus secondary structure.
-    $bld->adjust_parameters($aln);
-
     #Universal::vmstat("display constructor");
     my $dis = new Bio::MView::Display($aln->init_display);
     #Universal::vmstat("display constructor DONE");

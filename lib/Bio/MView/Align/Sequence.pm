@@ -184,27 +184,29 @@ sub color_by_find_block {
 sub color_by_type {
     my ($self, $kw) = @_;
 
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+    my $color = $self->{'display'}->{'range'};
 
     push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
 
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+    my $end = $self->length + 1;
 
-	$c = $self->{'string'}->raw($i);
+    for (my $i=1; $i<$end; $i++) {
+
+	my $c = $self->{'string'}->raw($i);
 
 	#warn "[$i]= $c\n";
 
 	#white space: no color
 	next  if $self->{'string'}->is_space($c);
 
-	#gap or frameshift: gapcolour
+	#gap: gapcolour
 	if ($self->{'string'}->is_non_char($c)) {
 	    push @$color, $i, 'color' => $kw->{'gapcolor'};
 	    next;
 	}
 
 	#use symbol color/wildcard colour
-	@tmp = $self->get_color($c, $kw->{'aln_colormap'});
+	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);

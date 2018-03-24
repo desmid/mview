@@ -17,14 +17,14 @@ sub new {
     if (@_ < 2) {
 	die "${type}::new: missing arguments\n";
     }
-    my ($id, $string, $subtype) = (@_, 'special');
+    my ($id, $string) = @_;
 
     my $self = {};
 
     bless $self, $type;
 
     $self->{'id'}     = $id;          #identifier
-    $self->{'type'}   = $subtype;     #information about own subtype
+    $self->{'type'}   = 'special';    #information about own subtype
     $self->{'from'}   = $string->lo;  #start number of sequence
     $self->{'string'} = $string;      #alignment string
 
@@ -39,6 +39,13 @@ sub is_sequence { 0 }
 #override
 sub is_special { 1 }
 
+sub adjust_display {
+    $_[0]->set_display('label0' => '',
+                       'label4' => '', 'label5' => '',
+                       'label6' => '', 'label7' => '',
+    );
+}
+
 sub color_special {
     my $self = shift;
 
@@ -50,7 +57,7 @@ sub color_special {
 
     $kw->{'aln_colormap'} = $map;
 
-    $self->color_special_body($kw);
+    $self->color_by_type($kw);
 }
 
 #Match row identifier like /#MAP/ or /#MAP:/ or /#MAP:stuff/
@@ -68,40 +75,6 @@ sub get_special_colormap_for_id {
 	}
     }
     return $map;
-}
-
-sub color_special_body {
-    my ($self, $kw) = (shift, shift);
-
-    my $color = $self->{'display'}->{'range'};
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    my $end = $self->length + 1;
-
-    for (my $i=1; $i<$end; $i++) {
-
-	my $c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-	#use symbol color/wildcard colour
-	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 

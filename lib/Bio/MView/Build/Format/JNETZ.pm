@@ -3,7 +3,6 @@
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ;
 
-use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Align;
 use strict;
 use vars qw(@ISA);
@@ -25,33 +24,29 @@ sub parse {
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_query;
-        $row = new Bio::MView::Build::Simple_Row($rank, 'res', '', $seq);
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'res', '', $seq);
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_align;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'align', '', $seq,
-                                                 'jnet.pred');
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'align', '', $seq);
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_conf;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'conf', '', $seq,
-                                                 'jnet.conf');
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'conf', '', $seq);
         push @hit, $row;
 
         $rank++; last  if $self->topn_done($rank);
 
         $seq = $aln->get_final;
-        $row = new Bio::MView::Build::Row::JNETZ($rank, 'final', '', $seq,
-                                                 'jnet.pred');
+        $row = new Bio::MView::Build::Row::JNETZ($rank, 'final', '', $seq);
         push @hit, $row;
 
         last;
     }
-    #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(ALIGNMENT));
@@ -59,19 +54,10 @@ sub parse {
     return \@hit;
 }
 
-#override: set temporary parameters
-sub adjust_parameters {
+#override
+sub rebless_alignment {
     my ($self, $aln) = @_;
     bless $aln, 'Bio::MView::Build::Format::JNETZ::Align';
-
-    #set parameters for this specific parse
-    $PAR->set('label0', 0);  #don't report rank
-    $PAR->set('label4', 0);  #don't report %coverage
-    $PAR->set('label5', 0);  #don't report %identity
-    $PAR->set('label6', 0);  #don't report sequence pos
-    $PAR->set('label7', 0);  #don't report sequence pos
-
-    $self;
 }
 
 #construct a header string describing this alignment
@@ -88,21 +74,6 @@ use vars qw(@ISA);
 
 sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 
-sub new {
-    my $type = shift;
-    my ($num, $id, $desc, $seq, $subtype) = @_;
-
-    my $self = new Bio::MView::Build::Simple_Row($num, $id, $desc);
-
-    bless $self, $type;
-
-    $self->{'subtype'} = $subtype;
-
-    $self->add_frag($seq)  if defined $seq;
-
-    $self;
-}
-
 
 ###########################################################################
 package Bio::MView::Build::Format::JNETZ::Align;
@@ -112,7 +83,34 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Align);
 
-#change the header text
+#override
+sub make_sequence {
+    my ($self, $row) = @_;
+
+    my $cid = $row->cid;
+    my $uid = $row->uid;
+    my $sob = $row->sob;
+
+    my $subtype = $cid;
+
+    #warn "make_sequence: $cid => @{[$subtype ne '' ? $subtype : \"''\"]}\n";
+
+    return new Bio::MView::Align::JNETZ::Sequence($uid, $sob)
+        if $subtype eq 'res';
+
+    return new Bio::MView::Align::JNETZ::Prediction($uid, $sob)
+        if $subtype eq 'align';
+
+    return new Bio::MView::Align::JNETZ::Prediction($uid, $sob)
+        if  $subtype eq 'final';
+
+    return new Bio::MView::Align::JNETZ::Confidence($uid, $sob)
+        if $subtype eq 'conf';
+
+    die "${self}::make_sequence: unknown type '$subtype'\n";
+}
+
+#override: change the header text
 sub color_header {
     my $self = shift;
     my $s = '';
@@ -121,41 +119,71 @@ sub color_header {
     return $s;
 }
 
-#ignore generic colouring schemes: use our own
+#override: ignore generic colouring schemes: use our own
 sub set_color_scheme {
     my $self = shift;
     return  unless $PAR->get('html');
     $self->color_special;
 }
 
-#propagate colour scheme to row objects
+#override: propagate colour scheme to row objects
 sub color_special {
     my $self = shift;
-
     foreach my $row (@{$self->{'index2row'}}) {
 	next  unless defined $row;
-
-        #sequence row: use default sequence colours
-	if ($row->{'type'} eq 'sequence') {
-            my $kw = $PAR->as_dict('css1' => 0);
-            $row->color_by_type($kw);
-	    next;
-	}
-
-        #structure row: use our colours
-	if ($row->{'type'} eq 'jnet.pred') {
-            my $kw = $PAR->as_dict('aln_colormap' => 'JNET.PRED');
-            $row->color_special_body($kw);
-	    next;
-	}
-
-        #confidence row: use our colours
-	if ($row->{'type'} eq 'jnet.conf') {
-            my $kw = $PAR->as_dict('aln_colormap' => 'JNET.CONF');
-            $row->color_special_body($kw);
-	    next;
-	}
+        $row->color_special;
     }
+}
+
+
+###########################################################################
+package Bio::MView::Align::JNETZ::Sequence;
+
+use Bio::MView::Option::Parameters;  #for $PAR
+use Bio::MView::Align::Special;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Align::Special);
+
+#override
+sub color_special {
+    my $self = shift;
+    my $kw = $PAR->as_dict('css1' => 0);
+    $self->color_by_type($kw);
+}
+
+
+###########################################################################
+package Bio::MView::Align::JNETZ::Prediction;
+
+use Bio::MView::Option::Parameters;  #for $PAR
+use Bio::MView::Align::Special;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Align::Special);
+
+#override
+sub color_special {
+    my $self = shift;
+    my $kw = $PAR->as_dict('aln_colormap' => 'JNET.PRED');
+    $self->color_by_type($kw);
+}
+
+
+###########################################################################
+package Bio::MView::Align::JNETZ::Confidence;
+
+use Bio::MView::Option::Parameters;  #for $PAR
+use Bio::MView::Align::Special;
+use vars qw(@ISA);
+
+@ISA = qw(Bio::MView::Align::Special);
+
+#override
+sub color_special {
+    my $self = shift;
+    my $kw = $PAR->as_dict('aln_colormap' => 'JNET.CONF');
+    $self->color_by_type($kw);
 }
 
 

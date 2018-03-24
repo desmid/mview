@@ -146,10 +146,6 @@ sub map_id {
     return @rowref;
 }
 
-#Allow instance to rebless an Bio::MView::Align object and change
-#parameter settings; used by Manager
-sub adjust_parameters {}
-
 sub get_entry { $_[0]->{'entry'} }
 
 sub get_row_id {
@@ -295,14 +291,16 @@ sub build_block {
     $self->build_indices;
     $self->build_rows($lo, $hi);
 
-    my $aln = $self->build_base_alignment;
+    my $aln = new Bio::MView::Align($self->{'aligned'}, undef);
+
+    $self->rebless_alignment($aln);
+    $aln = $self->build_base_alignment($aln);
 
     return undef  unless $aln->all_ids > 0;
 
-    if ($outfmt eq 'mview') {
-        $aln = $self->build_new_alignment($aln);
-    }
-    $aln;
+    $self->build_new_alignment($aln)  if $outfmt eq 'mview';
+
+    return $aln;
 }
 
 sub build_indices {
@@ -394,33 +392,27 @@ sub get_range {
     return $row->range;  #default
 }
 
+#subclass overrides
+sub rebless_alignment {}
+
 sub build_base_alignment {
-    my $self = shift;
-    my ($i, $row, $aln, @list) = ();
+    my ($self, $aln) = @_;
 
-    for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
-	$row = $self->{'index2row'}->[$i];
-	if ($row->{'subtype'} ne '') {
-	    $row = new Bio::MView::Align::Special($row->uid, $row->sob,
-                                                  $row->{'subtype'});
-	} else {
-	    $row = new Bio::MView::Align::Sequence($row->uid, $row->sob);
-	}
-	push @list, $row;
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+	my $row = $self->{'index2row'}->[$i];
+        $row = $aln->make_sequence($row);
+        $aln->append($row);
     }
-
-    $aln = new Bio::MView::Align(\@list, $self->{'aligned'});
 
     #filter alignment based on %identity to reference
     if ((0 < $PAR->get('minident') or $PAR->get('maxident') < 100)
         and defined $self->{'ref_row'}) {
-        my $tmp = $aln->prune_identities($self->{'ref_row'}->uid,
-                                         $PAR->get('pcid'),
-                                         $PAR->get('minident'),
-                                         $PAR->get('maxident'),
-                                         $self->{'show'},
-                                         keys %{$self->{'keep_uid'}});
-        $aln = $tmp;
+        $aln = $aln->prune_identities($self->{'ref_row'}->uid,
+                                      $PAR->get('pcid'),
+                                      $PAR->get('minident'),
+                                      $PAR->get('maxident'),
+                                      $self->{'show'},
+                                      keys %{$self->{'keep_uid'}});
     }
 
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
@@ -450,7 +442,8 @@ sub build_base_alignment {
     #     $aln->id2row($r)->seqobj->dump;
     # }
     # warn "LEN: ", $aln->length;
-    $aln;
+
+    return $aln;
 }
 
 sub build_new_alignment {
@@ -466,9 +459,7 @@ sub build_new_alignment {
 
 	next  unless defined $arow;
 
-	if (exists $self->{'nops_uid'}->{$brow->uid} or
-            $brow->{'subtype'} ne '') {
-
+	if (exists $self->{'nops_uid'}->{$brow->uid}) {
 	    $arow->set_display('label0' => '',
 			       'label1' => $brow->cid,
 			       'label2' => $brow->text,
@@ -496,8 +487,9 @@ sub build_new_alignment {
                 'url'    => $brow->url,
 	        );
 	}
+
+        $arow->adjust_display;  #row may have own idea
     }
-    $aln;
 }
 
 #remove query and hit columns at gaps in the query sequence and downcase
