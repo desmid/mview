@@ -122,6 +122,169 @@ ALl available options can be listed using::
 There are a lot of options, but the main ones are described in this manual.
 
 
+Layout and filtering
+--------------------
+
+
+Pagination
+^^^^^^^^^^
+
+The default layout is a single unbroken horizontal band of alignment - fine if
+scrolling inside Firefox. However, you may prefer to break the alignment into
+vertically stacked panes. For panes, for example, 80 columns wide, set
+``-width 80``. Widths refer to the alignment, not to the whole displayed
+output.
+
+
+Column ranges
+^^^^^^^^^^^^^
+
+It is possible to narrow (or expand) the displayed range of columns of the
+alignment, for example, ``-range 10:78`` would select only that column range
+using the numbering scheme reported when ``-ruler on`` is set (see
+:ref:`ref_rulers`). Note: the range setting is not related to the sequence
+position labelling for blast/fasta database search input; it's just the
+position along the ruler.
+
+The order of the numbers is unimportant making it simpler to state interest in
+a region of the alignment that might actually be reversed in the output (e.g.,
+a BLASTN search hit matching the reverse complement of the query strand).
+
+
+.. _ref_filtering_rows:
+
+Filtering rows
+^^^^^^^^^^^^^^
+
+**Showing only the top N rows**
+
+Usually, specifying a limited number of hits to view from a long search
+alignment speeds things up a lot as there's less parsing and less formatting
+to be generated, so to get the best 10 hits, use the option ``-top 10``.
+
+**Filtering by percent identity**
+
+The ``-minident N`` option will report only those hits above some threshold
+percent identity N compared to the reference row; useful for looking for close
+matches to the query or other reference sequence.
+
+Similarly, you can exclude the strong matches using ``-maxident N``.
+
+Both options can be combined.
+
+**Showing and hiding sets of rows**
+
+Rows can be dropped explicitly using the ``-hide`` option. This can be
+supplied a comma-separated list of row identifiers, rank numbers, rank number
+ranges (1,2,3, 1..3, 1:3 are all equivalent), regular expressions (case
+insensitive, enclosed between // characters) to match against row identifiers,
+or the ``*`` symbol meaning all rows.
+
+Likewise, the ``-show`` option specifies a list of rows to keep in the
+alignment. The ``-show`` option overrides ``-hide`` whenever a row is common
+to both.
+
+For example, the options::
+
+  -hide all  -show '2,3,6..10,/^pdb/'
+
+or even::
+
+  -hide '/.*/'  -show '2,3,6:10,/^pdb/'
+
+would hide everything except rows 2, 3, 6 through 10 inclusive, and any hits
+beginning with the string 'pdb'.
+
+Note: the currently set reference row is still used for percent identity and
+colouring operations, even though the row may have been dropped from display
+by the ``-hide`` list (see :ref:`ref_reference_row`).
+
+**Data format specific filters**
+ 
+Other filters specific to BLASTP, FASTA, etc., input formats allow cutoffs on
+scores or p-values, etc. In particular, it is possible to apply some control
+over the selection of HSPs used in building the MView alignment using the
+``-hsp`` filtering option.
+
+Some search programs produce DNA strand-directional output (e.g., BLASTN) and
+you can extract or output the results separately. For example, to see just the
+plus strand matches::
+
+  mview -in blast -strand p blastn_results.dat 
+
+The choices are ``p``, ``m``, ``both``.
+
+Of interest to anyone using PSI-BLAST, you can display alignments for any/all
+iterations of a PSI-BLAST run using, say::
+
+  mview -in blast -cycle 1,last psiblast_results.dat 
+
+to get just those two iterations. The default is to display only the last
+iteration. If you want all output, use ``-cycle all``.
+
+**Keeping rows, but ignoring them in calculations**
+
+Another control option can be used to prevent MView from using rows for
+colouring or for calculation of percent identities although these rows will
+still be displayed. Use ``-nop`` to specify a list (comma-separated as usual)
+of identifiers or row numbers to flag for "NO Processing".
+
+**Comment lines, another way to ignore rows**
+
+If a sequence identifier starts with the ``#`` character, it is treated as a
+``nop`` row, i.e., as a comment. This is useful for displaying other textual
+information (e.g., secondary structure predictions) within the alignment.
+
+Here is an example with two lines of input data beginning with dummy
+identifiers ``#residues`` and ``#properties``:
+
+.. raw:: html
+
+  <PRE>
+                   cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+  1 EGFR_HUMAN  100.0% 100.0%    FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC   
+  2 PR2_DROME    97.1%  35.7%    ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV   
+  3 ITK_HUMAN    90.0%  32.9%    LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC   
+  4 PTK7_HUMAN   97.1%  21.2%    IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC   
+  5 KIN31_CAEEL 100.0%  31.5%    VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA   
+    residues                     ------------------------------------------^Lys--------------^Glu----------------   
+    properties                   ------------------------------------^^^^^^hydrophobic---------------------------   
+  </PRE>
+
+Note 1: MView elides the hash character in the output and also the row
+numbers. However, the name or row number based filtering mechanism described
+above still works.
+
+Note 2: Comment lines like this cannot contain whitespace in the sequence
+region - they look like sequences and are processed as such by MView.
+
+
+Labels and annotations
+^^^^^^^^^^^^^^^^^^^^^^
+
+The labelling information at the left of the alignment can be too wide, so you
+can switch some of them off. Labels are in blocks numbered from zero
+(perverse, but the original reasoning was that the input data starts with the
+sequence identifiers in column 1 and MView tacks on a rank number in front, so
+make that column 0).
+
+ ======   ==================================================
+ Column   Description
+ ======   ==================================================
+ 0        rank
+ 1        identifier
+ 2        description
+ 3        score block (may contain many score columns)
+ 4        percent coverage
+ 5        percent identity
+ 6        query sequence positions (blast or fasta searches)
+ 7        hit sequence positions (blast or fasta searches)
+ ======   ==================================================
+
+Any of the of the label types can be switched off with an option like
+``-label2`` to remove the descriptions label at column 2, and so on.
+
+
 Adding HTML
 -----------
 
@@ -957,16 +1120,18 @@ overlaid with two coloured motifs::
   </PRE>
 
 
-.. _ref_special_colouring:
+.. _ref_comment_colouring:
 
-Special row colouring
+Comment row colouring
 ^^^^^^^^^^^^^^^^^^^^^
 
 Individual rows can be coloured following a particular scheme by embedding the
-name of a colourmap in the sequence identifier. The sequence identifier must
-begin with a ``#`` character followed by the name of a colourmap and a colon
-separator. For example, ``#MAP`` or ``#MAP:id`` will cause the MAP colourmap
-to be used if it exists. Otherwise, the row will be displayed uncoloured.
+name of a colourmap in the sequence identifier of a comment line (see
+above). The sequence identifier must begin with a ``#`` character followed by
+the name of a colourmap and a colon separator before the identifier
+string. For example, ``#MAP`` or ``#MAP:comment`` would cause the MAP
+colourmap to be used if it exists. Otherwise, the row will be displayed
+uncoloured.
 
 One use of this might be to colour rows of protein secondary structure
 assignments. Here is a fragment of an HSSP multiple sequence alignment, which
@@ -990,9 +1155,6 @@ DSSP.
 
 Note 2: Any number of these rows is allowed, using the same or different
 colourmaps, and they can be placed anywhere in the alignment.
-
-Note 3: These kind of rows are ignored in the percent coverage and percent
-identity calculations for the alignment - they are treated as comment lines.
 
 
 .. _ref_consensus_colouring:
@@ -1375,142 +1537,6 @@ So, in the ``CYS`` example, the symbols ``*``, ``?``, ``X``, ``x`` will be
 coloured in the foreground (i.e., the symbols themselves), and ``C`` or ``c``
 will be displayed as coloured symbols unless ``-css on`` is set, in which case
 they will appear as coloured bocks.
-
-
-Layout and filtering
---------------------
-
-
-Pagination
-^^^^^^^^^^
-
-The default layout is a single unbroken horizontal band of alignment - fine if
-scrolling inside Firefox. However, you may prefer to break the alignment into
-vertically stacked panes. For panes, for example, 80 columns wide, set
-``-width 80``. Widths refer to the alignment, not to the whole displayed
-output.
-
-
-Column ranges
-^^^^^^^^^^^^^
-
-It is possible to narrow (or expand) the displayed range of columns of the
-alignment, for example, ``-range 10:78`` would select only that column range
-using the numbering scheme reported when ``-ruler on`` is set (see
-:ref:`ref_rulers`). Note: the range setting is not related to the sequence
-position labelling for blast/fasta database search input; it's just the
-position along the ruler.
-
-The order of the numbers is unimportant making it simpler to state interest in
-a region of the alignment that might actually be reversed in the output (e.g.,
-a BLASTN search hit matching the reverse complement of the query strand).
-
-
-.. _ref_filtering_rows:
-
-Filtering rows
-^^^^^^^^^^^^^^
-
-**Showing only the top N rows**
-
-Usually, specifying a limited number of hits to view from a long search
-alignment speeds things up a lot as there's less parsing and less formatting
-to be generated, so to get the best 10 hits, use the option ``-top 10``.
-
-**Filtering by percent identity**
-
-The ``-minident N`` option will report only those hits above some threshold
-percent identity N compared to the reference row; useful for looking for close
-matches to the query or other reference sequence.
-
-Similarly, you can exclude the strong matches using ``-maxident N``.
-
-Both options can be combined.
-
-**Showing and hiding sets of rows**
-
-Rows can be dropped explicitly using the ``-hide`` option. This can be
-supplied a comma-separated list of row identifiers, rank numbers, rank number
-ranges (1,2,3, 1..3, 1:3 are all equivalent), regular expressions (case
-insensitive, enclosed between // characters) to match against row identifiers,
-or the ``*`` symbol meaning all rows.
-
-Likewise, the ``-show`` option specifies a list of rows to keep in the
-alignment. The ``-show`` option overrides ``-hide`` whenever a row is common
-to both.
-
-For example, the options::
-
-  -hide all  -show '2,3,6..10,/^pdb/'
-
-or even::
-
-  -hide '/.*/'  -show '2,3,6:10,/^pdb/'
-
-would hide everything except rows 2, 3, 6 through 10 inclusive, and any hits
-beginning with the string 'pdb'.
-
-Note: the currently set reference row is still used for percent identity and
-colouring operations, even though the row may have been dropped from display
-by the ``-hide`` list (see :ref:`ref_reference_row`).
-
-**Data format specific filters**
- 
-Other filters specific to BLASTP, FASTA, etc., input formats allow cutoffs on
-scores or p-values, etc. In particular, it is possible to apply some control
-over the selection of HSPs used in building the MView alignment using the
-``-hsp`` filtering option.
-
-Some search programs produce DNA strand-directional output (e.g., BLASTN) and
-you can extract or output the results separately. For example, to see just the
-plus strand matches::
-
-  mview -in blast -strand p blastn_results.dat 
-
-The choices are ``p``, ``m``, ``both``.
-
-Of interest to anyone using PSI-BLAST, you can display alignments for any/all
-iterations of a PSI-BLAST run using, say::
-
-  mview -in blast -cycle 1,last psiblast_results.dat 
-
-to get just those two iterations. The default is to display only the last
-iteration. If you want all output, use ``-cycle all``.
-
-**Keeping rows, but ignoring them in calculations**
-
-Another control option can be used to prevent MView from using rows for
-colouring or for calculation of percent identities although these rows will
-still be displayed. Use ``-nop`` to specify a list (comma-separated as usual)
-of identifiers or row numbers to flag for "NO Processing". This is useful for
-displaying non-alignment data (e.g., secondary structure predictions)
-alongside the alignment.
-
-
-Labels and annotations
-^^^^^^^^^^^^^^^^^^^^^^
-
-The labelling information at the left of the alignment can be too wide, so you
-can switch some of them off. Labels are in blocks numbered from zero
-(perverse, but the original reasoning was that the input data starts with the
-sequence identifiers in column 1 and MView tacks on a rank number in front, so
-make that column 0).
-
- ======   ==================================================
- Column   Description
- ======   ==================================================
- 0        rank
- 1        identifier
- 2        description
- 3        score block (may contain many score columns)
- 4        percent coverage
- 5        percent identity
- 6        query sequence positions (blast or fasta searches)
- 7        hit sequence positions (blast or fasta searches)
- ======   ==================================================
-
-Any of the of the label types can be switched off with an option like
-``-label2`` to remove the descriptions label at column 2, and so on.
 
 
 Data formats

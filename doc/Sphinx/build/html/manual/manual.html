@@ -59,6 +59,13 @@
 <li><a class="reference internal" href="#command-line-options">Command line options</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#layout-and-filtering">Layout and filtering</a><ul>
+<li><a class="reference internal" href="#pagination">Pagination</a></li>
+<li><a class="reference internal" href="#column-ranges">Column ranges</a></li>
+<li><a class="reference internal" href="#filtering-rows">Filtering rows</a></li>
+<li><a class="reference internal" href="#labels-and-annotations">Labels and annotations</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#adding-html">Adding HTML</a><ul>
 <li><a class="reference internal" href="#basic-html">Basic HTML</a></li>
 <li><a class="reference internal" href="#controlling-the-amount-of-html">Controlling the amount of HTML</a></li>
@@ -79,20 +86,13 @@
 <li><a class="reference internal" href="#conserved-residue-colouring">Conserved residue colouring</a></li>
 <li><a class="reference internal" href="#finding-and-colouring-motifs">Finding and colouring motifs</a></li>
 <li><a class="reference internal" href="#combining-alignment-and-motif-colouring">Combining alignment and motif colouring</a></li>
-<li><a class="reference internal" href="#special-row-colouring">Special row colouring</a></li>
+<li><a class="reference internal" href="#comment-row-colouring">Comment row colouring</a></li>
 <li><a class="reference internal" href="#consensus-pattern-colouring">Consensus pattern colouring</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#colours">Colours</a><ul>
 <li><a class="reference internal" href="#colourmaps">Colourmaps</a></li>
 <li><a class="reference internal" href="#creating-new-colourmaps">Creating new colourmaps</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#layout-and-filtering">Layout and filtering</a><ul>
-<li><a class="reference internal" href="#pagination">Pagination</a></li>
-<li><a class="reference internal" href="#column-ranges">Column ranges</a></li>
-<li><a class="reference internal" href="#filtering-rows">Filtering rows</a></li>
-<li><a class="reference internal" href="#labels-and-annotations">Labels and annotations</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#data-formats">Data formats</a><ul>
@@ -229,6 +229,157 @@ beware.</p>
 </pre></div>
 </div>
 <p>There are a lot of options, but the main ones are described in this manual.</p>
+</div>
+</div>
+<div class="section" id="layout-and-filtering">
+<h2>Layout and filtering<a class="headerlink" href="#layout-and-filtering" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pagination">
+<h3>Pagination<a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h3>
+<p>The default layout is a single unbroken horizontal band of alignment - fine if
+scrolling inside Firefox. However, you may prefer to break the alignment into
+vertically stacked panes. For panes, for example, 80 columns wide, set
+<code class="docutils literal"><span class="pre">-width</span> <span class="pre">80</span></code>. Widths refer to the alignment, not to the whole displayed
+output.</p>
+</div>
+<div class="section" id="column-ranges">
+<h3>Column ranges<a class="headerlink" href="#column-ranges" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to narrow (or expand) the displayed range of columns of the
+alignment, for example, <code class="docutils literal"><span class="pre">-range</span> <span class="pre">10:78</span></code> would select only that column range
+using the numbering scheme reported when <code class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></code> is set (see
+<a class="reference internal" href="#ref-rulers"><span class="std std-ref">The ruler line</span></a>). Note: the range setting is not related to the sequence
+position labelling for blast/fasta database search input; it&#8217;s just the
+position along the ruler.</p>
+<p>The order of the numbers is unimportant making it simpler to state interest in
+a region of the alignment that might actually be reversed in the output (e.g.,
+a BLASTN search hit matching the reverse complement of the query strand).</p>
+</div>
+<div class="section" id="filtering-rows">
+<span id="ref-filtering-rows"></span><h3>Filtering rows<a class="headerlink" href="#filtering-rows" title="Permalink to this headline">¶</a></h3>
+<p><strong>Showing only the top N rows</strong></p>
+<p>Usually, specifying a limited number of hits to view from a long search
+alignment speeds things up a lot as there&#8217;s less parsing and less formatting
+to be generated, so to get the best 10 hits, use the option <code class="docutils literal"><span class="pre">-top</span> <span class="pre">10</span></code>.</p>
+<p><strong>Filtering by percent identity</strong></p>
+<p>The <code class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></code> option will report only those hits above some threshold
+percent identity N compared to the reference row; useful for looking for close
+matches to the query or other reference sequence.</p>
+<p>Similarly, you can exclude the strong matches using <code class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></code>.</p>
+<p>Both options can be combined.</p>
+<p><strong>Showing and hiding sets of rows</strong></p>
+<p>Rows can be dropped explicitly using the <code class="docutils literal"><span class="pre">-hide</span></code> option. This can be
+supplied a comma-separated list of row identifiers, rank numbers, rank number
+ranges (1,2,3, 1..3, 1:3 are all equivalent), regular expressions (case
+insensitive, enclosed between // characters) to match against row identifiers,
+or the <code class="docutils literal"><span class="pre">*</span></code> symbol meaning all rows.</p>
+<p>Likewise, the <code class="docutils literal"><span class="pre">-show</span></code> option specifies a list of rows to keep in the
+alignment. The <code class="docutils literal"><span class="pre">-show</span></code> option overrides <code class="docutils literal"><span class="pre">-hide</span></code> whenever a row is common
+to both.</p>
+<p>For example, the options:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="nb">all</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6..10,/^pdb/&#39;</span>
+</pre></div>
+</div>
+<p>or even:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="s1">&#39;/.*/&#39;</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6:10,/^pdb/&#39;</span>
+</pre></div>
+</div>
+<p>would hide everything except rows 2, 3, 6 through 10 inclusive, and any hits
+beginning with the string &#8216;pdb&#8217;.</p>
+<p>Note: the currently set reference row is still used for percent identity and
+colouring operations, even though the row may have been dropped from display
+by the <code class="docutils literal"><span class="pre">-hide</span></code> list (see <a class="reference internal" href="#ref-reference-row"><span class="std std-ref">Changing the reference sequence</span></a>).</p>
+<p><strong>Data format specific filters</strong></p>
+<p>Other filters specific to BLASTP, FASTA, etc., input formats allow cutoffs on
+scores or p-values, etc. In particular, it is possible to apply some control
+over the selection of HSPs used in building the MView alignment using the
+<code class="docutils literal"><span class="pre">-hsp</span></code> filtering option.</p>
+<p>Some search programs produce DNA strand-directional output (e.g., BLASTN) and
+you can extract or output the results separately. For example, to see just the
+plus strand matches:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">strand</span> <span class="n">p</span> <span class="n">blastn_results</span><span class="o">.</span><span class="n">dat</span>
+</pre></div>
+</div>
+<p>The choices are <code class="docutils literal"><span class="pre">p</span></code>, <code class="docutils literal"><span class="pre">m</span></code>, <code class="docutils literal"><span class="pre">both</span></code>.</p>
+<p>Of interest to anyone using PSI-BLAST, you can display alignments for any/all
+iterations of a PSI-BLAST run using, say:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">cycle</span> <span class="mi">1</span><span class="p">,</span><span class="n">last</span> <span class="n">psiblast_results</span><span class="o">.</span><span class="n">dat</span>
+</pre></div>
+</div>
+<p>to get just those two iterations. The default is to display only the last
+iteration. If you want all output, use <code class="docutils literal"><span class="pre">-cycle</span> <span class="pre">all</span></code>.</p>
+<p><strong>Keeping rows, but ignoring them in calculations</strong></p>
+<p>Another control option can be used to prevent MView from using rows for
+colouring or for calculation of percent identities although these rows will
+still be displayed. Use <code class="docutils literal"><span class="pre">-nop</span></code> to specify a list (comma-separated as usual)
+of identifiers or row numbers to flag for &#8220;NO Processing&#8221;.</p>
+<p><strong>Comment lines, another way to ignore rows</strong></p>
+<p>If a sequence identifier starts with the <code class="docutils literal"><span class="pre">#</span></code> character, it is treated as a
+<code class="docutils literal"><span class="pre">nop</span></code> row, i.e., as a comment. This is useful for displaying other textual
+information (e.g., secondary structure predictions) within the alignment.</p>
+<p>Here is an example with two lines of input data beginning with dummy
+identifiers <code class="docutils literal"><span class="pre">#residues</span></code> and <code class="docutils literal"><span class="pre">#properties</span></code>:</p>
+<PRE>
+                 cov    pid  1 [        .         .         .         .         :         .         .         ] 80
+1 EGFR_HUMAN  100.0% 100.0%    FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC
+2 PR2_DROME    97.1%  35.7%    ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV
+3 ITK_HUMAN    90.0%  32.9%    LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC
+4 PTK7_HUMAN   97.1%  21.2%    IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
+5 KIN31_CAEEL 100.0%  31.5%    VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
+  residues                     ------------------------------------------^Lys--------------^Glu----------------
+  properties                   ------------------------------------^^^^^^hydrophobic---------------------------
+</PRE><p>Note 1: MView elides the hash character in the output and also the row
+numbers. However, the name or row number based filtering mechanism described
+above still works.</p>
+<p>Note 2: Comment lines like this cannot contain whitespace in the sequence
+region - they look like sequences and are processed as such by MView.</p>
+</div>
+<div class="section" id="labels-and-annotations">
+<h3>Labels and annotations<a class="headerlink" href="#labels-and-annotations" title="Permalink to this headline">¶</a></h3>
+<p>The labelling information at the left of the alignment can be too wide, so you
+can switch some of them off. Labels are in blocks numbered from zero
+(perverse, but the original reasoning was that the input data starts with the
+sequence identifiers in column 1 and MView tacks on a rank number in front, so
+make that column 0).</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="89%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Column</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>rank</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>identifier</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>description</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>score block (may contain many score columns)</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>percent coverage</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>percent identity</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>query sequence positions (blast or fasta searches)</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>hit sequence positions (blast or fasta searches)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Any of the of the label types can be switched off with an option like
+<code class="docutils literal"><span class="pre">-label2</span></code> to remove the descriptions label at column 2, and so on.</p>
 </div>
 </div>
 <div class="section" id="adding-html">
@@ -849,13 +1000,15 @@ Colored by: mismatch; search pattern 'G.G.FG.V:VA.K'
 4 PTK7_HUMAN   97.1%  21.2%    <SPAN CLASS=S26>IREV</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>QI</SPAN><SPAN CLASS=S94>GVGQFGAV</SPAN><SPAN CLASS=S26>VLAEMTGLS</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>XLPKGSMNADGVAL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S26>KPDV</SPAN><SPAN style="color:#666666">S</SPAN><SPAN CLASS=S26>D</SPAN><SPAN style="color:#666666">-</SPAN><SPAN CLASS=S26>EVLQSFDK</SPAN><SPAN style="color:#666666">E</SPAN><SPAN CLASS=S26>IKF</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>SQLQHDSIVQ</SPAN><SPAN style="color:#666666">LL</SPAN><SPAN CLASS=S26>A</SPAN><SPAN style="color:#666666">IC</SPAN>
 5 KIN31_CAEEL 100.0%  31.5%    <SPAN CLASS=S26>VELT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>K</SPAN><SPAN style="color:#666666">L</SPAN><SPAN CLASS=S94>GEGAFGEV</SPAN><SPAN CLASS=S26>W</SPAN><SPAN style="color:#666666">KG</SPAN><SPAN CLASS=S26>KLLKILDA</SPAN><SPAN style="color:#666666">-------</SPAN><SPAN CLASS=S26>NHQPVL</SPAN><SPAN CLASS=S95>VAVK</SPAN><SPAN CLASS=S26>TAKLESMT</SPAN><SPAN style="color:#666666">K</SPAN><SPAN CLASS=S26>EQI</SPAN><SPAN style="color:#666666">KEI</SPAN><SPAN CLASS=S26>MR</SPAN><SPAN style="color:#666666">EA</SPAN><SPAN CLASS=S26>RL</SPAN><SPAN style="color:#666666">M</SPAN><SPAN CLASS=S26>RNL</SPAN><SPAN style="color:#666666">D</SPAN><SPAN CLASS=S26>HIN</SPAN><SPAN style="color:#666666">V</SPAN><SPAN CLASS=S26>VKFF</SPAN><SPAN style="color:#666666">G</SPAN><SPAN CLASS=S26>VA</SPAN>
 </PRE></div>
-<div class="section" id="special-row-colouring">
-<span id="ref-special-colouring"></span><h3>Special row colouring<a class="headerlink" href="#special-row-colouring" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="comment-row-colouring">
+<span id="ref-comment-colouring"></span><h3>Comment row colouring<a class="headerlink" href="#comment-row-colouring" title="Permalink to this headline">¶</a></h3>
 <p>Individual rows can be coloured following a particular scheme by embedding the
-name of a colourmap in the sequence identifier. The sequence identifier must
-begin with a <code class="docutils literal"><span class="pre">#</span></code> character followed by the name of a colourmap and a colon
-separator. For example, <code class="docutils literal"><span class="pre">#MAP</span></code> or <code class="docutils literal"><span class="pre">#MAP:id</span></code> will cause the MAP colourmap
-to be used if it exists. Otherwise, the row will be displayed uncoloured.</p>
+name of a colourmap in the sequence identifier of a comment line (see
+above). The sequence identifier must begin with a <code class="docutils literal"><span class="pre">#</span></code> character followed by
+the name of a colourmap and a colon separator before the identifier
+string. For example, <code class="docutils literal"><span class="pre">#MAP</span></code> or <code class="docutils literal"><span class="pre">#MAP:comment</span></code> would cause the MAP
+colourmap to be used if it exists. Otherwise, the row will be displayed
+uncoloured.</p>
 <p>One use of this might be to colour rows of protein secondary structure
 assignments. Here is a fragment of an HSSP multiple sequence alignment, which
 also shows a DSSP-derived secondary structure assignment under the dummy
@@ -872,8 +1025,6 @@ can define various specialized colourmaps with informative names, as here with
 DSSP.</p>
 <p>Note 2: Any number of these rows is allowed, using the same or different
 colourmaps, and they can be placed anywhere in the alignment.</p>
-<p>Note 3: These kind of rows are ignored in the percent coverage and percent
-identity calculations for the alignment - they are treated as comment lines.</p>
 </div>
 <div class="section" id="consensus-pattern-colouring">
 <span id="ref-consensus-colouring"></span><h3>Consensus pattern colouring<a class="headerlink" href="#consensus-pattern-colouring" title="Permalink to this headline">¶</a></h3>
@@ -1170,139 +1321,6 @@ will be displayed as coloured symbols unless <code class="docutils literal"><spa
 they will appear as coloured bocks.</p>
 </div>
 </div>
-<div class="section" id="layout-and-filtering">
-<h2>Layout and filtering<a class="headerlink" href="#layout-and-filtering" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="pagination">
-<h3>Pagination<a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h3>
-<p>The default layout is a single unbroken horizontal band of alignment - fine if
-scrolling inside Firefox. However, you may prefer to break the alignment into
-vertically stacked panes. For panes, for example, 80 columns wide, set
-<code class="docutils literal"><span class="pre">-width</span> <span class="pre">80</span></code>. Widths refer to the alignment, not to the whole displayed
-output.</p>
-</div>
-<div class="section" id="column-ranges">
-<h3>Column ranges<a class="headerlink" href="#column-ranges" title="Permalink to this headline">¶</a></h3>
-<p>It is possible to narrow (or expand) the displayed range of columns of the
-alignment, for example, <code class="docutils literal"><span class="pre">-range</span> <span class="pre">10:78</span></code> would select only that column range
-using the numbering scheme reported when <code class="docutils literal"><span class="pre">-ruler</span> <span class="pre">on</span></code> is set (see
-<a class="reference internal" href="#ref-rulers"><span class="std std-ref">The ruler line</span></a>). Note: the range setting is not related to the sequence
-position labelling for blast/fasta database search input; it&#8217;s just the
-position along the ruler.</p>
-<p>The order of the numbers is unimportant making it simpler to state interest in
-a region of the alignment that might actually be reversed in the output (e.g.,
-a BLASTN search hit matching the reverse complement of the query strand).</p>
-</div>
-<div class="section" id="filtering-rows">
-<span id="ref-filtering-rows"></span><h3>Filtering rows<a class="headerlink" href="#filtering-rows" title="Permalink to this headline">¶</a></h3>
-<p><strong>Showing only the top N rows</strong></p>
-<p>Usually, specifying a limited number of hits to view from a long search
-alignment speeds things up a lot as there&#8217;s less parsing and less formatting
-to be generated, so to get the best 10 hits, use the option <code class="docutils literal"><span class="pre">-top</span> <span class="pre">10</span></code>.</p>
-<p><strong>Filtering by percent identity</strong></p>
-<p>The <code class="docutils literal"><span class="pre">-minident</span> <span class="pre">N</span></code> option will report only those hits above some threshold
-percent identity N compared to the reference row; useful for looking for close
-matches to the query or other reference sequence.</p>
-<p>Similarly, you can exclude the strong matches using <code class="docutils literal"><span class="pre">-maxident</span> <span class="pre">N</span></code>.</p>
-<p>Both options can be combined.</p>
-<p><strong>Showing and hiding sets of rows</strong></p>
-<p>Rows can be dropped explicitly using the <code class="docutils literal"><span class="pre">-hide</span></code> option. This can be
-supplied a comma-separated list of row identifiers, rank numbers, rank number
-ranges (1,2,3, 1..3, 1:3 are all equivalent), regular expressions (case
-insensitive, enclosed between // characters) to match against row identifiers,
-or the <code class="docutils literal"><span class="pre">*</span></code> symbol meaning all rows.</p>
-<p>Likewise, the <code class="docutils literal"><span class="pre">-show</span></code> option specifies a list of rows to keep in the
-alignment. The <code class="docutils literal"><span class="pre">-show</span></code> option overrides <code class="docutils literal"><span class="pre">-hide</span></code> whenever a row is common
-to both.</p>
-<p>For example, the options:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="nb">all</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6..10,/^pdb/&#39;</span>
-</pre></div>
-</div>
-<p>or even:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">hide</span> <span class="s1">&#39;/.*/&#39;</span>  <span class="o">-</span><span class="n">show</span> <span class="s1">&#39;2,3,6:10,/^pdb/&#39;</span>
-</pre></div>
-</div>
-<p>would hide everything except rows 2, 3, 6 through 10 inclusive, and any hits
-beginning with the string &#8216;pdb&#8217;.</p>
-<p>Note: the currently set reference row is still used for percent identity and
-colouring operations, even though the row may have been dropped from display
-by the <code class="docutils literal"><span class="pre">-hide</span></code> list (see <a class="reference internal" href="#ref-reference-row"><span class="std std-ref">Changing the reference sequence</span></a>).</p>
-<p><strong>Data format specific filters</strong></p>
-<p>Other filters specific to BLASTP, FASTA, etc., input formats allow cutoffs on
-scores or p-values, etc. In particular, it is possible to apply some control
-over the selection of HSPs used in building the MView alignment using the
-<code class="docutils literal"><span class="pre">-hsp</span></code> filtering option.</p>
-<p>Some search programs produce DNA strand-directional output (e.g., BLASTN) and
-you can extract or output the results separately. For example, to see just the
-plus strand matches:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">strand</span> <span class="n">p</span> <span class="n">blastn_results</span><span class="o">.</span><span class="n">dat</span>
-</pre></div>
-</div>
-<p>The choices are <code class="docutils literal"><span class="pre">p</span></code>, <code class="docutils literal"><span class="pre">m</span></code>, <code class="docutils literal"><span class="pre">both</span></code>.</p>
-<p>Of interest to anyone using PSI-BLAST, you can display alignments for any/all
-iterations of a PSI-BLAST run using, say:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="ow">in</span> <span class="n">blast</span> <span class="o">-</span><span class="n">cycle</span> <span class="mi">1</span><span class="p">,</span><span class="n">last</span> <span class="n">psiblast_results</span><span class="o">.</span><span class="n">dat</span>
-</pre></div>
-</div>
-<p>to get just those two iterations. The default is to display only the last
-iteration. If you want all output, use <code class="docutils literal"><span class="pre">-cycle</span> <span class="pre">all</span></code>.</p>
-<p><strong>Keeping rows, but ignoring them in calculations</strong></p>
-<p>Another control option can be used to prevent MView from using rows for
-colouring or for calculation of percent identities although these rows will
-still be displayed. Use <code class="docutils literal"><span class="pre">-nop</span></code> to specify a list (comma-separated as usual)
-of identifiers or row numbers to flag for &#8220;NO Processing&#8221;. This is useful for
-displaying non-alignment data (e.g., secondary structure predictions)
-alongside the alignment.</p>
-</div>
-<div class="section" id="labels-and-annotations">
-<h3>Labels and annotations<a class="headerlink" href="#labels-and-annotations" title="Permalink to this headline">¶</a></h3>
-<p>The labelling information at the left of the alignment can be too wide, so you
-can switch some of them off. Labels are in blocks numbered from zero
-(perverse, but the original reasoning was that the input data starts with the
-sequence identifiers in column 1 and MView tacks on a rank number in front, so
-make that column 0).</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="11%" />
-<col width="89%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Column</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>0</td>
-<td>rank</td>
-</tr>
-<tr class="row-odd"><td>1</td>
-<td>identifier</td>
-</tr>
-<tr class="row-even"><td>2</td>
-<td>description</td>
-</tr>
-<tr class="row-odd"><td>3</td>
-<td>score block (may contain many score columns)</td>
-</tr>
-<tr class="row-even"><td>4</td>
-<td>percent coverage</td>
-</tr>
-<tr class="row-odd"><td>5</td>
-<td>percent identity</td>
-</tr>
-<tr class="row-even"><td>6</td>
-<td>query sequence positions (blast or fasta searches)</td>
-</tr>
-<tr class="row-odd"><td>7</td>
-<td>hit sequence positions (blast or fasta searches)</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>Any of the of the label types can be switched off with an option like
-<code class="docutils literal"><span class="pre">-label2</span></code> to remove the descriptions label at column 2, and so on.</p>
-</div>
-</div>
 <div class="section" id="data-formats">
 <h2>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="input-formats">
@@ -1388,7 +1406,7 @@ perl may affect memory use.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 22 Mar 2018.
+      Last updated on 24 Mar 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
