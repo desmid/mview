@@ -293,12 +293,13 @@ sub build_block {
 
     my $aln = new Bio::MView::Align($self->{'aligned'}, undef);
 
-    $self->rebless_alignment($aln);
+    $self->rebless_alignment($aln);  #allow child to change type
+
     $aln = $self->build_base_alignment($aln);
 
-    return undef  unless $aln->all_ids > 0;
+    return undef  unless $aln->size > 0;
 
-    $self->build_new_alignment($aln)  if $outfmt eq 'mview';
+    $self->build_mview_alignment($aln)  if $outfmt eq 'mview';
 
     return $aln;
 }
@@ -426,67 +427,54 @@ sub build_base_alignment {
         }
     }
 
-    #copy computed data into build row objects
     for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
 
 	my $brow = $self->{'index2row'}->[$i];
-	my $arow = $aln->item($brow->uid);
+	next  if exists $self->{'hide_uid'}->{$brow->uid};
 
+	my $arow = $aln->item($brow->uid);
 	next  unless defined $arow;
 
+        #copy computed data into build row objects
         $brow->set_coverage($arow->get_coverage);
         $brow->set_identity($arow->get_identity);
     }
 
-    # foreach my $r ($aln->all_ids) {
-    #     $aln->id2row($r)->seqobj->dump;
-    # }
-    # warn "LEN: ", $aln->length;
+    # foreach my $r ($aln->all_ids) { $aln->id2row($r)->seqobj->dump }
+    # warn "Alignment width: ", $aln->length;
 
     return $aln;
 }
 
-sub build_new_alignment {
+sub build_mview_alignment {
     my ($self, $aln) = @_;
 
     for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
 
 	my $brow = $self->{'index2row'}->[$i];
-
 	next  if exists $self->{'hide_uid'}->{$brow->uid};
 
 	my $arow = $aln->item($brow->uid);
-
 	next  unless defined $arow;
 
-	if (exists $self->{'nops_uid'}->{$brow->uid}) {
-	    $arow->set_display('label0' => '',
-			       'label1' => $brow->cid,
-			       'label2' => $brow->text,
-			       'label3' => '',
-			       'label4' => '',
-			       'label5' => '',
-			       'label6' => $brow->posn1,
-			       'label7' => $brow->posn2,
-			       'url'    => $brow->url,
-		);
-	} else {
-            my $values = [ $brow->display_column_values ];
+        my @labels = $brow->display_column_values;
+        #warn "\n[@{[join(',',@labels)]}]\n";
 
-            #warn "\n[@$values]\n";
+        $arow->set_display(
+            'label0' => $labels[0],
+            'label1' => $labels[1],
+            'label2' => $labels[2],
+            'label3' => $labels[3],
+            'label4' => $labels[4],
+            'label5' => $labels[5],
+            'label6' => $labels[6],
+            'label7' => $labels[7],
+            'url'    => $brow->url,
+            );
 
-            $arow->set_display(
-                'label0' => $values->[0],
-                'label1' => $values->[1],
-                'label2' => $values->[2],
-                'label3' => $values->[3],
-                'label4' => $values->[4],
-                'label5' => $values->[5],
-                'label6' => $values->[6],
-                'label7' => $values->[7],
-                'url'    => $brow->url,
-	        );
-	}
+        if (exists $self->{'nops_uid'}->{$brow->uid}) {
+            $arow->set_display('label0' => '');
+        }
 
         $arow->adjust_display;  #row may have own idea
     }

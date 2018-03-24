@@ -72,7 +72,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Simple_Row);
 
-sub ignore_columns { ['desc', 'covr', 'pcid', 'posn1', 'posn2']; }
+sub ignore_columns { ['num', 'desc', 'covr', 'pcid', 'posn1', 'posn2']; }
 
 
 ###########################################################################
