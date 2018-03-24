@@ -147,20 +147,33 @@ sub all_ids {
     @tmp;
 }
 
-#return list of visible rows as internal ids: rows will be displayed
+#return list of visible rows as internal ids, for output
 sub visible_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
 	next  if $_[0]->is_hidden($r->id);
+	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r->id;
     }
     @tmp;
 }
 
-#return list of visible sequence rows excluding nops as internal ids:
-#rows will be displayed and have consensus calculations done
-sub visible_sequence_computable_ids {
+#return list of visible rows as row objects, for output
+sub visible_rows {
+    my @tmp = ();
+    foreach my $r (@{$_[0]->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $_[0]->is_hidden($r->id);
+	next  if $_[0]->is_nop($r->id);
+	push @tmp, $r;
+    }
+    @tmp;
+}
+
+#return list of visible sequence rows excluding nops as internal ids,
+#for processing and output
+sub visible_computable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
@@ -220,11 +233,8 @@ sub set_identity {
     $ref = $self->id2row($ref);
     return  unless defined $ref;
 
-    foreach my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_hidden($r->id);
-	next  if $self->is_nop($r->id);
 	$r->set_identity($ref, $mode);
     }
 }
@@ -237,11 +247,8 @@ sub set_coverage {
     $ref = $self->id2row($ref);
     return  unless defined $ref;
 
-    foreach my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_hidden($r->id);
-	next  if $self->is_nop($r->id);
 	$r->set_coverage($ref);
     }
 }
@@ -353,12 +360,8 @@ sub set_consensus_color_scheme {
 #propagate colour scheme to row objects
 sub color_special {
     my ($self, $kw) = @_;
-
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_special;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_special($kw);
     }
 }
@@ -366,12 +369,8 @@ sub color_special {
 #propagate colour scheme to row objects
 sub color_none {
     my ($self, $kw) = @_;
-
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_none($kw);
     }
 }
@@ -379,12 +378,8 @@ sub color_none {
 #propagate colour scheme to row objects
 sub color_by_type {
     my ($self, $kw) = @_;
-
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence or $r->is_consensus;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_by_type($kw);
     }
 }
@@ -394,14 +389,10 @@ sub color_by_identity {
     my ($self, $kw, $id) = @_;
 
     my $ref = $self->item($id);
-
     return  unless defined $ref;
 
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($kw, $ref);
     }
 }
@@ -411,14 +402,10 @@ sub color_by_mismatch {
     my ($self, $kw, $id) = @_;
 
     my $ref = $self->item($id);
-
     return  unless defined $ref;
 
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_by_mismatch($kw, $ref);
     }
 }
@@ -436,11 +423,8 @@ sub color_by_consensus_sequence {
 					       $kw->{'aln_groupmap'},
 					       $kw->{'aln_threshold'},
 					       $kw->{'aln_ignore'});
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_sequence($kw, $r);
     }
 }
@@ -458,11 +442,8 @@ sub color_by_consensus_group {
 					       $kw->{'aln_groupmap'},
 					       $kw->{'aln_threshold'},
 					       $kw->{'aln_ignore'});
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$con->color_by_consensus_group($kw, $r);
     }
 }
@@ -470,12 +451,8 @@ sub color_by_consensus_group {
 #propagate colour scheme to row objects
 sub color_by_find_block {
     my ($self, $kw) = @_;
-
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_by_find_block($kw);
     }
 }
@@ -485,14 +462,10 @@ sub color_consensus_by_identity {
     my ($self, $kw, $aln, $id) = @_;
 
     my $ref = $aln->item($id);
-
     return  unless defined $ref;
 
-    for my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $r ($self->visible_rows) {
         next  unless $r->is_consensus;
-	next  if $self->is_nop($r->id);
-	next  if $self->is_hidden($r->id);
 	$r->color_by_identity($kw, $ref);
     }
 }
@@ -601,7 +574,7 @@ sub build_conservation_row {
     my $moltype = $PAR->get('moltype');
 
     #extract sequence rows
-    my @ids = $self->visible_sequence_computable_ids;
+    my @ids = $self->visible_computable_ids;
 
     my $from = $self->{'parent'}->from;
     my $to   = $from + $self->{'length'} - 1;
@@ -670,12 +643,8 @@ sub compute_tallies {
 	my $column = [];
 
 	#iterate over rows
-	for my $r (@{$self->{'index2row'}}) {
-	    next  unless defined $r;
+        foreach my $r ($self->visible_rows) {
             next  unless $r->is_sequence;
-	    next  if $self->is_nop($r->id);
-	    next  if $self->is_hidden($r->id);
-
 	    push @$column, $r->{'string'}->raw($c);
 	}
 
@@ -699,7 +668,7 @@ sub conservation {
 
     return ''  unless @$ids; #empty alignment
 
-    my @tmp = $self->visible_sequence_computable_ids;
+    my @tmp = $self->visible_computable_ids;
 
     my $refseq = $self->id2row($tmp[0])->seqobj;
     my $depth = scalar @tmp;
