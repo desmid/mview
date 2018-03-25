@@ -29,6 +29,7 @@ Bug fixes:
 - Fixed undefined variable warnings when using '-groupfile' option.
 - Fixed JNETZ parser warnings.
 - Fixed JNETZ reporting colours even when no colouring set.
+- Fixed clustal conservation line bug losing some '.' symbols.
 
 Other:
 
