@@ -11,7 +11,9 @@ my $DEF_TEXTWIDTH = 30;  #default width to truncate 'text' field
 
 sub new {
     my $type = shift;
-    my ($num, $id, $desc) = splice @_, 0, 3;
+    #warn "${type}::new(@_)\n";
+    die "${type}::new: missing arguments\n"  if @_ < 3;
+    my ($num, $id, $desc) = (shift, shift, shift);
     my $self = {};
 
     bless $self, $type;
