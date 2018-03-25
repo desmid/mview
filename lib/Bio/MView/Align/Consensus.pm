@@ -24,27 +24,21 @@ sub new {
 	die "${type}::new: threshold '$thresh\%' outside valid range [50..100]\n";
     }
 
-    my $self = new Bio::MView::Align::Row('sequence', "consensus/$thresh\%");
-
-    bless $self, $type;
-
-    $self->{'from'}      = $from;
-    $self->{'to'}        = $to;
-    $self->{'group'}     = $group;
-    $self->{'threshold'} = $thresh;
-
     my $string =
         Bio::MView::Groupmap::consensus($tally, $group, $thresh, $ignore);
 
     #encode the new "sequence"
-    $self->{'string'} = new Bio::MView::Sequence;
-    $self->{'string'}->set_find_pad('\.');
-    $self->{'string'}->set_find_gap('\.');
-    $self->{'string'}->set_pad('.');
-    $self->{'string'}->set_gap('.');
-    $self->{'string'}->insert([$string, $from, $to]);
+    my $sob = new Bio::MView::Sequence;
+    $sob->set_find_pad('\.'); $sob->set_pad('.');
+    $sob->set_find_gap('\.'); $sob->set_gap('.');
+    $sob->insert([$string, $from, $to]);
 
-    $self->reset_display;
+    my $self = new Bio::MView::Align::Sequence("consensus/$thresh\%", $sob);
+
+    bless $self, $type;
+
+    $self->{'group'}     = $group;
+    $self->{'threshold'} = $thresh;
 
     $self;
 }
