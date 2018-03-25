@@ -11,29 +11,26 @@ use Bio::MView::Align;
 use Bio::MView::Build::Scheduler;
 use strict;
 
-my %Template =
-    (
-     'entry'       => undef,   #parse tree ref
-     'align'       => undef,   #current alignment
-     'index2row'   => undef,   #list of aligned rows, from zero
-     'uid2row'     => undef,   #hash of aligned rows, by Build::Row->uid
-     'ref_row'     => undef,   #reference row ref
-     'show'        => undef,   #actual number of rows to show
-     'aligned'     => undef,   #treat input as aligned
-     'keep_uid'    => undef,   #hashed version of 'keeplist' by Row->uid
-     'nops_uid'    => undef,   #hashed version of 'nopslist'  by Row->uid
-     'hide_uid'    => undef,   #hashed merge of 'disc/keep/nops/' by Row->uid
-    );
-
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
     if (@_ < 1) {
 	die "${type}::new() missing argument\n";
     }
-    my $self = { %Template };
+    my $entry = shift;
 
-    $self->{'entry'} = shift;
+    my $self = {};
+
+    $self->{'entry'}     = $entry;  #parse tree ref
+    $self->{'align'}     = undef;   #current alignment
+    $self->{'index2row'} = undef;   #list of aligned rows, from zero
+    $self->{'uid2row'}   = undef;   #hash of aligned rows; by Build::Row->uid
+    $self->{'ref_row'}   = undef;   #reference row ref
+    $self->{'show'}      = undef;   #actual number of rows to show
+    $self->{'aligned'}   = undef;   #treat input as aligned
+    $self->{'keep_uid'}  = undef;   #hashed version of 'keeplist' by Row->uid
+    $self->{'nops_uid'}  = undef;   #hashed version of 'nopslist'  by Row->uid
+    $self->{'hide_uid'}  = undef;   #hashed merge of 'disc/keep/nops/' by Row->uid
 
     bless $self, $type;
 
