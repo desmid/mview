@@ -13,17 +13,15 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
-    if (@_ < 1) {
-	die "${type}::new: missing arguments\n";
-    }
+    die "${type}::new: missing arguments\n"  if @_ < 3;
     my ($from, $to, $string) = @_;
 
     my $self = {};
 
     bless $self, $type;
 
-    $self->{'id'}   = "clustal";
     $self->{'type'} = 'conservation';
+    $self->{'id'}   = "clustal";
     $self->{'from'} = $from;
     $self->{'to'}   = $to;
 

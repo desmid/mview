@@ -17,21 +17,19 @@ my $FIND_COLORMAP  = 'FIND';  #hardwired find colormap
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
-    if (@_ < 2) {
-	die "${type}::new: missing arguments\n";
-    }
-    my ($id, $string) = @_;
+    die "${type}::new: missing arguments\n"  if @_ < 2;
+    my ($id, $sob) = @_;
 
     my $self = {};
 
     bless $self, $type;
 
-    $self->{'id'}     = $id;          #identifier
-    $self->{'type'}   = 'sequence';   #information about own subtype
-    $self->{'from'}   = $string->lo;  #start number of sequence
-    $self->{'string'} = $string;      #alignment string
+    $self->{'type'}   = 'sequence';  #information about own subtype
+    $self->{'id'}     = $id;         #identifier
+    $self->{'from'}   = $sob->lo;    #start number of sequence
+    $self->{'string'} = $sob;        #sequence object
 
-    $self->reset_display;             #hash of display parameters
+    $self->reset_display;            #hash of display parameters
 
     $FIND_WARNINGS = 1;   #reset
 

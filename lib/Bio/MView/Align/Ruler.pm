@@ -11,8 +11,12 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
+    #warn "${type}::new(@_)\n";
+    die "${type}::new: missing arguments\n"  if @_ < 2;
     my ($length, $refobj) = @_;
+
     my $self = {};
+
     bless $self, $type;
 
     $self->{'type'}   = 'ruler';

@@ -17,9 +17,7 @@ my $SYMCOLOR = $Bio::MView::Colormap::Colour_Black;
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
-    if (@_ < 5) {
-	die "${type}::new: missing arguments\n";
-    }
+    die "${type}::new: missing arguments\n"  if @_ < 6;
     my ($from, $to, $tally, $group, $threshold, $ignore) = @_;
 
     if ($threshold < 50 or $threshold > 100) {
@@ -30,13 +28,12 @@ sub new {
 
     bless $self, $type;
 
-    $self->{'id'}        = "consensus/$threshold\%";
     $self->{'type'}      = 'consensus';
+    $self->{'id'}        = "consensus/$threshold\%";
     $self->{'from'}      = $from;
     $self->{'to'}        = $to;
-
-    $self->{'threshold'} = $threshold;
     $self->{'group'}     = $group;
+    $self->{'threshold'} = $threshold;
 
     my $string =
         Bio::MView::Groupmap::consensus($tally, $group, $threshold, $ignore);
