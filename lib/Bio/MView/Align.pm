@@ -60,7 +60,7 @@ sub make_sequence {
     }
 
     if ($subtype ne '') {
-        return new Bio::MView::Align::Special($uid, $sob, $subtype);
+        return new Bio::MView::Align::Special($uid, $sob);
     }
 
     die "${self}::make_sequence: unknown type '$subtype'\n";
@@ -555,8 +555,7 @@ sub prune_identities {
         push @obj, $r;
     }
 
-    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'},
-                                 @obj);
+    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
@@ -607,12 +606,9 @@ sub build_consensus_rows {
     my $to   = $from + $self->length - 1;
 
     foreach my $thresh (@$threshold) {
-	my $con = new Bio::MView::Align::Consensus($from, $to,
-						   $tally,
-                                                   $PAR->get('con_groupmap'),
-                                                   $thresh,
-                                                   $PAR->get('con_ignore'),
-        );
+	my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
+                                                   $group, $thresh,
+                                                   $ignore);
 	$con->set_display('label0' => '', #leave label1
 			  'label2' => '', 'label3' => '',
 			  'label4' => '', 'label5' => '',
