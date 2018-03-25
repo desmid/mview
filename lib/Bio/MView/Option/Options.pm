@@ -20,6 +20,8 @@ separated list, like '1,8,9,10'. Subranges are allowed, so you could also
 write that as '1,8:10' or even '1,8..10'. Any argument must be quoted if it
 contains whitespace or a wildcard that might be expanded by the shell.
 
+Option processing can be terminated using '--'.
+
 ";
 
 ###########################################################################
@@ -42,7 +44,7 @@ $Options = [
     },
 
     ##################################################
-    # i/o and formatting
+    # i/o formats
     ##################################################
 
     {
@@ -64,6 +66,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # formatting: content
+    ##################################################
 
     {
         'group'   => "CONTENT",
@@ -105,6 +111,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # formatting: identity filtering
+    ##################################################
+
     {
         'group'   => "IDENTITY",
         'header'  => "Percent identity calculations and filters:",
@@ -138,6 +148,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # formatting: general filtering
+    ##################################################
 
     {
         'group'   => "FILTER",
@@ -180,6 +194,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # molecule type
+    ##################################################
+
     {
         'group'   => "MOLTYPE",
         'header'  => "Molecule type:",
@@ -204,6 +222,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # colouring: alignment
+    ##################################################
+    
     {
         'group'   => "ALIGNMENT",
         'header'  => "Alignment coloring:",
@@ -246,6 +268,9 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # colouring: consensus
+    ##################################################
     {
         'group'   => "CONSENSUS",
         'header'  => "Consensus coloring:",
@@ -289,6 +314,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # colouring: patterns / motifs
+    ##################################################
+
     {
         'group'   => "PATTERNS",
         'header'  => "Motif colouring:",
@@ -301,6 +330,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # formatting: miscellaneous / labels
+    ##################################################
 
     {
         'group'   => "MISC_FORMATTING",
@@ -369,6 +402,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # HTML: page-level markup
+    ##################################################
 
     {
         'group'   => "HTML",
@@ -443,6 +480,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # links: SRS
+    ##################################################
+
     {
         'group'   => "SRS_LINKS",
         'header'  => "Database links:",
@@ -477,7 +518,7 @@ $Options = [
     },
 
     ##################################################
-    # formats
+    # formats: BLAST 1
     ##################################################
 
     {
@@ -511,6 +552,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # formats: BLAST 2
+    ##################################################
+
     {
         'group'   => "BLAST2",
         'header'  => "NCBI BLAST (series 2), BLAST+:",
@@ -541,6 +586,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # formats: PSI-BLAST
+    ##################################################
 
     {
         'group'   => "PSIBLAST",
@@ -573,6 +622,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # formats: FASTA (U. of Virginia)
+    ##################################################
+
     {
         'group'   => "FASTA",
         'header'  => "FASTA (U. of Virginia):",
@@ -589,6 +642,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # formats: HSSP / Maxhom
+    ##################################################
+
     {
         'group'   => "HSSP",
         'header'  => "HSSP/Maxhom:",
@@ -600,6 +657,10 @@ $Options = [
         ],
     },
 
+    ##################################################
+    # formats: MAF
+    ##################################################
+
     {
         'group'   => "MAF",
         'header'  => "UCSC MAF:",
@@ -610,6 +671,10 @@ $Options = [
             },
         ],
     },
+
+    ##################################################
+    # formats: MULTAL
+    ##################################################
 
     {
         'group'   => "MULTAL",
@@ -623,7 +688,7 @@ $Options = [
     },
 
     ##################################################
-    # misc
+    # load user colormaps / groupmaps
     ##################################################
 
     {
@@ -639,7 +704,7 @@ $Options = [
                     my ($self, $pn, $pv, $e) = @_;
                     local *TMP;
                     return  unless $pv;
-                    return unless open(TMP, "< $pv");
+                    return  unless open(TMP, "< $pv");
                     Bio::MView::Manager::load_colormaps(\*TMP);
                     close TMP;
                 },
@@ -654,7 +719,7 @@ $Options = [
                     my ($self, $pn, $pv, $e) = @_;
                     local *TMP;
                     return  unless $pv;
-                    return unless open(TMP, "< $pv");
+                    return  unless open(TMP, "< $pv");
                     Bio::MView::Manager::load_groupmaps(\*TMP);
                     close TMP;
                 },
