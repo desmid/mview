@@ -5,8 +5,6 @@ package Bio::MView::Align::Row;
 
 use strict;
 
-my $NOT_IMPLEMENTED = "Bio::MView::Align::Row: function not implemented\n";
- 
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
@@ -67,16 +65,6 @@ sub is_consensus { 0 }
 sub is_special   { 0 }
 
 sub dump { Universal::dump_object($_[0]) }
-
-#subclass overrides
-sub color_none                  { die $NOT_IMPLEMENTED }
-sub color_special               { die $NOT_IMPLEMENTED }
-sub color_by_type               { die $NOT_IMPLEMENTED }
-sub color_by_identity           { die $NOT_IMPLEMENTED }
-sub color_by_mismatch           { die $NOT_IMPLEMENTED }
-sub color_by_consensus_sequence { die $NOT_IMPLEMENTED }
-sub color_by_consensus_group    { die $NOT_IMPLEMENTED }
-sub color_by_find_block         { die $NOT_IMPLEMENTED }
 
 
 ###########################################################################

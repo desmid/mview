@@ -5,14 +5,11 @@ package Bio::MView::Align::Sequence;
 
 use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
+use Bio::MView::Align::ColorMixin;
 
-@ISA = qw(Bio::MView::Align::Row);
+@ISA = qw(Bio::MView::Align::Row Bio::MView::Align::ColorMixin);
 
 use strict;
-
-my $FIND_WARNINGS  = 1;       #find block warnings only once
-my $FIND_SEPARATOR = ':';     #for multiple find patterns
-my $FIND_COLORMAP  = 'FIND';  #hardwired find colormap
 
 sub new {
     my $type = shift;
@@ -29,7 +26,7 @@ sub new {
 
     $self->reset_display;          #hash of display parameters
 
-    $FIND_WARNINGS = 1;   #reset
+    $Bio::MView::Align::ColorMixin::FIND_WARNINGS = 1;  #reset
 
     $self;
 }
@@ -40,8 +37,10 @@ sub from     { $_[0]->{'from'} }
 sub seqobj   { $_[0]->{'string'} }
 sub string   { $_[0]->{'string'}->string }
 sub sequence { $_[0]->{'string'}->sequence }
-sub length   { $_[0]->{'string'}->length }
 sub seqlen   { $_[0]->{'string'}->seqlen }
+
+#override
+sub length   { $_[0]->{'string'}->length }
 
 #override
 sub reset_display {
@@ -55,221 +54,6 @@ sub reset_display {
 
 #override
 sub is_sequence { 1 }
-
-sub get_color {
-    my ($self, $c, $map) = @_;
-    #warn "get_color: $c, $map";
-
-    if ($COLORMAP->has_symbol_color($map, $c)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($map, $c);
-	return ($color, "$trans$index");
-    }
-
-    if ($COLORMAP->has_wildcard_color($map)) {
-        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($map);
-	return ($color, "$trans$index");
-    }
-
-    if ($COLORMAP->has_palette_color($map)) {
-        my ($color, $index, $trans) = $COLORMAP->get_palette_color($map);
-	$trans = 'S';  #ignore CSS setting
-	return ($color, "$trans$index");
-    }
-
-    return 0;  #no match
-}
-
-sub color_tag {
-    my ($self, $css, $symcolor, $i) = (shift, shift, shift, shift);
-    if (@_) {
-        return ($i, 'class' => $_[1])  if $css;
-        return ($i, 'color' => $_[0]);
-    }
-    return ($i, 'color' => $symcolor);
-}
-
-sub find_blocks {
-    my ($self, $find, $colormap) = @_;
-
-    my $mapsize = $COLORMAP->get_colormap_length($colormap);
-
-    my @patterns = split($FIND_SEPARATOR, $find);
-
-    if (@patterns > $mapsize and $FIND_WARNINGS) {
-        warn "find: @{[scalar @patterns]} pattern blocks but only $mapsize color@{[$mapsize gt 1 ? 's' : '']} in colormap '$colormap' - recycling\n";
-        $FIND_WARNINGS--;
-    }
-
-    my $matches = $self->{string}->findall(\@patterns, $mapsize);
-    my $index = {};
-
-    foreach my $block (@$matches) {
-        $index->{$block->[1]} = $block->[0];
-    }
-
-    return $index;
-}
-
-#override
-sub color_none {
-    my ($self, $kw) = @_;
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        push @$color, $i, 'color' => $kw->{'symcolor'};
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_find_block {
-    my ($self, $kw) = @_;
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    my $block = $self->find_blocks($kw->{'find'}, $FIND_COLORMAP);
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        if (exists $block->{$i}) {
-            #use symbol color/wildcard colour
-            @tmp = $self->get_color($block->{$i}, $FIND_COLORMAP);
-        } else {
-            @tmp = ();
-        }
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_type {
-    my ($self, $kw) = @_;
-
-    my $color = $self->{'display'}->{'range'};
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    my $end = $self->length + 1;
-
-    for (my $i=1; $i<$end; $i++) {
-
-	my $c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-	#use symbol color/wildcard colour
-	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_identity {
-    my $self = shift;
-    $self->color_by_identity_body(1, @_);
-}
-
-#override
-sub color_by_mismatch {
-    my $self = shift;
-    $self->color_by_identity_body(0, @_);
-}
-
-sub color_by_identity_body {
-    my ($self, $byidentity, $kw, $othr) = @_;
-
-    return  unless defined $othr;
-
-    die "${self}::color_by_identity: length mismatch\n"
-	unless $self->length == $othr->length;
-
-    my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for (my $i=1; $i<$end; $i++) {
-
-	my $c1 = $self->{'string'}->raw($i);
-        my $c2 = $othr->{'string'}->raw($i);
-
-	#warn "[$i]= $c1 <=> $c2\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c1);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c1)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        my @tmp = ();
-
-        #compare symbols, case-insensitive
-        if ($byidentity) {  #identity coloring mode
-            @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
-                if uc $c1 eq uc $c2; #same symbol or symcolor
-        } else {  #mismatch coloring mode
-            @tmp = $self->get_color($c1, $kw->{'aln_colormap'})
-                if uc $c1 ne uc $c2; #different symbol or symcolor
-        }
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
 
 sub set_coverage {
     #warn "Bio::MView::Align::Sequence::set_coverage(@_)\n";
