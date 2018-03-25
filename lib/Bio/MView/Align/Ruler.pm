@@ -1,13 +1,13 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Ruler;
 
 use Bio::MView::Align::Row;
 
-use vars qw(@ISA);
-
 @ISA = qw(Bio::MView::Align::Row);
+
+use strict;
 
 sub new {
     my $type = shift;
@@ -15,11 +15,10 @@ sub new {
     die "${type}::new: missing arguments\n"  if @_ < 2;
     my ($length, $refobj) = @_;
 
-    my $self = {};
+    my $self = new Bio::MView::Align::Row('ruler', '');
 
     bless $self, $type;
 
-    $self->{'type'}   = 'ruler';
     $self->{'length'} = $length;
 
     $self->reset_display($refobj);
@@ -27,19 +26,18 @@ sub new {
     $self;
 }
 
-sub id     { $_[0] }
-sub string { '' }
+#override
 sub length { $_[0]->{'length'} }
 
+#override
 sub reset_display {
     my ($self, $refobj) = @_;
 
     my $labels = ['', '', '', '', '', '', '', ''];
     $labels = [ $refobj->display_column_labels ]  if defined $refobj;
 
-    $self->{'display'} =
-    {
-        'type'   => $self->{type},
+    $self->SUPER::reset_display(
+        'type'   => $self->display_type,
         'range'  => [],
         'number' => 1,
         'label0' => $labels->[0],
@@ -50,7 +48,7 @@ sub reset_display {
         'label5' => $labels->[5],
         'label6' => $labels->[6],
         'label7' => $labels->[7],
-    };
+    );
 }
 
 

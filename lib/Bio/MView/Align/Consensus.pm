@@ -18,25 +18,23 @@ sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
     die "${type}::new: missing arguments\n"  if @_ < 6;
-    my ($from, $to, $tally, $group, $threshold, $ignore) = @_;
+    my ($from, $to, $tally, $group, $thresh, $ignore) = @_;
 
-    if ($threshold < 50 or $threshold > 100) {
-	die "${type}::new: threshold '$threshold\%' outside valid range [50..100]\n";
+    if ($thresh < 50 or $thresh > 100) {
+	die "${type}::new: threshold '$thresh\%' outside valid range [50..100]\n";
     }
 
-    my $self = {};
+    my $self = new Bio::MView::Align::Row('sequence', "consensus/$thresh\%");
 
     bless $self, $type;
 
-    $self->{'type'}      = 'consensus';
-    $self->{'id'}        = "consensus/$threshold\%";
     $self->{'from'}      = $from;
     $self->{'to'}        = $to;
     $self->{'group'}     = $group;
-    $self->{'threshold'} = $threshold;
+    $self->{'threshold'} = $thresh;
 
     my $string =
-        Bio::MView::Groupmap::consensus($tally, $group, $threshold, $ignore);
+        Bio::MView::Groupmap::consensus($tally, $group, $thresh, $ignore);
 
     #encode the new "sequence"
     $self->{'string'} = new Bio::MView::Sequence;

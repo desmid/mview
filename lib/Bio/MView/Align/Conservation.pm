@@ -1,14 +1,13 @@
-# Copyright (C) 2015-2017 Nigel P. Brown
+# Copyright (C) 2015-2018 Nigel P. Brown
 
 ###########################################################################
 package Bio::MView::Align::Conservation;
 
 use Bio::MView::Align::Sequence;
 
-use strict;
-use vars qw(@ISA);
-
 @ISA = qw(Bio::MView::Align::Sequence);
+
+use strict;
 
 sub new {
     my $type = shift;
@@ -16,12 +15,10 @@ sub new {
     die "${type}::new: missing arguments\n"  if @_ < 3;
     my ($from, $to, $string) = @_;
 
-    my $self = {};
+    my $self = new Bio::MView::Align::Row('sequence', 'clustal');
 
     bless $self, $type;
 
-    $self->{'type'} = 'conservation';
-    $self->{'id'}   = "clustal";
     $self->{'from'} = $from;
     $self->{'to'}   = $to;
 

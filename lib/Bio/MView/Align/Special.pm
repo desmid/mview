@@ -4,32 +4,12 @@
 package Bio::MView::Align::Special;
 
 use Bio::MView::Option::Parameters;  #for $PAR
-use Bio::MView::Colormap;
 use Bio::MView::Align::Sequence;
+use Bio::MView::Colormap;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
 use strict;
-
-sub new {
-    my $type = shift;
-    #warn "${type}::new(@_)\n";
-    die "${type}::new: missing arguments\n"  if @_ < 2;
-    my ($id, $sob) = @_;
-
-    my $self = {};
-
-    bless $self, $type;
-
-    $self->{'type'}   = 'special';  #information about own subtype
-    $self->{'id'}     = $id;        #identifier
-    $self->{'from'}   = $sob->lo;   #start number of sequence
-    $self->{'string'} = $sob;       #sequence object
-
-    $self->reset_display;           #hash of display parameters
-
-    $self;
-}
 
 #override
 sub is_sequence { 0 }
@@ -37,6 +17,7 @@ sub is_sequence { 0 }
 #override
 sub is_special { 1 }
 
+#override
 sub adjust_display {
     $_[0]->set_display('label0' => '',
                        'label4' => '', 'label5' => '',
@@ -44,6 +25,7 @@ sub adjust_display {
     );
 }
 
+#override
 sub color_special {
     my $self = shift;
 

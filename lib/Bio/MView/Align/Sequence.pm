@@ -20,16 +20,14 @@ sub new {
     die "${type}::new: missing arguments\n"  if @_ < 2;
     my ($id, $sob) = @_;
 
-    my $self = {};
+    my $self = new Bio::MView::Align::Row('sequence', $id);
 
     bless $self, $type;
 
-    $self->{'type'}   = 'sequence';  #information about own subtype
-    $self->{'id'}     = $id;         #identifier
-    $self->{'from'}   = $sob->lo;    #start number of sequence
-    $self->{'string'} = $sob;        #sequence object
+    $self->{'from'}   = $sob->lo;  #start number of sequence
+    $self->{'string'} = $sob;      #sequence object
 
-    $self->reset_display;            #hash of display parameters
+    $self->reset_display;          #hash of display parameters
 
     $FIND_WARNINGS = 1;   #reset
 
@@ -38,22 +36,21 @@ sub new {
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub id       { $_[0]->{'id'} }
+sub from     { $_[0]->{'from'} }
 sub seqobj   { $_[0]->{'string'} }
 sub string   { $_[0]->{'string'}->string }
 sub sequence { $_[0]->{'string'}->sequence }
-sub from     { $_[0]->{'from'} }
 sub length   { $_[0]->{'string'}->length }
 sub seqlen   { $_[0]->{'string'}->seqlen }
 
+#override
 sub reset_display {
-    my $self = shift;
-    $self->{'display'} = {
-        'type'     => 'sequence',
-        'label1'   => $self->{'id'},
-        'sequence' => $self->{'string'},
+    $_[0]->SUPER::reset_display(
+        'type'     => $_[0]->display_type,
+        'label1'   => $_[0]->id,
+        'sequence' => $_[0]->seqobj,
         'range'    => [],
-    };
+    );
 }
 
 #override
@@ -80,34 +77,6 @@ sub get_color {
     }
 
     return 0;  #no match
-}
-
-sub color_none {
-    my ($self, $kw) = @_;
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        push @$color, $i, 'color' => $kw->{'symcolor'};
-    }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 sub color_tag {
@@ -141,6 +110,36 @@ sub find_blocks {
     return $index;
 }
 
+#override
+sub color_none {
+    my ($self, $kw) = @_;
+
+    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+	$c = $self->{'string'}->raw($i);
+
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next  if $self->{'string'}->is_space($c);
+
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
+	    next;
+	}
+
+        push @$color, $i, 'color' => $kw->{'symcolor'};
+    }
+
+    $self->{'display'}->{'paint'} = 1;
+}
+
+#override
 sub color_by_find_block {
     my ($self, $kw) = @_;
 
@@ -179,6 +178,7 @@ sub color_by_find_block {
     $self->{'display'}->{'paint'} = 1;
 }
 
+#override
 sub color_by_type {
     my ($self, $kw) = @_;
 
@@ -213,11 +213,13 @@ sub color_by_type {
     $self->{'display'}->{'paint'} = 1;
 }
 
+#override
 sub color_by_identity {
     my $self = shift;
     $self->color_by_identity_body(1, @_);
 }
 
+#override
 sub color_by_mismatch {
     my $self = shift;
     $self->color_by_identity_body(0, @_);
