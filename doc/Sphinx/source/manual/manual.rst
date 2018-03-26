@@ -471,7 +471,8 @@ giving:
   3 ITK_HUMAN    90.0%  32.9%    LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC   
   4 PTK7_HUMAN   97.1%  21.2%    IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC   
   5 KIN31_CAEEL 100.0%  31.5%    VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA   
-    clustal                          : :* * ** *                        **:*              :  *   *  : :  : ::  :    
+    clustal                      .   : :* * ** *  .                     **:*             .:  *  .* .:.:  : :: .:    
+
   </PRE>
 
 The symbols are ``*`` for full column identity, and ``:`` or ``.`` for strong
