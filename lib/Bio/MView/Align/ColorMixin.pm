@@ -18,29 +18,22 @@ sub get_color {
     my ($self, $c, $map) = @_;
     #warn "get_color: $c, $map";
 
-    if ($COLORMAP->has_symbol_color($map, $c)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($map, $c);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($map, $c)
+        if $COLORMAP->has_symbol_color($map, $c);
 
-    if ($COLORMAP->has_wildcard_color($map)) {
-        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($map);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_wildcard_color($map)
+        if $COLORMAP->has_wildcard_color($map);
 
-    if ($COLORMAP->has_palette_color($map)) {
-        my ($color, $index, $trans) = $COLORMAP->get_palette_color($map);
-	$trans = 'S';  #ignore CSS setting
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_palette_color($map, 'S')  #ignore CSS setting
+        if $COLORMAP->has_palette_color($map);
 
-    return 0;  #no match
+    return ();  #no match
 }
 
 sub color_tag {
     my ($self, $css, $symcolor, $i) = (shift, shift, shift, shift);
     if (@_) {
-        return ($i, 'class' => $_[1])  if $css;
+        return ($i, 'class' => $_[1] . $_[2])  if $css;
         return ($i, 'color' => $_[0]);
     }
     return ($i, 'color' => $symcolor);

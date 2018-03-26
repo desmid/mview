@@ -113,7 +113,7 @@ sub get_symbol_color {
     my $trans = $self->{'map'}->{$map}->{$c}->[1];
     my $index = $self->{'map'}->{$map}->{$c}->[0];
     my $color = $self->{'pallist'}->[$index];
-    return ($color, $index, $trans);
+    return ($color, $trans, $index);
 }
 
 sub get_wildcard_color {
@@ -121,14 +121,14 @@ sub get_wildcard_color {
     my $trans = $self->{'map'}->{$map}->{$Wildcard}->[1];
     my $index = $self->{'map'}->{$map}->{$Wildcard}->[0];
     my $color = $self->{'pallist'}->[$index];
-    return ($color, $index, $trans);
+    return ($color, $trans, $index);
 }
 
 sub get_palette_color {
-    my ($self, $map) = @_;
+    my ($self, $map, $trans) = (@_, 'S');  #default
     my $index = $self->{'palhash'}->{$map};
     my $color = $self->{'pallist'}->[$index];
-    return ($color, $index, 'S');
+    return ($color, $trans, $index);
 }
 
 sub get_colormap_length {

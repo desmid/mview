@@ -59,28 +59,19 @@ sub get_color_type {
     my ($self, $c, $mapS, $mapG) = @_;
     #warn "get_color_type($self, $c, $mapS, $mapG)\n";
 
-    if ($COLORMAP->has_symbol_color($mapG, $c)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapG, $c);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($mapG, $c)
+        if $COLORMAP->has_symbol_color($mapG, $c);
 
-    if ($COLORMAP->has_palette_color($mapG)) {
-        my ($color, $index, $trans) = $COLORMAP->get_palette_color($mapG);
-        $trans = 'T';  #ignore CSS setting
-        return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_palette_color($mapG, 'T')  #ignore CSS setting
+        if $COLORMAP->has_palette_color($mapG);
 
-    if ($COLORMAP->has_symbol_color($mapS, $c)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $c);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($mapS, $c)
+        if $COLORMAP->has_symbol_color($mapS, $c);
 
-    if ($COLORMAP->has_wildcard_color($mapS)) {
-        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($mapS);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
 
-    return 0;  #no match
+    return ();  #no match
 }
 
 #colours a row of 'normal' sequence only where there is a consensus symbol.
@@ -91,17 +82,13 @@ sub get_color_consensus_sequence {
     my ($self, $cs, $cg, $mapS, $mapG) = @_;
     #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
 
-    if ($COLORMAP->has_symbol_color($mapS, $cs)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $cs);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($mapS, $cs)
+        if $COLORMAP->has_symbol_color($mapS, $cs);
 
-    if ($COLORMAP->has_wildcard_color($mapS)) {
-        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($mapS);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
 
-    return 0;  #no match
+    return ();  #no match
 }
 
 #colours a row of 'normal' sequence using colour of consensus symbol.
@@ -113,22 +100,16 @@ sub get_color_consensus_group {
     my ($self, $cs, $cg, $mapS, $mapG) = @_;
     #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
 
-    if ($COLORMAP->has_symbol_color($mapG, $cg)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapG, $cg);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($mapG, $cg)
+        if $COLORMAP->has_symbol_color($mapG, $cg);
 
-    if ($COLORMAP->has_symbol_color($mapS, $cg)) {
-        my ($color, $index, $trans) = $COLORMAP->get_symbol_color($mapS, $cg);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_symbol_color($mapS, $cg)
+        if $COLORMAP->has_symbol_color($mapS, $cg);
 
-    if ($COLORMAP->has_wildcard_color($mapS)) {
-        my ($color, $index, $trans) = $COLORMAP->get_wildcard_color($mapS);
-	return ($color, "$trans$index");
-    }
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
 
-    return 0;  #no match
+    return ();  #no match
 }
 
 sub color_by_type {
