@@ -209,7 +209,7 @@ sub check_input_file {
 
 sub load_colormaps { Bio::MView::Colormap::load_colormaps(@_) }
 sub dump_colormaps { Bio::MView::Colormap::dump_colormaps(@_) }
-sub dump_css       { Bio::MView::Colormap::dump_css1_colormaps(@_) }
+sub dump_css       { Bio::MView::Colormap::dump_css1(@_) }
 
 sub load_groupmaps { Bio::MView::Groupmap::load_groupmaps(@_) }
 sub dump_groupmaps { Bio::MView::Groupmap::dump_groupmaps(@_) }

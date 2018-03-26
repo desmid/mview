@@ -22,19 +22,18 @@ $Colour_Cream      = '#FFFFCC';
 $Colour_Brown      = '#aa6666';
 $Colour_Comment    = $Colour_Brown;
 
+my %Default_CSS1_Colors = (
+    'alncolor' => $Colour_White,
+    'labcolor' => $Colour_Black,
+    'symcolor' => $Colour_Black,
+    'gapcolor' => $Colour_DarkGray,
+);
+
 my $Colormap = {};   #static hash of colormaps
 my $PalHash  = {};   #static palette, color by name
 my $PalList  = [];   #static palette, color by order
 my $MapText  = '';   #used as special index
 my $Wildcard = '.';  #key for default colouring
-
-my %Known_Parameter =
-    (
-     'alncolor'   => [ '\S+',  $Colour_White    ],
-     'labcolor'   => [ '\S+',  $Colour_Black    ],
-     'symcolor'   => [ '\S+',  $Colour_Black    ],
-     'gapcolor'   => [ '\S+',  $Colour_DarkGray ],
-    );
 
 my $Default_PRO_Aln_Colormap = 'P1';
 my $Default_DNA_Aln_Colormap = 'D1';
@@ -70,7 +69,7 @@ $COLORMAP = new Bio::MView::Colormap;  #unique global instance
 sub new {
     my $type = shift;
     if (defined $COLORMAP) {
-        die "Bio::MView::Colormap instance already exists\n";
+        die "Bio::MView::Colormap: instance already exists\n";
     }
     my $self = {};
     bless $self, $type;
@@ -144,27 +143,30 @@ sub get_colormap_length {
 
 #load colormap data from stream
 sub load_colormaps {
-    my ($stream, $override) = (@_, 1);    #allow replacement maps
-    my ($state, $map, $c1, $c2, $seethru, $color, $de, $mapignore) = (0);
+    my ($stream, $override) = (@_, 1);  #allow replacement maps
+    my ($state, $map, $de) = ('start');
     local $_;
     while (<$stream>) {
+        my $mapignore;
 
 	#comments, blank lines
 	if (/^\s*\#/ or /^\s*$/) {
-	    next  if $state != 1;
+	    next  if $state ne 'map';
 	    $de .= $_;
 	    next;
 	}
 
+        chomp;
+
 	#map [name]
 	if (/^\s*\[\s*(\S+)\s*\]/) {
+	    $state = 'map';
 	    $map = uc $1;
 	    if (exists $Colormap->{$map} and !$override) {
 		$mapignore = 1;  #just for duration of this map
 	    } else {
 		$mapignore = 0;
 	    }
-	    $state = 1;
 	    $de = '';
 	    next;
 	}
@@ -172,6 +174,7 @@ sub load_colormaps {
 	#palette data: colorname: RGBcode
 	#colorname MUST begin with a letter
 	if (/^\s*colou?r\s+([a-z][-a-z0-9_]*)\s*:\s*(\#[0123456789ABCDEF]{6})/i) {
+	    $state = 'palette';
             my ($clr, $rgb) = (lc $1, lc $2);
 	    if (! exists $PalHash->{$clr}) {
 		#warn "palette: $clr => $rgb\n";
@@ -182,22 +185,20 @@ sub load_colormaps {
 	    next;
 	}
 
-	die "load_colormaps: colormap name undefined\n"
-	    unless defined $map;
+	die "load_colormaps: colormap name undefined\n"  unless defined $map;
 
 	next  if $mapignore;    #forget it if we're not allowing overrides
 
 	#save map description?
-	$Colormap->{$map}->{$MapText} = $de  if $state == 1;
+	$Colormap->{$map}->{$MapText} = $de  if $state eq 'map';
 
 	#symbol[symbol] {->|=>} [palette_colorname|#RGB] any other text...
 	if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
+	    $state = 'symbol';
 
-	    ($c1, $c2, $seethru, $color, $de) =
+	    my ($c1, $c2, $seethru, $color, $de) =
 		($1, $2, ($3 eq '->' ? 'T' : 'S'),
                  lc $4, (defined $5 ? $5 : ''));
-
-	    $state = 2;
 
 	    #only allow new colors in form of RGB codes
 	    if (! exists $PalHash->{$color}) {
@@ -208,7 +209,6 @@ sub load_colormaps {
 		    $PalHash->{$color} = $#{$PalList};  #name->index
 		    $PalHash->{$#{$PalList}} = $color;  #index->name
 		} else {
-		    chomp;
 		    die "load_colormaps: undefined color in line '$_'\n";
 		}
 	    }
@@ -222,30 +222,39 @@ sub load_colormaps {
 	}
 
 	#default
-	chomp;
-	die "Bio::MView::Align::load_colormaps: bad format in line '$_'\n";
+	die "load_colormaps: bad format in line '$_'\n";
     }
+
     close $stream;
 }
 
 #return a descriptive listing of all known colormaps
 sub dump_colormaps {
     my $html = shift;
-    my ($map, $sym, %p, $u, $l, $col, $rgb);
-    my ($s, $f1, $f2, $c0, $c1, $c2) = ('', '', '', '', '', '');
+
+    my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
 	"<SPAN style=\"color:$Colour_Black\">",
 	"<SPAN style=\"color:$Colour_Comment\">",
 	"</SPAN>")  if $html;
 
+    sub writesym {  #binds: $c1, $c2
+        my ($pal, $key, $f1, $f2, $sym, $col) = @_;
+        return sprintf("%s%-7s%s  %s  %s%-20s%s $c1%s$c2\n",
+                       $f1, $sym, $f2,
+                       ($pal->{$key}->[1] eq 'T' ? '->' : '=>'),
+                       $f1, $col, $f2,
+                       $pal->{$key}->[2]);
+    }
+
     $s .= "$c1#Palette:\n\n#color                     : #RGB$c2\n";
 
-    for ($u=0; $u < @{$PalList}; $u++) {
-	$rgb = $PalList->[ $u ];
+    for (my $i=0; $i < @{$PalList}; $i++) {
+	my ($rgb, $f1, $f2) = ($PalList->[$i], '', '');
 	($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 	$s .= sprintf("color %s%-20s%s : %-7s\n",
-		      $f1, $PalHash->{$u}, $f2, $PalList->[$u]);
+		      $f1, $PalHash->{$i}, $f2, $PalList->[$i]);
     }
 
     $s .= "\n\n$c1#Colormap listing - suitable for reloading.\n";
@@ -253,116 +262,83 @@ sub dump_colormaps {
 
     @_ = keys %$Colormap  unless @_;
 
-    foreach $map (sort @_) {
+    foreach my $map (sort @_) {
+	my %p = %{$Colormap->{$map}};  #copy colormap structure
+
 	$s .= "$c0\[$map]$c2\n";
 	$s .= "$c1$Colormap->{$map}->{$MapText}";
 	$s .= "#symbols =>  color                #comment$c2\n";
 
-	%p = %{$Colormap->{$map}};    #copy colormap structure
+	foreach my $sym (sort keys %p) {
 
-	foreach $sym (sort keys %p) {
+	    next  if $sym eq $MapText;
+	    next  unless exists $p{$sym} and defined $p{$sym};
 
-	    next    if $sym eq $MapText;
-	    next    unless exists $p{$sym} and defined $p{$sym};
+	    my $col = $PalHash->{ $p{$sym}->[0] };
+	    my $rgb = $PalList->[ $p{$sym}->[0] ];
 
-	    ($u, $l) = (uc $sym, lc $sym);
-
-	    $col = $PalHash->{ $p{$sym}->[0] };
-	    $rgb = $PalList->[ $p{$sym}->[0] ];
-
+	    my ($f1, $f2) = ('', '');
 	    ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 
-	    #lower and upper case: same symbol
-	    if ($u eq $l) {
-		$s .= sprintf("%s%-7s%s  %s  %s%-20s%s $c1%s$c2\n",
-			      $f1, $sym, $f2,
-			      ($p{$sym}->[1] eq 'T' ? '->' : '=>'),
-			      $f1, $col, $f2,
-			      $p{$sym}->[2]);
-		next;
+	    my ($usym, $lsym) = (uc $sym, lc $sym);
+
+	    #lower and upper case equal: not alphabetic
+	    if ($lsym eq $usym) {
+                $s .= writesym(\%p, $sym, $f1, $f2, $sym, $col);
+	        next;
 	    }
 
-	    #lower and upper case: two symbols
-	    if (exists $p{$u} and exists $p{$l}) {
+	    #lower and upper case distinct: alphabetic, both defined
+	    if (exists $p{$lsym} and exists $p{$usym}) {
 
-                if ($p{$u}->[0] eq $p{$l}->[0] and
-                    $p{$u}->[1] eq $p{$l}->[1]) {
+                if ($p{$lsym}->[0] eq $p{$usym}->[0] and
+                    $p{$lsym}->[1] eq $p{$usym}->[1]) {
 
-		    #common definition
-		    $s .= sprintf("%s%-7s%s  %s  %s%-20s%s $c1%s$c2\n",
-				  $f1, $u . $l, $f2,
-				  ($p{$sym}->[1] eq 'T' ? '->' : '=>'),
-				  $f1, $col, $f2,
-				  $p{$sym}->[2]);
+	            #common definition: merge them
+                    $s .= writesym(\%p, $sym, $f1, $f2, $usym.$lsym, $col);
 
-		    $p{$u} = $p{$l} = undef;    #forget both
+	            $p{$usym} = $p{$lsym} = undef;  #seen them: forget
 
-		} else {
-		    #different definitions
-		    $s .= sprintf("%s%-7s%s  %s  %s%-20s%s $c1%s$c2\n",
-				  $f1, $sym, $f2,
-				  ($p{$sym}->[1] eq 'T' ? '->' : '=>'),
-				  $f1, $col, $f2,
-				  $p{$sym}->[2]);
-		}
-		next;
+	        } else {  #different definitions; write this one
+                    $s .= writesym(\%p, $sym, $f1, $f2, $sym, $col);
+	        }
+	        next;
 	    }
 
-	    #default: single symbol
-	    $s .= sprintf("%s%-7s%s  %s  %s%-20s%s $c1%s$c2\n",
-			  $f1, $sym, $f2,
-			  ($p{$sym}->[1] eq 'T' ? '->' : '=>'),
-			  $f1, $col, $f2,
-			  $p{$sym}->[2]);
-	    next;
+	    #default: alphabetic, single symbol
+            $s .= writesym(\%p, $sym, $f1, $f2, $sym, $col);
 	}
-
 	$s .= "\n";
     }
-    $s;
+
+    return $s;
 }
 
-sub dump_css1_colormaps {
-    my %color = @_;
-    my ($s, $i, $rgb, $fg);
+sub dump_css1 {
+    my ($par) = (@_, {});
 
-    $color{'alncolor'} = $Known_Parameter{'alncolor'}->[1]
-        unless exists $color{'alncolor'};
-    $color{'labcolor'} = $Known_Parameter{'labcolor'}->[1]
-        unless exists $color{'labcolor'};
-    $color{'symcolor'} = $Known_Parameter{'symcolor'}->[1]
-        unless exists $color{'symcolor'};
-    $color{'gapcolor'} = $Known_Parameter{'gapcolor'}->[1]
-        unless exists $color{'gapcolor'};
+    my $colors = { %Default_CSS1_Colors };
 
-    #warn "bg=$color{'alncolor'} fg=$color{'symcolor'}\n";
+    $colors->{'alncolor'} = $par->{'alncolor'}  if exists $par->{'alncolor'};
+    $colors->{'labcolor'} = $par->{'labcolor'}  if exists $par->{'labcolor'};
+    $colors->{'symcolor'} = $par->{'symcolor'}  if exists $par->{'symcolor'};
+    $colors->{'gapcolor'} = $par->{'gapcolor'}  if exists $par->{'gapcolor'};
 
-    $s = "TD {font-family:Fixed,Courier,monospace; background-color:$color{'alncolor'}; color:$color{'labcolor'}}\n";
+    #warn "bg=$colors->{'alncolor'} fg=$colors->{'symcolor'}\n";
 
-    for ($i=0; $i < @{$PalList}; $i++) {
+    my $s = "TD {font-family:Fixed,Courier,monospace; background-color:$colors->{'alncolor'}; color:$colors->{'labcolor'}}\n";
 
-	$rgb = $PalList->[$i];
-	$fg = hex(substr($rgb, 1));
-	my ($r, $g, $b) = (($fg>>16)&255, ($fg>>8)&255, $fg&255);
+    for (my $i=0; $i < @{$PalList}; $i++) {
 
-#	#SOLID: coloured background/monochrome foreground
-#	#flip foreground between black/white depending on
-#	#largest (brightest) RGB component of background.
-#	$fg = $r; $fg = $g  if $g > $fg; $fg = $b  if $b > $fg;
-#	if ($fg > 200) {
-#	    $fg = $Colour_Black;
-#	} else {
-#	    $fg = $Colour_White;
-#	}
+	my $rgb = $PalList->[$i];
+	my $bg = hex(substr($rgb, 1));
 
-	#just look at the green component
-	if ($g > 200) {
-	    $fg = $Colour_Black;
-	} else {
-	    $fg = $Colour_White;
-	}
+        #SOLID: coloured background/monochrome foreground: flip foreground
+        #between black/white depending on brightest green RGB component of
+        #background.
+        my $fg = (($bg >> 8) & 255) > 200 ? $Colour_Black : $Colour_White;
 
-	#block: backgronud + foreground
+	#solid: background + foreground
 	$s .= "SPAN.S${i} \{background-color:$rgb;color:$fg} ";
 
 	#transparent: no background + coloured foreground
@@ -372,12 +348,12 @@ sub dump_css1_colormaps {
 	$s .= "/* $PalHash->{$i} */\n";
     }
 
-    $s;
+    return $s;
 }
 
 
 ######################################################################
-load_colormaps(\*DATA);
+eval { load_colormaps(\*DATA) }; warn($@), exit 1  if $@;
 
 1;
 

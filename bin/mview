@@ -185,11 +185,7 @@ sub capture_stdin {
 
 sub dump_css {
     my $par = shift;
-    my $s = Bio::MView::Manager::dump_css(
-	'alncolor' => $par->{'alncolor'}, 'labcolor' => $par->{'labcolor'},
-	'symcolor' => $par->{'symcolor'}, 'gapcolor' => $par->{'gapcolor'},
-	);
-    return $s;
+    return Bio::MView::Manager::dump_css($par);
 }
 
 sub dump_colormaps {
