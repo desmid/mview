@@ -584,19 +584,6 @@ $Types = [
         },
     },
 
-    {
-        'type'    => "srs::mode",
-        'label'   => "on|off",
-        'default' => "off",
-        'test'    => sub {
-            my ($self, $on, $ov, $e) = @_;
-            my $pv = $self->test_type('binary', $on, $ov, $e);
-            return $Bio::MView::SRS::Type = 1  if $pv eq "1";
-            return $Bio::MView::SRS::Type = 0  if $pv eq "0";
-            return $ov;
-        },
-    },
-
     #### FORMAT SPECIFIC TYPES ####
 
     {

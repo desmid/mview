@@ -491,7 +491,8 @@ $Options = [
             {
                 'option'  => "srs",
                 'usage'   => "Try to use sequence database links",
-                'type'    => "srs::mode",
+                'type'    => "binary",
+                'default' => "off",
             },
 
             {

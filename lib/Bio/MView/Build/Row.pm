@@ -4,6 +4,7 @@
 package Bio::MView::Build::Row;
 
 use Bio::MView::Sequence;
+use Bio::MView::SRS;
 
 use strict;
 

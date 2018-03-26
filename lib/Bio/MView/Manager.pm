@@ -8,7 +8,6 @@ use Bio::MView::Option::Arguments;
 use Bio::MView::Build;
 use Bio::MView::Convert;
 use Bio::MView::Display;
-use Bio::MView::SRS qw(srsLink);
 
 use strict;
 

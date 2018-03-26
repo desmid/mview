@@ -3,13 +3,7 @@
 ###########################################################################
 package Bio::MView::SRS;
 
-@ISA       = qw(Exporter);
-@EXPORT    = qw(srsLink);
-@EXPORT_OK = ();
-
-use vars qw($Type);
-
-$Type = 1;    #this SRS
+use Bio::MView::Option::Parameters;  #for $PAR
 
 ###########################################################################
 #NCBI entrez 2007
@@ -84,7 +78,7 @@ sub srsLink {
     my ($tag) = @_;
     my ($link, $db, $ac, $id) = ('', '', '', '');
 
-    return $link  unless $Type;
+    return $link  unless $PAR->get('srs');
     
     my @tmp = ();
 
