@@ -112,8 +112,6 @@ if ($count) {  #got something
 
 print html_foot($par)                if want_html($par);
 
-#Universal::vmstat("FINISHED.");
-
 cleanup;
 
 exit 0;
@@ -122,9 +120,10 @@ exit 0;
 sub mview {
     my $par = shift;
 
-    #Universal::vmstat("Manager constructor");
-
+    #Universal::vmstat("mview: call Manager constructor");
     my $mgr = new Bio::MView::Manager;
+
+    my $check_format = $par->{'infmt'} ? 0 : 1;
 
     foreach my $file (@_) {
         warn("$PROG: file '$file' does not exist\n"),  next  unless -e $file;
@@ -134,7 +133,7 @@ sub mview {
         warn "$PROG: processing '$file'\n"  if verbose_echo_file($par);
 
 	#try to choose a format if one wasn't specified
-        if (! $par->{'infmt'}) {
+        if ($check_format) {
             my $format = Bio::MView::Manager::check_input_file($file);
             warn("$PROG: can't determine format\n"), next
                 unless defined $format;
@@ -146,13 +145,14 @@ sub mview {
 	if (! defined $mgr->parse($file, $par->{'infmt'})) {
 	    warn "$PROG: can't parse file '$file'\n";
 	}
+        #Universal::vmstat("mview: Manager.parse file '$file' done");
     }
-    #Universal::vmstat("Manager constructor one");
+    #Universal::vmstat("mview: Manager.parse all files done");
 
     #save printing until end?
     if (want_in_register($par) and want_mview_layout($par)) {
 	$mgr->print_alignment;
-	#Universal::vmstat("print done (mview)");
+	#Universal::vmstat("mview: in register print done");
     }
     return $mgr->get_alignment_count;
 }
