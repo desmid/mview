@@ -38,7 +38,7 @@ $GROUPMAP = new Bio::MView::Groupmap;  #unique global instance
 sub new {
     my $type = shift;
     if (defined $GROUPMAP) {
-        die "Bio::MView::Groupmap instance already exists\n";
+        die "Bio::MView::Groupmap: instance already exists\n";
     }
     my $self = {};
     bless $self, $type;
@@ -72,122 +72,118 @@ sub in_consensus_group {
 
 sub load_groupmaps {
     my ($stream, $override) = (@_, 1);
-    my ($state, $map, $class, $sym, $members, $c, $de, $mapignore) = (0, {}, undef);
+    my ($state, $map, $de) = ('start');
     local $_;
     while (<$stream>) {
+        my $mapignore;
 
 	#comments, blank lines
 	if (/^\s*\#/ or /^\s*$/) {
-	    next  if $state != 1;
+	    next  if $state ne 'map';
 	    $de .= $_;
 	    next;
 	}
 
+        chomp;
+
 	#group [name]
 	if (/^\s*\[\s*(\S+)\s*\]/) {
+	    $state = 'map';
 	    $map = uc $1;
 	    if (exists $Groupmap->{$map} and !$override) {
 		$mapignore = 1;  #just for duration of this map
 	    } else {
 		$mapignore = 0;
 	    }
-	    $state = 1;
 	    $de = '';
 	    next;
 	}
 
-	die "Bio::MView::Groupmap::load_groupmaps() groupname undefined\n"
-	    unless defined $map;
+	die "load_groupmaps: groupname undefined\n"  unless defined $map;
 
-	next  if $mapignore;    #forget it if we're not allowing overrides
+	next  if $mapignore;  #forget it if we're not allowing overrides
 
 	#save map description?
-	$Groupmap->{$map}->[3] = $de  if $state == 1;
+	$Groupmap->{$map}->[3] = $de  if $state eq 'map';
 
 	#Group_Any symbol (literal in regexp)
 	if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
-	    $state = 2;
-	    $sym     = $1;
-	    $sym     =~ s/^\'//;
-	    $sym     =~ s/\'$//;
-	    chomp; die "Bio::MView::Groupmap::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
-	    make_group($map, $Group_Any, $sym, []);
+	    $state = 'symbol';
+	    make_group($map, $Group_Any, $1, '') or
+                die "load_groupmaps: bad format in line '$_'\n";
             next;
 	}
 
 	#general class membership
 	if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')\s*\{\s*(.*)\s*\}/) {
-	    $state = 2;
-	    ($class, $sym, $members) = ($1, $2, $3);
-	    $sym     =~ s/^\'//;
-	    $sym     =~ s/\'$//;
-	    chomp; die "Bio::MView::Groupmap::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
-	    $members =~ s/[\s,]//g;
-	    $members =~ s/''/ /g;
-	    $members = uc $members;
-	    $members = [ split(//, $members) ];
-	    make_group($map, $class, $sym, $members);
+	    $state = 'symbol';
+	    make_group($map, $1, $2, $3) or
+                die "load_groupmaps: bad format in line '$_'\n";
 	    next;
 	}
 
 	#trivial class self-membership: different symbol
 	if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')/) {
-	    $state = 2;
-	    ($class, $sym, $members) = ($1, $2, $1);
-	    chomp; die "Bio::MView::Groupmap::load_groupmaps() bad format in line '$_'\n"    if length $sym > 1;
-	    $members = uc $members;
-	    $members = [ split(//, $members) ];
-	    make_group($map, $class, $sym, $members);
+	    $state = 'symbol';
+	    make_group($map, $1, $2, $1) or
+                die "load_groupmaps: bad format in line '$_'\n";
 	    next;
 	}
 
 	#trivial class self-membership: same symbol
 	if (/^\s*(\S+)/) {
-	    $state = 2;
-	    ($class, $sym, $members) = ($1, $1, $1);
-	    $members = uc $members;
-	    $members = [ split(//, $members) ];
-	    make_group($map, $class, $sym, $members);
+	    $state = 'symbol';
+	    make_group($map, $1, $1, $1) or
+                die "load_groupmaps: bad format in line '$_'\n";
 	    next;
 	}
 
 	#default
-	chomp; die "Bio::MView::Groupmap::load_groupmaps() bad format in line '$_'\n";
+	die "load_groupmaps: bad format in line '$_'\n";
     }
     close $stream;
 
-    foreach $map (keys %$Groupmap) {
-	make_group($map, $Group_Any, $Default_Group_Any, [])
-	    unless exists $Groupmap->{$map}->[0]->{$Group_Any};
-	make_group($map, '', $Bio::MView::Sequence::Mark_Spc,
-		   [
-		    $Bio::MView::Sequence::Mark_Pad,
-		    $Bio::MView::Sequence::Mark_Gap,
-		   ]);
+    #set default symbol for each groupmap
+    foreach my $map (keys %$Groupmap) {
+	make_group($map, $Group_Any, $Default_Group_Any, '')
+            unless exists $Groupmap->{$map}->[0]->{$Group_Any};
     }
 }
 
 sub make_group {
-    my ($group, $class, $sym, $members) = @_;
-    local $_;
+    my ($map, $class, $sym, $members) = @_;
+
+    $sym =~ s/^\'//;
+    $sym =~ s/\'$//;
+    return  0  if length $sym > 1;  #fail
+
+    $members = uc $members;
+    $members =~ s/[\s,]//g;
+    $members =~ s/''/ /g;
+    $members = [ split(//, $members) ];
 
     #class => symbol
-    $Groupmap->{$group}->[0]->{$class}->[0] = $sym;
+    $Groupmap->{$map}->[0]->{$class}->[0] = $sym;
 
-    foreach (@$members) {
-        next  unless defined $_;
+    foreach my $m (@$members) {
+        next  unless defined $m;
+
 	#class  => member existence
-	$Groupmap->{$group}->[0]->{$class}->[1]->{$_} = 1;
+	$Groupmap->{$map}->[0]->{$class}->[1]->{$m} = 1;
+
 	#member => symbol existence
-	$Groupmap->{$group}->[1]->{$_}->{$sym} = 1;
+	$Groupmap->{$map}->[1]->{$m}->{$sym} = 1;
+
 	#symbol => members
-	$Groupmap->{$group}->[2]->{$sym}->{$_} = 1;
+	$Groupmap->{$map}->[2]->{$sym}->{$m} = 1;
     }
+
+    return 1;  #ok
 }
 
 sub dump_group {
-    my ($group, $class, $mem, $p);
     push @_, keys %$Groupmap    unless @_;
+    my ($group, $class, $mem, $p);
     warn "Groups by class\n";
     foreach $group (@_) {
 	warn "[$group]\n";
@@ -210,7 +206,7 @@ sub dump_group {
 #return a descriptive listing of supplied groups or all groups
 sub dump_groupmaps {
     my $html = shift;
-    my ($group, $class, $p, $sym);
+
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
@@ -225,51 +221,54 @@ sub dump_groupmaps {
 
     @_ = keys %$Groupmap  unless @_;
 
-    foreach $group (sort @_) {
+    foreach my $group (sort @_) {
 	$s .= "$c0\[$group]$c2\n";
 	$s .= "$c1$Groupmap->{$group}->[3]";
         $s .= "#description =>  symbol  members$c2\n";
 
-	$p = $Groupmap->{$group}->[0];
-	foreach $class (sort keys %{$p}) {
+	my $p = $Groupmap->{$group}->[0];
 
-	    next    if $class eq '';    #gap character
+	foreach my $class (sort keys %{$p}) {
+
+	    next  if $class eq '';  #gap character
+
+            my $sym = $p->{$class}->[0];
 
 	    #wildcard
 	    if ($class eq $Group_Any) {
-		$sym = $p->{$class}->[0];
-		$sym = "'$sym'"    if $sym =~ /\s/;
+		$sym = "'$sym'"  if $sym =~ /\s/;
 		$s .= sprintf "%-12s =>  %-6s\n", $class, $sym;
 		next;
 	    }
 
 	    #consensus symbol
-	    $sym = $p->{$class}->[0];
-	    $sym = "'$sym'"    if $sym =~ /\s/;
+	    $sym = "'$sym'"  if $sym =~ /\s/;
 	    $s .= sprintf "%-12s =>  %-6s  { ", $class, $sym;
 	    $s .= join(", ", sort keys %{$p->{$class}->[1]}) . " }\n";
 	}
 	$s .= "\n";
     }
-    $s;
+
+    return $s;
 }
 
-#compute consensus group membership for one alignment column;
-#returns a hash of consensus group percentages
+#compute consensus group membership for one alignment column; returns
+#a hash of consensus group percentages
 sub tally_column {
     my ($gname, $col, $gaps) = (@_, 1);
-    my ($score, $class, $sym, $depth) = ({});
 
     unless ($GROUPMAP->has_groupmap($gname)) {
-        die "Bio::MView::Groupmap::tally_column: unknown consensus group '$gname'\n";
+        die "tally_column: unknown consensus group '$gname'\n";
     }
 
     #warn "tally_column: $gname\n";
 
     my $group = $GROUPMAP->{'map'}->{$gname}->[0];
+    my $score = {};
+    my $depth;
 
     #initialise tallies
-    foreach $class (keys %$group) { $score->{$class} = 0 }
+    foreach my $class (keys %$group) { $score->{$class} = 0 }
 
     #select score normalization
     if ($gaps) {
@@ -289,38 +288,38 @@ sub tally_column {
     }
 
     #tally class scores by column symbol (except gaps), which is upcased
-    foreach $class (keys %$group) {
-	foreach $sym (@$col) {
+    foreach my $class (keys %$group) {
+	foreach my $sym (@$col) {
 	    next  unless Bio::MView::Sequence::is_char(0, $sym) or $gaps;
 	    $score->{$class}++  if exists $group->{$class}->[1]->{uc $sym};
 	}
 	$score->{$class} = 100.0 * $score->{$class} / $depth;
     }
-    $score;
+
+    return $score;
 }
 
-#given a columnwise consensus group tally hash, return the consensus string
-#for this particular row
+#given a columnwise consensus group tally hash, return the consensus
+#string for this particular row
 sub consensus {
     my ($tally, $gname, $threshold, $ignore) = @_;
 
     unless ($GROUPMAP->has_groupmap($gname)) {
-	die "Bio::MView::Align::Consensus::consensus: unknown consensus group '$gname'\n";
+	die "consensus: unknown consensus group '$gname'\n";
     }
 
     my $group = $GROUPMAP->{'map'}->{$gname}->[0];
-
     my $consensus = '';
 
     #iterate over all columns
     for (my $i=0; $i<@$tally; $i++) {
 	
-	my ($score, $class, $bstclass, $bstscore) = ($tally->[$i], "", undef, 0);
+	my ($score, $bstscore, $bstclass) = ($tally->[$i], 0, undef);
 	
 	#iterate over all allowed subsets
-	foreach $class (keys %$group) {
+	foreach my $class (keys %$group) {
 
-	    next  if $class eq $Group_Any; #wildcard
+	    next  if $class eq $Group_Any;  #wildcard
 	
 	    if ($class ne '') {
 		#non-gap classes: may want to ignore certain classes
@@ -328,9 +327,9 @@ sub consensus {
 		
 		next  if $ignore eq 'class'     and $class ne $group->{$class}->[0];
 	    }
-	
-	    #choose smallest class exceeding threshold and
-	    #highest score percentage when same size
+
+	    #choose smallest class exceeding threshold and highest
+	    #score percentage when same size
 	
 	    #warn "[$i] $class, $score->{$class}\n";
 
@@ -371,16 +370,17 @@ sub consensus {
 		$bstclass = $Group_Any #some non-gaps
 	    }
 	} else {
-	    $bstclass = $Group_Any #wildcard
+	    $bstclass = $Group_Any;  #wildcard
 	}
 	#warn "DECIDE [$i] '$bstclass' $bstscore [$group->{$bstclass}->[0]]\n";
 	$consensus .= $group->{$bstclass}->[0];
     }
-    \$consensus;
+
+    return \$consensus;
 }
 
 ######################################################################
-load_groupmaps(\*DATA);
+eval { load_groupmaps(\*DATA) }; warn($@), exit 1  if $@;
 
 1;
 
