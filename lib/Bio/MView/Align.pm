@@ -647,7 +647,7 @@ sub compute_tallies {
 	#warn "compute_tallies: @$column\n";
 
 	push @{$self->{'tally'}->{$key}},
-	    Bio::MView::Groupmap::tally_column($gname, $column, $gaps);
+	    Bio::MView::GroupMap::tally_column($gname, $column, $gaps);
     }
 
     return $self->{'tally'}->{$key};

@@ -6,7 +6,7 @@ package Bio::MView::Option::Arguments;
 use Exporter;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Groupmap;
+use Bio::MView::GroupMap;
 
 @ISA = qw(Exporter);
 
@@ -284,8 +284,8 @@ sub list_colormap_names { Bio::MView::Color::ColorMap::list_colormap_names }
 sub check_colormap      { Bio::MView::Color::ColorMap::check_colormap(@_) }
 
 ###########################################################################
-sub list_groupmap_names { Bio::MView::Groupmap::list_groupmap_names }
-sub check_groupmap      { Bio::MView::Groupmap::check_groupmap(@_) }
+sub list_groupmap_names { Bio::MView::GroupMap::list_groupmap_names }
+sub check_groupmap      { Bio::MView::GroupMap::check_groupmap(@_) }
 
 ###########################################################################
 my @Known_Ignore_Classes = (

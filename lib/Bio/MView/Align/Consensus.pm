@@ -5,7 +5,7 @@ package Bio::MView::Align::Consensus;
 
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Groupmap;
+use Bio::MView::GroupMap;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
@@ -25,7 +25,7 @@ sub new {
     }
 
     my $string =
-        Bio::MView::Groupmap::consensus($tally, $group, $thresh, $ignore);
+        Bio::MView::GroupMap::consensus($tally, $group, $thresh, $ignore);
 
     #encode the new "sequence"
     my $sob = new Bio::MView::Sequence;

@@ -1,7 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
 ###########################################################################
-package Bio::MView::Groupmap;
+package Bio::MView::GroupMap;
 
 use Exporter;
 use Bio::MView::Color::ColorMap;
@@ -13,18 +13,19 @@ use vars qw(@ISA @EXPORT $GROUPMAP);
 
 @EXPORT = qw($GROUPMAP);
 
-my $Groupmap          = {};   #static hash of consensus schemes
+my $GroupMap          = {};   #static hash of consensus schemes
+
 my $Group_Any         = '.';  #key for non-consensus group
 my $Default_Group_Any = '.';  #default symbol for non-consensus group
 
 my $Default_PRO_Group = 'P1';
 my $Default_DNA_Group = 'D1';
 
-sub list_groupmap_names { return join(",", sort keys %$Groupmap) }
+sub list_groupmap_names { return join(",", sort keys %$GroupMap) }
 
 sub check_groupmap {
     my $map = uc shift;
-    return $map  if exists $Groupmap->{$map};
+    return $map  if exists $GroupMap->{$map};
     return undef;
 }
 
@@ -34,17 +35,17 @@ sub get_default_groupmap {
     return $Default_DNA_Group;
 }
 
-$GROUPMAP = new Bio::MView::Groupmap;  #unique global instance
+$GROUPMAP = new Bio::MView::GroupMap;  #unique global instance
 
 sub new {
     my $type = shift;
     if (defined $GROUPMAP) {
-        die "Bio::MView::Groupmap: instance already exists\n";
+        die "Bio::MView::GroupMap: instance already exists\n";
     }
     my $self = {};
     bless $self, $type;
 
-    $self->{'map'} = $Groupmap;
+    $self->{'map'} = $GroupMap;
 
     return $GROUPMAP = $self;
 }
@@ -91,7 +92,7 @@ sub load_groupmaps {
 	if (/^\s*\[\s*(\S+)\s*\]/) {
 	    $state = 'map';
 	    $map = uc $1;
-	    if (exists $Groupmap->{$map} and !$override) {
+	    if (exists $GroupMap->{$map} and !$override) {
 		$mapignore = 1;  #just for duration of this map
 	    } else {
 		$mapignore = 0;
@@ -105,7 +106,7 @@ sub load_groupmaps {
 	next  if $mapignore;  #forget it if we're not allowing overrides
 
 	#save map description?
-	$Groupmap->{$map}->[3] = $de  if $state eq 'map';
+	$GroupMap->{$map}->[3] = $de  if $state eq 'map';
 
 	#Group_Any symbol (literal in regexp)
 	if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
@@ -145,9 +146,9 @@ sub load_groupmaps {
     close $stream;
 
     #set default symbol for each groupmap
-    foreach my $map (keys %$Groupmap) {
+    foreach my $map (keys %$GroupMap) {
 	make_group($map, $Group_Any, $Default_Group_Any, '')
-            unless exists $Groupmap->{$map}->[0]->{$Group_Any};
+            unless exists $GroupMap->{$map}->[0]->{$Group_Any};
     }
 }
 
@@ -164,31 +165,31 @@ sub make_group {
     $members = [ split(//, $members) ];
 
     #class => symbol
-    $Groupmap->{$map}->[0]->{$class}->[0] = $sym;
+    $GroupMap->{$map}->[0]->{$class}->[0] = $sym;
 
     foreach my $m (@$members) {
         next  unless defined $m;
 
 	#class  => member existence
-	$Groupmap->{$map}->[0]->{$class}->[1]->{$m} = 1;
+	$GroupMap->{$map}->[0]->{$class}->[1]->{$m} = 1;
 
 	#member => symbol existence
-	$Groupmap->{$map}->[1]->{$m}->{$sym} = 1;
+	$GroupMap->{$map}->[1]->{$m}->{$sym} = 1;
 
 	#symbol => members
-	$Groupmap->{$map}->[2]->{$sym}->{$m} = 1;
+	$GroupMap->{$map}->[2]->{$sym}->{$m} = 1;
     }
 
     return 1;  #ok
 }
 
 sub dump_group {
-    push @_, keys %$Groupmap    unless @_;
+    push @_, keys %$GroupMap    unless @_;
     my ($group, $class, $mem, $p);
     warn "Groups by class\n";
     foreach $group (@_) {
 	warn "[$group]\n";
-	$p = $Groupmap->{$group}->[0];
+	$p = $GroupMap->{$group}->[0];
 	foreach $class (keys %{$p}) {
 	    warn "$class  =>  $p->{$class}->[0]  { ",
 		join(" ", keys %{$p->{$class}->[1]}), " }\n";
@@ -197,7 +198,7 @@ sub dump_group {
     warn "Groups by membership\n";
     foreach $group (@_) {
 	warn "[$group]\n";
-	$p = $Groupmap->{$group}->[1];
+	$p = $GroupMap->{$group}->[1];
 	foreach $mem (keys %{$p}) {
 	    warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
 	}
@@ -220,14 +221,14 @@ sub dump_groupmaps {
     $s .= "#Non-consensus positions default to '$Default_Group_Any' symbol.\n";
     $s .= "#Sequence gaps are shown as ' ' (space) symbols.$c2\n\n";
 
-    @_ = keys %$Groupmap  unless @_;
+    @_ = keys %$GroupMap  unless @_;
 
     foreach my $group (sort @_) {
 	$s .= "$c0\[$group]$c2\n";
-	$s .= "$c1$Groupmap->{$group}->[3]";
+	$s .= "$c1$GroupMap->{$group}->[3]";
         $s .= "#description =>  symbol  members$c2\n";
 
-	my $p = $Groupmap->{$group}->[0];
+	my $p = $GroupMap->{$group}->[0];
 
 	foreach my $class (sort keys %{$p}) {
 

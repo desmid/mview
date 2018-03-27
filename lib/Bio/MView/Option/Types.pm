@@ -8,7 +8,7 @@ use Bio::MView::Option::Arguments;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Groupmap;
+use Bio::MView::GroupMap;
 use NPB::Parse::Regexps;
 
 @ISA = qw(Exporter);
@@ -30,7 +30,7 @@ sub get_default_consensus_colormap {
     Bio::MView::Color::ColorMap::get_default_consensus_colormap(@_)
 }
 sub get_default_groupmap {
-    Bio::MView::Groupmap::get_default_groupmap(@_)
+    Bio::MView::GroupMap::get_default_groupmap(@_)
 }
 
 ######################################################################

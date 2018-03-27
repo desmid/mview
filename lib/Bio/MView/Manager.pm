@@ -211,8 +211,8 @@ sub load_colormaps { Bio::MView::Color::ColorMap::load_colormaps(@_) }
 sub dump_colormaps { Bio::MView::Color::ColorMap::dump_colormaps(@_) }
 sub dump_css       { Bio::MView::Color::ColorMap::dump_css1(@_) }
 
-sub load_groupmaps { Bio::MView::Groupmap::load_groupmaps(@_) }
-sub dump_groupmaps { Bio::MView::Groupmap::dump_groupmaps(@_) }
+sub load_groupmaps { Bio::MView::GroupMap::load_groupmaps(@_) }
+sub dump_groupmaps { Bio::MView::GroupMap::dump_groupmaps(@_) }
 
 sub print_format_conversion {
     my ($self, $par, $bld, $aln, $stm) = (@_, \*STDOUT);
