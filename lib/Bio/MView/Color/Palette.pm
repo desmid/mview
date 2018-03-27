@@ -1,14 +1,13 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Color::Palette;
-
-use strict;
 
 sub new {
     my $type = shift;
     my $self = {};
-
     bless $self, $type;
 
     $self->{'keys'} = {};
@@ -17,6 +16,9 @@ sub new {
     $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 sub size { return scalar @{$_[0]->{'rgb'}} }
 
 sub insert {
@@ -33,12 +35,6 @@ sub has_color {
     my ($self, $key) = @_;
     return 1  if exists $self->{'keys'}->{$key};
     return 0;
-}
-
-sub _get_key {
-    my ($self, $key) = @_;
-    return undef  unless exists $self->{'keys'}->{$key};
-    return $self->{'keys'}->{$key};
 }
 
 sub get_index { return $_[0]->_get_key($_[1]) }
@@ -64,6 +60,15 @@ sub color_names {
         push @tmp, $self->{'keys'}->{$i};
     }
     return @tmp;
+}
+
+######################################################################
+# private methods
+######################################################################
+sub _get_key {
+    my ($self, $key) = @_;
+    return undef  unless exists $self->{'keys'}->{$key};
+    return $self->{'keys'}->{$key};
 }
 
 

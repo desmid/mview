@@ -1,12 +1,14 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::GroupMap;
 
-use Exporter;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::Sequence;
-use strict;
+use Exporter;
+
 use vars qw(@ISA @EXPORT $GROUPMAP);
 
 @ISA = qw(Exporter);
@@ -14,26 +16,11 @@ use vars qw(@ISA @EXPORT $GROUPMAP);
 @EXPORT = qw($GROUPMAP);
 
 my $GroupMap          = {};   #static hash of consensus schemes
-
 my $Group_Any         = '.';  #key for non-consensus group
 my $Default_Group_Any = '.';  #default symbol for non-consensus group
 
 my $Default_PRO_Group = 'P1';
 my $Default_DNA_Group = 'D1';
-
-sub list_groupmap_names { return join(",", sort keys %$GroupMap) }
-
-sub check_groupmap {
-    my $map = uc shift;
-    return $map  if exists $GroupMap->{$map};
-    return undef;
-}
-
-sub get_default_groupmap {
-    return $Default_PRO_Group  if !defined $_[0];
-    return $Default_PRO_Group  if $_[0] eq 'aa';
-    return $Default_DNA_Group;
-}
 
 $GROUPMAP = new Bio::MView::GroupMap;  #unique global instance
 
@@ -50,26 +37,21 @@ sub new {
     return $GROUPMAP = $self;
 }
 
-sub has_groupmap {
-    my ($self, $map) = @_;
-    return 1  if exists $self->{'map'}->{$map};
-    return 0;
+######################################################################
+# public class methods
+######################################################################
+sub list_groupmap_names { return join(",", sort keys %$GroupMap) }
+
+sub check_groupmap {
+    my $map = uc shift;
+    return $map  if exists $GroupMap->{$map};
+    return undef;
 }
 
-sub is_singleton {
-    my ($self, $map, $cg) = @_;
-    return 0  unless exists $self->{'map'}->{$map};
-    return 0  unless exists $self->{'map'}->{$map}->[2]->{$cg};
-    return 0  unless keys %{ $self->{'map'}->{$map}->[2]->{$cg} } == 1;
-    return 1;
-}
-
-sub in_consensus_group {
-    my ($self, $map, $cg, $c) = @_;
-    return 0  unless exists $self->{'map'}->{$map};
-    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c};
-    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c}->{$cg};
-    return 1;
+sub get_default_groupmap {
+    return $Default_PRO_Group  if !defined $_[0];
+    return $Default_PRO_Group  if $_[0] eq 'aa';
+    return $Default_DNA_Group;
 }
 
 sub load_groupmaps {
@@ -149,59 +131,6 @@ sub load_groupmaps {
     foreach my $map (keys %$GroupMap) {
 	make_group($map, $Group_Any, $Default_Group_Any, '')
             unless exists $GroupMap->{$map}->[0]->{$Group_Any};
-    }
-}
-
-sub make_group {
-    my ($map, $class, $sym, $members) = @_;
-
-    $sym =~ s/^\'//;
-    $sym =~ s/\'$//;
-    return  0  if length $sym > 1;  #fail
-
-    $members = uc $members;
-    $members =~ s/[\s,]//g;
-    $members =~ s/''/ /g;
-    $members = [ split(//, $members) ];
-
-    #class => symbol
-    $GroupMap->{$map}->[0]->{$class}->[0] = $sym;
-
-    foreach my $m (@$members) {
-        next  unless defined $m;
-
-	#class  => member existence
-	$GroupMap->{$map}->[0]->{$class}->[1]->{$m} = 1;
-
-	#member => symbol existence
-	$GroupMap->{$map}->[1]->{$m}->{$sym} = 1;
-
-	#symbol => members
-	$GroupMap->{$map}->[2]->{$sym}->{$m} = 1;
-    }
-
-    return 1;  #ok
-}
-
-sub dump_group {
-    push @_, keys %$GroupMap    unless @_;
-    my ($group, $class, $mem, $p);
-    warn "Groups by class\n";
-    foreach $group (@_) {
-	warn "[$group]\n";
-	$p = $GroupMap->{$group}->[0];
-	foreach $class (keys %{$p}) {
-	    warn "$class  =>  $p->{$class}->[0]  { ",
-		join(" ", keys %{$p->{$class}->[1]}), " }\n";
-	}
-    }
-    warn "Groups by membership\n";
-    foreach $group (@_) {
-	warn "[$group]\n";
-	$p = $GroupMap->{$group}->[1];
-	foreach $mem (keys %{$p}) {
-	    warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
-	}
     }
 }
 
@@ -380,6 +309,91 @@ sub consensus {
 
     return \$consensus;
 }
+
+######################################################################
+# public methods
+######################################################################
+sub has_groupmap {
+    my ($self, $map) = @_;
+    return 1  if exists $self->{'map'}->{$map};
+    return 0;
+}
+
+sub is_singleton {
+    my ($self, $map, $cg) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->[2]->{$cg};
+    return 0  unless keys %{ $self->{'map'}->{$map}->[2]->{$cg} } == 1;
+    return 1;
+}
+
+sub in_consensus_group {
+    my ($self, $map, $cg, $c) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c};
+    return 0  unless exists $self->{'map'}->{$map}->[1]->{$c}->{$cg};
+    return 1;
+}
+
+######################################################################
+# private methods
+######################################################################
+sub make_group {
+    my ($map, $class, $sym, $members) = @_;
+
+    $sym =~ s/^\'//;
+    $sym =~ s/\'$//;
+    return  0  if length $sym > 1;  #fail
+
+    $members = uc $members;
+    $members =~ s/[\s,]//g;
+    $members =~ s/''/ /g;
+    $members = [ split(//, $members) ];
+
+    #class => symbol
+    $GroupMap->{$map}->[0]->{$class}->[0] = $sym;
+
+    foreach my $m (@$members) {
+        next  unless defined $m;
+
+	#class  => member existence
+	$GroupMap->{$map}->[0]->{$class}->[1]->{$m} = 1;
+
+	#member => symbol existence
+	$GroupMap->{$map}->[1]->{$m}->{$sym} = 1;
+
+	#symbol => members
+	$GroupMap->{$map}->[2]->{$sym}->{$m} = 1;
+    }
+
+    return 1;  #ok
+}
+
+######################################################################
+# debug
+######################################################################
+sub dump_group {
+    push @_, keys %$GroupMap    unless @_;
+    my ($group, $class, $mem, $p);
+    warn "Groups by class\n";
+    foreach $group (@_) {
+	warn "[$group]\n";
+	$p = $GroupMap->{$group}->[0];
+	foreach $class (keys %{$p}) {
+	    warn "$class  =>  $p->{$class}->[0]  { ",
+		join(" ", keys %{$p->{$class}->[1]}), " }\n";
+	}
+    }
+    warn "Groups by membership\n";
+    foreach $group (@_) {
+	warn "[$group]\n";
+	$p = $GroupMap->{$group}->[1];
+	foreach $mem (keys %{$p}) {
+	    warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
+	}
+    }
+}
+
 
 ######################################################################
 eval { load_groupmaps(\*DATA) }; warn($@), exit 1  if $@;

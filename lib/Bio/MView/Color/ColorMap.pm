@@ -1,12 +1,13 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Color::ColorMap;
 
 use Bio::MView::Color::Palette;
-
 use Exporter;
-use strict;
+
 use vars qw(@ISA @EXPORT $COLORMAP);
 
 @ISA = qw(Exporter);
@@ -24,6 +25,11 @@ $Colour_Cream      = '#FFFFCC';
 $Colour_Brown      = '#aa6666';
 $Colour_Comment    = $Colour_Brown;
 
+my $Palette  = new Bio::MView::Color::Palette;  #static maps names to rgb
+my $ColorMap = {};   #static hash of colormaps
+my $MapText  = '';   #used as special index
+my $Wildcard = '.';  #key for default colouring
+
 my %Default_CSS1_Colors = (
     'alncolor' => $Colour_White,
     'labcolor' => $Colour_Black,
@@ -31,18 +37,30 @@ my %Default_CSS1_Colors = (
     'gapcolor' => $Colour_DarkGray,
 );
 
-my $Palette  = new Bio::MView::Color::Palette;  #static palette of names to rgb
-
-my $ColorMap = {};   #static hash of colormaps
-
-my $MapText  = '';   #used as special index
-my $Wildcard = '.';  #key for default colouring
-
 my $Default_PRO_Aln_ColorMap = 'P1';
 my $Default_DNA_Aln_ColorMap = 'D1';
 my $Default_PRO_Con_ColorMap = 'PC1';
 my $Default_DNA_Con_ColorMap = 'DC1';
 
+$COLORMAP = new Bio::MView::Color::ColorMap;  #unique global instance
+
+sub new {
+    my $type = shift;
+    if (defined $COLORMAP) {
+        die "Bio::MView::Color::ColorMap: instance already exists\n";
+    }
+    my $self = {};
+    bless $self, $type;
+
+    $self->{'map'}     = $ColorMap;
+    $self->{'palette'} = $Palette;
+
+    return $COLORMAP = $self;
+}
+
+######################################################################
+# public class methods
+######################################################################
 sub colormap_names      { return keys %$ColorMap }
 
 sub list_colormap_names { return join(",", sort keys %$ColorMap) }
@@ -65,82 +83,6 @@ sub get_default_consensus_colormap {
     return $Default_PRO_Con_ColorMap  if !defined $_[0];
     return $Default_PRO_Con_ColorMap  if $_[0] eq 'aa';
     return $Default_DNA_Con_ColorMap;
-}
-
-$COLORMAP = new Bio::MView::Color::ColorMap;  #unique global instance
-
-sub new {
-    my $type = shift;
-    if (defined $COLORMAP) {
-        die "Bio::MView::Color::ColorMap: instance already exists\n";
-    }
-    my $self = {};
-    bless $self, $type;
-
-    $self->{'map'}     = $ColorMap;
-    $self->{'palette'} = $Palette;
-
-    return $COLORMAP = $self;
-}
-
-sub has_colormap {
-    my ($self, $map) = @_;
-    return 1  if exists $self->{'map'}->{$map};
-    return 0;
-}
-
-sub has_symbol_color {
-    my ($self, $map, $c) = @_;
-    return 0  unless exists $self->{'map'}->{$map};
-    return 0  unless exists $self->{'map'}->{$map}->{$c};
-    return 1;
-}
-
-sub has_wildcard_color {
-    my ($self, $map) = @_;
-    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
-    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
-    return 1;
-}
-
-sub has_palette_color {
-    my ($self, $map) = @_;
-    return 1  if $self->{'palette'}->has_color($map);
-    return 0;
-}
-
-sub get_symbol_color {
-    my ($self, $map, $c) = @_;
-    my $trans = $self->{'map'}->{$map}->{$c}->[1];
-    my $index = $self->{'map'}->{$map}->{$c}->[0];
-    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
-    return ($rgb, $trans, $index);
-}
-
-sub get_wildcard_color {
-    my ($self, $map) = @_;
-    my $trans = $self->{'map'}->{$map}->{$Wildcard}->[1];
-    my $index = $self->{'map'}->{$map}->{$Wildcard}->[0];
-    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
-    return ($rgb, $trans, $index);
-}
-
-sub get_palette_color {
-    my ($self, $map, $trans) = (@_, 'S');  #default
-    my $index = $self->{'palette'}->get_index($map);
-    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
-    return ($rgb, $trans, $index);
-}
-
-sub get_colormap_length {
-    my ($self, $map) = @_;
-    return 1  unless exists $self->{'map'}->{$map};
-    my $len = scalar keys %{$self->{'map'}->{$map}};
-    $len--  if defined $self->{'map'}->{$map}->{''};
-    if ($len % 2 != 0) {
-	die "get_colormap_length: divide by two error\n"
-    }
-    return $len / 2;
 }
 
 #load colormap data from stream
@@ -355,6 +297,69 @@ sub dump_css1 {
     }
 
     return $s;
+}
+
+######################################################################
+# public methods
+######################################################################
+sub has_colormap {
+    my ($self, $map) = @_;
+    return 1  if exists $self->{'map'}->{$map};
+    return 0;
+}
+
+sub has_symbol_color {
+    my ($self, $map, $c) = @_;
+    return 0  unless exists $self->{'map'}->{$map};
+    return 0  unless exists $self->{'map'}->{$map}->{$c};
+    return 1;
+}
+
+sub has_wildcard_color {
+    my ($self, $map) = @_;
+    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
+    return 0  unless exists $self->{'map'}->{$map}->{$Wildcard};
+    return 1;
+}
+
+sub has_palette_color {
+    my ($self, $map) = @_;
+    return 1  if $self->{'palette'}->has_color($map);
+    return 0;
+}
+
+sub get_symbol_color {
+    my ($self, $map, $c) = @_;
+    my $trans = $self->{'map'}->{$map}->{$c}->[1];
+    my $index = $self->{'map'}->{$map}->{$c}->[0];
+    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
+    return ($rgb, $trans, $index);
+}
+
+sub get_wildcard_color {
+    my ($self, $map) = @_;
+    my $trans = $self->{'map'}->{$map}->{$Wildcard}->[1];
+    my $index = $self->{'map'}->{$map}->{$Wildcard}->[0];
+    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
+    return ($rgb, $trans, $index);
+}
+
+sub get_palette_color {
+    my ($self, $map, $trans) = (@_, 'S');  #default
+    my $index = $self->{'palette'}->get_index($map);
+    my $rgb = $self->{'palette'}->get_rgb_at_index($index);
+    return ($rgb, $trans, $index);
+}
+
+sub get_colormap_length {
+    my ($self, $map) = @_;
+    return 1  unless exists $self->{'map'}->{$map};
+    my $len = scalar keys %{$self->{'map'}->{$map}};
+    $len--  if defined $self->{'map'}->{$map}->{''};
+    if ($len % 2 != 0) {
+	die "get_colormap_length: divide by two error\n"
+    }
+    return $len / 2;
 }
 
 
