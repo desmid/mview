@@ -25,7 +25,6 @@ sub new {
 
     $self->{'id2index'}  = {};        #hash of identifiers giving row numbers
     $self->{'index2row'} = [];        #list of aligned rows, from zero
-    #$self->{'cursor'}    = -1,        #index2row iterator #NIGE
     $self->{'parent'}    = $parent;   #identifier of parent sequence
     $self->{'aligned'}   = $aligned;  #sequences are aligned flag
     $self->{'length'}    = 0;         #alignment width
@@ -514,31 +513,6 @@ sub visible_computable_ids {
     }
     @tmp;
 }
-
-# NIGE: REMOVAL CANDIDATE
-# #delete row(s) by identifier
-# sub delete {
-#     my $self = shift;
-#     foreach my $id (@_) {
-# 	next  unless exists $self->{'id2index'}->{$id};
-# 	$self->id2row($id) = undef;
-# 	$self->{'id2index'}->{$id} = undef;
-#     }
-#     $self;
-# }
-
-# #initialise stream of row objects
-# sub reset { $_[0]->{'cursor'} = -1 }
-
-# #return next row object in stream, or return 0 and reinitialise
-# sub next {
-#     $_[0]->{'cursor'}++;
-#     if (defined $_[0]->{'index2row'}->[$_[0]->{'cursor'}]) {
-# 	return $_[0]->{'index2row'}->[$_[0]->{'cursor'}];
-#     }
-#     $_[0]->{'cursor'} = -1;
-#     return 0;
-# }
 
 sub color_header {
     my $self = shift;
