@@ -56,16 +56,20 @@ sub tmpfile {
     return $s;
 }
 
-#arithmetic min() function
 sub min {
     my ($a, $b) = @_;
     return $a < $b ? $a : $b;
 }
 
-#arithmetic max() function
 sub max {
     my ($a, $b) = @_;
     return $a > $b ? $a : $b;
+}
+
+sub swap {
+    my ($a, $b) = @_;
+    my $t = $a; $a = $b; $b = $t;
+    return ($a, $b);
 }
 
 sub stacktrace {
