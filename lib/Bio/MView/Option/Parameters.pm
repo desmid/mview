@@ -1,10 +1,11 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Option::Parameters;
 
 use Exporter;
-use strict;
 use vars qw(@ISA @EXPORT $PAR);
 
 @ISA = qw(Exporter);
@@ -26,6 +27,9 @@ sub new {
     return $PAR = $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 #Return internal hash cloned and modified with any extra (key,val) pairs
 #supplied by the caller.
 sub as_dict {
@@ -68,6 +72,9 @@ sub get_set {
     return $old;
 }
 
+######################################################################
+# debug
+######################################################################
 #Return pretty-printed parameter listing; operate on supplied keys or
 #all keys if none given.
 sub dump {

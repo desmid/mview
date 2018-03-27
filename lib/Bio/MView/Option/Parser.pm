@@ -1,60 +1,17 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Option::Parser;
 
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::MView::Option::Parameters;
-use strict;
 
 my @OptionTypeLibs = ( 'Bio::MView::Option::Types' );
 my @OptionLibs     = ( 'Bio::MView::Option::Options' );
 
 my $DEBUG=0;
-
-###########################################################################
-sub str {
-    return '<UNDEF>'  unless defined $_[0];
-    return "[@{$_[0]}]"  if ref $_[0] eq 'ARRAY';
-    return $_[0];
-}
-
-sub load_library {
-    my $library = $_[0];
-    $library =~ s/::/\//g;
-    require "$library.pm";
-}
-
-sub load_scalar {
-    my ($lib, $var) = @_;
-    return eval '$' . $lib . '::' . $var;
-}
-
-sub dump_item {
-    my ($item, $stm) = (shift, shift);
-    foreach my $key (@_) {
-        next  unless exists $item->{$key};
-        my $val = $item->{$key};
-        $val = '<UNDEF>'  unless defined $val;
-        $val = '<CODE>'     if ref $val eq 'CODE';
-        $val = "''"       if length $val < 1;
-        print $stm sprintf "%20s => %s\n", $key, $val;
-    }
-    print $stm "\n";
-}
-
-sub dump_type {
-    my ($type, $stm) = (@_, \*STDERR);
-    my @fields = qw(type label usage default test);
-    dump_item($type, $stm, @fields);
-}
-
-sub dump_option {
-    my ($opt, $stm) = (@_, \*STDERR);
-    my @fields = qw(group option option_value usage default type test
-                    label param);
-    dump_item($opt, $stm, @fields);
-}
 
 ###########################################################################
 sub new {
@@ -96,6 +53,93 @@ sub new {
     return $self;
 }
 
+######################################################################
+# public methods
+######################################################################
+sub parse_argv {
+    my ($self, $argv) = @_;
+    my @errors = ();
+
+    #save input ARGV for posterity
+    $self->{'param'}->{'argv'} .= "@$argv";
+
+    #look for '--' to stop option processing
+    #warn "argv: [@$argv]\n";
+    my @lhs = (); my @rhs = (); my $options = 1;
+    while (@$argv) {
+        my $arg = shift @$argv;
+        $options = 0, next  if $arg eq '--';
+        push(@lhs, $arg), next  if $options;
+        push(@rhs, $arg);
+    }
+    #warn "lhs/rhs: [@lhs] [@rhs]\n";
+
+    push @errors, $self->parse_options(\@lhs);
+
+    #fail unprocessed options; leave implicit non-options
+    @$argv = ();
+    foreach my $arg (@lhs) {
+	if ($arg =~ /^--?\S/) {
+            push @errors, "unknown or bad option '$arg'";
+	}
+        push @$argv, $arg;
+    }
+    push @$argv, @rhs;  #replace explicit non-options
+
+    #instantiate global parameter object
+    unless (@errors) {
+        new Bio::MView::Option::Parameters($self->{'param'});
+    }
+
+    return @errors;
+}
+
+sub get_parameters { return $_[0]->{'param'} }
+
+sub usage {
+    my $self = shift;
+    my $s = $Bio::MView::Option::Options::Header;  #already loaded
+    my $prog = $self->{'param'}->{'prog'};
+    $s =~ s/<PROG>/$prog/;
+
+    foreach my $grp (@{$self->{'groups'}}) {
+        next  unless exists $grp->{'header'};  #hidden group
+
+        $s .= $grp->{'header'} . "\n";
+
+        foreach my $opt (@{$grp->{'options'}}) {
+            $s .= $self->get_option_usage($opt);
+        }
+
+        $s .= "\n";
+    }
+
+    return $s;
+}
+
+######################################################################
+# private class methods
+######################################################################
+sub str {
+    return '<UNDEF>'  unless defined $_[0];
+    return "[@{$_[0]}]"  if ref $_[0] eq 'ARRAY';
+    return $_[0];
+}
+
+sub load_library {
+    my $library = $_[0];
+    $library =~ s/::/\//g;
+    require "$library.pm";
+}
+
+sub load_scalar {
+    my ($lib, $var) = @_;
+    return eval '$' . $lib . '::' . $var;
+}
+
+######################################################################
+# private methods
+######################################################################
 sub load_types {
     my ($self, $lib) = @_;
     my $var = load_scalar($lib, 'Types');
@@ -211,27 +255,6 @@ sub update_option {
     $opt->{'option_value'} = $ov;
 
     $self->test_and_set_option($opt);
-}
-
-sub usage {
-    my $self = shift;
-    my $s = $Bio::MView::Option::Options::Header;  #already loaded
-    my $prog = $self->{'param'}->{'prog'};
-    $s =~ s/<PROG>/$prog/;
-
-    foreach my $grp (@{$self->{'groups'}}) {
-        next  unless exists $grp->{'header'};  #hidden group
-
-        $s .= $grp->{'header'} . "\n";
-
-        foreach my $opt (@{$grp->{'options'}}) {
-            $s .= $self->get_option_usage($opt);
-        }
-
-        $s .= "\n";
-    }
-
-    return $s;
 }
 
 sub get_type_record {
@@ -387,45 +410,34 @@ sub option_order {
         values %{$self->{'options'}};
 }
 
-sub parse_argv {
-    my ($self, $argv) = @_;
-    my @errors = ();
-
-    #save input ARGV for posterity
-    $self->{'param'}->{'argv'} .= "@$argv";
-
-    #look for '--' to stop option processing
-    #warn "argv: [@$argv]\n";
-    my @lhs = (); my @rhs = (); my $options = 1;
-    while (@$argv) {
-        my $arg = shift @$argv;
-        $options = 0, next  if $arg eq '--';
-        push(@lhs, $arg), next  if $options;
-        push(@rhs, $arg);
+######################################################################
+# debug
+######################################################################
+sub dump_item {
+    my ($item, $stm) = (shift, shift);
+    foreach my $key (@_) {
+        next  unless exists $item->{$key};
+        my $val = $item->{$key};
+        $val = '<UNDEF>'  unless defined $val;
+        $val = '<CODE>'     if ref $val eq 'CODE';
+        $val = "''"       if length $val < 1;
+        print $stm sprintf "%20s => %s\n", $key, $val;
     }
-    #warn "lhs/rhs: [@lhs] [@rhs]\n";
-
-    push @errors, $self->parse_options(\@lhs);
-
-    #fail unprocessed options; leave implicit non-options
-    @$argv = ();
-    foreach my $arg (@lhs) {
-	if ($arg =~ /^--?\S/) {
-            push @errors, "unknown or bad option '$arg'";
-	}
-        push @$argv, $arg;
-    }
-    push @$argv, @rhs;  #replace explicit non-options
-
-    #instantiate global parameter object
-    unless (@errors) {
-        new Bio::MView::Option::Parameters($self->{'param'});
-    }
-
-    return @errors;
+    print $stm "\n";
 }
 
-sub get_parameters { return $_[0]->{'param'} }
+sub dump_type {
+    my ($type, $stm) = (@_, \*STDERR);
+    my @fields = qw(type label usage default test);
+    dump_item($type, $stm, @fields);
+}
+
+sub dump_option {
+    my ($opt, $stm) = (@_, \*STDERR);
+    my @fields = qw(group option option_value usage default type test
+                    label param);
+    dump_item($opt, $stm, @fields);
+}
 
 
 ###########################################################################

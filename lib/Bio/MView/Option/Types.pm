@@ -1,15 +1,19 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Option::Types;
 
-use Exporter;
 use Bio::MView::Option::Arguments;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;
 use NPB::Parse::Regexps;
+use Exporter;
+
+use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
 
@@ -19,7 +23,6 @@ push @EXPORT, qw(
     get_default_groupmap
 );
 
-use strict;
 use vars qw($Types);
 
 ######################################################################

@@ -1,12 +1,16 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Option::Arguments;
 
-use Exporter;
 use Bio::MView::Align::Consensus;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;
+use Exporter;
+
+use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
 
@@ -35,7 +39,6 @@ push @EXPORT, qw(list_chain_values  check_chain_value);
 
 push @EXPORT, qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
 
-use strict;
 use vars qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
 
 ############################################################################

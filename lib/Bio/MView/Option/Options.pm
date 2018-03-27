@@ -1,11 +1,12 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Option::Options;
 
 use Bio::MView::Option::Arguments;
 use Bio::MView::Option::Types;
-use strict;
 use vars qw($Header $Groups $Options);
 
 ###########################################################################
