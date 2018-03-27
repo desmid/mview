@@ -285,47 +285,42 @@ sub do_gc {
 }
 
 sub prune_identities {
-    my ($self, $refid, $mode, $min, $max, $topn) =
-        (shift, shift, shift, shift, shift, shift);
+    my ($self, $refid, $mode, $min, $max, $topn, $keep) = @_;
 
     $min = 0    if $min < 0;
     $max = 100  if $max > 100;
 
-    #special case
-    return $self  unless $min > 0 or $max < 100;
-    return $self  if $min > $max;
+    #trivial cases
+    return $self  unless defined $refid;
 
-    #ensure no replicates in keep list
-    my %keep;
-    foreach my $i (@_) {
-	my $j = $self->id2row($i);
-	$keep{$j} = $j  if defined $j;
-    }
-
-    #the reference row
-    my $ref = $self->item($refid);
+    my $ref = $self->item($refid);  #the reference row
     return $self  unless defined $ref;
 
-    #prime keep list
+    return $self  unless $min > 0 or $max < 100;
+
+    #still work if limits are back to front
+    ($min, $max) = Universal::swap($min, $max)  if $min > $max;
+
     my @obj = ();
 
-    foreach my $r (@{$self->{'index2row'}}) {
-	next  unless defined $r;
+    foreach my $row (@{$self->{'index2row'}}) {
+	next  unless defined $row;
 
 	#enforce limit on number of rows
 	last  if $topn > 0 and @obj == $topn;
 
-	if (exists $keep{$r}) {
-            push @obj, $r;
+        #keep this row regardless of percent identity
+	if (exists $keep->{$row->id}) {
+            push @obj, $row;
 	    next;
 	}
 
-        my $pcid = $r->compute_identity_to($ref, $mode);
+        my $pcid = $row->compute_identity_to($ref, $mode);
 
 	#percent identity outside cutoff?
         next  if $pcid < $min or $pcid > $max;
 
-        push @obj, $r;
+        push @obj, $row;
     }
 
     return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);

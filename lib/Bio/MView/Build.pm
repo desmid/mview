@@ -445,15 +445,12 @@ sub build_base_alignment {
     }
 
     #filter alignment based on %identity to reference
-    if ((0 < $PAR->get('minident') or $PAR->get('maxident') < 100)
-        and defined $self->{'ref_row'}) {
-        $aln = $aln->prune_identities($self->{'ref_row'}->uid,
-                                      $PAR->get('pcid'),
-                                      $PAR->get('minident'),
-                                      $PAR->get('maxident'),
-                                      $self->{'show'},
-                                      keys %{$self->{'keep_uid'}});
-    }
+    $aln = $aln->prune_identities($self->{'ref_row'}->uid,
+                                  $PAR->get('pcid'),
+                                  $PAR->get('minident'),
+                                  $PAR->get('maxident'),
+                                  $self->{'show'},
+                                  $self->{'keep_uid'});
 
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
                          'hidehash' => $self->{'hide_uid'});
