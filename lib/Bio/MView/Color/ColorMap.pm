@@ -362,7 +362,6 @@ sub get_colormap_length {
     return $len / 2;
 }
 
-
 ######################################################################
 eval { load_colormaps(\*DATA) }; warn($@), exit 1  if $@;
 

@@ -9,7 +9,6 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::MultiScheduler);
 
-
 ###########################################################################
 package Bio::MView::Build::SimpleScheduler;
 
@@ -204,7 +203,6 @@ sub _get_todo {
     return \@items;
 }
 
-
 ###########################################################################
 package Bio::MView::Build::MultiScheduler;
 
@@ -344,7 +342,6 @@ sub reset {
         $stage->reset;
     }
 }
-
 
 ###########################################################################
 1;

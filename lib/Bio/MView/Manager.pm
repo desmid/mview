@@ -264,6 +264,25 @@ sub print_alignment {
 }
 
 ######################################################################
+# private class methods
+######################################################################
+sub load_format_library {
+    my $class = "Bio::MView::Build::Format::$_[0]";
+    my $library = $class;
+    $library =~ s/::/\//g;
+    require "$library.pm";
+    return $class;
+}
+
+sub get_format_parser {
+    my $parser = $_[0] . "::parser";
+    no strict 'refs';
+    $parser = &$parser();
+    use strict 'refs';
+    return $parser;
+}
+
+######################################################################
 # private methods
 ######################################################################
 #construct a header string describing this alignment
@@ -368,25 +387,6 @@ sub print_format_conversion {
         last;
     }
     print $stm $$s  if defined $s;
-}
-
-######################################################################
-# private class methods
-######################################################################
-sub load_format_library {
-    my $class = "Bio::MView::Build::Format::$_[0]";
-    my $library = $class;
-    $library =~ s/::/\//g;
-    require "$library.pm";
-    return $class;
-}
-
-sub get_format_parser {
-    my $parser = $_[0] . "::parser";
-    no strict 'refs';
-    $parser = &$parser();
-    use strict 'refs';
-    return $parser;
 }
 
 ###########################################################################
