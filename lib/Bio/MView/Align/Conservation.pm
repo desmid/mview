@@ -1,13 +1,15 @@
 # Copyright (C) 2015-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::Conservation;
 
 use Bio::MView::Align::Sequence;
 
-@ISA = qw(Bio::MView::Align::Sequence);
+use vars qw(@ISA);
 
-use strict;
+@ISA = qw(Bio::MView::Align::Sequence);
 
 sub new {
     my $type = shift;
@@ -22,12 +24,14 @@ sub new {
     $sob->insert([$string, $from, $to]);
 
     my $self = new Bio::MView::Align::Sequence('clustal', $sob);
-
     bless $self, $type;
 
     $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 #override
 sub is_sequence { 0 }
 

@@ -1,5 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Align;
 
@@ -10,8 +12,6 @@ use Bio::MView::Align::Conservation;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Special;
 
-use strict;
-
 sub new {
     my $type = shift;
     #warn "${type}::new: @_\n";
@@ -21,12 +21,11 @@ sub new {
     my ($aligned, $parent) = (shift, shift);
 
     my $self = {};
-
     bless $self, $type;
 
     $self->{'id2index'}  = {};        #hash of identifiers giving row numbers
     $self->{'index2row'} = [];        #list of aligned rows, from zero
-    $self->{'cursor'}    = -1,        #index2row iterator
+    #$self->{'cursor'}    = -1,        #index2row iterator #NIGE
     $self->{'parent'}    = $parent;   #identifier of parent sequence
     $self->{'aligned'}   = $aligned;  #sequences are aligned flag
     $self->{'length'}    = 0;         #alignment width
@@ -42,6 +41,9 @@ sub new {
     $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 #sequence factory
 sub make_sequence {
     my ($self, $row) = @_;
@@ -90,32 +92,6 @@ sub append {
     }
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub dump {
-    sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
-    }
-    my $self = shift;
-    warn "$self\n";
-    map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-    warn "  sequence rows:\n";
-    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-        my $r = $self->{'index2row'}->[$i];
-        print STDERR "  $i: ";
-        if (defined $r) {
-            $r->dump;
-        } else {
-            print STDERR "\n";
-        }
-    }
-    warn "\n";
-    $self;
-}
-
 sub set_parameters {
     my $self = shift;
     while (@_) {
@@ -133,9 +109,6 @@ sub id2row {
     return undef  unless defined $_[0]->{id2index}->{$_[1]};
     $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}];
 }
-
-sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
-sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
 
 #return list of all rows as internal ids
 sub all_ids {
@@ -159,62 +132,12 @@ sub visible_ids {
     @tmp;
 }
 
-#return list of visible rows as row objects, for output
-sub visible_rows {
-    my @tmp = ();
-    foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->id);
-	next  if $_[0]->is_nop($r->id);
-	push @tmp, $r;
-    }
-    @tmp;
-}
-
-#return list of visible sequence rows excluding nops as internal ids,
-#for processing and output
-sub visible_computable_ids {
-    my @tmp = ();
-    foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
-        next  unless $r->is_sequence;
-	next  if $_[0]->is_hidden($r->id);
-	next  if $_[0]->is_nop($r->id);
-	push @tmp, $r->id;
-    }
-    @tmp;
-}
-
 #return row object indexed by identifier, or undef
 sub item {
     my ($self, $id) = @_;
     return undef  unless defined $id;
     return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
     undef;
-}
-
-#delete row(s) by identifier
-sub delete {
-    my $self = shift;
-    foreach my $id (@_) {
-	next  unless exists $self->{'id2index'}->{$id};
-	$self->id2row($id) = undef;
-	$self->{'id2index'}->{$id} = undef;
-    }
-    $self;
-}
-
-#initialise stream of row objects
-sub reset { $_[0]->{'cursor'} = -1 }
-
-#return next row object in stream, or return 0 and reinitialise
-sub next {
-    $_[0]->{'cursor'}++;
-    if (defined $_[0]->{'index2row'}->[$_[0]->{'cursor'}]) {
-	return $_[0]->{'index2row'}->[$_[0]->{'cursor'}];
-    }
-    $_[0]->{'cursor'} = -1;
-    return 0;
 }
 
 #propagate display parameters to row objects
@@ -258,42 +181,6 @@ sub header {
     return ''  if $quiet;
     return ''  unless $PAR->get('html');
     return $self->color_header;
-}
-
-sub color_header {
-    my $self = shift;
-
-    my $mode      = $PAR->get('aln_coloring');
-    my $threshold = $PAR->get('aln_threshold');
-    my $ref_id    = $PAR->get('ref_id');
-    my $find      = $PAR->get('find');
-
-    my $s = '';
-
-    if ($mode eq 'any') {
-	$s .= "Colored by: property";
-    }
-    elsif ($mode eq 'identity' and defined $ref_id) {
-	$s .= "Colored by: identity";
-    }
-    elsif ($mode eq 'mismatch' and defined $ref_id) {
-	$s .= "Colored by: mismatch";
-    }
-    elsif ($mode eq 'consensus') {
-	$s .= "Colored by: consensus/$threshold\%";
-    }
-    elsif ($mode eq 'group') {
-	$s .= "Colored by: consensus group/$threshold\%";
-    }
-
-    #overlay any find pattern colouring
-    if ($find ne '') {
-        $s .= $s eq '' ? "Colored by: " : "; ";
-        $s .= "search pattern '$find'\n";
-    }
-    $s .= "\n"  if $s ne '';
-
-    return $s;
 }
 
 sub set_color_scheme {
@@ -354,119 +241,6 @@ sub set_consensus_color_scheme {
 
         warn "set_consensus_color_scheme: unknown mode '$mode'\n";
         last;
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_special {
-    my ($self, $kw) = @_;
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_special;
-	$r->color_special($kw);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_none {
-    my ($self, $kw) = @_;
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$r->color_none($kw);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_type {
-    my ($self, $kw) = @_;
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence or $r->is_consensus;
-	$r->color_by_type($kw);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_identity {
-    my ($self, $kw, $id) = @_;
-
-    my $ref = $self->item($id);
-    return  unless defined $ref;
-
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$r->color_by_identity($kw, $ref);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_mismatch {
-    my ($self, $kw, $id) = @_;
-
-    my $ref = $self->item($id);
-    return  unless defined $ref;
-
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$r->color_by_mismatch($kw, $ref);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_consensus_sequence {
-    my ($self, $kw) = @_;
-
-    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
-
-    my $from = $self->{'parent'}->from;
-    my $to   = $from + $self->length - 1;
-
-    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $kw->{'aln_groupmap'},
-					       $kw->{'aln_threshold'},
-					       $kw->{'aln_ignore'});
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$con->color_by_consensus_sequence($kw, $r);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_consensus_group {
-    my ($self, $kw) = @_;
-
-    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
-
-    my $from = $self->{'parent'}->from;
-    my $to   = $from + $self->length - 1;
-
-    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $kw->{'aln_groupmap'},
-					       $kw->{'aln_threshold'},
-					       $kw->{'aln_ignore'});
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$con->color_by_consensus_group($kw, $r);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_by_find_block {
-    my ($self, $kw) = @_;
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_sequence;
-	$r->color_by_find_block($kw);
-    }
-}
-
-#propagate colour scheme to row objects
-sub color_consensus_by_identity {
-    my ($self, $kw, $aln, $id) = @_;
-
-    my $ref = $aln->item($id);
-    return  unless defined $ref;
-
-    foreach my $r ($self->visible_rows) {
-        next  unless $r->is_consensus;
-	$r->color_by_identity($kw, $ref);
     }
 }
 
@@ -620,39 +394,6 @@ sub build_consensus_rows {
     new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
 }
 
-sub compute_tallies {
-    my ($self, $gname) = @_;
-
-    my $gaps = $PAR->get('con_gaps');
-
-    my $key = join('::', ($gname, $gaps));
-    #warn "Tally: $key\n";
-
-    #is there already a suitable tally?
-    return $self->{'tally'}->{$key}  if exists $self->{'tally'}->{$key};
-
-    $self->{'tally'}->{$key} = [];
-
-    #iterate over columns
-    for (my $c=1; $c <= $self->{'length'}; $c++) {
-
-	my $column = [];
-
-	#iterate over rows
-        foreach my $r ($self->visible_rows) {
-            next  unless $r->is_sequence;
-	    push @$column, $r->{'string'}->raw($c);
-	}
-
-	#warn "compute_tallies: @$column\n";
-
-	push @{$self->{'tally'}->{$key}},
-	    Bio::MView::GroupMap::tally_column($gname, $column, $gaps);
-    }
-
-    return $self->{'tally'}->{$key};
-}
-
 sub conservation {
     #conservation mechanism inspired by Clustalx-2.1/AlignmentOutput.cpp
     my $CONS_STRONG = [ qw(STA NEQK NHQK NDEQ QHRK MILV MILF HY FYW) ];
@@ -740,6 +481,274 @@ sub conservation {
     }
     #warn "@{[length($s)]} [$s]\n";
     \$s;
+}
+
+######################################################################
+# private methods
+######################################################################
+sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
+sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
+
+#return list of visible rows as row objects, for output
+sub visible_rows {
+    my @tmp = ();
+    foreach my $r (@{$_[0]->{'index2row'}}) {
+	next  unless defined $r;
+	next  if $_[0]->is_hidden($r->id);
+	next  if $_[0]->is_nop($r->id);
+	push @tmp, $r;
+    }
+    @tmp;
+}
+
+#return list of visible sequence rows excluding nops as internal ids,
+#for processing and output
+sub visible_computable_ids {
+    my @tmp = ();
+    foreach my $r (@{$_[0]->{'index2row'}}) {
+	next  unless defined $r;
+        next  unless $r->is_sequence;
+	next  if $_[0]->is_hidden($r->id);
+	next  if $_[0]->is_nop($r->id);
+	push @tmp, $r->id;
+    }
+    @tmp;
+}
+
+# NIGE: REMOVAL CANDIDATE
+# #delete row(s) by identifier
+# sub delete {
+#     my $self = shift;
+#     foreach my $id (@_) {
+# 	next  unless exists $self->{'id2index'}->{$id};
+# 	$self->id2row($id) = undef;
+# 	$self->{'id2index'}->{$id} = undef;
+#     }
+#     $self;
+# }
+
+# #initialise stream of row objects
+# sub reset { $_[0]->{'cursor'} = -1 }
+
+# #return next row object in stream, or return 0 and reinitialise
+# sub next {
+#     $_[0]->{'cursor'}++;
+#     if (defined $_[0]->{'index2row'}->[$_[0]->{'cursor'}]) {
+# 	return $_[0]->{'index2row'}->[$_[0]->{'cursor'}];
+#     }
+#     $_[0]->{'cursor'} = -1;
+#     return 0;
+# }
+
+sub color_header {
+    my $self = shift;
+
+    my $mode      = $PAR->get('aln_coloring');
+    my $threshold = $PAR->get('aln_threshold');
+    my $ref_id    = $PAR->get('ref_id');
+    my $find      = $PAR->get('find');
+
+    my $s = '';
+
+    if ($mode eq 'any') {
+	$s .= "Colored by: property";
+    }
+    elsif ($mode eq 'identity' and defined $ref_id) {
+	$s .= "Colored by: identity";
+    }
+    elsif ($mode eq 'mismatch' and defined $ref_id) {
+	$s .= "Colored by: mismatch";
+    }
+    elsif ($mode eq 'consensus') {
+	$s .= "Colored by: consensus/$threshold\%";
+    }
+    elsif ($mode eq 'group') {
+	$s .= "Colored by: consensus group/$threshold\%";
+    }
+
+    #overlay any find pattern colouring
+    if ($find ne '') {
+        $s .= $s eq '' ? "Colored by: " : "; ";
+        $s .= "search pattern '$find'\n";
+    }
+    $s .= "\n"  if $s ne '';
+
+    return $s;
+}
+
+#propagate colour scheme to row objects
+sub color_special {
+    my ($self, $kw) = @_;
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_special;
+	$r->color_special($kw);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_none {
+    my ($self, $kw) = @_;
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$r->color_none($kw);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_type {
+    my ($self, $kw) = @_;
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence or $r->is_consensus;
+	$r->color_by_type($kw);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_identity {
+    my ($self, $kw, $id) = @_;
+
+    my $ref = $self->item($id);
+    return  unless defined $ref;
+
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$r->color_by_identity($kw, $ref);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_mismatch {
+    my ($self, $kw, $id) = @_;
+
+    my $ref = $self->item($id);
+    return  unless defined $ref;
+
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$r->color_by_mismatch($kw, $ref);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_consensus_sequence {
+    my ($self, $kw) = @_;
+
+    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
+
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
+
+    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
+					       $kw->{'aln_groupmap'},
+					       $kw->{'aln_threshold'},
+					       $kw->{'aln_ignore'});
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$con->color_by_consensus_sequence($kw, $r);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_consensus_group {
+    my ($self, $kw) = @_;
+
+    my $tally = $self->compute_tallies($kw->{'aln_groupmap'});
+
+    my $from = $self->{'parent'}->from;
+    my $to   = $from + $self->length - 1;
+
+    my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
+					       $kw->{'aln_groupmap'},
+					       $kw->{'aln_threshold'},
+					       $kw->{'aln_ignore'});
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$con->color_by_consensus_group($kw, $r);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_by_find_block {
+    my ($self, $kw) = @_;
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_sequence;
+	$r->color_by_find_block($kw);
+    }
+}
+
+#propagate colour scheme to row objects
+sub color_consensus_by_identity {
+    my ($self, $kw, $aln, $id) = @_;
+
+    my $ref = $aln->item($id);
+    return  unless defined $ref;
+
+    foreach my $r ($self->visible_rows) {
+        next  unless $r->is_consensus;
+	$r->color_by_identity($kw, $ref);
+    }
+}
+
+sub compute_tallies {
+    my ($self, $gname) = @_;
+
+    my $gaps = $PAR->get('con_gaps');
+
+    my $key = join('::', ($gname, $gaps));
+    #warn "Tally: $key\n";
+
+    #is there already a suitable tally?
+    return $self->{'tally'}->{$key}  if exists $self->{'tally'}->{$key};
+
+    $self->{'tally'}->{$key} = [];
+
+    #iterate over columns
+    for (my $c=1; $c <= $self->{'length'}; $c++) {
+
+	my $column = [];
+
+	#iterate over rows
+        foreach my $r ($self->visible_rows) {
+            next  unless $r->is_sequence;
+	    push @$column, $r->{'string'}->raw($c);
+	}
+
+	#warn "compute_tallies: @$column\n";
+
+	push @{$self->{'tally'}->{$key}},
+	    Bio::MView::GroupMap::tally_column($gname, $column, $gaps);
+    }
+
+    return $self->{'tally'}->{$key};
+}
+
+######################################################################
+# debug
+######################################################################
+#sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub dump {
+    sub _format {
+	my ($self, $k, $v) = @_;
+	$v = 'undef' unless defined $v;
+	$v = "'$v'" if $v =~ /^\s*$/;
+	return sprintf("  %-15s => %s\n", $k, $v)
+    }
+    my $self = shift;
+    warn "$self\n";
+    map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
+    warn "  sequence rows:\n";
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+        my $r = $self->{'index2row'}->[$i];
+        print STDERR "  $i: ";
+        if (defined $r) {
+            $r->dump;
+        } else {
+            print STDERR "\n";
+        }
+    }
+    warn "\n";
+    $self;
 }
 
 

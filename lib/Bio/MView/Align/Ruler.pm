@@ -1,13 +1,15 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::Ruler;
 
 use Bio::MView::Align::Row;
 
-@ISA = qw(Bio::MView::Align::Row);
+use vars qw(@ISA);
 
-use strict;
+@ISA = qw(Bio::MView::Align::Row);
 
 sub new {
     my $type = shift;
@@ -16,7 +18,6 @@ sub new {
     my ($length, $refobj) = @_;
 
     my $self = new Bio::MView::Align::Row('ruler', '');
-
     bless $self, $type;
 
     $self->{'length'} = $length;
@@ -26,9 +27,15 @@ sub new {
     $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 #override
 sub length { $_[0]->{'length'} }
 
+######################################################################
+# private methods
+######################################################################
 #override
 sub reset_display {
     my ($self, $refobj) = @_;

@@ -1,11 +1,11 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::ColorMixin;
 
 use Bio::MView::Color::ColorMap;
-
-use strict;
 
 use vars qw($FIND_WARNINGS);
 
@@ -14,6 +14,124 @@ $FIND_WARNINGS = 0;           #find block warning count
 my $FIND_SEPARATOR = ':';     #for multiple find patterns
 my $FIND_COLORMAP  = 'FIND';  #hardwired find colormap
 
+######################################################################
+# public methods
+######################################################################
+sub color_none {
+    my ($self, $kw) = @_;
+
+    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+	$c = $self->{'string'}->raw($i);
+
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next  if $self->{'string'}->is_space($c);
+
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
+	    next;
+	}
+
+        push @$color, $i, 'color' => $kw->{'symcolor'};
+    }
+
+    $self->{'display'}->{'paint'} = 1;
+}
+
+sub color_by_find_block {
+    my ($self, $kw) = @_;
+
+    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+
+    my $block = $self->find_blocks($kw->{'find'}, $FIND_COLORMAP);
+
+    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
+
+	$c = $self->{'string'}->raw($i);
+
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next  if $self->{'string'}->is_space($c);
+
+	#gap or frameshift: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
+	    next;
+	}
+
+        if (exists $block->{$i}) {
+            #use symbol color/wildcard colour
+            @tmp = $self->get_color($block->{$i}, $FIND_COLORMAP);
+        } else {
+            @tmp = ();
+        }
+
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
+    }
+
+    $self->{'display'}->{'paint'} = 1;
+}
+
+#subclass overrides
+sub color_by_type {
+    my ($self, $kw) = @_;
+
+    my $color = $self->{'display'}->{'range'};
+
+    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
+
+    my $end = $self->length + 1;
+
+    for (my $i=1; $i<$end; $i++) {
+
+	my $c = $self->{'string'}->raw($i);
+
+	#warn "[$i]= $c\n";
+
+	#white space: no color
+	next  if $self->{'string'}->is_space($c);
+
+	#gap: gapcolour
+	if ($self->{'string'}->is_non_char($c)) {
+	    push @$color, $i, 'color' => $kw->{'gapcolor'};
+	    next;
+	}
+
+	#use symbol color/wildcard colour
+	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
+
+        push @$color,
+            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
+    }
+
+    $self->{'display'}->{'paint'} = 1;
+}
+
+#subclass overrides
+sub color_by_identity {
+    my $self = shift;
+    $self->color_by_identity_body(1, @_);
+}
+
+sub color_by_mismatch {
+    my $self = shift;
+    $self->color_by_identity_body(0, @_);
+}
+
+######################################################################
+# private methods
+######################################################################
 sub get_color {
     my ($self, $c, $map) = @_;
     #warn "get_color: $c, $map";
@@ -59,121 +177,6 @@ sub find_blocks {
     }
 
     return $index;
-}
-
-#override
-sub color_none {
-    my ($self, $kw) = @_;
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        push @$color, $i, 'color' => $kw->{'symcolor'};
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_find_block {
-    my ($self, $kw) = @_;
-
-    my ($color, $end, $i, $c, @tmp) = ($self->{'display'}->{'range'});
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    my $block = $self->find_blocks($kw->{'find'}, $FIND_COLORMAP);
-
-    for ($end=$self->length+1, $i=1; $i<$end; $i++) {
-
-	$c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-        if (exists $block->{$i}) {
-            #use symbol color/wildcard colour
-            @tmp = $self->get_color($block->{$i}, $FIND_COLORMAP);
-        } else {
-            @tmp = ();
-        }
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_type {
-    my ($self, $kw) = @_;
-
-    my $color = $self->{'display'}->{'range'};
-
-    push @$color, 1, $self->length, 'color' => $kw->{'symcolor'};
-
-    my $end = $self->length + 1;
-
-    for (my $i=1; $i<$end; $i++) {
-
-	my $c = $self->{'string'}->raw($i);
-
-	#warn "[$i]= $c\n";
-
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
-
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
-
-	#use symbol color/wildcard colour
-	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
-
-        push @$color,
-            $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
-    }
-
-    $self->{'display'}->{'paint'} = 1;
-}
-
-#override
-sub color_by_identity {
-    my $self = shift;
-    $self->color_by_identity_body(1, @_);
-}
-
-#override
-sub color_by_mismatch {
-    my $self = shift;
-    $self->color_by_identity_body(0, @_);
 }
 
 sub color_by_identity_body {

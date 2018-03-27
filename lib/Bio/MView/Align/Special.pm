@@ -1,5 +1,7 @@
 # Copyright (C) 2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::Special;
 
@@ -7,10 +9,13 @@ use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
 
+use vars qw(@ISA);
+
 @ISA = qw(Bio::MView::Align::Sequence);
 
-use strict;
-
+######################################################################
+# public methods
+######################################################################
 #override
 sub is_sequence { 0 }
 
@@ -25,7 +30,7 @@ sub adjust_display {
     );
 }
 
-#override
+#subclass overrides
 sub color_special {
     my $self = shift;
 
@@ -40,6 +45,9 @@ sub color_special {
     $self->color_by_type($kw);
 }
 
+######################################################################
+# private methods
+######################################################################
 #Match row identifier like /#MAP/ or /#MAP:/ or /#MAP:stuff/
 #where MAP is some known colormap, and return the colormap;
 #note: the internal id may have leading text before the hash.

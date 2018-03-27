@@ -1,9 +1,9 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::Row;
-
-use strict;
 
 sub new {
     my $type = shift;
@@ -12,7 +12,6 @@ sub new {
     my ($display_type, $id) = @_;
 
     my $self = {};
-
     bless $self, $type;
 
     $self->{'display_type'} = $display_type;
@@ -23,13 +22,12 @@ sub new {
     $self;
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub reset_display {
-    my $self = shift;
-    $self->{'display'} = {};
-    $self->set_display(@_);
-}
+######################################################################
+# public methods
+######################################################################
+sub is_sequence  { 0 }  #subclass overrides
+sub is_consensus { 0 }  #subclass overrides
+sub is_special   { 0 }  #subclass overrides
 
 sub set_display {
     my $self = shift;
@@ -56,15 +54,25 @@ sub display_type { $_[0]->{'display_type'} }
 #subclass overrides
 sub adjust_display {}  #tell object to adjust display settings on the fly
 
+######################################################################
+# private methods
+######################################################################
 #subclass overrides
-sub length       { 0 }
+sub reset_display {
+    my $self = shift;
+    $self->{'display'} = {};
+    $self->set_display(@_);
+}
 
 #subclass overrides
-sub is_sequence  { 0 }
-sub is_consensus { 0 }
-sub is_special   { 0 }
+sub length { 0 }
 
+######################################################################
+# debug
+######################################################################
 sub dump { Universal::dump_object($_[0]) }
+
+#sub DESTROY { warn "DESTROY $_[0]\n" }
 
 
 ###########################################################################

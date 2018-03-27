@@ -1,5 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
@@ -7,9 +9,9 @@ use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;
 
-@ISA = qw(Bio::MView::Align::Sequence);
+use vars qw(@ISA);
 
-use strict;
+@ISA = qw(Bio::MView::Align::Sequence);
 
 #hardwire the consensus line symcolor
 my $SYMCOLOR = $Bio::MView::Color::ColorMap::Colour_Black;
@@ -34,7 +36,6 @@ sub new {
     $sob->insert([$string, $from, $to]);
 
     my $self = new Bio::MView::Align::Sequence("consensus/$thresh\%", $sob);
-
     bless $self, $type;
 
     $self->{'group'}     = $group;
@@ -43,75 +44,16 @@ sub new {
     $self;
 }
 
+######################################################################
+# public methods
+######################################################################
 #override
 sub is_sequence { 0 }
 
 #override
 sub is_consensus { 1 }
 
-#colours a row of consensus sequence.
-# 1. give consensus symbols their own colour.
-# 2. the consensus colormap is just one colour name, use that and ignore CSS.
-# 3. the consensus may be a residue name: use prevailing residue colour.
-# 4. use the prevailing wildcard residue colour.
-# 5. give up.
-sub get_color_type {
-    my ($self, $c, $mapS, $mapG) = @_;
-    #warn "get_color_type($self, $c, $mapS, $mapG)\n";
-
-    return $COLORMAP->get_symbol_color($mapG, $c)
-        if $COLORMAP->has_symbol_color($mapG, $c);
-
-    return $COLORMAP->get_palette_color($mapG, 'T')  #ignore CSS setting
-        if $COLORMAP->has_palette_color($mapG);
-
-    return $COLORMAP->get_symbol_color($mapS, $c)
-        if $COLORMAP->has_symbol_color($mapS, $c);
-
-    return $COLORMAP->get_wildcard_color($mapS)
-        if $COLORMAP->has_wildcard_color($mapS);
-
-    return ();  #no match
-}
-
-#colours a row of 'normal' sequence only where there is a consensus symbol.
-# 1. give residues their own colour.
-# 2. use the prevailing wildcard residue colour.
-# 3. give up.
-sub get_color_consensus_sequence {
-    my ($self, $cs, $cg, $mapS, $mapG) = @_;
-    #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
-
-    return $COLORMAP->get_symbol_color($mapS, $cs)
-        if $COLORMAP->has_symbol_color($mapS, $cs);
-
-    return $COLORMAP->get_wildcard_color($mapS)
-        if $COLORMAP->has_wildcard_color($mapS);
-
-    return ();  #no match
-}
-
-#colours a row of 'normal' sequence using colour of consensus symbol.
-# 1. give residues the colour of the consensus symbol.
-# 2. the consensus may be a residue name: use prevailing residue colour.
-# 3. use the prevailing wildcard residue colour.
-# 4. give up.
-sub get_color_consensus_group {
-    my ($self, $cs, $cg, $mapS, $mapG) = @_;
-    #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
-
-    return $COLORMAP->get_symbol_color($mapG, $cg)
-        if $COLORMAP->has_symbol_color($mapG, $cg);
-
-    return $COLORMAP->get_symbol_color($mapS, $cg)
-        if $COLORMAP->has_symbol_color($mapS, $cg);
-
-    return $COLORMAP->get_wildcard_color($mapS)
-        if $COLORMAP->has_wildcard_color($mapS);
-
-    return ();  #no match
-}
-
+#override
 sub color_by_type {
     my ($self, $kw) = @_;
 
@@ -147,6 +89,7 @@ sub color_by_type {
     $self->{'display'}->{'paint'} = 1;
 }
 
+#override
 sub color_by_identity {
     my ($self, $kw, $othr) = @_;
 
@@ -298,6 +241,72 @@ sub color_by_consensus_group {
     }
 
     $othr->{'display'}->{'paint'} = 1;
+}
+
+######################################################################
+# private methods
+######################################################################
+#colours a row of consensus sequence.
+# 1. give consensus symbols their own colour.
+# 2. the consensus colormap is just one colour name, use that and ignore CSS.
+# 3. the consensus may be a residue name: use prevailing residue colour.
+# 4. use the prevailing wildcard residue colour.
+# 5. give up.
+sub get_color_type {
+    my ($self, $c, $mapS, $mapG) = @_;
+    #warn "get_color_type($self, $c, $mapS, $mapG)\n";
+
+    return $COLORMAP->get_symbol_color($mapG, $c)
+        if $COLORMAP->has_symbol_color($mapG, $c);
+
+    return $COLORMAP->get_palette_color($mapG, 'T')  #ignore CSS setting
+        if $COLORMAP->has_palette_color($mapG);
+
+    return $COLORMAP->get_symbol_color($mapS, $c)
+        if $COLORMAP->has_symbol_color($mapS, $c);
+
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
+
+    return ();  #no match
+}
+
+#colours a row of 'normal' sequence only where there is a consensus symbol.
+# 1. give residues their own colour.
+# 2. use the prevailing wildcard residue colour.
+# 3. give up.
+sub get_color_consensus_sequence {
+    my ($self, $cs, $cg, $mapS, $mapG) = @_;
+    #warn "get_color_consensus_sequence($self, $cs, $cg, $mapS, $mapG)\n";
+
+    return $COLORMAP->get_symbol_color($mapS, $cs)
+        if $COLORMAP->has_symbol_color($mapS, $cs);
+
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
+
+    return ();  #no match
+}
+
+#colours a row of 'normal' sequence using colour of consensus symbol.
+# 1. give residues the colour of the consensus symbol.
+# 2. the consensus may be a residue name: use prevailing residue colour.
+# 3. use the prevailing wildcard residue colour.
+# 4. give up.
+sub get_color_consensus_group {
+    my ($self, $cs, $cg, $mapS, $mapG) = @_;
+    #warn "get_color_consensus_group($self, $cs, $cg, $mapS, $mapG)\n";
+
+    return $COLORMAP->get_symbol_color($mapG, $cg)
+        if $COLORMAP->has_symbol_color($mapG, $cg);
+
+    return $COLORMAP->get_symbol_color($mapS, $cg)
+        if $COLORMAP->has_symbol_color($mapS, $cg);
+
+    return $COLORMAP->get_wildcard_color($mapS)
+        if $COLORMAP->has_wildcard_color($mapS);
+
+    return ();  #no match
 }
 
 
