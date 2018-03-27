@@ -28,11 +28,11 @@ sub new {
     $self->{'index2row'} = undef;   #list of aligned rows, from zero
     $self->{'uid2row'}   = undef;   #hash of aligned rows; by Build::Row->uid
     $self->{'ref_row'}   = undef;   #reference row ref
-    $self->{'show'}      = undef;   #actual number of rows to show
+    $self->{'topn'}      = undef;   #actual number of rows to show
     $self->{'aligned'}   = undef;   #treat input as aligned
-    $self->{'keep_uid'}  = undef;   #hashed version of 'keeplist' by Row->uid
-    $self->{'nops_uid'}  = undef;   #hashed version of 'nopslist'  by Row->uid
-    $self->{'hide_uid'}  = undef;   #hashed merge of 'disc/keep/nops/' by Row->uid
+    $self->{'keep_uid'}  = undef;   #hash 'keeplist' by Row->uid
+    $self->{'nops_uid'}  = undef;   #hash 'nopslist'  by Row->uid
+    $self->{'hide_uid'}  = undef;   #hash merge 'disc/keep/nops/' by Row->uid
 
     $self->initialise;
 
@@ -91,8 +91,8 @@ sub reset {
     $self->{'aligned'} = 0;
 
     #how many expected rows of alignment to show (1 more if search)
-    $self->{'show'} = $PAR->get('topn');
-    $self->{'show'} += $self->is_search  if $self->{'show'} > 0;
+    $self->{'topn'} = $PAR->get('topn');
+    $self->{'topn'} += $self->is_search  if $self->{'topn'} > 0;
 
     $self->reset_child;
 }
@@ -111,7 +111,7 @@ sub next_align {
     #finished? note: "$self->{'align'}->free" is not needed
     return undef  unless defined $self->{'index2row'};
 
-    #my $i; for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
+    #for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
     #    warn "[$i]  ", $self->index2row($i)->num, " ",
     #	      $self->index2row($i)->cid, "\n";
     #}
@@ -149,13 +149,12 @@ sub map_id {
 
     #warn "map_id($ref)\n";
 
-    for ($i=0; $i<@{$self->{'index2row'}}; $i++) {
+    foreach my $row (@{$self->{'index2row'}}) {
 
 	#major row number = query
 	if ($ref =~ /^0$/) {
-	    if ($self->{'index2row'}->[$i]->num eq '' or
-		$self->{'index2row'}->[$i]->num eq $ref) {
-		push @rowref, $self->{'index2row'}->[$i];
+	    if ($row->num eq '' or $row->num eq $ref) {
+		push @rowref, $row;
 	    }
 	    next;
 	}
@@ -163,13 +162,13 @@ sub map_id {
 	#major row number
 	if ($ref =~ /^\d+$/) {
 	    #exact match
-	    if ($self->{'index2row'}->[$i]->num eq $ref) {
-		push @rowref, $self->{'index2row'}->[$i];
+	    if ($row->num eq $ref) {
+		push @rowref, $row;
 		next;
 	    }
 	    #match to major.minor prefix
-	    if ($self->{'index2row'}->[$i]->num =~ /^$ref\./) {
-		push @rowref, $self->{'index2row'}->[$i];
+	    if ($row->num =~ /^$ref\./) {
+		push @rowref, $row;
 		next;
 	    }
 	    next;
@@ -177,16 +176,15 @@ sub map_id {
 
 	#major.minor row number
 	if ($ref =~ /^\d+\.\d+$/) {
-	    if ($self->{'index2row'}->[$i]->num eq $ref) {
-		push @rowref, $self->{'index2row'}->[$i];
+	    if ($row->num eq $ref) {
+		push @rowref, $row;
 	    }
 	    next;
 	}
 
 	#string identifier
-	if ($ref eq $self->{'index2row'}->[$i]->rid or
-	    $ref eq $self->{'index2row'}->[$i]->cid) {
-	    push @rowref, $self->{'index2row'}->[$i];
+	if ($ref eq $row->rid or $ref eq $row->cid) {
+	    push @rowref, $row;
 	    next;
 	}
 
@@ -194,16 +192,16 @@ sub map_id {
 	if ($ref =~ /^\/.*\/$/) {
 	    my $r = $ref;
 	    $r =~ s/^\///; $r =~ s/\/$//;
-	    if ($self->{'index2row'}->[$i]->cid =~ /$r/i) {
-		#warn "map_id: [$i] /$r/ @{[$self->{'index2row'}->[$i]->cid]}\n";
-		push @rowref, $self->{'index2row'}->[$i];
+	    if ($row->cid =~ /$r/i) {
+		#warn "map_id: /$r/ @{[$row->cid]}\n";
+		push @rowref, $row;
 	    }
 	    next;
 	}
 
 	#wildcard
 	if ($ref =~ /^\*$/ or $ref =~ /^all$/i) {
-	    push @rowref, $self->{'index2row'}->[$i];
+	    push @rowref, $row;
 	    next;
 	}
 
@@ -259,21 +257,11 @@ sub subheader {''}
 #subclass overrides
 sub build_rows {
     my ($self, $lo, $hi) = @_;
-
-    if ($self->{'aligned'}) {  #treat as alignment: common range
-        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
-        }
-
-    } else {  #treat as format conversion: each row has own range
-        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-            my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
-            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
-        }
+    foreach my $row (@{$self->{'index2row'}}) {
+        ($lo, $hi) = $self->get_range($row)  if $self->{'aligned'};
+        #warn "Build::build_rows range[$i] ($lo, $hi)\n";
+        $row->assemble($lo, $hi, $PAR->get('gap'));
     }
-    $self;
 }
 
 #subclass overrides
@@ -377,7 +365,6 @@ sub build_block {
 
 sub build_indices {
     my $self = shift;
-    my ($i, $r, @id);
 
     $self->{'uid2row'}  = {};
     $self->{'keep_uid'} = {};
@@ -385,28 +372,28 @@ sub build_indices {
     $self->{'nops_uid'} = {};
 
     #index the row objects by unique 'uid' for fast lookup.
-    foreach $i (@{$self->{'index2row'}}) {
+    foreach my $i (@{$self->{'index2row'}}) {
 	$self->{'uid2row'}->{$i->uid} = $i;
     }
 
     #get the reference row handle, if any
-    if (@id = $self->map_id($PAR->get('ref_id'))) {
+    if (my @id = $self->map_id($PAR->get('ref_id'))) {
 	$self->{'ref_row'} = $id[0];
     }
 
     #make all skiplist rows invisible; this has to be done because some
     #may not really have been discarded at all, eg., reference row.
-    foreach $i (@{$PAR->get('skiplist')}) {
-	@id = $self->map_id($i);
-	foreach $r (@id) {
+    foreach my $i (@{$PAR->get('skiplist')}) {
+	my @id = $self->map_id($i);
+	foreach my $r (@id) {
 	    $self->{'hide_uid'}->{$r->uid} = 1;           #invisible
 	}
     }
 
     #hash the keeplist and make all keeplist rows visible again
-    foreach $i (@{$PAR->get('keeplist')}) {
-	@id = $self->map_id($i);
-	foreach $r (@id) {
+    foreach my $i (@{$PAR->get('keeplist')}) {
+	my @id = $self->map_id($i);
+	foreach my $r (@id) {
 	    $self->{'keep_uid'}->{$r->uid} = 1;
 	    delete $self->{'hide_uid'}->{$r->uid}  if
 		exists $self->{'hide_uid'}->{$r->uid};    #visible
@@ -422,9 +409,9 @@ sub build_indices {
     #underlying Align class can recognise rows. don't override any previous
     #visibility set by discard list.
 
-    foreach $i (@{$PAR->get('nopslist')}) {
-	@id = $self->map_id($i);
-	foreach $r (@id) {
+    foreach my $i (@{$PAR->get('nopslist')}) {
+	my @id = $self->map_id($i);
+	foreach my $r (@id) {
 	    $self->{'nops_uid'}->{$r->uid}  = 1;
 	}
     }
@@ -432,16 +419,14 @@ sub build_indices {
     #warn "keep: [", join(",", sort keys %{$self->{'keep_uid'}}), "]\n";
     #warn "nops: [", join(",", sort keys %{$self->{'nops_uid'}}), "]\n";
     #warn "hide: [", join(",", sort keys %{$self->{'hide_uid'}}), "]\n";
-    $self;
 }
 
 sub build_base_alignment {
     my ($self, $aln) = @_;
 
-    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-	my $row = $self->{'index2row'}->[$i];
-        $row = $aln->make_sequence($row);
-        $aln->append($row);
+    foreach my $row (@{$self->{'index2row'}}) {
+        my $arow = $aln->make_sequence($row);
+        $aln->append($arow);
     }
 
     #filter alignment based on %identity to reference
@@ -449,7 +434,7 @@ sub build_base_alignment {
                                   $PAR->get('pcid'),
                                   $PAR->get('minident'),
                                   $PAR->get('maxident'),
-                                  $self->{'show'},
+                                  $self->{'topn'},
                                   $self->{'keep_uid'});
 
     $aln->set_parameters('nopshash' => $self->{'nops_uid'},
@@ -463,17 +448,15 @@ sub build_base_alignment {
         }
     }
 
-    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+    foreach my $row (@{$self->{'index2row'}}) {
+	next  if exists $self->{'hide_uid'}->{$row->uid};
 
-	my $brow = $self->{'index2row'}->[$i];
-	next  if exists $self->{'hide_uid'}->{$brow->uid};
-
-	my $arow = $aln->item($brow->uid);
+	my $arow = $aln->item($row->uid);
 	next  unless defined $arow;
 
         #copy computed data into build row objects
-        $brow->set_coverage($arow->get_coverage);
-        $brow->set_identity($arow->get_identity);
+        $row->set_coverage($arow->get_coverage);
+        $row->set_identity($arow->get_identity);
     }
 
     # foreach my $r ($aln->all_ids) { $aln->id2row($r)->seqobj->dump }
@@ -485,15 +468,13 @@ sub build_base_alignment {
 sub build_mview_alignment {
     my ($self, $aln) = @_;
 
-    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+    foreach my $row (@{$self->{'index2row'}}) {
+	next  if exists $self->{'hide_uid'}->{$row->uid};
 
-	my $brow = $self->{'index2row'}->[$i];
-	next  if exists $self->{'hide_uid'}->{$brow->uid};
-
-	my $arow = $aln->item($brow->uid);
+	my $arow = $aln->item($row->uid);
 	next  unless defined $arow;
 
-        my @labels = $brow->display_column_values;
+        my @labels = $row->display_column_values;
         #warn "\n[@{[join(',',@labels)]}]\n";
 
         $arow->set_display(
@@ -505,10 +486,10 @@ sub build_mview_alignment {
             'label5' => $labels[5],
             'label6' => $labels[6],
             'label7' => $labels[7],
-            'url'    => $brow->url,
+            'url'    => $row->url,
             );
 
-        if (exists $self->{'nops_uid'}->{$brow->uid}) {
+        if (exists $self->{'nops_uid'}->{$row->uid}) {
             $arow->set_display('label0' => '');
         }
 
