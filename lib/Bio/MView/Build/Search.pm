@@ -132,6 +132,13 @@ sub combine_frags_by_centroid {
 ######################################################################
 # protected methods
 ######################################################################
+#override: are sequence inserts being kept?
+sub is_aligned {
+    my ($self, $lo, $hi) = @_;
+    return 0  if $PAR->get('keepinserts');
+    return 1;
+}
+
 #override
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;

@@ -6,11 +6,11 @@ use strict;
 package Bio::MView::Build;
 
 use Universal;
+use Bio::MView::Option::Parameters;  #for $PAR
+use Bio::MView::Build::Scheduler;
+use Bio::MView::Align;
 use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
-use Bio::MView::Option::Parameters;  #for $PAR
-use Bio::MView::Align;
-use Bio::MView::Build::Scheduler;
 
 sub new {
     my $type = shift;
@@ -129,6 +129,50 @@ sub next_align {
     return $self->{'align'};
 }
 
+#subclass overrides
+sub header {
+    my ($self, $quiet) = (@_, 0);
+    return ''  if $quiet;
+
+    my $showpcid = $PAR->get('label5');
+    my $minident = $PAR->get('minident');
+    my $maxident = $PAR->get('maxident');
+    my $pcidmode = $PAR->get('pcid');
+    my $topn     = $PAR->get('topn');
+
+    my $s = '';
+
+    if (defined $self->{'ref_row'}) {
+	$s .= "Reference sequence ";
+	if ($self->{'ref_row'}->num !~ /^\s*$/) {
+	    $s .= "(" . $self->{'ref_row'}->num . ")";
+	} else {
+	    $s .= "(query)";
+	}
+	$s .= ": " . $self->{'ref_row'}->cid . "\n";
+    }
+    if (0 < $minident and $maxident < 100) {
+	$s .= "Identity limits: $minident-$maxident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif (0 < $minident) {
+	$s .= "Minimum identity: $minident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif ($maxident < 100) {
+	$s .= "Maximum identity: $maxident%";
+	$s .= " normalised by $pcidmode length.\n";
+    } elsif ($showpcid) {
+	$s .= "Identities normalised by $pcidmode length.\n";
+    }
+    if ($topn) {
+	$s .= "Maximum sequences to show: $topn\n";
+    }
+
+    return $s;
+}
+
+#subclass overrides
+sub subheader {''}
+
 ######################################################################
 # protected methods
 ######################################################################
@@ -140,6 +184,9 @@ sub reset_child { $_[0]->{scheduler}->filter }
 
 #subclass overrides: must be overridden
 sub use_row { die "$_[0] use_row: virtual method called\n" }
+
+#subclass overrides: must be overridden
+sub is_aligned { die "$_[0] use_row: virtual method called\n" }
 
 #subclass overrides: map an identifier supplied as {0..N|query|M.N} to
 #a list of row objects in $self->{'index2row'}
@@ -211,55 +258,13 @@ sub map_id {
 }
 
 #subclass overrides
-sub header {
-    my ($self, $quiet) = (@_, 0);
-    return ''  if $quiet;
-
-    my $showpcid = $PAR->get('label5');
-    my $minident = $PAR->get('minident');
-    my $maxident = $PAR->get('maxident');
-    my $pcidmode = $PAR->get('pcid');
-    my $topn     = $PAR->get('topn');
-
-    my $s = '';
-
-    if (defined $self->{'ref_row'}) {
-	$s .= "Reference sequence ";
-	if ($self->{'ref_row'}->num !~ /^\s*$/) {
-	    $s .= "(" . $self->{'ref_row'}->num . ")";
-	} else {
-	    $s .= "(query)";
-	}
-	$s .= ": " . $self->{'ref_row'}->cid . "\n";
-    }
-    if (0 < $minident and $maxident < 100) {
-	$s .= "Identity limits: $minident-$maxident%";
-	$s .= " normalised by $pcidmode length.\n";
-    } elsif (0 < $minident) {
-	$s .= "Minimum identity: $minident%";
-	$s .= " normalised by $pcidmode length.\n";
-    } elsif ($maxident < 100) {
-	$s .= "Maximum identity: $maxident%";
-	$s .= " normalised by $pcidmode length.\n";
-    } elsif ($showpcid) {
-	$s .= "Identities normalised by $pcidmode length.\n";
-    }
-    if ($topn) {
-	$s .= "Maximum sequences to show: $topn\n";
-    }
-
-    return $s;
-}
-
-#subclass overrides
-sub subheader {''}
-
-#subclass overrides
 sub build_rows {
     my ($self, $lo, $hi) = @_;
     foreach my $row (@{$self->{'index2row'}}) {
-        ($lo, $hi) = $self->get_range($row)  if $self->{'aligned'};
-        #warn "Build::build_rows range[$i] ($lo, $hi)\n";
+        unless ($self->{'aligned'}) {
+            ($lo, $hi) = $self->get_range($row);
+        }
+        #warn "Build::build_rows range ($lo, $hi)\n";
         $row->assemble($lo, $hi, $PAR->get('gap'));
     }
 }
@@ -319,31 +324,27 @@ sub strip_query_gaps {
 ######################################################################
 # private methods
 ######################################################################
+sub outfmt_supported {
+    my ($self, $fmt) = @_;
+    return 1  if $self->{'aligned'};
+    return 1  if grep {$_ eq $fmt} qw(fasta pearson pir);
+    return 0;
+}
+
 sub build_block {
     my $self = shift;
 
     my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
 
-    #if not a search, do all rows have same range?
-    my $aligned = 1;
-    if ($self->isa('Bio::MView::Build::Align')) {
-        for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
-            my ($lo2, $hi2) = $self->get_range($self->{'index2row'}->[$i]);
-            #warn "$self->{'index2row'}->[$i] ($lo2, $hi2)\n";
-            $aligned = 0, last  if $lo != $lo2 or $hi != $hi2;
-        }
-    } else { #it's a search, so do we want sequence insertions?
-        $aligned = 0  if $PAR->get('keepinserts');
-    }
-    $self->{'aligned'} = $aligned;
+    $self->{'aligned'} = $self->is_aligned($lo, $hi);
 
-    #warn "KEEPINSERTS: " . $PAR->get('keepinserts') . "\n";
+    #warn "KEEPINSERTS: @{[$PAR->get('keepinserts')]}\n";
     #warn "ALIGNED:     $self->{'aligned'}\n";
 
     my $outfmt = $PAR->get('outfmt');
 
-    if (!$self->{'aligned'} and !grep {$_ eq $outfmt} qw(fasta pearson pir)) {
-        warn "Sequence lengths must be the same for output format '$outfmt' - aborting\n";
+    unless ($self->outfmt_supported($outfmt)) {
+        warn "Sequence lengths differ for output format '$outfmt' - aborting\n";
         return undef;
     }
 
@@ -441,7 +442,7 @@ sub build_base_alignment {
                          'hidehash' => $self->{'hide_uid'});
 
     #compute columnwise data for aligned output
-    unless ($PAR->get('keepinserts')) {
+    if ($self->{'aligned'} and !$PAR->get('keepinserts')) {
         if (defined $self->{'ref_row'}) {
             $aln->set_coverage($self->{'ref_row'}->uid);
             $aln->set_identity($self->{'ref_row'}->uid, $PAR->get('pcid'));
@@ -459,8 +460,8 @@ sub build_base_alignment {
         $row->set_identity($arow->get_identity);
     }
 
-    # foreach my $r ($aln->all_ids) { $aln->id2row($r)->seqobj->dump }
-    # warn "Alignment width: ", $aln->length;
+    #foreach my $r ($aln->all_ids) { $aln->id2row($r)->seqobj->dump }
+    #warn "Alignment width: ", $aln->length;
 
     return $aln;
 }
@@ -501,6 +502,15 @@ sub build_mview_alignment {
 # debug
 ######################################################################
 #sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub dump_index2row {
+    my $self = shift;
+    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+        warn "$i:  ", $self->index2row($i)->num, " ",
+            $self->index2row($i)->cid, " [",
+            $self->index2row($i)->seq, "]\n";
+    }
+}
 
 ###########################################################################
 1;

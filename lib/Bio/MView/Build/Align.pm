@@ -14,6 +14,18 @@ use vars qw(@ISA);
 ######################################################################
 # protected methods
 ######################################################################
+#override: do all rows have same range?
+sub is_aligned {
+    my ($self, $lo, $hi) = @_;
+    for (my $i=1; $i < @{$self->{'index2row'}}; $i++) { #from 1
+        my $row = $self->{'index2row'}->[$i];
+        my ($lo2, $hi2) = $self->get_range($row);
+        #warn "$row ($lo2, $hi2)\n";
+        return 0  if $lo != $lo2 or $hi != $hi2;
+    }
+    return 1;
+}
+
 #override
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;
