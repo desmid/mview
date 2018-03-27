@@ -3,8 +3,8 @@
 ###########################################################################
 package Bio::MView::Align::Sequence;
 
-use Bio::MView::Colormap;
 use Bio::MView::Align::Row;
+use Bio::MView::Color::ColorMap;
 use Bio::MView::Align::ColorMixin;
 
 @ISA = qw(Bio::MView::Align::Row Bio::MView::Align::ColorMixin);

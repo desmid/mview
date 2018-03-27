@@ -4,6 +4,7 @@
 package Bio::MView::Groupmap;
 
 use Exporter;
+use Bio::MView::Color::ColorMap;
 use Bio::MView::Sequence;
 use strict;
 use vars qw(@ISA @EXPORT $GROUPMAP);
@@ -210,8 +211,8 @@ sub dump_groupmaps {
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<SPAN style=\"color:$Bio::MView::Colormap::Colour_Black\">",
-	"<SPAN style=\"color:$Bio::MView::Colormap::Colour_Comment\">",
+	"<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Black\">",
+	"<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Comment\">",
 	"</SPAN>")  if $html;
 
     $s .= "$c1#Consensus group listing - suitable for reloading.\n";

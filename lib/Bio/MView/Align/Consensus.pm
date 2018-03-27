@@ -3,16 +3,16 @@
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
-use Bio::MView::Colormap;
-use Bio::MView::Groupmap;
 use Bio::MView::Align::Sequence;
+use Bio::MView::Color::ColorMap;
+use Bio::MView::Groupmap;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 
 use strict;
 
 #hardwire the consensus line symcolor
-my $SYMCOLOR = $Bio::MView::Colormap::Colour_Black;
+my $SYMCOLOR = $Bio::MView::Color::ColorMap::Colour_Black;
 
 sub new {
     my $type = shift;

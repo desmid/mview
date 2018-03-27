@@ -5,7 +5,7 @@ package Bio::MView::Align::Special;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align::Sequence;
-use Bio::MView::Colormap;
+use Bio::MView::Color::ColorMap;
 
 @ISA = qw(Bio::MView::Align::Sequence);
 

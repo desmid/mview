@@ -3,7 +3,7 @@
 ###########################################################################
 package Bio::MView::Align::ColorMixin;
 
-use Bio::MView::Colormap;
+use Bio::MView::Color::ColorMap;
 
 use strict;
 

@@ -5,9 +5,10 @@ package Bio::MView::Option::Types;
 
 use Exporter;
 use Bio::MView::Option::Arguments;
-use Bio::MView::Groupmap;
-use Bio::MView::Align::Sequence;
 use Bio::MView::Align::Consensus;
+use Bio::MView::Align::Sequence;
+use Bio::MView::Color::ColorMap;
+use Bio::MView::Groupmap;
 use NPB::Parse::Regexps;
 
 @ISA = qw(Exporter);
@@ -23,10 +24,10 @@ use vars qw($Types);
 
 ######################################################################
 sub get_default_sequence_colormap {
-    Bio::MView::Colormap::get_default_sequence_colormap(@_)
+    Bio::MView::Color::ColorMap::get_default_sequence_colormap(@_)
 }
 sub get_default_consensus_colormap {
-    Bio::MView::Colormap::get_default_consensus_colormap(@_)
+    Bio::MView::Color::ColorMap::get_default_consensus_colormap(@_)
 }
 sub get_default_groupmap {
     Bio::MView::Groupmap::get_default_groupmap(@_)
