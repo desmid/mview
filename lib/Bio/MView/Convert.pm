@@ -1,9 +1,9 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Convert;
-
-use strict;
 
 my $ROW_NUMBER_DELIM = ':';
 my $ROW_DATA_DELIM   = ' ';
@@ -308,7 +308,6 @@ sub clustal {
     }
     \$s;
 }
-
 
 ###########################################################################
 1;

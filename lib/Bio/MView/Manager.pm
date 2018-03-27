@@ -1,5 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Manager;
 
@@ -9,23 +11,6 @@ use Bio::MView::Color::ColorMap;
 use Bio::MView::Build;
 use Bio::MView::Convert;
 use Bio::MView::Display;
-use strict;
-
-sub load_format_library {
-    my $class = "Bio::MView::Build::Format::$_[0]";
-    my $library = $class;
-    $library =~ s/::/\//g;
-    require "$library.pm";
-    return $class;
-}
-
-sub get_format_parser {
-    my $parser = $_[0] . "::parser";
-    no strict 'refs';
-    $parser = &$parser();
-    use strict 'refs';
-    return $parser;
-}
 
 sub new {
     my $type = shift;
@@ -43,8 +28,24 @@ sub new {
     $self;
 }
 
-sub get_alignment_count { $_[0]->{'acount'} }
+######################################################################
+# public class methods
+######################################################################
+sub check_input_file {
+    my $file = shift;
+    return Bio::MView::Option::Arguments::check_informat($file, 'file');
+}
 
+sub load_colormaps { Bio::MView::Color::ColorMap::load_colormaps(@_) }
+sub dump_colormaps { Bio::MView::Color::ColorMap::dump_colormaps(@_) }
+sub dump_css       { Bio::MView::Color::ColorMap::dump_css1(@_) }
+
+sub load_groupmaps { Bio::MView::GroupMap::load_groupmaps(@_) }
+sub dump_groupmaps { Bio::MView::GroupMap::dump_groupmaps(@_) }
+
+######################################################################
+# public methods
+######################################################################
 #Called with the desired format to be parsed: either a string 'X' naming a
 #Parse::Format::X or a hint which will be recognised by that class.
 sub parse {
@@ -114,122 +115,7 @@ sub parse {
     return $self;
 }
 
-#return next entry worth of parse data as in a Bio::MView::Build object
-#ready for parsing, or undef if no more data.
-sub next_build {
-    my $self = shift;
-
-    #free the last entry and garbage its Bio::MView::Build
-    if (defined $self->{'filter'}) {
-        $self->{'filter'}->get_entry->free;
-        $self->{'filter'} = undef;
-    }
-
-    #read the next chunk of data
-    my $entry = $self->{'stream'}->get_entry;
-    if (! defined $entry) {
-        $self->{'stream'}->close;
-        return undef;
-    }
-
-    #construct a new Bio::MView::Build
-    return $self->{'filter'} = $self->{'class'}->new($entry);
-}
-
-#construct a header string describing this alignment
-sub header {
-    my ($self, $quiet) = (@_, 0);
-    return ''  if $quiet;
-    my $s = "File: $self->{'file'}  Format: $self->{'format'}\n";
-    return $s;
-}
-
-sub gc_flag {
-    return 0  if $PAR->get('consensus');
-    return 0  if $PAR->get('conservation');
-    return 1;
-}
-
-sub add_display {
-    my ($self, $bld, $aln) = @_;
-
-    my $ref    = $bld->get_row_id($PAR->get('ref_id'));
-    my $refobj = $bld->get_row($PAR->get('ref_id'));
-
-    #collect all the column labels
-    $self->{'labelwidths'} = [ $refobj->display_column_widths ];
-
-    #Universal::vmstat("display constructor");
-    my $dis = new Bio::MView::Display($aln->init_display);
-    #Universal::vmstat("display constructor DONE");
-
-    #attach a ruler? (may include header text)
-    if ($PAR->get('ruler')) {
-        my $tmp = $aln->build_ruler($refobj);
-	$tmp->append_display($dis);
-        #Universal::vmstat("ruler added");
-    }
-
-    #attach the alignment
-    if ($PAR->get('alignment')) {
-        $aln->set_color_scheme($ref);
-        #Universal::vmstat("set_color_scheme done");
-	$aln->append_display($dis, $self->gc_flag);
-        #Universal::vmstat("alignment added");
-    }
-
-    #attach conservation line?
-    if ($PAR->get('conservation')) {
-	my $tmp = $aln->build_conservation_row;
-	$tmp->append_display($dis);
-        #Universal::vmstat("conservation added");
-    }
-
-    #attach consensus alignments?
-    if ($PAR->get('consensus')) {
-	my $tmp = $aln->build_consensus_rows;
-        $tmp->set_consensus_color_scheme($aln, $ref);
-	$tmp->append_display($dis);
-        #Universal::vmstat("consensi added");
-    }
-
-    #garbage collect if not already done piecemeal
-    if (!$self->gc_flag) {
-	$aln->do_gc;
-	#Universal::vmstat("final garbage collect");
-    }
-    $dis;
-}
-
-#wrapper functions
-sub check_input_file {
-    my $file = shift;
-    return Bio::MView::Option::Arguments::check_informat($file, 'file');
-}
-
-sub load_colormaps { Bio::MView::Color::ColorMap::load_colormaps(@_) }
-sub dump_colormaps { Bio::MView::Color::ColorMap::dump_colormaps(@_) }
-sub dump_css       { Bio::MView::Color::ColorMap::dump_css1(@_) }
-
-sub load_groupmaps { Bio::MView::GroupMap::load_groupmaps(@_) }
-sub dump_groupmaps { Bio::MView::GroupMap::dump_groupmaps(@_) }
-
-sub print_format_conversion {
-    my ($self, $par, $bld, $aln, $stm) = (@_, \*STDOUT);
-    my $conv = new Bio::MView::Convert($bld, $aln, $par->get('moltype'));
-    my $outfmt = $par->get('outfmt');
-    my $s;
-    while (1) {
-        $s = $conv->clustal,  last  if $outfmt eq 'clustal';
-        $s = $conv->msf,      last  if $outfmt eq 'msf';
-        $s = $conv->pearson,  last  if $outfmt eq 'pearson';
-        $s = $conv->pir,      last  if $outfmt eq 'pir';
-        $s = $conv->plain,    last  if $outfmt eq 'plain';
-        $s = $conv->rdb,      last  if $outfmt eq 'rdb';
-        last;
-    }
-    print $stm $$s  if defined $s;
-}
+sub get_alignment_count { $_[0]->{'acount'} }
 
 sub print_alignment {
     my ($self, $stm) = (@_, \*STDOUT);
@@ -377,6 +263,131 @@ sub print_alignment {
     $self;
 }
 
+######################################################################
+# private methods
+######################################################################
+#construct a header string describing this alignment
+sub header {
+    my ($self, $quiet) = (@_, 0);
+    return ''  if $quiet;
+    my $s = "File: $self->{'file'}  Format: $self->{'format'}\n";
+    return $s;
+}
+
+#return next entry worth of parse data as in a Bio::MView::Build object
+#ready for parsing, or undef if no more data.
+sub next_build {
+    my $self = shift;
+
+    #free the last entry and garbage its Bio::MView::Build
+    if (defined $self->{'filter'}) {
+        $self->{'filter'}->get_entry->free;
+        $self->{'filter'} = undef;
+    }
+
+    #read the next chunk of data
+    my $entry = $self->{'stream'}->get_entry;
+    if (! defined $entry) {
+        $self->{'stream'}->close;
+        return undef;
+    }
+
+    #construct a new Bio::MView::Build
+    return $self->{'filter'} = $self->{'class'}->new($entry);
+}
+
+sub gc_flag {
+    return 0  if $PAR->get('consensus');
+    return 0  if $PAR->get('conservation');
+    return 1;
+}
+
+sub add_display {
+    my ($self, $bld, $aln) = @_;
+
+    my $ref    = $bld->get_row_id($PAR->get('ref_id'));
+    my $refobj = $bld->get_row($PAR->get('ref_id'));
+
+    #collect all the column labels
+    $self->{'labelwidths'} = [ $refobj->display_column_widths ];
+
+    #Universal::vmstat("display constructor");
+    my $dis = new Bio::MView::Display($aln->init_display);
+    #Universal::vmstat("display constructor DONE");
+
+    #attach a ruler? (may include header text)
+    if ($PAR->get('ruler')) {
+        my $tmp = $aln->build_ruler($refobj);
+	$tmp->append_display($dis);
+        #Universal::vmstat("ruler added");
+    }
+
+    #attach the alignment
+    if ($PAR->get('alignment')) {
+        $aln->set_color_scheme($ref);
+        #Universal::vmstat("set_color_scheme done");
+	$aln->append_display($dis, $self->gc_flag);
+        #Universal::vmstat("alignment added");
+    }
+
+    #attach conservation line?
+    if ($PAR->get('conservation')) {
+	my $tmp = $aln->build_conservation_row;
+	$tmp->append_display($dis);
+        #Universal::vmstat("conservation added");
+    }
+
+    #attach consensus alignments?
+    if ($PAR->get('consensus')) {
+	my $tmp = $aln->build_consensus_rows;
+        $tmp->set_consensus_color_scheme($aln, $ref);
+	$tmp->append_display($dis);
+        #Universal::vmstat("consensi added");
+    }
+
+    #garbage collect if not already done piecemeal
+    if (!$self->gc_flag) {
+	$aln->do_gc;
+	#Universal::vmstat("final garbage collect");
+    }
+    $dis;
+}
+
+sub print_format_conversion {
+    my ($self, $par, $bld, $aln, $stm) = (@_, \*STDOUT);
+    my $conv = new Bio::MView::Convert($bld, $aln, $par->get('moltype'));
+    my $outfmt = $par->get('outfmt');
+    my $s;
+    while (1) {
+        $s = $conv->clustal,  last  if $outfmt eq 'clustal';
+        $s = $conv->msf,      last  if $outfmt eq 'msf';
+        $s = $conv->pearson,  last  if $outfmt eq 'pearson';
+        $s = $conv->pir,      last  if $outfmt eq 'pir';
+        $s = $conv->plain,    last  if $outfmt eq 'plain';
+        $s = $conv->rdb,      last  if $outfmt eq 'rdb';
+        last;
+    }
+    print $stm $$s  if defined $s;
+}
+
+######################################################################
+# private class methods
+######################################################################
+sub load_format_library {
+    my $class = "Bio::MView::Build::Format::$_[0]";
+    my $library = $class;
+    $library =~ s/::/\//g;
+    require "$library.pm";
+    return $class;
+}
+
+sub get_format_parser {
+    my $parser = $_[0] . "::parser";
+    no strict 'refs';
+    $parser = &$parser();
+    use strict 'refs';
+    return $parser;
+}
 
 ###########################################################################
 1;

@@ -1,10 +1,15 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
+
+use strict;
 
 ###########################################################################
 package Bio::MView::Sequence;
-use strict;
 
 use vars qw($WARNCLASH $OVERWRITE $HARDFASTA);
+
+$WARNCLASH = 0;    #set to 1 to enable reporting of clashing symbols
+$OVERWRITE = 0;    #set to 1 to enable clash overwrite by newest symbol
+$HARDFASTA = 0;    #relax length rules for UV. FASTA input
 
 my $Find_Pad = '[-._~]';  #input terminal gap characters
 my $Find_Gap = '[-._~]';  #input internal gap characters
@@ -23,10 +28,6 @@ my $Mark_Gap = "\002";    #encoded internal gap
 my $Mark_Spc = "\003";    #encoded whitespace
 my $Mark_Fs1 = "\004";    #encoded frameshift
 my $Mark_Fs2 = "\005";    #encoded frameshift
-
-$WARNCLASH = 0;    #set to 1 to enable reporting of clashing symbols
-$OVERWRITE = 0;    #set to 1 to enable clash overwrite by newest symbol
-$HARDFASTA = 0;    #relax length rules for UV. FASTA input
 
 #All range numbers count from 1, set to 0 when undefined.
 #
@@ -100,46 +101,6 @@ sub new {
     $self->{'text_fs2'} = $Text_Fs2;
 
     bless $self, $type;
-
-    $self;
-}
-
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub dump {
-    sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "$v [@{[$self->string]}]" if $k eq 'seq';
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
-    }
-    my $self = shift;
-    warn "$self\n";
-    map { warn $self->_format($_, $self->{$_}) } sort keys %$self;
-    $self;
-}
-
-sub encode {
-    my ($self, $s) = @_;
-
-    #leading non-sequence characters
-    while ($$s =~ s/^($Mark_Pad*)$self->{'find_gap'}/$1$Mark_Pad/g) {}
-
-    #trailing non-sequence characters
-    while ($$s =~ s/$self->{'find_gap'}($Mark_Pad*)$/$Mark_Pad$1/g) {}
-
-    #internal gap characters
-    $$s =~ s/$self->{'find_gap'}/$Mark_Gap/g;
-
-    #internal spaces
-    $$s =~ s/$self->{'find_spc'}/$Mark_Spc/g;
-
-    #frameshift '/'
-    $$s =~ s/$self->{'find_fs1'}/$Mark_Fs1/g;
-
-    #frameshift '\'
-    $$s =~ s/$self->{'find_fs2'}/$Mark_Fs2/g;
 
     $self;
 }
@@ -317,7 +278,7 @@ sub insert {
         #warn "frg(+)=@$frag\n";
         #warn "frg(+)=$frag->[1], $frag->[2] => $len [$string]\n";
 
-	$self->encode(\$string);
+	$self->_encode(\$string);
 	#warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";
 
         $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
@@ -418,40 +379,6 @@ sub insert {
     $self;
 }
 
-sub _substr {
-    my ($self, $start, $stop) = @_;
-
-    return ''  if $start < 1 or $stop < 1;   #negative range args
-    return ''  unless $self->{'lo'} > 0;     #empty
-    return ''  if $stop  < $self->{'lo'};    #missed (too low)
-    return ''  if $start > $self->{'hi'};    #missed (too high)
-
-    $start = $self->{'lo'}  if $start < $self->{'lo'};
-    $stop  = $self->{'hi'}  if $stop  > $self->{'hi'};
-    #warn "$self _substr(+,lo,hi): $start, $stop";
-    #warn "_substr(+,beg,end): $self->{'reflo'}, $self->{'refhi'}";
-    $stop++;
-
-    my $s = '';
-
-    for (my $i = $start; $i < $stop; $i++) {
-	if ($i < $self->{'reflo'} or $i > $self->{'refhi'}) {
-	    $s .= $Mark_Pad;
-	    next;
-	}
-	#warn "_substr(+): $i [$self->{'seq'}->{$i}]";
-	if (exists $self->{'seq'}->{$i}) {
-	    $s .= $self->{'seq'}->{$i};
-	} elsif ($i > $self->{'reflo'} and $i < $self->{'refhi'}) {
-	    #We never write a gap at the edge. Frameshifts upset the
-	    #numbering so that [begin,end] may exceed the true range.
-	    #warn "_substr(+): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
-	    $s .= $Mark_Gap;
-	}
-    }
-    $s;
-}
-
 sub raw {
     my ($self, $col, $p) = @_;
 
@@ -491,6 +418,7 @@ sub is_char {
     $_[1] ne $Mark_Pad and $_[1] ne $Mark_Gap and $_[1] ne $Mark_Spc
 	and $_[1] ne $Mark_Fs1 and $_[1] ne $Mark_Fs2;
 }
+
 sub is_non_char     { ! $_[0]->is_char($_[1]) }
 sub is_space        { $_[1] eq $Mark_Spc }
 sub is_frameshift   { $_[1] eq $Mark_Fs1 or $_[1] eq $Mark_Fs2 }
@@ -498,12 +426,91 @@ sub is_terminal_gap { $_[1] eq $Mark_Pad }
 sub is_internal_gap { $_[1] eq $Mark_Gap }
 sub is_gap          { $_[1] eq $Mark_Pad or $_[1] eq $Mark_Gap }
 
+######################################################################
+# private methods
+######################################################################
+sub _encode {
+    my ($self, $s) = @_;
+
+    #leading non-sequence characters
+    while ($$s =~ s/^($Mark_Pad*)$self->{'find_gap'}/$1$Mark_Pad/g) {}
+
+    #trailing non-sequence characters
+    while ($$s =~ s/$self->{'find_gap'}($Mark_Pad*)$/$Mark_Pad$1/g) {}
+
+    #internal gap characters
+    $$s =~ s/$self->{'find_gap'}/$Mark_Gap/g;
+
+    #internal spaces
+    $$s =~ s/$self->{'find_spc'}/$Mark_Spc/g;
+
+    #frameshift '/'
+    $$s =~ s/$self->{'find_fs1'}/$Mark_Fs1/g;
+
+    #frameshift '\'
+    $$s =~ s/$self->{'find_fs2'}/$Mark_Fs2/g;
+
+    $self;
+}
+
+sub _substr {
+    my ($self, $start, $stop) = @_;
+
+    return ''  if $start < 1 or $stop < 1;   #negative range args
+    return ''  unless $self->{'lo'} > 0;     #empty
+    return ''  if $stop  < $self->{'lo'};    #missed (too low)
+    return ''  if $start > $self->{'hi'};    #missed (too high)
+
+    $start = $self->{'lo'}  if $start < $self->{'lo'};
+    $stop  = $self->{'hi'}  if $stop  > $self->{'hi'};
+    #warn "$self _substr(+,lo,hi): $start, $stop";
+    #warn "_substr(+,beg,end): $self->{'reflo'}, $self->{'refhi'}";
+    $stop++;
+
+    my $s = '';
+
+    for (my $i = $start; $i < $stop; $i++) {
+	if ($i < $self->{'reflo'} or $i > $self->{'refhi'}) {
+	    $s .= $Mark_Pad;
+	    next;
+	}
+	#warn "_substr(+): $i [$self->{'seq'}->{$i}]";
+	if (exists $self->{'seq'}->{$i}) {
+	    $s .= $self->{'seq'}->{$i};
+	} elsif ($i > $self->{'reflo'} and $i < $self->{'refhi'}) {
+	    #We never write a gap at the edge. Frameshifts upset the
+	    #numbering so that [begin,end] may exceed the true range.
+	    #warn "_substr(+): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
+	    $s .= $Mark_Gap;
+	}
+    }
+    $s;
+}
+
+######################################################################
+# debug
+######################################################################
+#sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub dump {
+    sub _format {
+	my ($self, $k, $v) = @_;
+	$v = 'undef' unless defined $v;
+	$v = "$v [@{[$self->string]}]" if $k eq 'seq';
+	$v = "'$v'" if $v =~ /^\s*$/;
+	return sprintf("  %-15s => %s\n", $k, $v)
+    }
+    my $self = shift;
+    warn "$self\n";
+    map { warn $self->_format($_, $self->{$_}) } sort keys %$self;
+    $self;
+}
+
 ###########################################################################
 package Bio::MView::Reverse_Sequence;
 
 use Bio::MView::Sequence;
 
-use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Sequence);
@@ -542,7 +549,7 @@ sub insert {
         #warn "frg(-)=@$frag\n";
         #warn "frg(-)=$frag->[1], $frag->[2] => $len [$string]\n";
 
-	$self->encode(\$string);
+	$self->_encode(\$string);
 	#warn "frg(-)=$frag->[1], $frag->[2] [$string]\n";
 
 	$len = CORE::length $string;
@@ -644,40 +651,6 @@ sub insert {
     $self;
 }
 
-sub _substr {
-    my ($self, $stop, $start) = @_; #REVERSE
-
-    return ''  if $start < 1 or $stop < 1;   #negative range args
-    return ''  unless $self->{'lo'} > 0;     #empty
-    return ''  if $stop  > $self->{'hi'};    #missed (too high)
-    return ''  if $start < $self->{'lo'};    #missed (too low)
-
-    $start = $self->{'hi'}  if $start > $self->{'hi'};
-    $stop  = $self->{'lo'}  if $stop  < $self->{'lo'};
-    #warn "_substr(-,lo,hi): $start, $stop";
-    #warn "_substr(-,beg,end): $self->{'reflo'}, $self->{'refhi'}";
-    $stop--;
-
-    my $s = '';
-
-    for (my $i = $start; $i > $stop; $i--) {
-	if ($i < $self->{'refhi'} or $i > $self->{'reflo'}) {
-	    $s .= $Mark_Pad;
-	    next;
-	}
-	#warn "_substr(-): $i [$self->{'seq'}->{$i}]";
-	if (exists $self->{'seq'}->{$i}) {
-	    $s .= $self->{'seq'}->{$i};
-	} elsif ($i > $self->{'refhi'} and $i < $self->{'reflo'}) {
-	    #We never write a gap at the edge. Frameshifts upset the
-	    #numbering so that [begin,end] may exceed the true range.
-	    #warn "_substr(-): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
-	    $s .= $Mark_Gap;
-	}
-    }
-    $s;
-}
-
 sub raw {
     my ($self, $col, $p) = @_;
 
@@ -719,6 +692,42 @@ sub col {
     return $self->{'text_gap'};
 }
 
+######################################################################
+# private methods
+######################################################################
+sub _substr {
+    my ($self, $stop, $start) = @_; #REVERSE
+
+    return ''  if $start < 1 or $stop < 1;   #negative range args
+    return ''  unless $self->{'lo'} > 0;     #empty
+    return ''  if $stop  > $self->{'hi'};    #missed (too high)
+    return ''  if $start < $self->{'lo'};    #missed (too low)
+
+    $start = $self->{'hi'}  if $start > $self->{'hi'};
+    $stop  = $self->{'lo'}  if $stop  < $self->{'lo'};
+    #warn "_substr(-,lo,hi): $start, $stop";
+    #warn "_substr(-,beg,end): $self->{'reflo'}, $self->{'refhi'}";
+    $stop--;
+
+    my $s = '';
+
+    for (my $i = $start; $i > $stop; $i--) {
+	if ($i < $self->{'refhi'} or $i > $self->{'reflo'}) {
+	    $s .= $Mark_Pad;
+	    next;
+	}
+	#warn "_substr(-): $i [$self->{'seq'}->{$i}]";
+	if (exists $self->{'seq'}->{$i}) {
+	    $s .= $self->{'seq'}->{$i};
+	} elsif ($i > $self->{'refhi'} and $i < $self->{'reflo'}) {
+	    #We never write a gap at the edge. Frameshifts upset the
+	    #numbering so that [begin,end] may exceed the true range.
+	    #warn "_substr(-): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
+	    $s .= $Mark_Gap;
+	}
+    }
+    $s;
+}
 
 ###########################################################################
 1;
