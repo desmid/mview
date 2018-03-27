@@ -58,12 +58,6 @@ my $RDB_SCHEMA = [
     ];
 
 ######################################################################
-# subclass overrides
-######################################################################
-sub schema { [] }          #default is empty
-sub ignore_columns { [] }  #default is empty
-
-######################################################################
 # public methods
 ######################################################################
 #save row information according to schema
@@ -255,6 +249,12 @@ sub display_column_values {
     #warn "display_column_values: [@cols]\n";
     return @cols;
 }
+
+######################################################################
+# protected methods
+######################################################################
+sub schema { [] }          #subclass overrides: default is empty
+sub ignore_columns { [] }  #subclass overrides: default is empty
 
 ######################################################################
 # private methods

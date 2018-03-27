@@ -1,5 +1,7 @@
 # Copyright (C) 1997-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Bio::MView::Build;
 
@@ -9,7 +11,6 @@ use NPB::Parse::Stream;
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align;
 use Bio::MView::Build::Scheduler;
-use strict;
 
 sub new {
     my $type = shift;
@@ -20,6 +21,7 @@ sub new {
     my $entry = shift;
 
     my $self = {};
+    bless $self, $type;
 
     $self->{'entry'}     = $entry;  #parse tree ref
     $self->{'align'}     = undef;   #current alignment
@@ -32,29 +34,16 @@ sub new {
     $self->{'nops_uid'}  = undef;   #hashed version of 'nopslist'  by Row->uid
     $self->{'hide_uid'}  = undef;   #hashed merge of 'disc/keep/nops/' by Row->uid
 
-    bless $self, $type;
-
     $self->initialise;
 
     $self;
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
+######################################################################
+# public methods
+######################################################################
 #override if children have a query sequence (children of Build::Search)
 sub is_search {0}
-
-#override if children need to do something special during creation
-sub initialise {
-    $_[0]->{scheduler} = new Bio::MView::Build::Scheduler;
-    $_[0];
-}
-
-#override if children need to do something special before each iteration
-sub reset_child {
-    $_[0]->{scheduler}->filter;
-    $_[0];
-}
 
 #return 1 if topn rows already generated, 0 otherwise; ignore if if filtering
 #on identity; it is assumed the query is implicitly accepted anyway by the
@@ -69,11 +58,91 @@ sub topn_done {
 #return 1 is row should be ignored by row rank or identifier
 sub skip_row { my $self = shift; ! $self->use_row(@_) }
 
-#override in children
-sub use_row { die "$_[0] use_row() virtual method called\n" }
+sub get_entry { $_[0]->{'entry'} }
 
-#map an identifier supplied as {0..N|query|M.N} to a list of row objects in
-#$self->{'index2row'}
+sub get_row_id {
+    my ($self, $id) = @_;
+    if (defined $id) {
+	my @id = $self->map_id($id);
+	return undef        unless @id;
+	return $id[0]->uid  unless wantarray;
+	return map { $_->uid } @id;
+    }
+    return undef;
+}
+
+sub get_row {
+    my ($self, $id) = @_;
+    if (defined $id) {
+	my @id = $self->map_id($id);
+	return undef   unless @id;
+	return $id[0]  unless wantarray;
+	return @id;
+    }
+    return undef;
+}
+
+sub uid2row   { $_[0]->{uid2row}->{$_[1]} }
+sub index2row { $_[0]->{index2row}->[$_[1]] }
+
+sub reset {
+    my $self = shift;
+
+    $self->{'aligned'} = 0;
+
+    #how many expected rows of alignment to show (1 more if search)
+    $self->{'show'} = $PAR->get('topn');
+    $self->{'show'} += $self->is_search  if $self->{'show'} > 0;
+
+    $self->reset_child;
+}
+
+#return the block of sequences, 0 if empty block, or undef if no more work
+sub next_align {
+    my $self = shift;
+
+    #drop old data structures: GC *before* next assignment!
+    $self->{'align'} = $self->{'index2row'} = undef;
+
+    #extract an array of row objects
+    $self->{'index2row'} = $self->parse;
+    #Universal::vmstat("Build->next(parse) done");
+
+    #finished? note: "$self->{'align'}->free" is not needed
+    return undef  unless defined $self->{'index2row'};
+
+    #my $i; for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
+    #    warn "[$i]  ", $self->index2row($i)->num, " ",
+    #	      $self->index2row($i)->cid, "\n";
+    #}
+
+    #this block empty?
+    return 0  unless @{$self->{'index2row'}};
+
+    $self->{'align'} = $self->build_block;
+    #Universal::vmstat("Build->next(build_block) done");
+
+    #maybe more data but this alignment empty? (identity filtered)
+    return 0  unless defined $self->{'align'};
+    return 0  unless $self->{'align'}->visible_ids > 0;
+
+    return $self->{'align'};
+}
+
+######################################################################
+# protected methods
+######################################################################
+#subclass overrides: if children need to do something during creation
+sub initialise { $_[0]->{scheduler} = new Bio::MView::Build::Scheduler }
+
+#subclass overrides: if children need to do something before each iteration
+sub reset_child { $_[0]->{scheduler}->filter }
+
+#subclass overrides: must be overridden
+sub use_row { die "$_[0] use_row: virtual method called\n" }
+
+#subclass overrides: map an identifier supplied as {0..N|query|M.N} to
+#a list of row objects in $self->{'index2row'}
 sub map_id {
     my ($self, $ref) = @_;
     my ($i, @rowref) = ();
@@ -143,34 +212,7 @@ sub map_id {
     return @rowref;
 }
 
-sub get_entry { $_[0]->{'entry'} }
-
-sub get_row_id {
-    my ($self, $id) = @_;
-    if (defined $id) {
-	my @id = $self->map_id($id);
-	return undef        unless @id;
-	return $id[0]->uid  unless wantarray;
-	return map { $_->uid } @id;
-    }
-    return undef;
-}
-
-sub get_row {
-    my ($self, $id) = @_;
-    if (defined $id) {
-	my @id = $self->map_id($id);
-	return undef   unless @id;
-	return $id[0]  unless wantarray;
-	return @id;
-    }
-    return undef;
-}
-
-sub uid2row   { $_[0]->{uid2row}->{$_[1]} }
-sub index2row { $_[0]->{index2row}->[$_[1]] }
-
-#construct a header string describing this alignment
+#subclass overrides
 sub header {
     my ($self, $quiet) = (@_, 0);
     return ''  if $quiet;
@@ -211,52 +253,84 @@ sub header {
     return $s;
 }
 
-sub reset {
-    my $self = shift;
-
-    $self->{'aligned'} = 0;
-
-    #how many expected rows of alignment to show (1 more if search)
-    $self->{'show'} = $PAR->get('topn');
-    $self->{'show'} += $self->is_search  if $self->{'show'} > 0;
-
-    $self->reset_child;
-}
-
+#subclass overrides
 sub subheader {''}
 
-#return the block of sequences, 0 if empty block, or undef if no more work
-sub next_align {
-    my $self = shift;
+#subclass overrides
+sub build_rows {
+    my ($self, $lo, $hi) = @_;
 
-    #drop old data structures: GC *before* next assignment!
-    $self->{'align'} = $self->{'index2row'} = undef;
+    if ($self->{'aligned'}) {  #treat as alignment: common range
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
+        }
 
-    #extract an array of row objects
-    $self->{'index2row'} = $self->parse;
-    #Universal::vmstat("Build->next(parse) done");
-
-    #finished? note: "$self->{'align'}->free" is not needed
-    return undef  unless defined $self->{'index2row'};
-
-    #my $i; for ($i=0; $i < @{$self->{'index2row'}}; $i++) {
-    #    warn "[$i]  ", $self->index2row($i)->num, " ",
-    #	      $self->index2row($i)->cid, "\n";
-    #}
-
-    #this block empty?
-    return 0  unless @{$self->{'index2row'}};
-
-    $self->{'align'} = $self->build_block;
-    #Universal::vmstat("Build->next(build_block) done");
-
-    #maybe more data but this alignment empty? (identity filtered)
-    return 0  unless defined $self->{'align'};
-    return 0  unless $self->{'align'}->visible_ids > 0;
-
-    return $self->{'align'};
+    } else {  #treat as format conversion: each row has own range
+        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+            my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
+            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
+            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
+        }
+    }
+    $self;
 }
 
+#subclass overrides
+sub get_range {
+    my ($self, $row) = @_;
+    my @range = @{$PAR->get('range')};
+    if (@range and @range % 2 < 1) {
+        return ($range[0], $range[1])  if $range[0] < $range[1];
+        return ($range[1], $range[0]);
+    }
+    return $row->range;  #default
+}
+
+#subclass overrides
+sub rebless_alignment {}
+
+#subclass overrides: remove query and hit columns at gaps in the query
+#sequence and downcase the bounding hit symbols in the hit sequence thus
+#affected.
+sub strip_query_gaps {
+    my ($self, $query, $sbjct) = @_;
+    my $i;
+
+    #warn "sqg(in  q)=[$$query]\n";
+    #warn "sqg(in  h)=[$$sbjct]\n";
+
+    #no gaps in query
+    return    if index($$query, '-') < 0;
+
+    #iterate over query frag symbols
+    while ( ($i = index($$query, '-')) >= 0 ) {
+
+	#downcase preceding symbol in hit
+	if (defined substr($$query, $i-1, 1)) {
+	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
+	}
+
+	#consume gap symbols in query and hit
+	while (substr($$query, $i, 1) eq '-') {
+	    substr($$query, $i, 1) = "";
+	    substr($$sbjct, $i, 1) = "";
+	}
+
+	#downcase succeeding symbol in hit
+	if (defined substr($$query, $i, 1)) {
+	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
+	}
+
+	#warn "sqg(out q)=[$$query]\n";
+	#warn "sqg(out h)=[$$sbjct]\n";
+    }
+    $self;
+}
+
+######################################################################
+# private methods
+######################################################################
 sub build_block {
     my $self = shift;
 
@@ -361,38 +435,6 @@ sub build_indices {
     $self;
 }
 
-sub build_rows {
-    my ($self, $lo, $hi) = @_;
-
-    if ($self->{'aligned'}) {  #treat as alignment: common range
-        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
-        }
-
-    } else {  #treat as format conversion: each row has own range
-        for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-            my ($lo, $hi) = $self->get_range($self->{'index2row'}->[$i]);
-            #warn "Build::build_rows range[$i] ($lo, $hi)\n";
-            $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
-        }
-    }
-    $self;
-}
-
-sub get_range {
-    my ($self, $row) = @_;
-    my @range = @{$PAR->get('range')};
-    if (@range and @range % 2 < 1) {
-        return ($range[0], $range[1])  if $range[0] < $range[1];
-        return ($range[1], $range[0]);
-    }
-    return $row->range;  #default
-}
-
-#subclass overrides
-sub rebless_alignment {}
-
 sub build_base_alignment {
     my ($self, $aln) = @_;
 
@@ -477,42 +519,10 @@ sub build_mview_alignment {
     }
 }
 
-#remove query and hit columns at gaps in the query sequence and downcase
-#the bounding hit symbols in the hit sequence thus affected.
-sub strip_query_gaps {
-    my ($self, $query, $sbjct) = @_;
-    my $i;
-
-    #warn "sqg(in  q)=[$$query]\n";
-    #warn "sqg(in  h)=[$$sbjct]\n";
-
-    #no gaps in query
-    return    if index($$query, '-') < 0;
-
-    #iterate over query frag symbols
-    while ( ($i = index($$query, '-')) >= 0 ) {
-
-	#downcase preceding symbol in hit
-	if (defined substr($$query, $i-1, 1)) {
-	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
-	}
-
-	#consume gap symbols in query and hit
-	while (substr($$query, $i, 1) eq '-') {
-	    substr($$query, $i, 1) = "";
-	    substr($$sbjct, $i, 1) = "";
-	}
-
-	#downcase succeeding symbol in hit
-	if (defined substr($$query, $i, 1)) {
-	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
-	}
-
-	#warn "sqg(out q)=[$$query]\n";
-	#warn "sqg(out h)=[$$sbjct]\n";
-    }
-    $self;
-}
+######################################################################
+# debug
+######################################################################
+#sub DESTROY { warn "DESTROY $_[0]\n" }
 
 
 ###########################################################################

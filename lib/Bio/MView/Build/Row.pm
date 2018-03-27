@@ -16,7 +16,6 @@ sub new {
     my ($num, $id, $desc, $seq) = @_;
 
     my $self = new Bio::MView::Build::Row($num, $id, $desc);
-
     bless $self, $type;
 
     $self->add_frag($seq)  if defined $seq;
@@ -69,47 +68,10 @@ sub new {
 }
 
 ######################################################################
-# subclass overrides
+# protected methods
 ######################################################################
-sub posn1 { '' }  #first sequence range
-sub posn2 { '' }  #second sequence range
-
-#routine to sort 'frag' list: default is null
+#subclass overrides: routine to sort 'frag' list: default is null
 sub sort {$_[0]}
-
-#compute the maximal positional range of a row
-sub range {
-    my $self = shift;
-    my ($lo, $hi) = ($self->{'frag'}->[0][1], $self->{'frag'}->[0][2]);
-    foreach my $frag (@{$self->{'frag'}}) {
-        #warn "range: $frag->[1], $frag->[2]\n";
-        $lo = $frag->[1]  if $frag->[1] < $lo;
-        $lo = $frag->[2]  if $frag->[2] < $lo;
-	$hi = $frag->[1]  if $frag->[1] > $hi;
-	$hi = $frag->[2]  if $frag->[2] > $hi;
-    }
-    #warn "range: ($lo, $hi)\n";
-    ($lo, $hi);
-}
-
-#assemble a row from sequence fragments
-sub assemble {
-    my ($self, $lo, $hi, $gap) = @_;
-    my $reverse = 0;
-    #get direction from first fragment range longer than 1
-    foreach my $frag (@{$self->{'frag'}}) {
-        $reverse = 0, last  if $frag->[1] < $frag->[2];
-        $reverse = 1, last  if $frag->[1] > $frag->[2];
-    }
-    #warn "Row::assemble: [@_] $reverse\n";
-    $self->sort;                                 #fragment order
-    $self->{'seq'}->reverse  if $reverse;        #before calling insert()
-    $self->{'seq'}->insert(@{$self->{'frag'}});  #assemble fragments
-    $self->{'seq'}->set_range($lo, $hi);         #set sequence range
-    $self->{'seq'}->set_pad($gap);
-    $self->{'seq'}->set_gap($gap);
-    $self;
-}
 
 ######################################################################
 # public methods
@@ -128,6 +90,9 @@ sub desc  { $_[0]->{'desc'} }  #row description
 sub covr  { $_[0]->{'covr'} }  #percent coverage
 sub pcid  { $_[0]->{'pcid'} }  #percent identity
 
+sub posn1 { '' }  #subclass overrides: first sequence range
+sub posn2 { '' }  #subclass overrides: second sequence range
+
 #return the sequence string
 sub seq {
     return ''  unless defined $_[0]->{'seq'};
@@ -138,11 +103,41 @@ sub seq {
 sub text {
     my $w = defined $_[1] ? $_[1] : $DEF_TEXTWIDTH;
     $w = length $_[0]->{'desc'}  if $w > length $_[0]->{'desc'};
-    sprintf("%-${w}s", $_[0]->truncate($_[0]->{'desc'}, $w));
+    return sprintf("%-${w}s", $_[0]->truncate($_[0]->{'desc'}, $w));
 }
 
 sub set_coverage { $_[0]->{'covr'} = $_[1] }
 sub set_identity { $_[0]->{'pcid'} = $_[1] }
+
+#add a sequence fragment to the 'frag' list with value and positions given
+#by first three args. use default positions if called with one arg. other
+#optional arguments are special to any subclass of Row.
+sub add_frag {
+    my $self = shift;
+    my ($frag, $qry_from, $qry_to) = (shift, shift, shift);
+
+    $qry_from = 1             unless defined $qry_from;
+    $qry_to   = length $frag  unless defined $qry_to;
+
+    push @{$self->{'frag'}}, [ \$frag, $qry_from, $qry_to, @_ ];
+
+    #warn "@{$self->{'frag'}->[-1]}\n";
+}
+
+#subclass overrides: compute the maximal positional range of a row
+sub range {
+    my $self = shift;
+    my ($lo, $hi) = ($self->{'frag'}->[0][1], $self->{'frag'}->[0][2]);
+    foreach my $frag (@{$self->{'frag'}}) {
+        #warn "range: $frag->[1], $frag->[2]\n";
+        $lo = $frag->[1]  if $frag->[1] < $lo;
+        $lo = $frag->[2]  if $frag->[2] < $lo;
+	$hi = $frag->[1]  if $frag->[1] > $hi;
+	$hi = $frag->[2]  if $frag->[2] > $hi;
+    }
+    #warn "range: ($lo, $hi)\n";
+    return ($lo, $hi);
+}
 
 #convert nucleotide positions to a relative amino acid scale
 sub translate_range {
@@ -152,21 +147,22 @@ sub translate_range {
     die "translate_range: from == to  $fm, $to";
 }
 
-#add a sequence fragment to the 'frag' list with value and positions given
-#by first three args. use default positions if called with one arg. other
-#optional arguments are special to any subclass of Row.
-sub add_frag {
-    my $self = shift;
-    my ($frag, $qry_from, $qry_to) = (shift, shift, shift);
-
-    $qry_from = 1               unless defined $qry_from;
-    $qry_to   = length $frag    unless defined $qry_to;
-
-    push @{$self->{'frag'}}, [ \$frag, $qry_from, $qry_to, @_ ];
-
-    #warn "@{$self->{'frag'}->[-1]}\n";
-
-    $self;
+#subclass overrides: assemble a row from sequence fragments
+sub assemble {
+    my ($self, $lo, $hi, $gap) = @_;
+    my $reverse = 0;
+    #get direction from first fragment range longer than 1
+    foreach my $frag (@{$self->{'frag'}}) {
+        $reverse = 0, last  if $frag->[1] < $frag->[2];
+        $reverse = 1, last  if $frag->[1] > $frag->[2];
+    }
+    #warn "Row::assemble: [@_] $reverse\n";
+    $self->sort;                                 #fragment order
+    $self->{'seq'}->reverse  if $reverse;        #before calling insert()
+    $self->{'seq'}->insert(@{$self->{'frag'}});  #assemble fragments
+    $self->{'seq'}->set_range($lo, $hi);         #set sequence range
+    $self->{'seq'}->set_pad($gap);
+    $self->{'seq'}->set_gap($gap);
 }
 
 ######################################################################
@@ -176,10 +172,10 @@ sub uniqid { "$_[1]\034/$_[2]" }
 
 #truncate a string
 sub truncate {
-    my ($self, $s, $n, $t) = (@_, $DEF_TEXTWIDTH);
-    $t = substr($s, 0, $n);
-    substr($t, -3, 3) = '...'    if length $s > $n;
-    $t;
+    my ($self, $s, $n) = (@_, $DEF_TEXTWIDTH);
+    my $t = substr($s, 0, $n);
+    substr($t, -3, 3) = '...'  if length $s > $n;
+    return $t;
 }
 
 ######################################################################
@@ -195,7 +191,6 @@ sub dump {
     my $self = shift;
     warn "$self\n";
     map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-    $self;
 }
 
 sub frag_count { scalar @{$_[0]->{'frag'}} }

@@ -1,16 +1,20 @@
 # Copyright (C) 1997-2006 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Build::Align;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build;
-
-use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build);
 
+######################################################################
+# protected methods
+######################################################################
+#override
 sub use_row {
     my ($self, $num, $nid, $sid) = @_;
     my $pat;
@@ -55,10 +59,11 @@ sub use_row {
     return 1;    #default
 }
 
+#override
 sub map_id {
     my ($self, $ref) = @_;
     $ref = 1  if $ref eq '0' or $ref =~ /query/i;
-    $self->SUPER::map_id($ref);
+    return $self->SUPER::map_id($ref);
 }
 
 
