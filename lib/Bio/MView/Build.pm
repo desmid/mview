@@ -324,11 +324,13 @@ sub strip_query_gaps {
 ######################################################################
 # private methods
 ######################################################################
-sub is_nop { return exists $_[0]->{'nops_uid'}->{$_[1]->uid} }
+sub is_aligned { return $_[0]->{'aligned'} == 1 }
+sub is_hidden  { return exists $_[0]->{'hide_uid'}->{$_[1]} }
+sub is_nop     { return exists $_[0]->{'nops_uid'}->{$_[1]} }
 
 sub outfmt_supported {
     my ($self, $fmt) = @_;
-    return 1  if $self->{'aligned'};
+    return 1  if $self->is_aligned;
     return 1  if grep {$_ eq $fmt} qw(fasta pearson pir);
     return 0;
 }
@@ -353,7 +355,7 @@ sub build_block {
     $self->build_indices;
     $self->build_rows($lo, $hi);
 
-    my $aln = new Bio::MView::Align($self->{'aligned'}, undef);
+    my $aln = new Bio::MView::Align($self, undef);
 
     $self->rebless_alignment($aln);  #allow child to change type
 
@@ -427,6 +429,7 @@ sub build_indices {
 sub build_base_alignment {
     my ($self, $aln) = @_;
 
+    #make and insert each sequence into the alignment
     foreach my $row (@{$self->{'index2row'}}) {
         my $arow = $aln->make_sequence($row);
         $aln->append($arow);
@@ -439,9 +442,6 @@ sub build_base_alignment {
                                   $PAR->get('maxident'),
                                   $self->{'topn'},
                                   $self->{'keep_uid'});
-
-    $aln->set_parameters('nopshash' => $self->{'nops_uid'},
-                         'hidehash' => $self->{'hide_uid'});
 
     #compute columnwise data for aligned output
     if ($self->{'aligned'} and !$PAR->get('keepinserts')) {
@@ -479,7 +479,7 @@ sub build_mview_alignment {
 
         my @labels = $row->display_column_values;
 
-        $labels[0] = ''  if $self->is_nop($row);
+        $labels[0] = ''  if $self->is_nop($row->uid);
 
         #warn "labels: [@{[join(',', @labels)]}]\n";
 

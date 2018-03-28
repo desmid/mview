@@ -18,21 +18,19 @@ sub new {
     if (@_ < 2) {
 	die "${type}::new: missing arguments\n";
     }
-    my ($aligned, $parent) = (shift, shift);
+    my ($build, $parent) = (shift, shift);
 
     my $self = {};
     bless $self, $type;
 
+    $self->{'build'}     = $build;    #calling Build object
+    $self->{'parent'}    = $parent;   #identifier of parent sequence
     $self->{'id2index'}  = {};        #hash of identifiers giving row numbers
     $self->{'index2row'} = [];        #list of aligned rows, from zero
-    $self->{'parent'}    = $parent;   #identifier of parent sequence
-    $self->{'aligned'}   = $aligned;  #sequences are aligned flag
     $self->{'length'}    = 0;         #alignment width
     $self->{'tally'}     = {};        #column tallies for consensus
-    $self->{'nopshash'}  = {};        #id's to ignore for computations/colours
-    $self->{'hidehash'}  = {};        #id's to ignore for display
 
-    #warn "Align.aligned: $aligned\n";
+    #warn "Align.aligned: @{[$build->is_aligned]}\n";
     #warn "Align.parent:  @{[defined $parent ? $parent : 'undef']}\n";
 
     $self->append(@_);
@@ -80,7 +78,7 @@ sub append {
             $self->{'parent'} = $obj  unless defined $self->{'parent'};
         }
 
-        if ($self->{'aligned'} and $obj->length != $self->{'length'}) {
+        if ($self->is_aligned and $obj->length != $self->{'length'}) {
             die "${self}::append: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
         }
 
@@ -88,14 +86,6 @@ sub append {
         $self->{'index2row'}->[$i] = $obj;
 
         $i++;
-    }
-}
-
-sub set_parameters {
-    my $self = shift;
-    while (@_) {
-        my ($k, $v) = (shift, shift);
-        $self->{$k} = $v;
     }
 }
 
@@ -312,14 +302,14 @@ sub prune_identities {
         push @obj, $row;
     }
 
-    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
+    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, @obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
 sub build_ruler {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Ruler($self->length, $refobj);
-    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with a line of
@@ -342,7 +332,7 @@ sub build_conservation_row {
     #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
-    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with lines showing
@@ -367,7 +357,7 @@ sub build_consensus_rows {
                                                    $group, $thresh, $ignore);
     }
 
-    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
+    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, @obj);
 }
 
 sub conservation {
@@ -462,8 +452,9 @@ sub conservation {
 ######################################################################
 # private methods
 ######################################################################
-sub is_hidden { return exists $_[0]->{'hidehash'}->{$_[1]} }
-sub is_nop    { return exists $_[0]->{'nopshash'}->{$_[1]} }
+sub is_aligned { return $_[0]->{'build'}->is_aligned }
+sub is_hidden  { return $_[0]->{'build'}->is_hidden($_[1]) }
+sub is_nop     { return $_[0]->{'build'}->is_nop($_[1]) }
 
 #return list of visible rows as row objects, for output
 sub visible_rows {
