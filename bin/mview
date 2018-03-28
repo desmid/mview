@@ -142,7 +142,7 @@ sub mview {
             $par->{'infmt'} = $format;
         }
 
-	if (! defined $mgr->parse($file, $par->{'infmt'})) {
+	unless ($mgr->parse($file, $par->{'infmt'})) {
 	    warn "$PROG: can't parse file '$file'\n";
 	}
         #Universal::vmstat("mview: Manager.parse file '$file' done");

@@ -61,7 +61,7 @@ sub parse {
 
     $self->{'stream'} = new NPB::Parse::Stream($file, $parser);
 
-    return undef  unless defined $self->{'stream'};
+    return 0  unless defined $self->{'stream'};
 
     my ($first, $header1, $header2, $header3) = (1, '', '', '');
 
@@ -112,10 +112,10 @@ sub parse {
 	$bld = undef;
     }
 
-    return $self;
+    return 1;
 }
 
-sub get_alignment_count { $_[0]->{'acount'} }
+sub get_alignment_count { return $_[0]->{'acount'} }
 
 sub print_alignment {
     my ($self, $stm) = (@_, \*STDOUT);
@@ -146,7 +146,7 @@ sub print_alignment {
     #     "  L7 ", $self->{'labwidth7'},
     #     "\n"   ;
 
-    #consolidate field widths
+    #consolidate field widths across all Display objects
     foreach my $d (@{$self->{'display'}}) {
         $self->{'posnwidth'} = Universal::max($d->[0]->{'posnwidth'},
                                               $self->{'posnwidth'});
@@ -260,7 +260,6 @@ sub print_alignment {
 
 	$first = 0;
     }
-    $self;
 }
 
 ######################################################################
@@ -369,7 +368,7 @@ sub add_display {
 	$aln->do_gc;
 	#Universal::vmstat("final garbage collect");
     }
-    $dis;
+    return $dis;
 }
 
 sub print_format_conversion {
