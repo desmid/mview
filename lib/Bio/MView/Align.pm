@@ -135,14 +135,6 @@ sub item {
     my ($self, $id) = @_;
     return undef  unless defined $id;
     return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
-}
-
-#propagate display parameters to row objects
-sub set_display {
-    my $self = shift;
-    foreach my $r (@{$self->{'index2row'}}) {
-	$r->set_display(@_)  if defined $r;
-    }
     return undef;
 }
 
