@@ -363,15 +363,8 @@ sub build_consensus_rows {
     my $to   = $from + $self->length - 1;
 
     foreach my $thresh (@$threshold) {
-	my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-                                                   $group, $thresh,
-                                                   $ignore);
-	$con->set_display('label0' => '', #leave label1
-			  'label2' => '', 'label3' => '',
-			  'label4' => '', 'label5' => '',
-			  'label6' => '', 'label7' => '',
-	);
-	push @obj, $con;
+        push @obj,new Bio::MView::Align::Consensus($from, $to, $tally,
+                                                   $group, $thresh, $ignore);
     }
 
     return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
