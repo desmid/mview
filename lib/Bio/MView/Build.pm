@@ -387,7 +387,7 @@ sub build_indices {
     foreach my $i (@{$PAR->get('skiplist')}) {
 	my @id = $self->map_id($i);
 	foreach my $r (@id) {
-	    $self->{'hide_uid'}->{$r->uid} = 1;           #invisible
+	    $self->{'hide_uid'}->{$r->uid} = 1;         #invisible
 	}
     }
 
@@ -397,7 +397,7 @@ sub build_indices {
 	foreach my $r (@id) {
 	    $self->{'keep_uid'}->{$r->uid} = 1;
 	    delete $self->{'hide_uid'}->{$r->uid}  if
-		exists $self->{'hide_uid'}->{$r->uid};    #visible
+		exists $self->{'hide_uid'}->{$r->uid};  #visible
 	}
     }
 
@@ -413,7 +413,7 @@ sub build_indices {
     foreach my $i (@{$PAR->get('nopslist')}) {
 	my @id = $self->map_id($i);
 	foreach my $r (@id) {
-	    $self->{'nops_uid'}->{$r->uid}  = 1;
+	    $self->{'nops_uid'}->{$r->uid} = 1;
 	}
     }
     #warn "ref:  ",$self->{'ref_row'}->uid, "\n" if defined $self->{'ref_row'};

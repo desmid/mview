@@ -20,7 +20,7 @@ sub new {
     my $self = new Bio::MView::Align::Row('ruler', '');
     bless $self, $type;
 
-    $self->{'length'} = $length;
+    $self->{'length'} = $length;  #alignment width
 
     $self->reset_display($refobj);
 
@@ -31,7 +31,7 @@ sub new {
 # public methods
 ######################################################################
 #override
-sub length { $_[0]->{'length'} }
+sub length { return $_[0]->{'length'} }
 
 ######################################################################
 # private methods
@@ -40,21 +40,23 @@ sub length { $_[0]->{'length'} }
 sub reset_display {
     my ($self, $refobj) = @_;
 
-    my $labels = ['', '', '', '', '', '', '', ''];
-    $labels = [ $refobj->display_column_labels ]  if defined $refobj;
+    my @labels = ['', '', '', '', '', '', '', ''];
+
+    @labels = $refobj->display_column_labels  if defined $refobj;
+    #warn "labels: [@{[join(',', @labels)]}]\n";
 
     $self->SUPER::reset_display(
         'type'   => $self->display_type,
         'range'  => [],
         'number' => 1,
-        'label0' => $labels->[0],
-        'label1' => $labels->[1],
-        'label2' => $labels->[2],
-        'label3' => $labels->[3],
-        'label4' => $labels->[4],
-        'label5' => $labels->[5],
-        'label6' => $labels->[6],
-        'label7' => $labels->[7],
+        'label0' => $labels[0],
+        'label1' => $labels[1],
+        'label2' => $labels[2],
+        'label3' => $labels[3],
+        'label4' => $labels[4],
+        'label5' => $labels[5],
+        'label6' => $labels[6],
+        'label7' => $labels[7],
     );
 }
 

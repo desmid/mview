@@ -174,7 +174,7 @@ sub compute_identity_to {
     #warn "normalization mode: $mode, value= $norm\n";
     #warn "identity $self->{'id'} = $sum/$norm\n";
 
-    return ($sum = 100 * ($sum + 0.0) / $norm)    if $norm > 0;
+    return ($sum = 100 * ($sum + 0.0) / $norm)  if $norm > 0;
     return 0;
 }
 
@@ -192,7 +192,7 @@ sub reset_display {
 }
 
 #override
-sub length { $_[0]->{'string'}->length }
+sub length { return $_[0]->{'string'}->length }
 
 ######################################################################
 # debug

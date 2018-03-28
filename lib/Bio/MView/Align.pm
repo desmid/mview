@@ -97,16 +97,15 @@ sub set_parameters {
         my ($k, $v) = (shift, shift);
         $self->{$k} = $v;
     }
-    $self;
 }
 
-sub size { scalar @{$_[0]->{'index2row'}} }
+sub size { return scalar @{$_[0]->{'index2row'}} }
 
-sub length { $_[0]->{'length'} }
+sub length { return $_[0]->{'length'} }
 
 sub id2row {
     return undef  unless defined $_[0]->{id2index}->{$_[1]};
-    $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}];
+    return $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}];
 }
 
 #return list of all rows as internal ids
@@ -116,7 +115,7 @@ sub all_ids {
 	next  unless defined $r;
 	push @tmp, $r->id;
     }
-    @tmp;
+    return @tmp;
 }
 
 #return list of visible rows as internal ids, for output
@@ -128,7 +127,7 @@ sub visible_ids {
 	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r->id;
     }
-    @tmp;
+    return @tmp;
 }
 
 #return row object indexed by identifier, or undef
@@ -136,7 +135,6 @@ sub item {
     my ($self, $id) = @_;
     return undef  unless defined $id;
     return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
-    undef;
 }
 
 #propagate display parameters to row objects
@@ -145,6 +143,7 @@ sub set_display {
     foreach my $r (@{$self->{'index2row'}}) {
 	$r->set_display(@_)  if defined $r;
     }
+    return undef;
 }
 
 #ignore id's in remaining arglist
@@ -261,7 +260,7 @@ sub append_display {
 	my $r = $self->{'index2row'}->[$i];
 
 	next  unless defined $r;
-	next  if $self->is_hidden($r->id); #also let nops through
+	next  if $self->is_hidden($r->id);  #also let nops through
 
 	#append the row data structure to the Display object
 	$dis->append($r->get_display);
@@ -269,19 +268,17 @@ sub append_display {
 	#optional garbage collection
 	$self->do_gc($i)  if $gc_flag;
     }
-    $self;
 }
 
 sub do_gc {
     my ($self, $i) = @_;
-    if (defined $i) { #just one
+    if (defined $i) {  #just one
 	$self->{'index2row'}->[$i] = undef;
-	return $self;
+	return;
     }
     for (my $i=0; $i<@{$self->{'index2row'}}; $i++) { #all
 	$self->{'index2row'}->[$i] = undef;
     }
-    $self;
 }
 
 sub prune_identities {
@@ -330,7 +327,7 @@ sub prune_identities {
 sub build_ruler {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Ruler($self->length, $refobj);
-    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with a line of
@@ -353,7 +350,7 @@ sub build_conservation_row {
     #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
-    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with lines showing
@@ -385,7 +382,7 @@ sub build_consensus_rows {
 	push @obj, $con;
     }
 
-    new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
+    return new Bio::MView::Align($self->{'aligned'}, $self->{'parent'}, @obj);
 }
 
 sub conservation {
@@ -474,14 +471,14 @@ sub conservation {
 	$s .= ' ';
     }
     #warn "@{[length($s)]} [$s]\n";
-    \$s;
+    return \$s;
 }
 
 ######################################################################
 # private methods
 ######################################################################
-sub is_hidden { exists $_[0]->{'hidehash'}->{$_[1]} }
-sub is_nop    { exists $_[0]->{'nopshash'}->{$_[1]} }
+sub is_hidden { return exists $_[0]->{'hidehash'}->{$_[1]} }
+sub is_nop    { return exists $_[0]->{'nopshash'}->{$_[1]} }
 
 #return list of visible rows as row objects, for output
 sub visible_rows {
@@ -492,7 +489,7 @@ sub visible_rows {
 	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r;
     }
-    @tmp;
+    return @tmp;
 }
 
 #return list of visible sequence rows excluding nops as internal ids,
@@ -506,7 +503,7 @@ sub visible_computable_ids {
 	next  if $_[0]->is_nop($r->id);
 	push @tmp, $r->id;
     }
-    @tmp;
+    return @tmp;
 }
 
 sub color_header {
@@ -717,7 +714,6 @@ sub dump {
         }
     }
     warn "\n";
-    $self;
 }
 
 ######################################################################

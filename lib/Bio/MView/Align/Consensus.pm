@@ -38,8 +38,8 @@ sub new {
     my $self = new Bio::MView::Align::Sequence("consensus/$thresh\%", $sob);
     bless $self, $type;
 
-    $self->{'group'}     = $group;
-    $self->{'threshold'} = $thresh;
+    $self->{'group'}     = $group;   #groupmap
+    $self->{'threshold'} = $thresh;  #consensus threshold
 
     $self;
 }
