@@ -17,9 +17,9 @@ sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
     die "${type}::new: missing arguments\n"  if @_ < 2;
-    my ($id, $sob) = @_;
+    my ($uid, $sob) = @_;
 
-    my $self = new Bio::MView::Align::Row('sequence', $id);
+    my $self = new Bio::MView::Align::Row('sequence', $uid);
     bless $self, $type;
 
     $self->{'from'}   = $sob->lo;  #start number of sequence
@@ -172,7 +172,7 @@ sub compute_identity_to {
 	$norm = $self->seqlen;
     }
     #warn "normalization mode: $mode, value= $norm\n";
-    #warn "identity $self->{'id'} = $sum/$norm\n";
+    #warn "identity $self->{'uid'} = $sum/$norm\n";
 
     return ($sum = 100 * ($sum + 0.0) / $norm)  if $norm > 0;
     return 0;
@@ -181,11 +181,11 @@ sub compute_identity_to {
 ######################################################################
 # private methods
 ######################################################################
-#override
+#override: label1 is valid for computed rows
 sub reset_display {
     $_[0]->SUPER::reset_display(
         'type'     => $_[0]->display_type,
-        'label1'   => $_[0]->id,
+        'label1'   => $_[0]->uid,
         'sequence' => $_[0]->seqobj,
         'range'    => [],
     );

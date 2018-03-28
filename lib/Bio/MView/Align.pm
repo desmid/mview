@@ -23,12 +23,12 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'build'}     = $build;    #calling Build object
-    $self->{'parent'}    = $parent;   #identifier of parent sequence
-    $self->{'id2index'}  = {};        #hash of identifiers giving row numbers
-    $self->{'index2row'} = [];        #list of aligned rows, from zero
-    $self->{'length'}    = 0;         #alignment width
-    $self->{'tally'}     = {};        #column tallies for consensus
+    $self->{'build'}     = $build;   #calling Build object
+    $self->{'parent'}    = $parent;  #identifier of parent sequence
+    $self->{'uid2index'} = {};       #hash of identifiers giving row numbers
+    $self->{'index2row'} = [];       #list of aligned rows, from zero
+    $self->{'length'}    = 0;        #alignment width
+    $self->{'tally'}     = {};       #column tallies for consensus
 
     #warn "Align.aligned: @{[$build->is_aligned]}\n";
     #warn "Align.parent:  @{[defined $parent ? $parent : 'undef']}\n";
@@ -67,11 +67,9 @@ sub make_sequence {
 
 sub append {
     my $self = shift;
-
-    my $i = @{$self->{'index2row'}};  #number of rows so far
-
     foreach my $obj (@_) {
-        #warn "append: [$i]\t@{[$obj->id]}\t@{[$obj->string]}\n";
+        my $i = @{$self->{'index2row'}};  #number of rows so far
+        #warn "append: [$i]\t@{[$obj->uid]}\t@{[$obj->string]}\n";
 
         if ($i < 1) {  #empty
             $self->{'length'} = $obj->length;
@@ -82,10 +80,8 @@ sub append {
             die "${self}::append: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
         }
 
-        $self->{'id2index'}->{$obj->id} = $i;
+        $self->{'uid2index'}->{$obj->uid} = $i;
         $self->{'index2row'}->[$i] = $obj;
-
-        $i++;
     }
 }
 
@@ -93,9 +89,9 @@ sub size { return scalar @{$_[0]->{'index2row'}} }
 
 sub length { return $_[0]->{'length'} }
 
-sub id2row {
-    return undef  unless defined $_[0]->{id2index}->{$_[1]};
-    return $_[0]->{index2row}->[$_[0]->{id2index}->{$_[1]}];
+sub uid2row {
+    return undef  unless exists $_[0]->{'uid2index'}->{$_[1]};
+    return $_[0]->{'index2row'}->[$_[0]->{'uid2index'}->{$_[1]}];
 }
 
 #return list of all rows as internal ids
@@ -103,7 +99,7 @@ sub all_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
-	push @tmp, $r->id;
+	push @tmp, $r->uid;
     }
     return @tmp;
 }
@@ -113,19 +109,11 @@ sub visible_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->id);
-	next  if $_[0]->is_nop($r->id);
-	push @tmp, $r->id;
+	next  if $_[0]->is_hidden($r->uid);
+	next  if $_[0]->is_nop($r->uid);
+	push @tmp, $r->uid;
     }
     return @tmp;
-}
-
-#return row object indexed by identifier, or undef
-sub item {
-    my ($self, $id) = @_;
-    return undef  unless defined $id;
-    return $self->id2row($id)  if exists $self->{'id2index'}->{$id};
-    return undef;
 }
 
 #ignore id's in remaining arglist
@@ -133,7 +121,7 @@ sub set_identity {
     my ($self, $ref, $mode) = @_;
     #warn "Bio::MView::Align::set_identity(@_)\n";
 
-    $ref = $self->id2row($ref);
+    $ref = $self->uid2row($ref);
     return  unless defined $ref;
 
     foreach my $r ($self->visible_rows) {
@@ -147,7 +135,7 @@ sub set_coverage {
     my ($self, $ref) = @_;
     #warn "Bio::MView::Align::set_coverage(@_)\n";
 
-    $ref = $self->id2row($ref);
+    $ref = $self->uid2row($ref);
     return  unless defined $ref;
 
     foreach my $r ($self->visible_rows) {
@@ -242,7 +230,7 @@ sub append_display {
 	my $r = $self->{'index2row'}->[$i];
 
 	next  unless defined $r;
-	next  if $self->is_hidden($r->id);  #also let nops through
+	next  if $self->is_hidden($r->uid);  #also let nops through
 
 	#append the row data structure to the Display object
 	$dis->append($r->get_display);
@@ -272,7 +260,7 @@ sub prune_identities {
     #trivial cases
     return $self  unless defined $refid;
 
-    my $ref = $self->item($refid);  #the reference row
+    my $ref = $self->uid2row($refid);  #the reference row
     return $self  unless defined $ref;
 
     return $self  unless $min > 0 or $max < 100;
@@ -289,7 +277,7 @@ sub prune_identities {
 	last  if $topn > 0 and @obj == $topn;
 
         #keep this row regardless of percent identity
-	if (exists $keep->{$row->id}) {
+	if (exists $keep->{$row->uid}) {
             push @obj, $row;
 	    next;
 	}
@@ -373,7 +361,7 @@ sub conservation {
 
     my @tmp = $self->visible_computable_ids;
 
-    my $refseq = $self->id2row($tmp[0])->seqobj;
+    my $refseq = $self->uid2row($tmp[0])->seqobj;
     my $depth = scalar @tmp;
     my $s = '';
     #warn "conservation: from=$from, to=$to, depth=$depth\n";
@@ -422,7 +410,7 @@ sub conservation {
 
 	#iterate over sequence list
 	for (my $i=0; $i<@$ids; $i++) {
-	    my $thischar = uc $self->id2row($ids->[$i])->seqobj->raw($j);
+	    my $thischar = uc $self->uid2row($ids->[$i])->seqobj->raw($j);
 	    #warn "[$j][$i] $refchar, $thischar, $ids->[$i]\n";
 	    next  if $self->is_nop($ids->[$i]);
 	    $same++   if $thischar eq $refchar;
@@ -461,8 +449,8 @@ sub visible_rows {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->id);
-	next  if $_[0]->is_nop($r->id);
+	next  if $_[0]->is_hidden($r->uid);
+	next  if $_[0]->is_nop($r->uid);
 	push @tmp, $r;
     }
     return @tmp;
@@ -475,9 +463,9 @@ sub visible_computable_ids {
     foreach my $r (@{$_[0]->{'index2row'}}) {
 	next  unless defined $r;
         next  unless $r->is_sequence;
-	next  if $_[0]->is_hidden($r->id);
-	next  if $_[0]->is_nop($r->id);
-	push @tmp, $r->id;
+	next  if $_[0]->is_hidden($r->uid);
+	next  if $_[0]->is_nop($r->uid);
+	push @tmp, $r->uid;
     }
     return @tmp;
 }
@@ -549,7 +537,7 @@ sub color_by_type {
 sub color_by_identity {
     my ($self, $kw, $id) = @_;
 
-    my $ref = $self->item($id);
+    my $ref = $self->uid2row($id);
     return  unless defined $ref;
 
     foreach my $r ($self->visible_rows) {
@@ -562,7 +550,7 @@ sub color_by_identity {
 sub color_by_mismatch {
     my ($self, $kw, $id) = @_;
 
-    my $ref = $self->item($id);
+    my $ref = $self->uid2row($id);
     return  unless defined $ref;
 
     foreach my $r ($self->visible_rows) {
@@ -622,7 +610,7 @@ sub color_by_find_block {
 sub color_consensus_by_identity {
     my ($self, $kw, $aln, $id) = @_;
 
-    my $ref = $aln->item($id);
+    my $ref = $aln->uid2row($id);
     return  unless defined $ref;
 
     foreach my $r ($self->visible_rows) {

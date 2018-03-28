@@ -9,13 +9,13 @@ sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
     die "${type}::new: missing arguments\n"  if @_ < 2;
-    my ($display_type, $id) = @_;
+    my ($display_type, $uid) = @_;
 
     my $self = {};
     bless $self, $type;
 
     $self->{'display_type'} = $display_type;
-    $self->{'id'}           = $id ne '' ? $id : $self;
+    $self->{'uid'}          = $uid ne '' ? $uid : $self;
 
     $self->reset_display;
 
@@ -47,7 +47,7 @@ sub set_display {
     }
 }
 
-sub id           { $_[0]->{'id'} }
+sub uid          { $_[0]->{'uid'} }
 sub get_display  { $_[0]->{'display'} }
 sub display_type { $_[0]->{'display_type'} }
 

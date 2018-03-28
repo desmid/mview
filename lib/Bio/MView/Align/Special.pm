@@ -35,7 +35,7 @@ sub color_special {
 
     my $kw = $PAR->as_dict;
 
-    my $map = $self->get_special_colormap_for_id($kw, $self->{'id'});
+    my $map = $self->get_special_colormap_for_id($kw, $self->{'uid'});
 
     return  unless defined $map;
 

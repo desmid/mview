@@ -454,7 +454,7 @@ sub build_base_alignment {
     foreach my $row (@{$self->{'index2row'}}) {
 	next  if exists $self->{'hide_uid'}->{$row->uid};
 
-	my $arow = $aln->item($row->uid);
+	my $arow = $aln->uid2row($row->uid);
 	next  unless defined $arow;
 
         #copy computed data into build row objects
@@ -462,7 +462,7 @@ sub build_base_alignment {
         $row->set_identity($arow->get_identity);
     }
 
-    #foreach my $r ($aln->all_ids) { $aln->id2row($r)->seqobj->dump }
+    #foreach my $r ($aln->all_ids) { $aln->uid2row($r)->seqobj->dump }
     #warn "Alignment width: ", $aln->length;
 
     return $aln;
@@ -474,7 +474,7 @@ sub build_mview_alignment {
     foreach my $row (@{$self->{'index2row'}}) {
 	next  if exists $self->{'hide_uid'}->{$row->uid};
 
-	my $arow = $aln->item($row->uid);
+	my $arow = $aln->uid2row($row->uid);
 	next  unless defined $arow;
 
         my @labels = $row->display_column_values;
