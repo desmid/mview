@@ -51,9 +51,6 @@ sub id           { $_[0]->{'id'} }
 sub get_display  { $_[0]->{'display'} }
 sub display_type { $_[0]->{'display_type'} }
 
-#subclass overrides
-sub adjust_display {}  #tell object to adjust display settings on the fly
-
 ######################################################################
 # private methods
 ######################################################################

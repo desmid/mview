@@ -324,6 +324,8 @@ sub strip_query_gaps {
 ######################################################################
 # private methods
 ######################################################################
+sub is_nop { return exists $_[0]->{'nops_uid'}->{$_[1]->uid} }
+
 sub outfmt_supported {
     my ($self, $fmt) = @_;
     return 1  if $self->{'aligned'};
@@ -372,7 +374,7 @@ sub build_indices {
     $self->{'hide_uid'} = {};
     $self->{'nops_uid'} = {};
 
-    #index the row objects by unique 'uid' for fast lookup.
+    #index the row objects by unique 'uid' for fast lookup
     foreach my $i (@{$self->{'index2row'}}) {
 	$self->{'uid2row'}->{$i->uid} = $i;
     }
@@ -383,7 +385,7 @@ sub build_indices {
     }
 
     #make all skiplist rows invisible; this has to be done because some
-    #may not really have been discarded at all, eg., reference row.
+    #may not really have been discarded at all, eg., reference row
     foreach my $i (@{$PAR->get('skiplist')}) {
 	my @id = $self->map_id($i);
 	foreach my $r (@id) {
@@ -407,15 +409,15 @@ sub build_indices {
 	if defined $self->{'ref_row'};
 
     #hash the nopslist: the 'uid' key is used so that the
-    #underlying Align class can recognise rows. don't override any previous
-    #visibility set by discard list.
-
+    #underlying Align class can recognise rows; don't override any previous
+    #visibility set by discard list
     foreach my $i (@{$PAR->get('nopslist')}) {
 	my @id = $self->map_id($i);
 	foreach my $r (@id) {
 	    $self->{'nops_uid'}->{$r->uid} = 1;
 	}
     }
+
     #warn "ref:  ",$self->{'ref_row'}->uid, "\n" if defined $self->{'ref_row'};
     #warn "keep: [", join(",", sort keys %{$self->{'keep_uid'}}), "]\n";
     #warn "nops: [", join(",", sort keys %{$self->{'nops_uid'}}), "]\n";
@@ -476,7 +478,10 @@ sub build_mview_alignment {
 	next  unless defined $arow;
 
         my @labels = $row->display_column_values;
-        #warn "\n[@{[join(',',@labels)]}]\n";
+
+        $labels[0] = ''  if $self->is_nop($row);
+
+        #warn "labels: [@{[join(',', @labels)]}]\n";
 
         $arow->set_display(
             'label0' => $labels[0],
@@ -489,12 +494,6 @@ sub build_mview_alignment {
             'label7' => $labels[7],
             'url'    => $row->url,
             );
-
-        if (exists $self->{'nops_uid'}->{$row->uid}) {
-            $arow->set_display('label0' => '');
-        }
-
-        $arow->adjust_display;  #row may have own idea
     }
 }
 

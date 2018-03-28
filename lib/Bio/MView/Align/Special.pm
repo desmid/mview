@@ -23,11 +23,10 @@ sub is_sequence { 0 }
 sub is_special { 1 }
 
 #override
-sub adjust_display {
-    $_[0]->set_display('label0' => '',
-                       'label4' => '', 'label5' => '',
-                       'label6' => '', 'label7' => '',
-    );
+sub set_display {
+    my $self = shift;
+    #apply any caller's settings and then silence rownum
+    $self->SUPER::set_display(@_, 'label0' => '');
 }
 
 #subclass overrides
