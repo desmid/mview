@@ -15,7 +15,7 @@ use vars qw(@ISA);
 # protected methods
 ######################################################################
 #override: do all rows have same range?
-sub is_aligned {
+sub test_if_aligned {
     my ($self, $lo, $hi) = @_;
     for (my $i=1; $i < @{$self->{'index2row'}}; $i++) { #from 1
         my $row = $self->{'index2row'}->[$i];

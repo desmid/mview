@@ -186,7 +186,7 @@ sub reset_child { $_[0]->{scheduler}->filter }
 sub use_row { die "$_[0] use_row: virtual method called\n" }
 
 #subclass overrides: must be overridden
-sub is_aligned { die "$_[0] use_row: virtual method called\n" }
+sub test_if_aligned { die "$_[0] use_row: virtual method called\n" }
 
 #subclass overrides: map an identifier supplied as {0..N|query|M.N} to
 #a list of row objects in $self->{'index2row'}
@@ -338,7 +338,7 @@ sub build_block {
 
     my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
 
-    $self->{'aligned'} = $self->is_aligned($lo, $hi);
+    $self->{'aligned'} = $self->test_if_aligned($lo, $hi);
 
     #warn "KEEPINSERTS: @{[$PAR->get('keepinserts')]}\n";
     #warn "ALIGNED:     $self->{'aligned'}\n";
