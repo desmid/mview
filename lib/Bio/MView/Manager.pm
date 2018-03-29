@@ -293,8 +293,8 @@ sub initialise_labels {
 sub add_display {
     my ($self, $bld, $aln) = @_;
 
-    my $refid  = $bld->get_row_id($PAR->get('ref_id'));
-    my $refobj = $bld->get_row($PAR->get('ref_id'));
+    my $refobj = $bld->get_row_from_id($PAR->get('ref_id'));
+    my $refid  = $bld->get_uid_from_id($PAR->get('ref_id'));
 
     #Universal::vmstat("display constructor");
     my $dis = new Bio::MView::Display::Display(
