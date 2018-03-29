@@ -7,63 +7,38 @@ package Bio::MView::Display::Any;
 
 use Bio::MView::Display::Display;
 
-my %Template =
-    (
-     'parent'   => undef, #parent sequence object
-     'length'   => 0,     #length of parent sequence
-     'start'    => 0,     #start position of parent sequence
-     'stop'     => 0,     #stop position of parent sequence
-     'string'   => undef, #alternative sequence to parent
-     'type'     => '',    #kind of aligned object
-     'label0'   => '',    #zeroth label string
-     'label1'   => '',    #first label string
-     'label2'   => '',    #second label string
-     'label3'   => '',    #third label string
-     'label4'   => '',    #fourth label string
-     'label5'   => '',    #fifth label string
-     'label6'   => '',    #sixth label string
-     'label7'   => '',    #seventh label string
-     'number'   => 0,     #marginal numbers flag
-     'url'      => '',    #URL to associate with label1
-     'cursor'   => 0,     #current position in display stream, 1-based
-     'paint'    => 0,     #overlap behaviour for this row
-     'prefix'   => '',    #prefix whole row with string
-     'suffix'   => '',    #suffix whole row with string
-
-     'r_map'    => undef,
-     'r_color'  => undef,
-     'r_class'  => undef,
-     'r_prefix' => undef,
-     'r_suffix' => undef,
-     'r_sym'    => undef,
-     'r_url'    => undef,
-     'r_case'   => undef,
-    );
-
 sub new {
     my $type = shift;
     my ($parent, $hash) = @_;
-    my ($range, $i, $j);
-    my $self = { %Template };
+    my $self = {};
     bless $self, $type;
 
-    $self->{'parent'}   = $parent;
-    $self->{'length'}   = $parent->length;
-    $self->{'type'}     = $hash->{'type'};
-    $self->{'string'}   = $hash->{'sequence'} if exists $hash->{'sequence'};
-    $self->{'label0'}   = $hash->{'label0'}   if exists $hash->{'label0'};
-    $self->{'label1'}   = $hash->{'label1'}   if exists $hash->{'label1'};
-    $self->{'label2'}   = $hash->{'label2'}   if exists $hash->{'label2'};
-    $self->{'label3'}   = $hash->{'label3'}   if exists $hash->{'label3'};
-    $self->{'label4'}   = $hash->{'label4'}   if exists $hash->{'label4'};
-    $self->{'label5'}   = $hash->{'label5'}   if exists $hash->{'label5'};
-    $self->{'label6'}   = $hash->{'label6'}   if exists $hash->{'label6'};
-    $self->{'label7'}   = $hash->{'label7'}   if exists $hash->{'label7'};
-    $self->{'number'}   = $hash->{'number'}   if exists $hash->{'number'};
-    $self->{'url'}      = $hash->{'url'}      if exists $hash->{'url'};
-    $self->{'paint'}    = $hash->{'paint'}    if exists $hash->{'paint'};
-    $self->{'prefix'}   = $hash->{'prefix'}   if exists $hash->{'prefix'};
-    $self->{'suffix'}   = $hash->{'suffix'}   if exists $hash->{'suffix'};
+    $self->{'parent'} = $parent;          #parent sequence object
+    $self->{'length'} = $parent->length;  #length of parent sequence
+    $self->{'type'}   = $hash->{'type'};  #type of this row
+
+    $self->{'start'}  = 0;      #start position of parent sequence
+    $self->{'stop'}   = 0;      #stop position of parent sequence
+
+    $self->{'string'} = undef;  #alternative sequence to parent
+    $self->{'labels'} = undef;  #annotation column labels
+    $self->{'number'} = 0;      #marginal numbers flag
+    $self->{'url'}    = '';     #URL; to associate with label1
+    $self->{'paint'}  = 0;      #overlap behaviour for this row
+    $self->{'prefix'} = '';     #prefix; whole row with string
+    $self->{'suffix'} = '';     #suffix; whole row with string
+
+    $self->{'string'} = $hash->{'sequence'} if exists $hash->{'sequence'};
+    $self->{'labels'} = $hash->{'labels'}   if exists $hash->{'labels'};
+    $self->{'number'} = $hash->{'number'}   if exists $hash->{'number'};
+    $self->{'url'}    = $hash->{'url'}      if exists $hash->{'url'};
+    $self->{'paint'}  = $hash->{'paint'}    if exists $hash->{'paint'};
+    $self->{'prefix'} = $hash->{'prefix'}   if exists $hash->{'prefix'};
+    $self->{'suffix'} = $hash->{'suffix'}   if exists $hash->{'suffix'};
+
+    #warn "Any::labels: [@{[join(',', @{$self->{'labels'}})]}]\n";
+
+    $self->{'cursor'} = 0;  #current position in display stream, 1-based
 
     $self->{'r_map'}    = [];
     $self->{'r_color'}  = [];
@@ -81,7 +56,7 @@ sub new {
         if ($seqlen != $self->{'length'}) {
             #warn "parent:   [@{[$self->{'parent'}->{'string'}->string]}]\n";
             #warn "sequence: [@{[$self->{'string'}->string]}]\n";
-            die "$type new() parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
+            die "${type}::new: parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
         }
 
         # no idea what this is/was for... 1/10/98
@@ -104,11 +79,11 @@ sub new {
     $hash->{'range'} = []  unless exists $hash->{'range'};
 
     #populate the range map
-    foreach $range (@{$self->parse_range($hash->{'range'})}) {
-        for ($i = $range->{'pos'}->[0];
+    foreach my $range (@{$self->parse_range($hash->{'range'})}) {
+        for (my $i = $range->{'pos'}->[0];
              $i <= $range->{'pos'}->[$#{$range->{'pos'}}];
              $i++) {
-            foreach $j (keys %$range) {
+            foreach my $j (keys %$range) {
                 next if $j eq 'pos';
                 $self->{"r_$j"}->[$i] = $range->{$j};
             }
@@ -129,24 +104,30 @@ sub free {
     $_[0]->{'parent'} = undef;
 }
 
-sub label0 { $_[0]->{'label0'} }
-sub label1 { $_[0]->{'label1'} }
-sub label2 { $_[0]->{'label2'} }
-sub label3 { $_[0]->{'label3'} }
-sub label4 { $_[0]->{'label4'} }
-sub label5 { $_[0]->{'label5'} }
-sub label6 { $_[0]->{'label6'} }
-sub label7 { $_[0]->{'label7'} }
+sub has_margins { return $_[0]->{'number'} != 0 }
+
+#return kth label string
+sub label {
+    return ''  unless defined $_[0]->{'labels'}->[$_[1]];
+    return $_[0]->{'labels'}->[$_[1]];
+}
+
+#return kth labelwidth
+sub labelwidth {
+    return 0  unless defined $_[0]->{'labels'}->[$_[1]];
+    return length($_[0]->{'labels'}->[$_[1]]);
+}
 
 #forward/reverse oriented rulers/sequences
 sub reset { $_[0]->{'cursor'} = 1 }
 
+#stop iterating
 sub done {
-    return 1    if $_[0]->{'cursor'} > $_[0]->{'length'};
+    return 1  if $_[0]->{'cursor'} > $_[0]->{'length'};
     return 0;
 }
 
-#subclass overrides
+#iterator: subclass overrides
 sub next {
     my $self = shift;
     #warn "${self}::next(@_)\n";
@@ -313,7 +294,7 @@ sub parse_range {
                 $state = 2;
                 next;
             }
-            die "$self: never get here!\n";
+            die "${self}::parse_range: never get here!\n";
         }
 
         #first position wasn't given: bad attribute list

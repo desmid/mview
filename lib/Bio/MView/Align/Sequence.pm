@@ -45,34 +45,20 @@ sub sequence { $_[0]->{'string'}->sequence }
 sub seqlen   { $_[0]->{'string'}->seqlen }
 
 sub set_coverage {
-    #warn "Bio::MView::Align::Sequence::set_coverage(@_)\n";
     my ($self, $ref) = @_;
     my $val = $self->compute_coverage_wrt($ref);
     $self->set_display('label4' => sprintf("%.1f%%", $val));
 }
 
-sub get_coverage {
-    if (exists $_[0]->{'display'}->{'label4'} and
-        defined $_[0]->{'display'}->{'label4'}) {
-        return $_[0]->{'display'}->{'label4'};
-    }
-    return '';
-}
+sub get_coverage { return $_[0]->get_label(4) }
 
 sub set_identity {
-    #warn "Bio::MView::Align::Sequence::set_identity(@_)\n";
     my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
     $self->set_display('label5' => sprintf("%.1f%%", $val));
 }
 
-sub get_identity {
-    if (exists $_[0]->{'display'}->{'label5'} and
-        defined $_[0]->{'display'}->{'label5'}) {
-        return $_[0]->{'display'}->{'label5'};
-    }
-    return '';
-}
+sub get_identity { return $_[0]->get_label(5) }
 
 # Compute the percent coverage of a row with respect to a reference row.
 #
@@ -184,10 +170,8 @@ sub compute_identity_to {
 #override: label1 is valid for computed rows
 sub reset_display {
     $_[0]->SUPER::reset_display(
-        'type'     => $_[0]->display_type,
-        'label1'   => $_[0]->uid,
         'sequence' => $_[0]->seqobj,
-        'range'    => [],
+        'label1'   => $_[0]->uid,
     );
 }
 

@@ -14,8 +14,8 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'display_type'} = $display_type;
-    $self->{'uid'}          = $uid ne '' ? $uid : $self;
+    $self->{'type'} = $display_type;
+    $self->{'uid'}  = $uid ne '' ? $uid : $self;
 
     $self->reset_display;
 
@@ -37,19 +37,37 @@ sub set_display {
 
 	#shallow copy referenced data
 	if ($ref eq 'HASH') {
-	    $val = { %$val }
+            $self->{'display'}->{$key} = { %$val };
+            next;
 	}
-        elsif ($ref eq 'ARRAY') {
-	    $val = [ @$val ];
+        if ($ref eq 'ARRAY') {
+	    $self->{'display'}->{$key} = [ @$val ];
+            next;
 	}
 
-	$self->{'display'}->{$key} = $val;
+        #labels hack
+        $self->{'display'}->{'labels'}->[0] = $val, next  if $key eq 'label0';
+        $self->{'display'}->{'labels'}->[1] = $val, next  if $key eq 'label1';
+        $self->{'display'}->{'labels'}->[2] = $val, next  if $key eq 'label2';
+        $self->{'display'}->{'labels'}->[3] = $val, next  if $key eq 'label3';
+        $self->{'display'}->{'labels'}->[4] = $val, next  if $key eq 'label4';
+        $self->{'display'}->{'labels'}->[5] = $val, next  if $key eq 'label5';
+        $self->{'display'}->{'labels'}->[6] = $val, next  if $key eq 'label6';
+        $self->{'display'}->{'labels'}->[7] = $val, next  if $key eq 'label7';
+
+        #default
+        $self->{'display'}->{$key} = $val;
     }
 }
 
 sub uid          { $_[0]->{'uid'} }
+
 sub get_display  { $_[0]->{'display'} }
-sub display_type { $_[0]->{'display_type'} }
+
+sub get_label {
+    return ''  unless defined $_[0]->{'display'}->{'labels'}->[$_[1]];
+    return $_[0]->{'display'}->{'labels'}->[$_[1]];
+}
 
 ######################################################################
 # private methods
@@ -57,12 +75,17 @@ sub display_type { $_[0]->{'display_type'} }
 #subclass overrides
 sub reset_display {
     my $self = shift;
-    $self->{'display'} = {};
+    $self->{'display'} = {
+        'type'   => $self->{'type'},
+        'number' => 0,   #override: show positions at margins
+        'range'  => [],  #override: feature column range
+        'labels' => [],  #subclass inserts: empty labels
+    };
     $self->set_display(@_);
 }
 
 #subclass overrides
-sub length { 0 }
+sub length { 0 }  #NIGE is this really a display setting?
 
 ######################################################################
 # debug

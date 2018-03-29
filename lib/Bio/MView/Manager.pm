@@ -120,76 +120,40 @@ sub get_alignment_count { return $_[0]->{'acount'} }
 sub print_alignment {
     my ($self, $stm) = (@_, \*STDOUT);
 
-    $self->{'posnwidth'} = 0;
-
-    # warn join(',', @{$self->{'labelwidths'}}), "\n";
-
-    #minimum column widths
-    $self->{'labwidth0'} = $self->{'labelwidths'}[0];
-    $self->{'labwidth1'} = $self->{'labelwidths'}[1];
-    $self->{'labwidth2'} = $self->{'labelwidths'}[2];
-    $self->{'labwidth3'} = $self->{'labelwidths'}[3];
-    $self->{'labwidth4'} = $self->{'labelwidths'}[4];
-    $self->{'labwidth5'} = $self->{'labelwidths'}[5];
-    $self->{'labwidth6'} = $self->{'labelwidths'}[6];
-    $self->{'labwidth7'} = $self->{'labelwidths'}[7];
-
-    # warn "pw[", $self->{'posnwidth'}, "]",
-    #     "  l0[", $self->{'labwidth0'}, "]",
-    #     "  l1[", $self->{'labwidth1'}, "]",
-    #     "  l2[", $self->{'labwidth2'}, "]",
-    #     "  l3[", $self->{'labwidth3'}, "]",
-    #     "  l4[", $self->{'labwidth4'}, "]",
-    #     "  l5[", $self->{'labwidth5'}, "]",
-    #     "  l6[", $self->{'labwidth6'}, "]",
-    #     "  l7[", $self->{'labwidth7'}, "]",
-    #     "\n"   ;
+    my $posnwidth = 0;
 
     #consolidate field widths across all Display objects
-    foreach my $d (@{$self->{'display'}}) {
-        $self->{'posnwidth'} = Universal::max($d->[0]->{'posnwidth'},
-                                              $self->{'posnwidth'});
-        $self->{'labwidth0'} = Universal::max($d->[0]->{'labwidth0'},
-                                              $self->{'labwidth0'});
-        $self->{'labwidth1'} = Universal::max($d->[0]->{'labwidth1'},
-                                              $self->{'labwidth1'});
-        $self->{'labwidth2'} = Universal::max($d->[0]->{'labwidth2'},
-                                              $self->{'labwidth2'});
-        $self->{'labwidth3'} = Universal::max($d->[0]->{'labwidth3'},
-                                              $self->{'labwidth3'});
-        $self->{'labwidth4'} = Universal::max($d->[0]->{'labwidth4'},
-                                              $self->{'labwidth4'});
-        $self->{'labwidth5'} = Universal::max($d->[0]->{'labwidth5'},
-                                              $self->{'labwidth5'});
-        $self->{'labwidth6'} = Universal::max($d->[0]->{'labwidth6'},
-                                              $self->{'labwidth6'});
-        $self->{'labwidth7'} = Universal::max($d->[0]->{'labwidth7'},
-                                              $self->{'labwidth7'});
+    foreach my $dis (@{$self->{'display'}}) {
+        #numeric position width (left and right)
+        $posnwidth = Universal::max($posnwidth, $dis->[0]->{'posnwidth'});
+
+        #finalize label widths
+        for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
+            #needed for multiple in-register output
+            if ($self->{'labelflags'}->[$i]) {
+                $self->{'labelwidths'}->[$i] =
+                    Universal::max($self->{'labelwidths'}->[$i],
+                                   $dis->[0]->{'labelwidths'}->[$i]);
+            }
+        }
     }
 
-    # warn "pw[", $self->{'posnwidth'}, "]",
-    #     "  l0[", $self->{'labwidth0'}, "]",
-    #     "  l1[", $self->{'labwidth1'}, "]",
-    #     "  l2[", $self->{'labwidth2'}, "]",
-    #     "  l3[", $self->{'labwidth3'}, "]",
-    #     "  l4[", $self->{'labwidth4'}, "]",
-    #     "  l5[", $self->{'labwidth5'}, "]",
-    #     "  l6[", $self->{'labwidth6'}, "]",
-    #     "  l7[", $self->{'labwidth7'}, "]",
-    #     "\n"   ;
+    # warn "pw[$posnwidth]\n";
+    # warn "lf[@{[join(',', @{$self->{'labelflags'}})]}]\n";
+    # warn "lw[@{[join(',', @{$self->{'labelwidths'}})]}]\n";
 
     my $first = 1;
     #output
-    while (my $d = shift @{$self->{'display'}}) {
+    while (my $dis = shift @{$self->{'display'}}) {
 	#Universal::vmstat("display");
 	if ($PAR->get('html')) {
             my $s = "style=\"border:0px;";
 	    #body tag
 	    if (! $PAR->get('css1')) {
                 #supported in HTML 4.01:
-		$s .= " background-color:" . $PAR->get('alncolor') . ";"
+		$s .= " background-color:" . $PAR->get('alncolor')   . ";"
 		    if defined $PAR->get('alncolor');
-		$s .= " color:"            . $PAR->get('labcolor') . ";"
+		$s .= " color:"            . $PAR->get('labcolor')   . ";"
 		    if defined $PAR->get('labcolor');
 		$s .= " a:link:"           . $PAR->get('linkcolor')  . ";"
 		    if defined $PAR->get('linkcolor');
@@ -203,47 +167,33 @@ sub print_alignment {
 	    print $stm "<TABLE $s>\n";
 	    #header
 	    print $stm "<TR><TD><PRE>\n";
-	    print $stm ($d->[1] ? $d->[1] : '');
-	    print $stm ($d->[2] ? $d->[2] : '');
+	    print $stm ($dis->[1] ? $dis->[1] : '');
+	    print $stm ($dis->[2] ? $dis->[2] : '');
 	    print $stm "</PRE></TD></TR>\n";
 	    #subheader
-	    if ($d->[3]) {
+	    if ($dis->[3]) {
 		print $stm "<TR><TD><PRE>\n";
-		print $stm $d->[3];
+		print $stm $dis->[3];
 		print $stm "</PRE></TD></TR>\n";
 	    }
 	    #alignment start
 	    print $stm "<TR><TD>\n";
 	} else {
 	    #header
-	    print $stm "\n"           if $d->[1] or $d->[2];
-	    print $stm $d->[1],       if $d->[1];
-	    print $stm $d->[2]        if $d->[2];
+	    print $stm "\n"             if $dis->[1] or $dis->[2];
+	    print $stm $dis->[1],       if $dis->[1];
+	    print $stm $dis->[2]        if $dis->[2];
 	    print "\n";
-	    print $stm $d->[3], "\n"  if $d->[3];
+	    print $stm $dis->[3], "\n"  if $dis->[3];
 	}
 	#alignment
-	$d->[0]->display($stm,
-			 'html'      => $PAR->get('html'),
-			 'bold'      => $PAR->get('bold'),
-			 'width'     => $PAR->get('width'),
-			 'label0'    => $PAR->get('label0'),
-			 'label1'    => $PAR->get('label1'),
-			 'label2'    => $PAR->get('label2'),
-			 'label3'    => $PAR->get('label3'),
-			 'label4'    => $PAR->get('label4'),
-			 'label5'    => $PAR->get('label5'),
-			 'label6'    => $PAR->get('label6'),
-			 'label7'    => $PAR->get('label7'),
-			 'posnwidth' => $self->{'posnwidth'},
-			 'labwidth0' => $self->{'labwidth0'},
-			 'labwidth1' => $self->{'labwidth1'},
-			 'labwidth2' => $self->{'labwidth2'},
-			 'labwidth3' => $self->{'labwidth3'},
-			 'labwidth4' => $self->{'labwidth4'},
-			 'labwidth5' => $self->{'labwidth5'},
-			 'labwidth6' => $self->{'labwidth6'},
-			 'labwidth7' => $self->{'labwidth7'},
+	$dis->[0]->display($stm,
+                           'html'        => $PAR->get('html'),
+                           'bold'        => $PAR->get('bold'),
+                           'width'       => $PAR->get('width'),
+                           'posnwidth'   => $posnwidth,
+                           'labelflags'  => $self->{'labelflags'},
+                           'labelwidths' => $self->{'labelwidths'},
 			);
 	if ($PAR->get('html')) {
 	    #alignment end
@@ -252,7 +202,7 @@ sub print_alignment {
 	    print $stm "</P>\n"  unless $first;
 	}
 	#Universal::vmstat("display done");
-	$d->[0]->free;
+	$dis->[0]->free;
 	#Universal::vmstat("display free done");
 
 	$first = 0;
@@ -317,17 +267,44 @@ sub gc_flag {
     return 1;
 }
 
+sub initialise_labels {
+    my ($self, $ref) = @_;
+
+    $self->{'labelflags'}  = [];
+    $self->{'labelwidths'} = [];
+
+    push @{$self->{'labelflags'}}, $PAR->get('label0');
+    push @{$self->{'labelflags'}}, $PAR->get('label1');
+    push @{$self->{'labelflags'}}, $PAR->get('label2');
+    push @{$self->{'labelflags'}}, $PAR->get('label3');
+    push @{$self->{'labelflags'}}, $PAR->get('label4');
+    push @{$self->{'labelflags'}}, $PAR->get('label5');
+    push @{$self->{'labelflags'}}, $PAR->get('label6');
+    push @{$self->{'labelflags'}}, $PAR->get('label7');
+
+    return  unless defined $ref;
+
+    #warn "[@{[join(',', $ref->display_column_widths)]}]";
+    #warn "[@{[join(',', $ref->display_column_labels)]}]";
+    #warn "[@{[join(',', $ref->display_column_values)]}]";
+
+    push @{$self->{'labelwidths'}}, $ref->display_column_widths;
+}
+
 sub add_display {
     my ($self, $bld, $aln) = @_;
 
-    my $ref    = $bld->get_row_id($PAR->get('ref_id'));
+    my $refid  = $bld->get_row_id($PAR->get('ref_id'));
     my $refobj = $bld->get_row($PAR->get('ref_id'));
 
-    #collect all the column labels
-    $self->{'labelwidths'} = [ $refobj->display_column_widths ];
+    $self->initialise_labels($refobj);
 
     #Universal::vmstat("display constructor");
-    my $dis = new Bio::MView::Display::Display($aln->init_display);
+    my $dis = new Bio::MView::Display::Display(
+        $self->{'labelflags'},
+        $self->{'labelwidths'},
+        $aln->init_display
+        );
     #Universal::vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
@@ -339,7 +316,7 @@ sub add_display {
 
     #attach the alignment
     if ($PAR->get('alignment')) {
-        $aln->set_color_scheme($ref);
+        $aln->set_color_scheme($refid);
         #Universal::vmstat("set_color_scheme done");
 	$aln->append_display($dis, $self->gc_flag);
         #Universal::vmstat("alignment added");
@@ -355,7 +332,7 @@ sub add_display {
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
 	my $tmp = $aln->build_consensus_rows;
-        $tmp->set_consensus_color_scheme($aln, $ref);
+        $tmp->set_consensus_color_scheme($aln, $refid);
 	$tmp->append_display($dis);
         #Universal::vmstat("consensi added");
     }
