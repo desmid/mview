@@ -11,7 +11,6 @@ use Bio::MView::Display::Ruler;
 my $Default_Width         = 80;        #sequence display width
 my $Default_Gap           = '-';       #sequence gap character
 my $Default_Pad           = '';        #sequence trailing space character
-my $Default_Ruler         = 'abs';     #ruler absolute from sequence start
 my $Default_Bold          = 0;         #embolden some text
 
 my $Default_Overlap       = '%';       #sequence overlap character
@@ -72,7 +71,6 @@ sub display {
     $par{'width'}  = $Default_Width      unless exists $par{'width'};
     $par{'gap'}    = $Default_Gap        unless exists $par{'gap'};
     $par{'pad'}    = $Default_Pad        unless exists $par{'pad'};
-    $par{'ruler'}  = $Default_Ruler      unless exists $par{'ruler'};
     $par{'bold'}   = $Default_Bold       unless exists $par{'bold'};
 
     # warn "pw[$par{'posnwidth'}]\n";
@@ -116,8 +114,7 @@ sub display {
 
             #do one line
             my $s = $o->next($par{'html'}, $par{'bold'}, $par{'width'},
-                             $par{'gap'}, $par{'pad'}, $par{'lap'},
-                             $par{'ruler'});
+                             $par{'gap'}, $par{'pad'}, $par{'lap'});
 
             last OUTER  unless $s; #this terminates
 

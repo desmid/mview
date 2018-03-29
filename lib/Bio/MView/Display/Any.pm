@@ -129,24 +129,28 @@ sub done {
 
 #iterator: subclass overrides
 sub next {
-    my $self = shift;
+    my ($self, $mode) = (shift, shift);
     #warn "${self}::next(@_)\n";
-    my ($mode, $html, $bold, $col, $gap, $pad, $lap, $ruler) = @_;
-    my (@string, $length, $i, $start, $pos, $c) = ();
+    my ($html, $bold, $col, $gap, $pad, $lap) = @_;
 
     return 0  if $self->{'cursor'} > $self->{'length'};
 
-    $length = $self->{'length'} - $self->{'cursor'} +1; #length remaining
-    $col = $length    if $col > $length;                #consume smaller amount
-    $start = $self->{'start'} + $self->{'cursor'} -1;   #current real position
+    my $rest = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
 
+    #current real position
+    my $start = $self->{'start'} + $self->{'cursor'} - 1;
+
+    $col = $rest  if $col > $rest;  #override caller: consume smaller amount
     $col++;
 
-    #warn "($self->{'cursor'}, $col, $length, ($self->{'start'},$self->{'stop'}))\n";
+    #warn "($self->{'cursor'}, $col, $rest, ($self->{'start'}, $self->{'stop'}))\n";
 
-    for ($i = 1; $i < $col; $i++, $self->{'cursor'}++) {
+    my $string = [];
+    my $pos = $start - 1;
 
-        $pos = $start + $i;     #real data position
+    for (my $i = 1; $i < $col; $i++, $self->{'cursor'}++) {
+
+        $pos++;  #real data position
 
         #warn "$self->{'cursor'}, $pos ", mapcount=$self->{'r_map'}, "\n";
 
@@ -158,14 +162,16 @@ sub next {
                 $self->{'r_map'}->[$self->{'cursor'}] > 1) {
 
                 if ($html and length $lap > 1) {
-                    push @string, "<SPAN style=\"color:$lap\">";
-                    push @string, $self->col($self->{'cursor'});
-                    push @string, "</SPAN>";
+                    push @$string, "<SPAN style=\"color:$lap\">";
+                    push @$string, $self->col($self->{'cursor'});
+                    push @$string, "</SPAN>";
                 } else {
-                    push @string, $lap;
+                    push @$string, $lap;
                 }
                 next;
             }
+
+            my $c;
 
             #non-overlapped position, or 'paint' mode is on
             if (defined $self->{'r_sym'}->[$self->{'cursor'}]) {
@@ -180,27 +186,33 @@ sub next {
                 #default to sequence symbol
                 $c = $self->col($self->{'cursor'});
             }
-            push @string, $self->html_wrap($self->{'cursor'}, $c)  if $html;
+            push @$string, $self->html_wrap($self->{'cursor'}, $c)  if $html;
 
         } elsif ($mode eq 'gap') {
             #class Subrange: use gap character
-            push @string, $gap;
+            push @$string, $gap;
         } else { #mode eq 'nogap'
             #class Sequence: use sequence character
-            push @string, $self->col($self->{'cursor'});
+            push @$string, $self->col($self->{'cursor'});
         }
     }
 
-    if ($html) {
-        @string = @{ $self->strip_html_repeats(\@string) };
+    $string = $self->finish_html($string, $bold)  if $html;
 
-        unshift @string, '<STRONG>'         if $bold;
-        unshift @string, $self->{'prefix'}  if $self->{'prefix'};
-        push    @string, $self->{'suffix'}  if $self->{'suffix'};
-        push    @string, '</STRONG>'        if $bold;
-    }
+    return [ $start, join('', @$string), $pos ];
+}
 
-    return [ $start, join('', @string), $pos ];
+sub finish_html {
+    my ($self, $string, $bold) = @_;
+
+    $string = $self->strip_html_repeats($string);
+
+    unshift @$string, '<STRONG>'         if $bold;
+    unshift @$string, $self->{'prefix'}  if $self->{'prefix'};
+    push    @$string, $self->{'suffix'}  if $self->{'suffix'};
+    push    @$string, '</STRONG>'        if $bold;
+
+    return $string;
 }
 
 sub strip_html_repeats {
@@ -414,7 +426,7 @@ sub strip_html_tandem_repeats {
                 #warn "NEW(@{[scalar @mem]}) lex[$i] <-- $list->[$i]\n";
                 push @mem, $list->[$i];
                 #scan until next closing tag
-                $i = _close_tag($list, $limit, ++$i, \@mem);
+                $i = close_tag($list, $limit, ++$i, \@mem);
                 next;
             }
 
@@ -430,7 +442,7 @@ sub strip_html_tandem_repeats {
             #warn "POP(@{[scalar @mem]}) lex[$i] --> $mem[$#mem]\n";
             pop @mem;
             #scan until next closing tag
-            $i = _close_tag($list, $limit, ++$i, \@mem);
+            $i = close_tag($list, $limit, ++$i, \@mem);
             next;
 
         } else {
@@ -448,7 +460,7 @@ sub strip_html_tandem_repeats {
     return $new;
 }
 
-sub _close_tag {
+sub close_tag {
     my ($list, $limit, $i, $mem) = @_;
     my $tag = 0;
     while ($i < $limit) {
