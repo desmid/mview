@@ -1,11 +1,12 @@
 # Copyright (C) 1997-2017 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Display::Ruler;
 
 use Bio::MView::Display::Any;
 
-use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Display::Any);

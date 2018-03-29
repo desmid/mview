@@ -1,7 +1,9 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
+
+use strict;
 
 ###########################################################################
-package Bio::MView::Display;
+package Bio::MView::Display::Display;
 
 use Bio::MView::Display::Any;
 

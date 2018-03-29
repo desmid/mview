@@ -1,13 +1,11 @@
 # Copyright (C) 1997-2017 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package Bio::MView::Display::Any;
 
-use Bio::MView::Display;
-use Bio::MView::Display::Ruler;
-
-use strict;
-use vars qw(%Template);
+use Bio::MView::Display::Display;
 
 %Template =
     (

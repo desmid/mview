@@ -8,9 +8,9 @@ package Bio::MView::Manager;
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;
+use Bio::MView::Display::Display;
 use Bio::MView::Build;
 use Bio::MView::Convert;
-use Bio::MView::Display;
 
 sub new {
     my $type = shift;
@@ -330,7 +330,7 @@ sub add_display {
     $self->{'labelwidths'} = [ $refobj->display_column_widths ];
 
     #Universal::vmstat("display constructor");
-    my $dis = new Bio::MView::Display($aln->init_display);
+    my $dis = new Bio::MView::Display::Display($aln->init_display);
     #Universal::vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
