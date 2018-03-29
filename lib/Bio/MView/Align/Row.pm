@@ -46,14 +46,10 @@ sub set_display {
 	}
 
         #labels hack
-        $self->{'display'}->{'labels'}->[0] = $val, next  if $key eq 'label0';
-        $self->{'display'}->{'labels'}->[1] = $val, next  if $key eq 'label1';
-        $self->{'display'}->{'labels'}->[2] = $val, next  if $key eq 'label2';
-        $self->{'display'}->{'labels'}->[3] = $val, next  if $key eq 'label3';
-        $self->{'display'}->{'labels'}->[4] = $val, next  if $key eq 'label4';
-        $self->{'display'}->{'labels'}->[5] = $val, next  if $key eq 'label5';
-        $self->{'display'}->{'labels'}->[6] = $val, next  if $key eq 'label6';
-        $self->{'display'}->{'labels'}->[7] = $val, next  if $key eq 'label7';
+        if ($key =~ /^label(\d+)$/) {
+            $self->{'display'}->{'labels'}->[$1] = $val;
+            next;
+        }
 
         #default
         $self->{'display'}->{$key} = $val;
@@ -85,7 +81,7 @@ sub reset_display {
 }
 
 #subclass overrides
-sub length { 0 }  #NIGE is this really a display setting?
+sub length { 0 }
 
 ######################################################################
 # debug
