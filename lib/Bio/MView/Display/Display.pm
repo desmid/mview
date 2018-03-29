@@ -147,10 +147,10 @@ sub display_panes {
 
     map { $_->reset } @{$self->{'object'}};
 
-    #need margin space for sequence numbers?
-    my $pane_has_margins = 0;
+    #need space for sequence position numbers?
+    my $has_positions = 0;
     foreach my $o (@{$self->{'object'}}) {
-        $pane_has_margins = 1, last  if $o->has_margins;
+        $has_positions = 1, last  if $o->has_positions;
     }
 
     while (1) {
@@ -160,12 +160,12 @@ sub display_panes {
         foreach my $o (@{$self->{'object'}}) {
 
             #do one line
-            my $s = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
+            my $d = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
                              $par->{'gap'}, $par->{'pad'}, $par->{'lap'});
 
-            return  unless $s;  #exit point
+            return  unless $d;  #exit point
 
-            #warn "[@$s]\n";
+            #warn "[@$d]\n";
 
             #clear new row
             my @row = ();
@@ -189,21 +189,18 @@ sub display_panes {
             }
 
             #left position
-            if ($pane_has_margins) {
-                my $n = $o->has_margins ? $s->[0] : '';
-                push @row, sprintf("$prefix%$par->{'posnwidth'}s$suffix", $n);
-            }
+            push @row, left_position($par, $o, $d->[0], $prefix, $suffix)
+                if $has_positions;
             push @row, $Spacer;
 
             #sequence string
-            push @row, $s->[1];
-            push @row, $Spacer;
+            push @row, $d->[1], $Spacer;
 
             #right position
-            if ($pane_has_margins) {
-                my $n = $o->has_margins ? $s->[2] : '';
-                push @row, sprintf("$prefix%-$par->{'posnwidth'}s$suffix", $n);
-            }
+            push @row, right_position($par, $o, $d->[2], $prefix, $suffix)
+                if $has_positions;
+
+            #end of line
             push @row, "\n";
 
             #output
@@ -211,7 +208,7 @@ sub display_panes {
 
         } #foreach
 
-        #record separator
+        #end of pane
         print $stm "\n"  unless $self->{'object'}->[0]->done;
 
         #Universal::vmstat("display pane done");
@@ -260,10 +257,24 @@ sub label_annotation {
     return (format_label('', $w, $s), $Spacer);
 }
 
-#left or right justify in padded fieldwidth
+#right justify: does not add $Spacer
+sub left_position {
+    my ($par, $o, $n, $pfx, $sfx) = @_;
+    my ($w, $n) = ($par->{'posnwidth'}, ($o->has_positions ? $n : ''));
+    return format_label('', $w, $n, $pfx, $sfx);
+}
+
+#left justify: does not add $Spacer
+sub right_position {
+    my ($par, $o, $n, $pfx, $sfx) = @_;
+    my ($w, $n) = ($par->{'posnwidth'}, ($o->has_positions ? $n : ''));
+    return format_label('-', $w, $n, $pfx, $sfx);
+}
+
+#left or right justify in padded fieldwidth with optional prefix/suffix
 sub format_label {
-    my ($just, $w, $s) = @_;
-    return sprintf("%${just}${w}s", $s);
+    my ($just, $w, $s, $pfx, $sfx) = (@_, '', '');
+    return sprintf("%s%${just}${w}s%s", $pfx, $s, $sfx);
 }
 
 sub max { $_[0] > $_[1] ? $_[0] : $_[1] }

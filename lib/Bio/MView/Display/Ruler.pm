@@ -61,7 +61,7 @@ sub next {
 
         $forwards ? $pos++ : $pos--;  #real data position
 
-        #pane margins
+        #ruler ends
         if ($pos == $self->{'start'}) {
             push @$string, $self->{'charlo'};
             next;

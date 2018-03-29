@@ -104,7 +104,7 @@ sub free {
     $_[0]->{'parent'} = undef;
 }
 
-sub has_margins { return $_[0]->{'number'} != 0 }
+sub has_positions { return $_[0]->{'number'} != 0 }
 
 #return kth label string
 sub label {
