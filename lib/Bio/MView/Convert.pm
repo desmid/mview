@@ -36,12 +36,12 @@ sub plain {
     my ($self, $idw) = (@_, $PLAIN_ID_WIDTH);
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
     foreach my $uid ($aln->visible_ids) {
-        my $row = $self->{'build'}->uid2row($uid);
+        my $row = $bld->uid2row($uid);
         my $w = length($row->cid);
         $idw = $w  if $w > $idw;
     }
     foreach my $uid ($aln->visible_ids) {
-        my $row = $self->{'build'}->uid2row($uid);
+        my $row = $bld->uid2row($uid);
         $s .= $self->plain_row($row, $idw);
     }
     return \$s;
@@ -67,7 +67,7 @@ sub pearson {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
     foreach my $uid ($aln->visible_ids) {
-        my $row = $self->{'build'}->uid2row($uid);
+        my $row = $bld->uid2row($uid);
         $s .= $self->pearson_row($row);
     }
     return \$s;
@@ -82,7 +82,8 @@ sub pearson_row {
 
     my $desc = sub {
         my $s = $row->row_as_string($ROW_DATA_DELIM, ['num', 'cid', 'seq']);
-	return $s . "\n";
+	return ($s)  if $s ne '';
+        return ();
     };
 
     my $sequence = sub {
@@ -95,7 +96,7 @@ sub pearson_row {
 	return $s;
     };
 
-    return join($ROW_DATA_DELIM, (&$head, &$desc)) . &$sequence;
+    return join($ROW_DATA_DELIM, (&$head, &$desc)) . "\n" . &$sequence;
 }
 
 ###########################################################################
@@ -106,7 +107,7 @@ sub pir {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
     foreach my $uid ($aln->visible_ids) {
-        my $row = $self->{'build'}->uid2row($uid);
+        my $row = $bld->uid2row($uid);
         $s .= $self->pir_row($row);
     }
     return \$s;
