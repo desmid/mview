@@ -182,20 +182,21 @@ sub print_text_alignment {
 sub print_html_alignment {
     my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
 
+    my $alncolor   = $PAR->get('alncolor');
+    my $labcolor   = $PAR->get('labcolor');
+    my $linkcolor  = $PAR->get('linkcolor');
+    my $alinkcolor = $PAR->get('alinkcolor');
+    my $vlinkcolor = $PAR->get('vlinkcolor');
+
     #body attrs
     my $s = "style=\"border:0px;";
     if (! $PAR->get('css1')) {
         #supported in HTML 4.01:
-        $s .= " background-color:" . $PAR->get('alncolor')   . ";"
-            if defined $PAR->get('alncolor');
-        $s .= " color:"            . $PAR->get('labcolor')   . ";"
-            if defined $PAR->get('labcolor');
-        $s .= " a:link:"           . $PAR->get('linkcolor')  . ";"
-            if defined $PAR->get('linkcolor');
-        $s .= " a:active:"         . $PAR->get('alinkcolor') . ";"
-            if defined $PAR->get('alinkcolor');
-        $s .= " a:visited:"        . $PAR->get('vlinkcolor') . ";"
-            if defined $PAR->get('vlinkcolor');
+        $s .= " background-color:$alncolor;"  if defined $alncolor;
+        $s .= " color:$labcolor;"             if defined $labcolor;
+        $s .= " a:link:$linkcolor;"           if defined $linkcolor;
+        $s .= " a:active:$alinkcolor;"        if defined $alinkcolor;
+        $s .= " a:visited:$vlinkcolor;"       if defined $vlinkcolor;
     }
     $s .= "\"";
 
@@ -204,8 +205,8 @@ sub print_html_alignment {
 
     #header
     print $stm "<TR><TD><PRE>\n";
-    print $stm ($dis->[1] ? $dis->[1] : '');
-    print $stm ($dis->[2] ? $dis->[2] : '');
+    print $stm $dis->[1]  if $dis->[1];
+    print $stm $dis->[2]  if $dis->[2];
     print $stm "</PRE></TD></TR>\n";
 
     #subheader
@@ -226,6 +227,7 @@ sub print_html_alignment {
                        'labelwidths' => $labelwidths,
         );
     print $stm "</TD></TR>\n";
+
     print $stm "</TABLE>\n";
     print $stm "</P>\n"  if $pass > 0;
 }
