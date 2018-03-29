@@ -6,67 +6,58 @@ use strict;
 package Bio::MView::Display::Display;
 
 use Bio::MView::Display::Any;
+use Bio::MView::Display::Ruler;
 
-use strict;
-use vars qw(%Template %Known_Types $Default_Stream
-	    $Default_Columns $Default_Separator $Default_Gap $Default_Pad
-	    $Default_Overlap $Default_Overlap_Color $Default_Ruler
-	    $Default_HTML $Default_Bold $Default_Label0
-	    $Default_Label1 $Default_Label2 $Default_Label3 $Default_Label4
-	    $Default_Label5 $Default_Label6 $Default_Label7
-            $Intercolumn_Space);
+my $Default_Width         = 80;        #sequence display width
+my $Default_Separator     = "\n";      #output record separator
+my $Default_Gap           = '-';       #sequence gap character
+my $Default_Pad           = '';        #sequence trailing space character
+my $Default_Overlap       = '%';       #sequence overlap character
+my $Default_Overlap_Color = '#474747'; #sequence overlap color if HTML
+my $Default_Ruler         = 'abs';     #ruler is absolute from start of sequence
+my $Default_HTML          = 0;         #produce HTML?
+my $Default_Bold          = 0;         #embolden some text
+my $Default_Label0        = 1;         #show label0
+my $Default_Label1        = 1;         #show label1
+my $Default_Label2        = 1;         #show label2
+my $Default_Label3        = 1;         #show label3
+my $Default_Label4        = 1;         #show label4
+my $Default_Label5        = 1;         #show label5
+my $Default_Label6        = 1;         #show label6
+my $Default_Label7        = 1;         #show label7
 
-$Default_Stream        = \*STDOUT;  #output stream
-$Default_Columns       = 80;        #sequence display width
-$Default_Separator     = "\n";      #output record separator
-$Default_Gap           = '-';       #sequence gap character
-$Default_Pad           = '';        #sequence trailing space character
-$Default_Overlap       = '%';       #sequence overlap character
-$Default_Overlap_Color = '#474747'; #sequence overlap color if HTML
-$Default_Ruler         = 'abs';     #ruler is absolute from start of sequence
-$Default_HTML          = 0;         #produce HTML?
-$Default_Bold          = 0;         #embolden some text
-$Default_Label0        = 1;         #show label0
-$Default_Label1        = 1;         #show label1
-$Default_Label2        = 1;         #show label2
-$Default_Label3        = 1;         #show label3
-$Default_Label4        = 1;         #show label4
-$Default_Label5        = 1;         #show label5
-$Default_Label6        = 1;         #show label6
-$Default_Label7        = 1;         #show label7
+my $Spacer                = ' ';       #space between output columns
 
-$Intercolumn_Space     = ' ';       #space between output column types
-
-%Template =
-    (
-     'string'    => undef, #parent sequence string
-     'length'    => 0,     #parent sequence length
-     'start'     => undef, #forward start position of parent sequence
-     'stop'      => undef, #forward stop position of parent sequence
-     'object'    => undef, #ordered list of display objects
-     'posnwidth' => 0,     #string width of left/right sequence position
-     'labwidth0' => 0,     #string width of zeroth title block
-     'labwidth1' => 0,     #string width of first title block
-     'labwidth2' => 0,     #string width of second title block
-     'labwidth3' => 0,     #string width of third title block
-     'labwidth4' => 0,     #string width of fourth title block
-     'labwidth5' => 0,     #string width of fifth title block
-     'labwidth6' => 0,     #string width of sixth title block
-     'labwidth7' => 0,     #string width of seventh title block
+my %Template = (
+    'string'    => undef, #parent sequence string
+    'length'    => 0,     #parent sequence length
+    'start'     => undef, #forward start position of parent sequence
+    'stop'      => undef, #forward stop position of parent sequence
+    'object'    => undef, #ordered list of display objects
+    'posnwidth' => 0,     #string width of left/right sequence position
+    'labwidth0' => 0,     #string width of zeroth title block
+    'labwidth1' => 0,     #string width of first title block
+    'labwidth2' => 0,     #string width of second title block
+    'labwidth3' => 0,     #string width of third title block
+    'labwidth4' => 0,     #string width of fourth title block
+    'labwidth5' => 0,     #string width of fifth title block
+    'labwidth6' => 0,     #string width of sixth title block
+    'labwidth7' => 0,     #string width of seventh title block
     );
 
-%Known_Types =
-    (
-     'Ruler'    => 1,
-     'Sequence' => 1,
-     'Subrange' => 1,
+my %Known_Types = (
+    'Ruler'    => 1,
+    'Sequence' => 1,
+    'Subrange' => 1,
     );
 
 sub new {
     my $type = shift;
     die "$type::new() missing arguments\n"  unless @_;
     my $sequence = shift;
+
     my $self = { %Template };
+    bless $self, $type;
 
     $self->{'string'}    = $sequence;
     $self->{'length'}    = $sequence->length;
@@ -80,156 +71,29 @@ sub new {
     $self->{'posnwidth'} = length(max($self->{'start'}, $self->{'stop'}));
     $self->{'object'}    = [];
 
-    bless $self, $type;
-
     $self->append(@_)  if @_;
 
     $self;
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
+######################################################################
+# public methods
+######################################################################
 #force break of back references to allow garbage collection
 sub free {
-    local $_;
-    #warn "FREE $_[0]\n";
-    while ($_ = shift @{$_[0]->{'object'}}) { $_->free }
-}
-
-sub set_parameters {
-    my $self = shift;
-    my ($key, $val);
-
-    while (@_) {
-	($key, $val) = (shift, shift);
-	if (exists $Template{$key}) {
-	    $self->{$key} = $val;
-	    next;
-	}
-	warn "Bio::MView::Manager: unknown parameter '$key'\n";
-    }
-
-    $self;
-}
-
-sub append {
-    my $self = shift;
-    #warn "${self}::append(@_)\n";
-
-    #handle data rows
-    foreach my $row (@_) {
-        my $type;
-
-	#check row 'type' exists and is valid
-	if (exists $row->{'type'}) {
-	    $type = ucfirst $row->{'type'};
-	} else {
-	    warn "$self append: missing type in '$row'\n";
-	    next;
-	}
-	unless (exists $Known_Types{$type}) {
-	    warn "$self append: unknown alignment type '$type'\n";
-	    next;
-	}
-
-        next  if $type eq 'Ruler';
-
-	#construct row object
-	no strict 'refs';
-	$type = "Bio::MView::Display::$type"->new($self, $row);
-	use strict 'refs';
-
-	push @{$self->{'object'}}, $type;
-
-	# warn "[", $type->label0, ",", $type->label1, ",", $type->label2,
-        # $type->label3, ",", $type->label4, ",", $type->label5,
-        # $type->label6, ",", $type->label7, "]\n";
-
-	$self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0));
-	$self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1));
-	$self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2));
-	$self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3));
-	$self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4));
-	$self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5));
-	$self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6));
-	$self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7));
-    }
-
-    #handle header/ruler
-    foreach my $row (@_) {
-        my $type;
-
-	#check row 'type' exists and is valid
-	if (exists $row->{'type'}) {
-	    $type = ucfirst $row->{'type'};
-	} else {
-	    next;
-	}
-	next  unless exists $Known_Types{$type};
-
-        next  if $type ne 'Ruler';
-
-	#construct row object
-	no strict 'refs';
-	$type = "Bio::MView::Display::$type"->new($self, $row);
-	use strict 'refs';
-
-	push @{$self->{'object'}}, $type;
-
-	# warn "[", $type->label0, ",", $type->label1, ",", $type->label2,
-        # $type->label3, ",", $type->label4, ",", $type->label5,
-        # $type->label6, ",", $type->label7, ",", "]\n";
-
-	$self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0))
-            if $self->{'labwidth0'};
-	$self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1))
-            if $self->{'labwidth1'};
-	$self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2))
-            if $self->{'labwidth2'};
-	$self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3))
-            if $self->{'labwidth3'};
-	$self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4))
-            if $self->{'labwidth4'};
-	$self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5))
-            if $self->{'labwidth5'};
-	$self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6))
-            if $self->{'labwidth6'};
-	$self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7))
-            if $self->{'labwidth7'};
-    }
-    #Universal::vmstat("Display::append done");
-    $self;
-}
-
-sub dump {
-    my $self = shift;
-    foreach my $k (sort keys %$self) {
-	printf "%15s => %s\n", $k, $self->{$k};
-    }
-    map { $_->dump } @{$self->{'object'}};
-    $self;
+    #warn "${_[0]}::Display::free\n";
+    while (my $o = shift @{$_[0]->{'object'}}) { $o->free }
 }
 
 sub length { $_[0]->{'length'} }
 
-sub set_widths {
-    my $self = shift;
-    my ($key, $val);
-    while (@_) {
-	($key, $val) = (shift, shift);
-	$self->{$key} = $val;
-    }
-    $self;
-}
-
 sub display {
-    my $self = shift;
+    my ($self, $stm) = (shift, shift);
     my %par = @_;
 
-    $par{'stream'} = $Default_Stream           unless exists $par{'stream'};
-    $par{'col'}    = $Default_Columns  	       unless exists $par{'col'};
-    $par{'gap'}    = $Default_Gap      	       unless exists $par{'gap'};
-    $par{'pad'}    = $Default_Pad      	       unless exists $par{'pad'};
+    $par{'width'}  = $Default_Width            unless exists $par{'width'};
+    $par{'gap'}    = $Default_Gap              unless exists $par{'gap'};
+    $par{'pad'}    = $Default_Pad              unless exists $par{'pad'};
     $par{'rec'}    = $Default_Separator        unless exists $par{'rec'};
     $par{'ruler'}  = $Default_Ruler            unless exists $par{'ruler'};
     $par{'bold'}   = $Default_Bold             unless exists $par{'bold'};
@@ -255,190 +119,278 @@ sub display {
 
     $par{'html'} = 1    if $par{'bold'};
     if ($par{'html'}) {
-	$par{'lap'}   = $Default_Overlap_Color unless exists $par{'lap'};
+        $par{'lap'}   = $Default_Overlap_Color unless exists $par{'lap'};
     } else {
-	$par{'lap'}   = $Default_Overlap       unless exists $par{'lap'};
+        $par{'lap'}   = $Default_Overlap       unless exists $par{'lap'};
     }
 
-    if ($par{'col'} < 1) {
-	#full length display if meaningless column count
-	$par{'col'} = $self->{'length'};
+    if ($par{'width'} < 1) {
+        #full length display if meaningless column count
+        $par{'width'} = $self->{'length'};
     }
     if (CORE::length $par{'gap'} != 1) {
-	warn "${self}::display: gap must be single character '$par{'gap'}'\n";
-	$par{'gap'} = $Default_Gap;
+        warn "${self}::display: gap must be single character '$par{'gap'}'\n";
+        $par{'gap'} = $Default_Gap;
     }
     if (CORE::length $par{'pad'} > 1) {
-	warn "${self}::display: pad must be null or single character '$par{'pad'}'\n";
-	$par{'pad'} = $Default_Pad;
+        warn "${self}::display: pad must be null or single character '$par{'pad'}'\n";
+        $par{'pad'} = $Default_Pad;
     }
 
     #map { warn "$_ => '$par{$_}'\n" } sort keys %par;
 
-    my $str = $par{'stream'};
-
     my ($prefix, $suffix) = $par{'bold'} ? ('<STRONG>','</STRONG>') : ('','');
 
-    print $str "<PRE>\n"    if $par{'html'};
+    print $stm "<PRE>\n"  if $par{'html'};
 
     map { $_->reset } @{$self->{'object'}};
 
-    my ($posnwidth, $o, $s, @left, @middle, @right, @tmp, $tmp) = (0);
-
     #need space for sequence numbers?
-    foreach $o (@{$self->{'object'}}) {
-	if ($o->{'number'}) {
-	    $posnwidth = 1;
-	    last;
-	}
+    my $posnwidth = 0;
+    foreach my $o (@{$self->{'object'}}) {
+        if ($o->{'number'}) {
+            $posnwidth = 1;
+            last;
+        }
     }
 
-    #iterate over display rows
-LOOP:
-    {
-	while (1) {
+    #iterate over display panes, if any objects
+  OUTER:
+    while (@{$self->{'object'}}) {
 
-	    last LOOP   unless scalar @{$self->{'object'}};
+        #Universal::vmstat("display pane");
 
-	    #Universal::vmstat("display LOOP");
+        #do one pane
+        foreach my $o (@{$self->{'object'}}) {
 
-	    #do record
-	    foreach $o (@{$self->{'object'}}) {
+            #do one line
+            my $s = $o->next($par{'html'}, $par{'bold'}, $par{'width'},
+                             $par{'gap'}, $par{'pad'}, $par{'lap'},
+                             $par{'ruler'});
 
-		@left = @middle = @right = ();
+            last OUTER  unless $s; #this terminates
+            #warn "[ @$s ]\n";
 
-		#do line
-		$s = $o->next($par{'html'}, $par{'bold'}, $par{'col'},
-			      $par{'gap'}, $par{'pad'}, $par{'lap'},
-			      $par{'ruler'});
+            #clear new row
+            my (@row) = ();
 
-		last LOOP   unless $s;
-		#warn "[ @$s ]\n";
+            #### rownum ############
+            if ($par{'label0'} and $par{'labwidth0'}) {
+                push @row, label_rownum(\%par, $o);
+                push @row, $Spacer;
+            }
 
-		#### left ############
-		@tmp = ();
+            #### identifier ############
+            if ($par{'label1'} and $par{'labwidth1'}) {
+                push @row, label_identifier(\%par, $o);
+                push @row, $Spacer;
+            }
 
-		#label0
-		if ($par{'label0'} and $par{'labwidth0'}) {
-		    $tmp = $o->label0;
-		    if ($tmp =~ /^\d+$/) {
-			#numeric label - right justify
-			push @tmp, sprintf("%$par{'labwidth0'}s", $tmp);
-		    } else {
-			#string label - left justify
-			push @tmp, sprintf("%-$par{'labwidth0'}s", $tmp);
-		    }
-		    push @tmp, $Intercolumn_Space;
-		}
+            #### info columns ############
 
-		#label1
-		if ($par{'label1'} and $par{'labwidth1'}) {
-		    if ($par{'html'} and $o->{'url'}) {
-			push @tmp,
-			"<A HREF=\"$o->{'url'}\">", $o->label1, "</A>";
-			push @tmp,
-			" " x ($par{'labwidth1'}-CORE::length $o->label1);
-		    } else {
-			push @tmp,
-			sprintf("%-$par{'labwidth1'}s", $o->label1);
-		    }
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label2
+            if ($par{'label2'} and $par{'labwidth2'}) {
+                push @row, sprintf("%-$par{'labwidth2'}s", $o->label2);
+                push @row, $Spacer;
+            }
 
-		#label2
-		if ($par{'label2'} and $par{'labwidth2'}) {
-		    push @tmp, sprintf("%-$par{'labwidth2'}s", $o->label2);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label3
+            if ($par{'label3'} and $par{'labwidth3'}) {
+                push @row, sprintf("%$par{'labwidth3'}s", $o->label3);
+                push @row, $Spacer;
+            }
 
-		#label3
-		if ($par{'label3'} and $par{'labwidth3'}) {
-		    push @tmp, sprintf("%$par{'labwidth3'}s", $o->label3);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label4
+            if ($par{'label4'} and $par{'labwidth4'}) {
+                push @row, sprintf("%$par{'labwidth4'}s", $o->label4);
+                push @row, $Spacer;
+            }
 
-		#label4
-		if ($par{'label4'} and $par{'labwidth4'}) {
-		    push @tmp, sprintf("%$par{'labwidth4'}s", $o->label4);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label5
+            if ($par{'label5'} and $par{'labwidth5'}) {
+                push @row, sprintf("%$par{'labwidth5'}s", $o->label5);
+                push @row, $Spacer;
+            }
 
-		#label5
-		if ($par{'label5'} and $par{'labwidth5'}) {
-		    push @tmp, sprintf("%$par{'labwidth5'}s", $o->label5);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label6
+            if ($par{'label6'} and $par{'labwidth6'}) {
+                push @row, sprintf("%$par{'labwidth6'}s", $o->label6);
+                push @row, $Spacer;
+            }
 
-		#label6
-		if ($par{'label6'} and $par{'labwidth6'}) {
-		    push @tmp, sprintf("%$par{'labwidth6'}s", $o->label6);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #label7
+            if ($par{'label7'} and $par{'labwidth7'}) {
+                push @row, sprintf("%$par{'labwidth7'}s", $o->label7);
+                push @row, $Spacer;
+            }
 
-		#label7
-		if ($par{'label7'} and $par{'labwidth7'}) {
-		    push @tmp, sprintf("%$par{'labwidth7'}s", $o->label7);
-		    push @tmp, $Intercolumn_Space;
-		}
+            #### left position ############
+            if ($posnwidth) {
+                if ($o->{'number'}) {
+                    push @row, sprintf("$prefix%$par{'posnwidth'}d$suffix",
+                                       $s->[0]);
+                } else {
+                    push @row, sprintf("$prefix%$par{'posnwidth'}s$suffix",
+                                       ' ');
+                }
+            }
+            push @row, $Spacer;
 
-		#left sequence position
-		if ($posnwidth) {
-		    if ($o->{'number'}) {
-			push @tmp, sprintf("$prefix%$par{'posnwidth'}d$suffix", $s->[0]);
-		    } else {
-			push @tmp, sprintf("$prefix%$par{'posnwidth'}s$suffix", ' ');
-		    }
-		}
+            #### sequence string ############
+            push @row, $s->[1];
+            push @row, $Spacer;
 
-		push @tmp, $Intercolumn_Space;
+            #### right position ############
+            if ($posnwidth) {
+                if ($o->{'number'}) {
+                    push @row, sprintf("$prefix%-$par{'posnwidth'}d$suffix",
+                                       $s->[2]);
+                } else {
+                    push @row,
+                        sprintf("$prefix%-$par{'posnwidth'}s$suffix", '');
+                }
+            }
+            push @row, "\n";
 
-		push @left, @tmp;
+            #### output row ############
+            print $stm @row;
 
-		#### middle ############
-		@tmp = ();
+        } #foreach
 
-		#sequence string
-		push @tmp, $s->[2];
-		push @tmp, $Intercolumn_Space;
+        #record separator
+        print $stm $par{'rec'}    unless $self->{'object'}->[0]->done;
 
-		push @middle, @tmp;
+        #Universal::vmstat("display loop done");
+    } #while
 
-		#### right ############
-		@tmp = ();
+    print $stm "</PRE>\n"  if $par{'html'};
+}
 
-		#right position
-		if ($posnwidth) {
-  		    if ($o->{'number'}) {
-			push @tmp,
-			sprintf("$prefix%-$par{'posnwidth'}d$suffix",
-				$s->[1]);
-		    } else {
-			push @tmp,
-			sprintf("$prefix%-$par{'posnwidth'}s$suffix", '');
-		    }
-		}
+sub append {
+    my $self = shift;
+    #warn "${self}::append(@_)\n";
 
-		push @tmp, "\n";
+    #handle data rows
+    foreach my $row (@_) {
+        my $type;
 
-		push @right, @tmp;
+        #check row 'type' exists and is valid
+        if (exists $row->{'type'}) {
+            $type = ucfirst $row->{'type'};
+        } else {
+            warn "${self}::append: missing type in '$row'\n";
+            next;
+        }
+        unless (exists $Known_Types{$type}) {
+            warn "${self}::append: unknown alignment type '$type'\n";
+            next;
+        }
 
-		#### output row ############
-		print $str @left, @middle, @right;
+        next  if $type eq 'Ruler';
 
-	    }#foreach
+        #construct row object
+        no strict 'refs';
+        $type = "Bio::MView::Display::$type"->new($self, $row);
+        use strict 'refs';
 
-	    #record separator
-	    print $str $par{'rec'}    unless $self->{'object'}->[0]->done;
+        push @{$self->{'object'}}, $type;
 
-	    #Universal::vmstat("display loop done");
- 	}
+        # warn "[", $type->label0, ",", $type->label1, ",", $type->label2,
+        # $type->label3, ",", $type->label4, ",", $type->label5,
+        # $type->label6, ",", $type->label7, "]\n";
+
+        $self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0));
+        $self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1));
+        $self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2));
+        $self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3));
+        $self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4));
+        $self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5));
+        $self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6));
+        $self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7));
     }
-    print $str "</PRE>\n"    if $par{'html'};
 
-    $self;
+    #handle header/ruler
+    foreach my $row (@_) {
+        my $type;
+
+        #check row 'type' exists and is valid
+        if (exists $row->{'type'}) {
+            $type = ucfirst $row->{'type'};
+        } else {
+            next;
+        }
+        next  unless exists $Known_Types{$type};
+
+        next  if $type ne 'Ruler';
+
+        #construct row object
+        no strict 'refs';
+        $type = "Bio::MView::Display::$type"->new($self, $row);
+        use strict 'refs';
+
+        push @{$self->{'object'}}, $type;
+
+        # warn "[", $type->label0, ",", $type->label1, ",", $type->label2,
+        # $type->label3, ",", $type->label4, ",", $type->label5,
+        # $type->label6, ",", $type->label7, ",", "]\n";
+
+        $self->{'labwidth0'} = max($self->{'labwidth0'}, length($type->label0))
+            if $self->{'labwidth0'};
+        $self->{'labwidth1'} = max($self->{'labwidth1'}, length($type->label1))
+            if $self->{'labwidth1'};
+        $self->{'labwidth2'} = max($self->{'labwidth2'}, length($type->label2))
+            if $self->{'labwidth2'};
+        $self->{'labwidth3'} = max($self->{'labwidth3'}, length($type->label3))
+            if $self->{'labwidth3'};
+        $self->{'labwidth4'} = max($self->{'labwidth4'}, length($type->label4))
+            if $self->{'labwidth4'};
+        $self->{'labwidth5'} = max($self->{'labwidth5'}, length($type->label5))
+            if $self->{'labwidth5'};
+        $self->{'labwidth6'} = max($self->{'labwidth6'}, length($type->label6))
+            if $self->{'labwidth6'};
+        $self->{'labwidth7'} = max($self->{'labwidth7'}, length($type->label7))
+            if $self->{'labwidth7'};
+    }
+    #Universal::vmstat("Display::append done");
+}
+
+######################################################################
+# private class methods
+######################################################################
+sub label_rownum {
+    my ($par, $o) = @_;
+    my ($w, $s) = ($par->{'labwidth0'}, $o->label0);
+    return sprintf("%${w}s", $s)  if $s =~ /^\d+$/;  #numeric - right justify
+    return sprintf("%-${w}s", $s);                   #string  - left justify
+}
+
+sub label_identifier {
+    my ($par, $o) = @_;
+    my @tmp = ();
+    my ($w, $s, $url) = ($par->{'labwidth1'}, $o->label1, $o->{'url'});
+    #left justify
+    if ($par->{'html'} and $url) {
+        push @tmp, "<A HREF=\"$url\">", $s, "</A>";
+        push @tmp, " " x ($w - CORE::length($s));
+        return @tmp;
+    }
+    return sprintf("%-${w}s", $s);
 }
 
 sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
+
+######################################################################
+# debug
+######################################################################
+#sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub dump {
+    my $self = shift;
+    foreach my $k (sort keys %$self) {
+        printf "%15s => %s\n", $k, $self->{$k};
+    }
+    map { $_->dump } @{$self->{'object'}};
+}
 
 ###########################################################################
 1;

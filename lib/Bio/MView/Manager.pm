@@ -134,16 +134,15 @@ sub print_alignment {
     $self->{'labwidth6'} = $self->{'labelwidths'}[6];
     $self->{'labwidth7'} = $self->{'labelwidths'}[7];
 
-    # warn
-    #     "PW ", $self->{'posnwidth'},
-    #     "  L0 ", $self->{'labwidth0'},
-    #     "  L1 ", $self->{'labwidth1'},
-    #     "  L2 ", $self->{'labwidth2'},
-    #     "  L3 ", $self->{'labwidth3'},
-    #     "  L4 ", $self->{'labwidth4'},
-    #     "  L5 ", $self->{'labwidth5'},
-    #     "  L6 ", $self->{'labwidth6'},
-    #     "  L7 ", $self->{'labwidth7'},
+    # warn "pw[", $self->{'posnwidth'}, "]",
+    #     "  l0[", $self->{'labwidth0'}, "]",
+    #     "  l1[", $self->{'labwidth1'}, "]",
+    #     "  l2[", $self->{'labwidth2'}, "]",
+    #     "  l3[", $self->{'labwidth3'}, "]",
+    #     "  l4[", $self->{'labwidth4'}, "]",
+    #     "  l5[", $self->{'labwidth5'}, "]",
+    #     "  l6[", $self->{'labwidth6'}, "]",
+    #     "  l7[", $self->{'labwidth7'}, "]",
     #     "\n"   ;
 
     #consolidate field widths across all Display objects
@@ -168,16 +167,15 @@ sub print_alignment {
                                               $self->{'labwidth7'});
     }
 
-    # warn
-    #     "PW ", $self->{'posnwidth'},
-    #     "  L0 ", $self->{'labwidth0'},
-    #     "  L1 ", $self->{'labwidth1'},
-    #     "  L2 ", $self->{'labwidth2'},
-    #     "  L3 ", $self->{'labwidth3'},
-    #     "  L4 ", $self->{'labwidth4'},
-    #     "  L5 ", $self->{'labwidth5'},
-    #     "  L6 ", $self->{'labwidth6'},
-    #     "  L7 ", $self->{'labwidth7'},
+    # warn "pw[", $self->{'posnwidth'}, "]",
+    #     "  l0[", $self->{'labwidth0'}, "]",
+    #     "  l1[", $self->{'labwidth1'}, "]",
+    #     "  l2[", $self->{'labwidth2'}, "]",
+    #     "  l3[", $self->{'labwidth3'}, "]",
+    #     "  l4[", $self->{'labwidth4'}, "]",
+    #     "  l5[", $self->{'labwidth5'}, "]",
+    #     "  l6[", $self->{'labwidth6'}, "]",
+    #     "  l7[", $self->{'labwidth7'}, "]",
     #     "\n"   ;
 
     my $first = 1;
@@ -225,11 +223,10 @@ sub print_alignment {
 	    print $stm $d->[3], "\n"  if $d->[3];
 	}
 	#alignment
-	$d->[0]->display(
-			 'stream'    => $stm,
+	$d->[0]->display($stm,
 			 'html'      => $PAR->get('html'),
 			 'bold'      => $PAR->get('bold'),
-			 'col'       => $PAR->get('width'),
+			 'width'     => $PAR->get('width'),
 			 'label0'    => $PAR->get('label0'),
 			 'label1'    => $PAR->get('label1'),
 			 'label2'    => $PAR->get('label2'),

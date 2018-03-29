@@ -16,10 +16,9 @@ sub new {
     shift;    #discard type
     my $self = new Bio::MView::Display::Any(@_);
     return bless $self, Bio::MView::Display::Reverse_Ruler
-	if $self->{'parent'}->{'string'}->is_reversed;
+        if $self->{'parent'}->{'string'}->is_reversed;
     bless $self, Bio::MView::Display::Forward_Ruler;
 }
-
 
 ###########################################################################
 package Bio::MView::Display::Forward_Ruler;
@@ -32,7 +31,7 @@ sub next {
     my $self = shift;
     my ($html, $bold, $col, $gap, $pad, $lap, $ruler) = @_;
     my ($string, $length, $i, $start, $pos) = ([]);
-	 					  
+
     return 0    if $self->{'cursor'} > $self->{'length'};
 
     $length = $self->{'length'} - $self->{'cursor'} +1; #length remaining
@@ -43,56 +42,55 @@ sub next {
 
     for ($i = 0; $i < $col; $i++) {
 
-	$pos = $start + $i;     #real data position
+        $pos = $start + $i;     #real data position
 
-	#determine position along ruler
-	if ($ruler eq 'abs') {
-	    if ($pos == $self->{'start'}) {
-		push @$string, '[';
-		next;
-	    }
-	    if ($pos == $self->{'stop'}) {
-		push @$string, ']';
-		next;
-	    }
-	} else {
-	    die "${self}::next() relative numbering disabled\n";
-	}
+        #determine position along ruler
+        if ($ruler eq 'abs') {
+            if ($pos == $self->{'start'}) {
+                push @$string, '[';
+                next;
+            }
+            if ($pos == $self->{'stop'}) {
+                push @$string, ']';
+                next;
+            }
+        } else {
+            die "${self}::next() relative numbering disabled\n";
+        }
 
-	#the ruler line
-	if ($pos % 100 == 0) {
-	    push @$string, substr($pos,-3,1);   #third digit from right
-	    next;
-	}
-	if ($pos % 50 == 0) {
-	    push @$string, ':';
-	    next;
-	}
-	if ($pos % 10 == 0) {
-	    push @$string, '.';
-	    next;
-	}
-#	if ($pos % 5 == 0) {
-#	    push @$string, '.';
-#	    next;
-#	}
-	push @$string, ' ';
+        #the ruler line
+        if ($pos % 100 == 0) {
+            push @$string, substr($pos,-3,1);   #third digit from right
+            next;
+        }
+        if ($pos % 50 == 0) {
+            push @$string, ':';
+            next;
+        }
+        if ($pos % 10 == 0) {
+            push @$string, '.';
+            next;
+        }
+#       if ($pos % 5 == 0) {
+#           push @$string, '.';
+#           next;
+#       }
+        push @$string, ' ';
     }
 
     $string= $self->strip_html_repeats($string)    if $html;
 
     if ($html) {
-	unshift @$string, '<STRONG>'           if $bold;
-	unshift @$string, $self->{'prefix'}    if $self->{'prefix'};
-	push    @$string, $self->{'suffix'}    if $self->{'suffix'};
-	push    @$string, '</STRONG>'          if $bold;
+        unshift @$string, '<STRONG>'           if $bold;
+        unshift @$string, $self->{'prefix'}    if $self->{'prefix'};
+        push    @$string, $self->{'suffix'}    if $self->{'suffix'};
+        push    @$string, '</STRONG>'          if $bold;
     }
 
     $self->{'cursor'} += $col;
 
-    return [ $start, $pos, join('', @$string) ];
+    return [ $start, join('', @$string), $pos ];
 }
-
 
 ###########################################################################
 package Bio::MView::Display::Reverse_Ruler;
@@ -105,7 +103,7 @@ sub next {
     my $self = shift;
     my ($html, $bold, $col, $gap, $pad, $lap, $ruler) = @_;
     my ($string, $length, $i, $start, $pos) = ([]);
-	 					  
+
     return 0    if $self->{'cursor'} > $self->{'length'};
 
     $length = $self->{'length'} - $self->{'cursor'} +1; #length remaining
@@ -116,56 +114,55 @@ sub next {
 
     for ($i = 0; $i < $col; $i++) {
 
-	$pos = $start - $i;     #real data position
+        $pos = $start - $i;     #real data position
 
-	#determine position along ruler
-	if ($ruler eq 'abs') {
-	    if ($pos == $self->{'start'}) {
-		push @$string, ']';
-		next;
-	    }
-	    if ($pos == $self->{'stop'}) {
-		push @$string, '[';
-		next;
-	    }
-	} else {
-	    die "${self}::next() relative numbering disabled\n";
-	}
+        #determine position along ruler
+        if ($ruler eq 'abs') {
+            if ($pos == $self->{'start'}) {
+                push @$string, ']';
+                next;
+            }
+            if ($pos == $self->{'stop'}) {
+                push @$string, '[';
+                next;
+            }
+        } else {
+            die "${self}::next() relative numbering disabled\n";
+        }
 
-	#the ruler line
-	if ($pos % 100 == 0) {
-	    push @$string, substr($pos,-3,1);   #third digit from right
-	    next;
-	}
-	if ($pos % 50 == 0) {
-	    push @$string, ':';
-	    next;
-	}
-	if ($pos % 10 == 0) {
-	    push @$string, '.';
-	    next;
-	}
-#	if ($pos % 5 == 0) {
-#	    push @$string, '.';
-#	    next;
-#	}
-	push @$string, ' ';
+        #the ruler line
+        if ($pos % 100 == 0) {
+            push @$string, substr($pos,-3,1);   #third digit from right
+            next;
+        }
+        if ($pos % 50 == 0) {
+            push @$string, ':';
+            next;
+        }
+        if ($pos % 10 == 0) {
+            push @$string, '.';
+            next;
+        }
+#       if ($pos % 5 == 0) {
+#           push @$string, '.';
+#           next;
+#       }
+        push @$string, ' ';
     }
 
     $string= $self->strip_html_repeats($string)    if $html;
 
     if ($html) {
-	unshift @$string, '<STRONG>'           if $bold;
-	unshift @$string, $self->{'prefix'}    if $self->{'prefix'};
-	push    @$string, $self->{'suffix'}    if $self->{'suffix'};
-	push    @$string, '</STRONG>'          if $bold;
+        unshift @$string, '<STRONG>'           if $bold;
+        unshift @$string, $self->{'prefix'}    if $self->{'prefix'};
+        push    @$string, $self->{'suffix'}    if $self->{'suffix'};
+        push    @$string, '</STRONG>'          if $bold;
     }
 
     $self->{'cursor'} += $col;
 
-    return [ $start, $pos, join('', @$string) ];
+    return [ $start, join('', @$string), $pos ];
 }
-
 
 ###########################################################################
 1;
