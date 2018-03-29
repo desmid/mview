@@ -67,10 +67,10 @@ sub display {
     my ($self, $stm) = (shift, shift);
     my %par = @_;
 
-    $par{'width'}  = $Default_Width      unless exists $par{'width'};
-    $par{'gap'}    = $Default_Gap        unless exists $par{'gap'};
-    $par{'pad'}    = $Default_Pad        unless exists $par{'pad'};
-    $par{'bold'}   = $Default_Bold       unless exists $par{'bold'};
+    $par{'width'} = $Default_Width  unless exists $par{'width'};
+    $par{'gap'}   = $Default_Gap    unless exists $par{'gap'};
+    $par{'pad'}   = $Default_Pad    unless exists $par{'pad'};
+    $par{'bold'}  = $Default_Bold   unless exists $par{'bold'};
 
     # warn "pw[$par{'posnwidth'}]\n";
     # warn "lf[@{[join(',', @{$par{'labelflags'}})]}]\n";
@@ -92,79 +92,9 @@ sub display {
 
     #map { warn "$_ => '$par{$_}'\n" } sort keys %par;
 
-    print $stm "<PRE>\n"  if $par{'html'};
+    print $stm "<PRE>\n"   if $par{'html'};
 
-    map { $_->reset } @{$self->{'object'}};
-
-    #need margin space for sequence numbers?
-    my $pane_has_margins = 0;
-    foreach my $o (@{$self->{'object'}}) {
-        $pane_has_margins = 1, last  if $o->has_margins;
-    }
-
-    #iterate over display panes of par{'width'}, if any objects
-  OUTER:
-    while (@{$self->{'object'}}) {
-
-        #Universal::vmstat("display pane");
-
-        #do one pane
-        foreach my $o (@{$self->{'object'}}) {
-
-            #do one line
-            my $s = $o->next($par{'html'}, $par{'bold'}, $par{'width'},
-                             $par{'gap'}, $par{'pad'}, $par{'lap'});
-
-            last OUTER  unless $s;
-
-            #warn "[ @$s ]\n";
-
-            #clear new row
-            my @row = ();
-
-            #label0: rownum
-            push @row, label_rownum(\%par, $o)      if $par{'labelflags'}->[0];
-
-            #label1: identifier
-            push @row, label_identifier(\%par, $o)  if $par{'labelflags'}->[1];
-
-            #label2: description
-            push @row, label_description(\%par, $o) if $par{'labelflags'}->[2];
-
-            #labels3-7: info
-            for (my $i=3; $i < @{$par{'labelwidths'}}; $i++) {
-                push @row, label_annotation(\%par, $o, $i)
-                    if $par{'labelflags'}->[$i];
-            }
-
-            #left position
-            if ($pane_has_margins) {
-                my $n = $o->has_margins ? $s->[0] : '';
-                push @row, sprintf("$prefix%$par{'posnwidth'}s$suffix", $n);
-            }
-            push @row, $Spacer;
-
-            #sequence string
-            push @row, $s->[1];
-            push @row, $Spacer;
-
-            #right position
-            if ($pane_has_margins) {
-                my $n = $o->has_margins ? $s->[2] : '';
-                push @row, sprintf("$prefix%-$par{'posnwidth'}s$suffix", $n);
-            }
-            push @row, "\n";
-
-            #output
-            print $stm @row;
-
-        } #foreach
-
-        #record separator
-        print $stm "\n"  unless $self->{'object'}->[0]->done;
-
-        #Universal::vmstat("display loop done");
-    } #while
+    $self->display_panes(\%par, $stm, $prefix, $suffix);
 
     print $stm "</PRE>\n"  if $par{'html'};
 }
@@ -204,6 +134,88 @@ sub append {
         }
     }
     #Universal::vmstat("Display::append done");
+}
+
+######################################################################
+# private methods
+######################################################################
+#iterate over display panes of par{'width'}
+sub display_panes {
+    my ($self, $par, $stm, $prefix, $suffix) = @_;
+
+    return  unless @{$self->{'object'}};
+
+    map { $_->reset } @{$self->{'object'}};
+
+    #need margin space for sequence numbers?
+    my $pane_has_margins = 0;
+    foreach my $o (@{$self->{'object'}}) {
+        $pane_has_margins = 1, last  if $o->has_margins;
+    }
+
+    while (1) {
+        #Universal::vmstat("display pane");
+
+        #do one pane
+        foreach my $o (@{$self->{'object'}}) {
+
+            #do one line
+            my $s = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
+                             $par->{'gap'}, $par->{'pad'}, $par->{'lap'});
+
+            return  unless $s;  #exit point
+
+            #warn "[@$s]\n";
+
+            #clear new row
+            my @row = ();
+
+            #label0: rownum
+            push @row, label_rownum($par, $o)
+                if $par->{'labelflags'}->[0];
+
+            #label1: identifier
+            push @row, label_identifier($par, $o)
+                if $par->{'labelflags'}->[1];
+
+            #label2: description
+            push @row, label_description($par, $o)
+                if $par->{'labelflags'}->[2];
+
+            #labels3-7: info
+            for (my $i=3; $i < @{$par->{'labelwidths'}}; $i++) {
+                push @row, label_annotation($par, $o, $i)
+                    if $par->{'labelflags'}->[$i];
+            }
+
+            #left position
+            if ($pane_has_margins) {
+                my $n = $o->has_margins ? $s->[0] : '';
+                push @row, sprintf("$prefix%$par->{'posnwidth'}s$suffix", $n);
+            }
+            push @row, $Spacer;
+
+            #sequence string
+            push @row, $s->[1];
+            push @row, $Spacer;
+
+            #right position
+            if ($pane_has_margins) {
+                my $n = $o->has_margins ? $s->[2] : '';
+                push @row, sprintf("$prefix%-$par->{'posnwidth'}s$suffix", $n);
+            }
+            push @row, "\n";
+
+            #output
+            print $stm @row;
+
+        } #foreach
+
+        #record separator
+        print $stm "\n"  unless $self->{'object'}->[0]->done;
+
+        #Universal::vmstat("display pane done");
+    } #while
 }
 
 ######################################################################
