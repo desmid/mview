@@ -25,13 +25,12 @@ my %Known_Types = (
 
 sub new {
     my $type = shift;
-    die "${type}::new: missing arguments\n"  if @_ < 3;
-    my ($labelflags, $labelwidths, $sequence) = (shift, shift, shift);
+    die "${type}::new: missing arguments\n"  if @_ < 2;
+    my ($labelwidths, $sequence) = (shift, shift);
 
     my $self = {};
     bless $self, $type;
 
-    $self->{'labelflags'}  = $labelflags;
     $self->{'labelwidths'} = $labelwidths;
     $self->{'string'}      = $sequence;
 
@@ -134,7 +133,7 @@ sub display {
             }
 
             #label2-7: info columns
-            for (my $i=2; $i < @{$self->{'labelwidths'}}; $i++) {
+            for (my $i=2; $i < @{$par{'labelwidths'}}; $i++) {
                 if ($par{'labelflags'}->[$i] and $par{'labelwidths'}->[$i]) {
                     push @row, label_annotation(\%par, $o, $i);
                 }

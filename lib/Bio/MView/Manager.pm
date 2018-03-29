@@ -120,27 +120,27 @@ sub get_alignment_count { return $_[0]->{'acount'} }
 sub print_alignment {
     my ($self, $stm) = (@_, \*STDOUT);
 
-    my $posnwidth = 0;
+    my ($posnwidth, $labelflags, $labelwidths) = $self->initialise_labels;
 
-    #consolidate field widths across all Display objects
+    #consolidate field widths across multiple Display objects
     foreach my $dis (@{$self->{'display'}}) {
-        #numeric position width (left and right)
+
+        #numeric left/right position width
         $posnwidth = Universal::max($posnwidth, $dis->[0]->{'posnwidth'});
 
-        #finalize label widths
-        for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
-            #needed for multiple in-register output
-            if ($self->{'labelflags'}->[$i]) {
-                $self->{'labelwidths'}->[$i] =
-                    Universal::max($self->{'labelwidths'}->[$i],
+        #labelwidths
+        for (my $i=0; $i < @$labelflags; $i++) {
+            if ($labelflags->[$i]) {
+                $labelwidths->[$i] =
+                    Universal::max($labelwidths->[$i],
                                    $dis->[0]->{'labelwidths'}->[$i]);
             }
         }
     }
 
     # warn "pw[$posnwidth]\n";
-    # warn "lf[@{[join(',', @{$self->{'labelflags'}})]}]\n";
-    # warn "lw[@{[join(',', @{$self->{'labelwidths'}})]}]\n";
+    # warn "lf[@{[join(',', @$labelflags)]}]\n";
+    # warn "lw[@{[join(',', @$labelwidths)]}]\n";
 
     my $first = 1;
     #output
@@ -192,8 +192,8 @@ sub print_alignment {
                            'bold'        => $PAR->get('bold'),
                            'width'       => $PAR->get('width'),
                            'posnwidth'   => $posnwidth,
-                           'labelflags'  => $self->{'labelflags'},
-                           'labelwidths' => $self->{'labelwidths'},
+                           'labelflags'  => $labelflags,
+                           'labelwidths' => $labelwidths,
 			);
 	if ($PAR->get('html')) {
 	    #alignment end
@@ -268,27 +268,26 @@ sub gc_flag {
 }
 
 sub initialise_labels {
-    my ($self, $ref) = @_;
+    my $self = shift;
 
-    $self->{'labelflags'}  = [];
-    $self->{'labelwidths'} = [];
+    my $posnwidth   = 0;   #default width of numeric left/rightpositions
+    my $labelflags  = [];  #collected column on/off flags
+    my $labelwidths = [];  #collected initial label widths
 
-    push @{$self->{'labelflags'}}, $PAR->get('label0');
-    push @{$self->{'labelflags'}}, $PAR->get('label1');
-    push @{$self->{'labelflags'}}, $PAR->get('label2');
-    push @{$self->{'labelflags'}}, $PAR->get('label3');
-    push @{$self->{'labelflags'}}, $PAR->get('label4');
-    push @{$self->{'labelflags'}}, $PAR->get('label5');
-    push @{$self->{'labelflags'}}, $PAR->get('label6');
-    push @{$self->{'labelflags'}}, $PAR->get('label7');
+    push @$labelflags, $PAR->get('label0');
+    push @$labelflags, $PAR->get('label1');
+    push @$labelflags, $PAR->get('label2');
+    push @$labelflags, $PAR->get('label3');
+    push @$labelflags, $PAR->get('label4');
+    push @$labelflags, $PAR->get('label5');
+    push @$labelflags, $PAR->get('label6');
+    push @$labelflags, $PAR->get('label7');
 
-    return  unless defined $ref;
+    for (my $i=0; $i < @$labelflags; $i++) {
+        $labelwidths->[$i] = 0;
+    }
 
-    #warn "[@{[join(',', $ref->display_column_widths)]}]";
-    #warn "[@{[join(',', $ref->display_column_labels)]}]";
-    #warn "[@{[join(',', $ref->display_column_values)]}]";
-
-    push @{$self->{'labelwidths'}}, $ref->display_column_widths;
+    return ($posnwidth, $labelflags, $labelwidths);
 }
 
 sub add_display {
@@ -297,14 +296,10 @@ sub add_display {
     my $refid  = $bld->get_row_id($PAR->get('ref_id'));
     my $refobj = $bld->get_row($PAR->get('ref_id'));
 
-    $self->initialise_labels($refobj);
-
     #Universal::vmstat("display constructor");
     my $dis = new Bio::MView::Display::Display(
-        $self->{'labelflags'},
-        $self->{'labelwidths'},
-        $aln->init_display
-        );
+        [$refobj->display_column_widths],
+        $aln->init_display);
     #Universal::vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
