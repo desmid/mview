@@ -142,71 +142,92 @@ sub print_alignment {
     # warn "lf[@{[join(',', @$labelflags)]}]\n";
     # warn "lw[@{[join(',', @$labelwidths)]}]\n";
 
-    my $first = 1;
-    #output
+    my $pass = 0;
     while (my $dis = shift @{$self->{'display'}}) {
-	#Universal::vmstat("display");
-	if ($PAR->get('html')) {
-            my $s = "style=\"border:0px;";
-	    #body tag
-	    if (! $PAR->get('css1')) {
-                #supported in HTML 4.01:
-		$s .= " background-color:" . $PAR->get('alncolor')   . ";"
-		    if defined $PAR->get('alncolor');
-		$s .= " color:"            . $PAR->get('labcolor')   . ";"
-		    if defined $PAR->get('labcolor');
-		$s .= " a:link:"           . $PAR->get('linkcolor')  . ";"
-		    if defined $PAR->get('linkcolor');
-		$s .= " a:active:"         . $PAR->get('alinkcolor') . ";"
-		    if defined $PAR->get('alinkcolor');
-		$s .= " a:visited:"        . $PAR->get('vlinkcolor') . ";"
-		    if defined $PAR->get('vlinkcolor');
-            }
-            $s .= "\"";
-	    print $stm "<P>\n"  unless $first;
-	    print $stm "<TABLE $s>\n";
-	    #header
-	    print $stm "<TR><TD><PRE>\n";
-	    print $stm ($dis->[1] ? $dis->[1] : '');
-	    print $stm ($dis->[2] ? $dis->[2] : '');
-	    print $stm "</PRE></TD></TR>\n";
-	    #subheader
-	    if ($dis->[3]) {
-		print $stm "<TR><TD><PRE>\n";
-		print $stm $dis->[3];
-		print $stm "</PRE></TD></TR>\n";
-	    }
-	    #alignment start
-	    print $stm "<TR><TD>\n";
-	} else {
-	    #header
-	    print $stm "\n"             if $dis->[1] or $dis->[2];
-	    print $stm $dis->[1],       if $dis->[1];
-	    print $stm $dis->[2]        if $dis->[2];
-	    print "\n";
-	    print $stm $dis->[3], "\n"  if $dis->[3];
-	}
-	#alignment
-	$dis->[0]->display($stm,
-                           'html'        => $PAR->get('html'),
-                           'bold'        => $PAR->get('bold'),
-                           'width'       => $PAR->get('width'),
-                           'posnwidth'   => $posnwidth,
-                           'labelflags'  => $labelflags,
-                           'labelwidths' => $labelwidths,
-			);
-	if ($PAR->get('html')) {
-	    #alignment end
-	    print $stm "</TD></TR>\n";
-	    print $stm "</TABLE>\n";
-	    print $stm "</P>\n"  unless $first;
-	}
-	#Universal::vmstat("display done");
-	$dis->[0]->free;
-	#Universal::vmstat("display free done");
-
-	$first = 0;
+        if ($PAR->get('html')) {
+            $self->print_html_alignment($stm, $dis, $pass, $posnwidth,
+                                        $labelflags, $labelwidths);
+        } else {
+            $self->print_text_alignment($stm, $dis, $pass, $posnwidth,
+                                        $labelflags, $labelwidths);
+        }
+        $dis->[0]->free;
+        $pass++;
     }
+}
+
+sub print_text_alignment {
+    my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
+
+    #header
+    print $stm "\n"       if $dis->[1] or $dis->[2];
+    print $stm $dis->[1]  if $dis->[1];
+    print $stm $dis->[2]  if $dis->[2];
+    print "\n";
+
+    #subheader
+    print $stm $dis->[3], "\n"  if $dis->[3];
+
+    #alignment
+    $dis->[0]->display($stm,
+                       'html'        => $PAR->get('html'),
+                       'bold'        => $PAR->get('bold'),
+                       'width'       => $PAR->get('width'),
+                       'posnwidth'   => $posnwidth,
+                       'labelflags'  => $labelflags,
+                       'labelwidths' => $labelwidths,
+    );
+}
+
+sub print_html_alignment {
+    my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
+
+    #body attrs
+    my $s = "style=\"border:0px;";
+    if (! $PAR->get('css1')) {
+        #supported in HTML 4.01:
+        $s .= " background-color:" . $PAR->get('alncolor')   . ";"
+            if defined $PAR->get('alncolor');
+        $s .= " color:"            . $PAR->get('labcolor')   . ";"
+            if defined $PAR->get('labcolor');
+        $s .= " a:link:"           . $PAR->get('linkcolor')  . ";"
+            if defined $PAR->get('linkcolor');
+        $s .= " a:active:"         . $PAR->get('alinkcolor') . ";"
+            if defined $PAR->get('alinkcolor');
+        $s .= " a:visited:"        . $PAR->get('vlinkcolor') . ";"
+            if defined $PAR->get('vlinkcolor');
+    }
+    $s .= "\"";
+
+    print $stm "<P>\n"  if $pass > 0;
+    print $stm "<TABLE $s>\n";
+
+    #header
+    print $stm "<TR><TD><PRE>\n";
+    print $stm ($dis->[1] ? $dis->[1] : '');
+    print $stm ($dis->[2] ? $dis->[2] : '');
+    print $stm "</PRE></TD></TR>\n";
+
+    #subheader
+    if ($dis->[3]) {
+        print $stm "<TR><TD><PRE>\n";
+        print $stm $dis->[3];
+        print $stm "</PRE></TD></TR>\n";
+    }
+
+    #alignment
+    print $stm "<TR><TD>\n";
+    $dis->[0]->display($stm,
+                       'html'        => $PAR->get('html'),
+                       'bold'        => $PAR->get('bold'),
+                       'width'       => $PAR->get('width'),
+                       'posnwidth'   => $posnwidth,
+                       'labelflags'  => $labelflags,
+                       'labelwidths' => $labelwidths,
+        );
+    print $stm "</TD></TR>\n";
+    print $stm "</TABLE>\n";
+    print $stm "</P>\n"  if $pass > 0;
 }
 
 ######################################################################
