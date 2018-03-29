@@ -115,7 +115,7 @@ sub display {
             my $s = $o->next($par{'html'}, $par{'bold'}, $par{'width'},
                              $par{'gap'}, $par{'pad'}, $par{'lap'});
 
-            last OUTER  unless $s; #this terminates
+            last OUTER  unless $s;
 
             #warn "[ @$s ]\n";
 
@@ -123,20 +123,18 @@ sub display {
             my @row = ();
 
             #label0: rownum
-            if ($par{'labelflags'}->[0] and $par{'labelwidths'}->[0]) {
-                push @row, label_rownum(\%par, $o);
-            }
+            push @row, label_rownum(\%par, $o)      if $par{'labelflags'}->[0];
 
             #label1: identifier
-            if ($par{'labelflags'}->[1] and $par{'labelwidths'}->[1]) {
-                push @row, label_identifier(\%par, $o);
-            }
+            push @row, label_identifier(\%par, $o)  if $par{'labelflags'}->[1];
 
-            #label2-7: info columns
-            for (my $i=2; $i < @{$par{'labelwidths'}}; $i++) {
-                if ($par{'labelflags'}->[$i] and $par{'labelwidths'}->[$i]) {
-                    push @row, label_annotation(\%par, $o, $i);
-                }
+            #label2: description
+            push @row, label_description(\%par, $o) if $par{'labelflags'}->[2];
+
+            #labels3-7: info
+            for (my $i=3; $i < @{$par{'labelwidths'}}; $i++) {
+                push @row, label_annotation(\%par, $o, $i)
+                    if $par{'labelflags'}->[$i];
             }
 
             #left position
@@ -211,39 +209,49 @@ sub append {
 ######################################################################
 # private class methods
 ######################################################################
+#left or right justify as string or numeric identifier
 sub label_rownum {
     my ($par, $o) = @_;
-    my ($w, $s) = ($par->{'labelwidths'}->[0], $o->label(0));
-    my @tmp = ();
-    if ($s =~ /^\d+$/) {
-        push @tmp, sprintf("%${w}s", $s);   #numeric - right justify
-    } else {
-        push @tmp, sprintf("%-${w}s", $s);  #string  - left justify
-    }
-    push @tmp, $Spacer;
-    return @tmp;
+    my ($just, $w, $s) = ('-', $par->{'labelwidths'}->[0], $o->label(0));
+    return ()  unless $w;
+    $just = ''  if $s =~ /^\d+$/;
+    return (format_label($just, $w, $s), $Spacer);
 }
 
+#left justify
 sub label_identifier {
     my ($par, $o) = @_;
     my ($w, $s, $url) = ($par->{'labelwidths'}->[1], $o->label(1), $o->{'url'});
-    my @tmp = ();
-    #left justify
+    return ()  unless $w;
     if ($par->{'html'} and $url) {
+        my @tmp = ();
         push @tmp, "<A HREF=\"$url\">", $s, "</A>";
         push @tmp, " " x ($w - CORE::length($s));
-    } else {
-        push @tmp, sprintf("%-${w}s", $s);
+        return (@tmp, $Spacer);
     }
-    push @tmp, $Spacer;
-    return @tmp;
+    return (format_label('-', $w, $s), $Spacer)
 }
 
+#left justify
+sub label_description {
+    my ($par, $o) = @_;
+    my ($w, $s) = ($par->{'labelwidths'}->[2], $o->label(2));
+    return ()  unless $w;
+    return (format_label('-', $w, $s), $Spacer);
+}
+
+#right justify
 sub label_annotation {
     my ($par, $o, $n) = @_;
     my ($w, $s) = ($par->{'labelwidths'}->[$n], $o->label($n));
-    #right justify
-    return (sprintf("%${w}s", $s), $Spacer);
+    return ()  unless $w;
+    return (format_label('', $w, $s), $Spacer);
+}
+
+#left or right justify in padded fieldwidth
+sub format_label {
+    my ($just, $w, $s) = @_;
+    return sprintf("%${just}${w}s", $s);
 }
 
 sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
