@@ -5,6 +5,7 @@ use strict;
 ###########################################################################
 package Bio::MView::Option::Parameters;
 
+use Universal;
 use Exporter;
 use vars qw(@ISA @EXPORT $PAR);
 
@@ -79,56 +80,8 @@ sub get_set {
 #all keys if none given.
 sub dump {
     my $self = shift;
-
-    sub maxlen {
-        my $w = 0;
-        foreach my $key (@_) {
-            $w = Universal::max($w, length(defined $key ? $key : '<NOEXIST>'));
-        }
-        return $w;
-    }
-
-    sub layout {
-        my $w = shift; return sprintf("%${w}s => %s\n", @_);
-    }
-
-    my $p = $self->{'p'};
-    push @_, sort keys %$p  unless @_;
-
-    my $w = maxlen(@_); return ''  unless $w > 0;
-    my $s = '';
-
-    foreach my $key (@_) {
-        if (exists $p->{$key}) {
-            my $val = $p->{$key};
-            if (! defined $val) {
-                $s .= layout($w, $key, '<UNDEF>');
-                next;
-            }
-            my $ref = ref $val;
-            if ($ref) {
-                if ($ref eq 'ARRAY') {
-                    $s .= layout($w, $key, "@[" . join(',', @$val)  . "]");
-                    next;
-                }
-                if ($ref eq 'HASH') {
-                    my @tmp = map { "$_:$val->{$_}" } sort keys %$val;
-                    $s .= layout($w, $key, "%{" . join(',', @tmp) . "}");
-                    next;
-                }
-                $s .= layout($w, $key, '<$ref>');  #other ref
-                next;
-            }
-            #SCALAR
-            $s .= layout($w, $key, (length($val) > 0 ? $val : "'$val'"));
-        } else {
-            $s .= layout($w, $key, '<NOEXIST>');
-        }
-
-    }
-    return $s;
+    return Universal::dump_hash($self->{'p'}, @_);
 }
-
 
 ###########################################################################
 1;

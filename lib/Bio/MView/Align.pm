@@ -672,7 +672,7 @@ sub dump {
         my $r = $self->{'index2row'}->[$i];
         print STDERR "  $i: ";
         if (defined $r) {
-            $r->dump;
+            print $r->dump;
         } else {
             print STDERR "\n";
         }
