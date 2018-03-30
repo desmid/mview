@@ -54,12 +54,12 @@ sub parse {
     $self->{'file'}   = $file;
     $self->{'format'} = lc $format;
     $self->{'class'}  = load_format_library($format);
+    $self->{'stream'} = get_parser_stream($file, $self->{'class'});
 
-    #warn $self->{'format'}, "\n";
-
-    my $parser = get_format_parser($self->{'class'});
-
-    $self->{'stream'} = new NPB::Parse::Stream($file, $parser);
+    # warn $self->{'file'}, "\n";
+    # warn $self->{'format'}, "\n";
+    # warn $self->{'class'}, "\n";
+    # warn $self->{'stream'}, "\n";
 
     return 0  unless defined $self->{'stream'};
 
@@ -249,6 +249,12 @@ sub get_format_parser {
     $parser = &$parser();
     use strict 'refs';
     return $parser;
+}
+
+sub get_parser_stream {
+    my ($file, $class) = @_;
+    my $parser = get_format_parser($class);
+    return new NPB::Parse::Stream($file, $parser);
 }
 
 ######################################################################
