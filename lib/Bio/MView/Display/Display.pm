@@ -116,10 +116,7 @@ sub append {
 
         $type = ucfirst $type;
 
-        #construct display row object
-        no strict 'refs';
-        my $o = "Bio::MView::Display::$type"->new($self, $row);
-        use strict 'refs';
+        my $o = construct_display_row($type, $self, $row);
 
         push @{$self->{'object'}}, $o;
 
@@ -163,12 +160,12 @@ sub display_panes {
         foreach my $o (@{$self->{'object'}}) {
 
             #do one line
-            my $d = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
-                             $par->{'gap'}, $par->{'pad'}, $par->{'lap'});
+            my $row = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
+                               $par->{'gap'}, $par->{'pad'}, $par->{'lap'});
 
-            return  unless $d;  #exit point
+            return  unless $row;  #all done
 
-            #warn "[@$d]\n";
+            #warn "[@$row]\n";
 
             #clear new row
             my @row = ();
@@ -192,15 +189,15 @@ sub display_panes {
             }
 
             #left position
-            push @row, left_position($par, $o, $d->[0], $prefix, $suffix)
+            push @row, left_position($par, $o, $row->[0], $prefix, $suffix)
                 if $has_positions;
             push @row, $Spacer;
 
             #sequence string
-            push @row, $d->[1], $Spacer;
+            push @row, $row->[1], $Spacer;
 
             #right position
-            push @row, right_position($par, $o, $d->[2], $prefix, $suffix)
+            push @row, right_position($par, $o, $row->[2], $prefix, $suffix)
                 if $has_positions;
 
             #end of line
@@ -221,6 +218,14 @@ sub display_panes {
 ######################################################################
 # private class methods
 ######################################################################
+sub construct_display_row {
+    my ($type, $owner, $data) = @_;
+    no strict 'refs';
+    my $row = "Bio::MView::Display::$type"->new($owner, $data);
+    use strict 'refs';
+    return $row;
+}
+
 #left or right justify as string or numeric identifier
 sub label_rownum {
     my ($par, $o) = @_;
