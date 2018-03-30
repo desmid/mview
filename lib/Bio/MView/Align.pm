@@ -212,8 +212,7 @@ sub set_consensus_color_scheme {
     }
 }
 
-#return array of Bio::MView::Display::display constructor arguments
-sub init_display { ( $_[0]->{'parent'}->{'string'} ) }
+sub init_display { $_[0]->{'parent'}->{'string'} }
 
 #Append Row data to the input Display object: done one at a time to reduce
 #memory usage instead of accumulating a potentially long list before passing
