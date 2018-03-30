@@ -202,7 +202,7 @@ sub set_range {
     $self;
 }
 
-sub is_reversed {0}
+sub is_forwards {1}
 
 sub reverse {
     no strict qw(subs);
@@ -515,7 +515,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Sequence);
 
-sub is_reversed {1}
+sub is_forwards  {0}
 
 sub reverse {
     no strict qw(subs);

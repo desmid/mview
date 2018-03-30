@@ -36,6 +36,7 @@ sub new {
     $self->{'string'}      = $sequence;
 
     $self->{'length'}      = $sequence->length;
+    $self->{'forwards'}    = $sequence->is_forwards;
 
     #start/stop, counting extent forwards
     $self->{'start'}       = $sequence->lo;
@@ -56,7 +57,9 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-sub length { $_[0]->{'length'} }
+sub length   { $_[0]->{'length'} }
+
+sub forwards { $_[0]->{'forwards'} }
 
 sub display {
     my ($self, $stm) = (shift, shift);

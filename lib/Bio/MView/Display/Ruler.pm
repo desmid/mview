@@ -16,12 +16,10 @@ sub new {
     my $self = new Bio::MView::Display::Any(@_);
     bless $self, $type;
 
-    $self->{'forwards'} = 1;
-    $self->{'charlo'}   = '[';
-    $self->{'charhi'}   = ']';
-
-    if ($self->{'parent'}->{'string'}->is_reversed) {
-        $self->{'forwards'} = 0;
+    if ($self->{'forwards'}) {
+        $self->{'charlo'}   = '[';
+        $self->{'charhi'}   = ']';
+    } else {
         $self->{'charlo'}   = ']';
         $self->{'charhi'}   = '[';
     }

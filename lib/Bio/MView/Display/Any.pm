@@ -13,9 +13,10 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'parent'} = $parent;          #parent sequence object
-    $self->{'length'} = $parent->length;  #length of parent sequence
-    $self->{'type'}   = $hash->{'type'};  #type of this row
+    $self->{'parent'}   = $parent;           #parent sequence object
+    $self->{'length'}   = $parent->length;   #length of parent sequence
+    $self->{'forwards'} = $parent->forwards; #parent sequence orientation
+    $self->{'type'}     = $hash->{'type'};   #type of this row
 
     $self->{'start'}  = 0;      #start position of parent sequence
     $self->{'stop'}   = 0;      #stop position of parent sequence
@@ -48,6 +49,8 @@ sub new {
     $self->{'r_sym'}    = [];
     $self->{'r_url'}    = [];
     $self->{'r_case'}   = [];
+
+    #warn Universal::dump_hash($hash);
 
     if (defined $self->{'string'}) {
         my $seqlen = $self->{'string'}->length;
