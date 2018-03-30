@@ -86,7 +86,7 @@ sub length { 0 }
 ######################################################################
 # debug
 ######################################################################
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+#sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump { Universal::dump_object($_[0]) }
 

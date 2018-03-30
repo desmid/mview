@@ -98,12 +98,6 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-#force break of back reference to allow garbage collection
-sub free {
-    #warn "Display::Any:free($_[0])\n";
-    $_[0]->{'parent'} = undef;
-}
-
 sub has_positions { return $_[0]->{'number'} != 0 }
 
 #return kth label string
@@ -497,7 +491,7 @@ sub close_tag {
 ######################################################################
 # debug
 ######################################################################
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+#sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump {
     my $self = shift;

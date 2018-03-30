@@ -152,7 +152,7 @@ sub mview {
     #save printing until end?
     if (want_in_register($par) and want_mview_layout($par)) {
 	$mgr->print_alignment;
-	#Universal::vmstat("mview: in register print done");
+	#Universal::vmstat("mview: in register print_alignment done");
     }
     return $mgr->get_alignment_count;
 }

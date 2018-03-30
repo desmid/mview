@@ -108,7 +108,7 @@ sub next_align {
     $self->{'index2row'} = $self->parse;
     #Universal::vmstat("Build->next(parse) done");
 
-    #finished? note: "$self->{'align'}->free" is not needed
+    #finished?
     return undef  unless defined $self->{'index2row'};
 
     #for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
@@ -500,7 +500,7 @@ sub build_mview_alignment {
 ######################################################################
 # debug
 ######################################################################
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+#sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump_index2row {
     my $self = shift;

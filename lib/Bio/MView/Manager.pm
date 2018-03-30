@@ -98,18 +98,19 @@ sub parse {
 	    #display item now?
 	    unless ($PAR->get('register')) {
 		$self->print_alignment;
-		@{$self->{'display'}} = ();  #garbage collect
-		#Universal::vmstat("print done (Manager)");
+		#Universal::vmstat("Manager: print_alignment done");
 	    }
 
 	    $header1 = $header2 = $header3 = '';
 
-	    #drop old Align and Display objects: GC *before* next iteration!
-	    $aln = $dis = undef;
+	    #drop Align object to gc before next iteration
+            $aln = undef;  #gc
+            #Universal::vmstat("Manager: Align dropped");
         }
 
-	#drop old Build object: GC *before* next iteration!
-	$bld = undef;
+	#drop Build object to gc before next iteration
+	$bld = undef;  #gc
+        #Universal::vmstat("Manager: Build dropped");
     }
 
     return 1;
@@ -151,7 +152,6 @@ sub print_alignment {
             $self->print_text_alignment($stm, $dis, $pass, $posnwidth,
                                         $labelflags, $labelwidths);
         }
-        $dis->[0]->free;
         $pass++;
     }
 }

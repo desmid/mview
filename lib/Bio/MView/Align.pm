@@ -655,7 +655,7 @@ sub compute_tallies {
 ######################################################################
 # debug
 ######################################################################
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+#sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump {
     sub _format {

@@ -83,18 +83,17 @@ sub stacktrace {
     }
 }
 
-#Linux only?
+#Linux only
 sub vmstat {
     my ($s) = (@_, '');
     local ($_, *TMP);
     if (open(TMP, "cat /proc/$$/stat|")) {
-	$_=<TMP>; my @ps = split /\s+/; close TMP;
-	warn sprintf "VMEM=%8gk  $s\n", $ps[22] / 1024;
+	$_ = <TMP>; my @ps = split /\s+/; close TMP;
+	print sprintf "VM: %8luk  $s\n", $ps[22] >> 10;
     } else {
-	warn sprintf "VMEM=?  $s\n";
+	print sprintf "VM: -  $s\n";
     }
 }
-
 
 ######################################################################
 1;

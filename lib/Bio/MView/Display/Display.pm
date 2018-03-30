@@ -55,12 +55,6 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-#force break of back references to allow garbage collection
-sub free {
-    #warn "${_[0]}::Display::free\n";
-    while (my $o = shift @{$_[0]->{'object'}}) { $o->free }
-}
-
 sub length { $_[0]->{'length'} }
 
 sub display {
@@ -97,6 +91,8 @@ sub display {
     $self->display_panes(\%par, $stm, $prefix, $suffix);
 
     print $stm "</PRE>\n"  if $par{'html'};
+
+    $self->free_rows;  #garbage collect rows
 }
 
 sub append {
@@ -139,6 +135,13 @@ sub append {
 ######################################################################
 # private methods
 ######################################################################
+sub free_rows {
+    print "free: $_[0]\n";
+    foreach my $o (@{$_[0]->{'object'}}) {
+        $o = undef;
+    }
+}
+
 #iterate over display panes of par{'width'}
 sub display_panes {
     my ($self, $par, $stm, $prefix, $suffix) = @_;
@@ -282,7 +285,7 @@ sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 ######################################################################
 # debug
 ######################################################################
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+#sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump {
     my $self = shift;
