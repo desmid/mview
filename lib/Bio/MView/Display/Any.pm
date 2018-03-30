@@ -80,14 +80,14 @@ sub new {
 
     #populate the range map
     foreach my $range (@{$self->parse_range($hash->{'range'})}) {
-        for (my $i = $range->{'pos'}->[0];
-             $i <= $range->{'pos'}->[$#{$range->{'pos'}}];
-             $i++) {
+        my $start = $range->{'pos'}->[0];
+        my $stop  = $range->{'pos'}->[$#{$range->{'pos'}}] + 1;
+        for (my $i = $start; $i < $stop; $i++) {
             foreach my $j (keys %$range) {
-                next if $j eq 'pos';
+                next  if $j eq 'pos';
                 $self->{"r_$j"}->[$i] = $range->{$j};
             }
-            $self->{'r_map'}->[$i]++;    #count hits per position
+            $self->{'r_map'}->[$i]++;  #count hits per position
         }
     }
 
@@ -123,7 +123,7 @@ sub done {
 
 #iterator: subclass overrides
 sub next {
-    my ($self, $mode) = (shift, shift);
+    my $self = shift;
     #warn "${self}::next(@_)\n";
     my ($html, $bold, $col, $gap, $pad, $lap) = @_;
 
@@ -182,12 +182,14 @@ sub next {
             }
             push @$string, $self->html_wrap($self->{'cursor'}, $c)  if $html;
 
-        } elsif ($mode eq 'gap') {
-            #class Subrange: use gap character
-            push @$string, $gap;
-        } else { #mode eq 'nogap'
+        } elsif ($self->{'type'} eq 'sequence') {
             #class Sequence: use sequence character
             push @$string, $self->col($self->{'cursor'});
+        } elsif ($self->{'type'} eq 'subrange') {
+            #class Subrange: use gap character
+            push @$string, $gap;
+        } else {
+            die "${self}::next: unknown type 'self->{'type'}'\n";
         }
     }
 
@@ -341,13 +343,11 @@ sub parse_range {
     }
 
     #resort ranges by (1) lowest 'start', and (2) highest 'stop'
-    return [
-            sort {
-                my $c = $a->{'pos'}->[0] <=> $b->{'pos'}->[0];
-                return  $c if $c != 0;
-                return  $b->{'pos'}->[1] <=> $a->{'pos'}->[1];
-            } @list
-           ];
+    return [ sort { my $c = $a->{'pos'}->[0] <=> $b->{'pos'}->[0];
+                    return  $c  if $c != 0;
+                    return  $b->{'pos'}->[1] <=> $a->{'pos'}->[1];
+             } @list
+    ];
 }
 
 sub col {
@@ -507,16 +507,12 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Display::Any);
 
-sub next { my $self = shift; $self->SUPER::next('nogap', @_) }
-
 ###########################################################################
 package Bio::MView::Display::Subrange;
 
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Display::Any);
-
-sub next { my $self = shift; $self->SUPER::next('gap', @_) }
 
 ###########################################################################
 1;

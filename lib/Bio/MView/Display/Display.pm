@@ -134,7 +134,7 @@ sub append {
 # private methods
 ######################################################################
 sub free_rows {
-    print "free: $_[0]\n";
+    #print "free: $_[0]\n";
     foreach my $o (@{$_[0]->{'object'}}) {
         $o = undef;
     }
