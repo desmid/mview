@@ -5,6 +5,7 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Display;
 
+use Universal qw(max vmstat);
 use Bio::MView::Display::Any;
 use Bio::MView::Display::Ruler;
 
@@ -130,7 +131,7 @@ sub append {
                 max($self->{'labelwidths'}->[$i], $o->labelwidth($i));
         }
     }
-    #Universal::vmstat("Display::append done");
+    #vmstat("Display::append done");
 }
 
 ######################################################################
@@ -158,7 +159,7 @@ sub display_panes {
     }
 
     while (1) {
-        #Universal::vmstat("display pane");
+        #vmstat("display pane");
 
         #do one pane
         foreach my $o (@{$self->{'object'}}) {
@@ -215,7 +216,7 @@ sub display_panes {
         #end of pane
         print $stm "\n"  unless $self->{'object'}->[0]->done;
 
-        #Universal::vmstat("display pane done");
+        #vmstat("display pane done");
     } #while
 }
 
@@ -288,8 +289,6 @@ sub format_label {
     my ($just, $w, $s, $pfx, $sfx) = (@_, '', '');
     return sprintf("%s%${just}${w}s%s", $pfx, $s, $sfx);
 }
-
-sub max { $_[0] > $_[1] ? $_[0] : $_[1] }
 
 ######################################################################
 # debug

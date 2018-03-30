@@ -1,15 +1,24 @@
 # Copyright (C) 1996-2018 Nigel P. Brown
 
+use strict;
+
 ######################################################################
 package Universal;
 
-use strict;
+use Exporter;
+use vars qw(@ISA @EXPORT);
 
-#pretty-print object contents by given ordered keys, or all sorted
-sub dump_object { return "Class: $_[0]\n" . _dump_body(@_) }
+@ISA = qw(Exporter);
 
-#pretty-print hash contents by given ordered keys, or all sorted
-sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
+push @EXPORT, qw(min max swap);
+push @EXPORT, qw(basename fileparts tmpfile);
+push @EXPORT, qw(dump_object dump_hash);
+push @EXPORT, qw(stacktrace vmstat);
+
+sub min { return $_[0] < $_[1] ? $_[0] : $_[1] }
+sub max { return $_[0] > $_[1] ? $_[0] : $_[1] }
+
+sub swap { return ($_[1], $_[0]) }
 
 #replacement for /bin/basename
 sub basename {
@@ -40,11 +49,11 @@ sub tmpfile {
     return $s;
 }
 
-sub min { return $_[0] < $_[1] ? $_[0] : $_[1] }
+#pretty-print object contents by given ordered keys, or all sorted
+sub dump_object { return "Class: $_[0]\n" . _dump_body(@_) }
 
-sub max { return $_[0] > $_[1] ? $_[0] : $_[1] }
-
-sub swap { return ($_[1], $_[0]) }
+#pretty-print hash contents by given ordered keys, or all sorted
+sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 
 sub stacktrace {
     warn "Stack Trace:\n"; my $i = 0;
@@ -79,7 +88,7 @@ sub _dump_body {
     sub maxlen {
         my $w = 0;
         foreach my $key (@_) {
-            $w = Universal::max($w, length(defined $key ? $key : '<NOEXIST>'));
+            $w = max($w, length(defined $key ? $key : '<NOEXIST>'));
         }
         return $w;
     }

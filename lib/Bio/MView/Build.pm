@@ -5,7 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Build;
 
-use Universal;
+use Universal qw(vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Scheduler;
 use Bio::MView::Align;
@@ -106,7 +106,7 @@ sub next_align {
 
     #extract an array of row objects
     $self->{'index2row'} = $self->parse;
-    #Universal::vmstat("Build->next(parse) done");
+    #vmstat("Build->next(parse) done");
 
     #finished?
     return undef  unless defined $self->{'index2row'};
@@ -120,7 +120,7 @@ sub next_align {
     return 0  unless @{$self->{'index2row'}};
 
     $self->{'align'} = $self->build_block;
-    #Universal::vmstat("Build->next(build_block) done");
+    #vmstat("Build->next(build_block) done");
 
     #maybe more data but this alignment empty? (identity filtered)
     return 0  unless defined $self->{'align'};

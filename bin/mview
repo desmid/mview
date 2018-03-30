@@ -20,14 +20,16 @@ require 5.004;
 $^W = 1;
 
 use lib '/home/brown/HOME/work/MView/dev/lib';
+
+use Universal qw(basename tmpfile vmstat);
 use Bio::MView::Option::Arguments;
 use Bio::MView::Option::Parser;
 use Bio::MView::Manager;
 use strict;
 
 ###########################################################################
-my $PROG = Universal::basename($0);
-my $TMPFILE = Universal::tmpfile("mview_$$");
+my $PROG = basename($0);
+my $TMPFILE = tmpfile("mview_$$");
 my $INVOCATION = "$PROG @ARGV";
 
 ###########################################################################
@@ -120,7 +122,7 @@ exit 0;
 sub mview {
     my $par = shift;
 
-    #Universal::vmstat("mview: call Manager constructor");
+    #vmstat("mview: call Manager constructor");
     my $mgr = new Bio::MView::Manager;
 
     my $check_format = $par->{'infmt'} ? 0 : 1;
@@ -145,14 +147,14 @@ sub mview {
 	unless ($mgr->parse($file, $par->{'infmt'})) {
 	    warn "$PROG: can't parse file '$file'\n";
 	}
-        #Universal::vmstat("mview: Manager.parse file '$file' done");
+        #vmstat("mview: Manager.parse file '$file' done");
     }
-    #Universal::vmstat("mview: Manager.parse all files done");
+    #vmstat("mview: Manager.parse all files done");
 
     #save printing until end?
     if (want_in_register($par) and want_mview_layout($par)) {
 	$mgr->print_alignment;
-	#Universal::vmstat("mview: in register print_alignment done");
+	#vmstat("mview: in register print_alignment done");
     }
     return $mgr->get_alignment_count;
 }

@@ -5,6 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Manager;
 
+use Universal qw(max vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;
@@ -91,17 +92,17 @@ sub parse {
 	    #display item now?
 	    unless ($PAR->get('register')) {
 		$self->print_alignment;
-		#Universal::vmstat("Manager: print_alignment done");
+		#vmstat("Manager: print_alignment done");
 	    }
 
 	    #drop Align object to gc before next iteration
             $aln = undef;  #gc
-            #Universal::vmstat("Manager: Align dropped");
+            #vmstat("Manager: Align dropped");
         }
 
 	#drop Build object to gc before next iteration
 	$bld = undef;  #gc
-        #Universal::vmstat("Manager: Build dropped");
+        #vmstat("Manager: Build dropped");
     }
 
     return 1;
@@ -118,13 +119,13 @@ sub print_alignment {
     foreach my $dis (@{$self->{'display'}}) {
 
         #numeric left/right position width
-        $posnwidth = Universal::max($posnwidth, $dis->{'posnwidth'});
+        $posnwidth = max($posnwidth, $dis->{'posnwidth'});
 
         #labelwidths
         for (my $i=0; $i < @$labelflags; $i++) {
             if ($labelflags->[$i]) {
                 $labelwidths->[$i] =
-                    Universal::max($labelwidths->[$i],
+                    max($labelwidths->[$i],
                                    $dis->{'labelwidths'}->[$i]);
             }
         }
@@ -324,34 +325,34 @@ sub add_display {
     }
     $header2 = $bld->subheader;
 
-    #Universal::vmstat("display constructor");
+    #vmstat("display constructor");
     my $dis = new Bio::MView::Display::Display(
         [$refobj->display_column_widths],
         [$header0, $header1, $header2],
         $aln->init_display,
         );
-    #Universal::vmstat("display constructor DONE");
+    #vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
     if ($PAR->get('ruler')) {
         my $tmp = $aln->build_ruler($refobj);
 	$tmp->append_display($dis);
-        #Universal::vmstat("ruler added");
+        #vmstat("ruler added");
     }
 
     #attach the alignment
     if ($PAR->get('alignment')) {
         $aln->set_color_scheme($refid);
-        #Universal::vmstat("set_color_scheme done");
+        #vmstat("set_color_scheme done");
 	$aln->append_display($dis, $self->gc_flag);
-        #Universal::vmstat("alignment added");
+        #vmstat("alignment added");
     }
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
 	my $tmp = $aln->build_conservation_row;
 	$tmp->append_display($dis);
-        #Universal::vmstat("conservation added");
+        #vmstat("conservation added");
     }
 
     #attach consensus alignments?
@@ -359,13 +360,13 @@ sub add_display {
 	my $tmp = $aln->build_consensus_rows;
         $tmp->set_consensus_color_scheme($aln, $refid);
 	$tmp->append_display($dis);
-        #Universal::vmstat("consensi added");
+        #vmstat("consensi added");
     }
 
     #garbage collect if not already done piecemeal
     if (!$self->gc_flag) {
 	$aln->do_gc;
-	#Universal::vmstat("final garbage collect");
+	#vmstat("final garbage collect");
     }
 
     #save this display
