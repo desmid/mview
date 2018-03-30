@@ -63,11 +63,10 @@ sub parse {
 
     return 0  unless defined $self->{'stream'};
 
-    my ($first, $header1, $header2, $header3) = (1, '', '', '');
+    my $pass = 0;
+    while (my $bld = $self->next_build) {
 
-    #$header1 = $self->header;
-
-    while (defined (my $bld = $self->next_build)) {
+        last  unless defined $bld;  #all done
 
         $bld->reset;
 
@@ -78,30 +77,22 @@ sub parse {
 		next;
 	    }
 
-	    $self->{'acount'}++;
+            $self->{'acount'}++;
 
+            #do format conversion
             if ($PAR->get('outfmt') ne 'mview') {
                 $self->print_format_conversion($PAR, $bld, $aln);
                 next;
             }
 
-            my $dis = $self->add_display($bld, $aln);
-
-	    if ($first-- > 0) {
-		$header2 = $bld->header . $aln->header;
-	    }
-	    $header3 = $bld->subheader;
-
-	    #add to display list
-	    push @{$self->{'display'}}, [ $dis, $header1, $header2, $header3 ];
+            #do alignment display
+            $self->add_display($bld, $aln, $pass++);
 
 	    #display item now?
 	    unless ($PAR->get('register')) {
 		$self->print_alignment;
 		#Universal::vmstat("Manager: print_alignment done");
 	    }
-
-	    $header1 = $header2 = $header3 = '';
 
 	    #drop Align object to gc before next iteration
             $aln = undef;  #gc
@@ -127,14 +118,14 @@ sub print_alignment {
     foreach my $dis (@{$self->{'display'}}) {
 
         #numeric left/right position width
-        $posnwidth = Universal::max($posnwidth, $dis->[0]->{'posnwidth'});
+        $posnwidth = Universal::max($posnwidth, $dis->{'posnwidth'});
 
         #labelwidths
         for (my $i=0; $i < @$labelflags; $i++) {
             if ($labelflags->[$i]) {
                 $labelwidths->[$i] =
                     Universal::max($labelwidths->[$i],
-                                   $dis->[0]->{'labelwidths'}->[$i]);
+                                   $dis->{'labelwidths'}->[$i]);
             }
         }
     }
@@ -160,22 +151,22 @@ sub print_text_alignment {
     my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
 
     #header
-    print $stm "\n"       if $dis->[1] or $dis->[2];
-    print $stm $dis->[1]  if $dis->[1];
-    print $stm $dis->[2]  if $dis->[2];
+    print $stm "\n"  if $dis->{'headers'}->[0] or $dis->{'headers'}->[1];
+    print $stm $dis->{'headers'}->[0]  if $dis->{'headers'}->[0];
+    print $stm $dis->{'headers'}->[1]  if $dis->{'headers'}->[1];
     print "\n";
 
     #subheader
-    print $stm $dis->[3], "\n"  if $dis->[3];
+    print $stm $dis->{'headers'}->[2], "\n"  if $dis->{'headers'}->[2];
 
     #alignment
-    $dis->[0]->display($stm,
-                       'html'        => $PAR->get('html'),
-                       'bold'        => $PAR->get('bold'),
-                       'width'       => $PAR->get('width'),
-                       'posnwidth'   => $posnwidth,
-                       'labelflags'  => $labelflags,
-                       'labelwidths' => $labelwidths,
+    $dis->display($stm,
+                  'html'        => $PAR->get('html'),
+                  'bold'        => $PAR->get('bold'),
+                  'width'       => $PAR->get('width'),
+                  'posnwidth'   => $posnwidth,
+                  'labelflags'  => $labelflags,
+                  'labelwidths' => $labelwidths,
     );
 }
 
@@ -205,27 +196,27 @@ sub print_html_alignment {
 
     #header
     print $stm "<TR><TD><PRE>\n";
-    print $stm $dis->[1]  if $dis->[1];
-    print $stm $dis->[2]  if $dis->[2];
+    print $stm $dis->{'headers'}->[0]  if $dis->{'headers'}->[0];
+    print $stm $dis->{'headers'}->[1]  if $dis->{'headers'}->[1];
     print $stm "</PRE></TD></TR>\n";
 
     #subheader
-    if ($dis->[3]) {
+    if ($dis->{'headers'}->[2]) {
         print $stm "<TR><TD><PRE>\n";
-        print $stm $dis->[3];
+        print $stm $dis->{'headers'}->[2];
         print $stm "</PRE></TD></TR>\n";
     }
 
     #alignment
     print $stm "<TR><TD>\n";
-    $dis->[0]->display($stm,
-                       'html'        => $PAR->get('html'),
-                       'bold'        => $PAR->get('bold'),
-                       'width'       => $PAR->get('width'),
-                       'posnwidth'   => $posnwidth,
-                       'labelflags'  => $labelflags,
-                       'labelwidths' => $labelwidths,
-        );
+    $dis->display($stm,
+                  'html'        => $PAR->get('html'),
+                  'bold'        => $PAR->get('bold'),
+                  'width'       => $PAR->get('width'),
+                  'posnwidth'   => $posnwidth,
+                  'labelflags'  => $labelflags,
+                  'labelwidths' => $labelwidths,
+    );
     print $stm "</TD></TR>\n";
 
     print $stm "</TABLE>\n";
@@ -320,15 +311,25 @@ sub initialise_labels {
 }
 
 sub add_display {
-    my ($self, $bld, $aln) = @_;
+    my ($self, $bld, $aln, $pass) = @_;
 
     my $refobj = $bld->get_row_from_id($PAR->get('ref_id'));
     my $refid  = $bld->get_uid_from_id($PAR->get('ref_id'));
 
+    my ($header0, $header1, $header2) = ('', '', '');
+
+    if ($pass < 1) {
+        #$header0 = $self->header;
+        $header1 = $bld->header . $aln->header;
+    }
+    $header2 = $bld->subheader;
+
     #Universal::vmstat("display constructor");
     my $dis = new Bio::MView::Display::Display(
         [$refobj->display_column_widths],
-        $aln->init_display);
+        [$header0, $header1, $header2],
+        $aln->init_display,
+        );
     #Universal::vmstat("display constructor DONE");
 
     #attach a ruler? (may include header text)
@@ -366,7 +367,9 @@ sub add_display {
 	$aln->do_gc;
 	#Universal::vmstat("final garbage collect");
     }
-    return $dis;
+
+    #save this display
+    push @{$self->{'display'}}, $dis;
 }
 
 sub print_format_conversion {

@@ -26,12 +26,13 @@ my %Known_Types = (
 sub new {
     my $type = shift;
     die "${type}::new: missing arguments\n"  if @_ < 2;
-    my ($labelwidths, $sequence) = (shift, shift);
+    my ($labelwidths, $headers, $sequence) = (shift, shift, shift);
 
     my $self = {};
     bless $self, $type;
 
     $self->{'labelwidths'} = $labelwidths;
+    $self->{'headers'}     = $headers;
     $self->{'string'}      = $sequence;
 
     $self->{'length'}      = $sequence->length;
