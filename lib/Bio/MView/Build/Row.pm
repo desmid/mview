@@ -182,19 +182,7 @@ sub truncate {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump {
-    sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
-    }
-    my $self = shift;
-    warn "$self\n";
-    map { warn $self->_format($_, $self->{$_}) } sort keys %{$self};
-}
-
-sub frag_count { scalar @{$_[0]->{'frag'}} }
+sub dump { warn Universal::dump_object(@_) }
 
 ###########################################################################
 1;

@@ -298,7 +298,7 @@ sub format_label {
 sub dump {
     my $self = shift;
     foreach my $k (sort keys %$self) {
-        printf "%15s => %s\n", $k, $self->{$k};
+        warn sprintf "%15s => %s\n", $k, $self->{$k};
     }
     map { $_->dump } @{$self->{'object'}};
 }

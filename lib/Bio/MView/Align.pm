@@ -5,6 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Align;
 
+use Universal qw(swap);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align::Ruler;
 use Bio::MView::Align::Consensus;
@@ -265,7 +266,7 @@ sub prune_identities {
     return $self  unless $min > 0 or $max < 100;
 
     #still work if limits are back to front
-    ($min, $max) = Universal::swap($min, $max)  if $min > $max;
+    ($min, $max) = swap($min, $max)  if $min > $max;
 
     my @obj = ();
 

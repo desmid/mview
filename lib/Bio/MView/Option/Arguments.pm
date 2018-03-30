@@ -5,6 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Option::Arguments;
 
+use Universal qw(fileparts);
 use Bio::MView::Align::Consensus;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;
@@ -146,7 +147,7 @@ sub check_informat {
     my ($file, $mode) = (@_, 'option');
     return ''  if $file eq '';
     my ($base, $ext, $guess) = ($file, '');
-    ($base, $ext) = Universal::fileparts($file)  if $mode eq 'file';
+    ($base, $ext) = fileparts($file)  if $mode eq 'file';
     #warn "(file=$file, mode=$mode, base=$base, ext=$ext)";
     $guess = check_informat_extension($file, $ext, $mode);
     $guess = check_informat_basename($file, $base, $mode)

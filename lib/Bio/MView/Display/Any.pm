@@ -1,10 +1,11 @@
-# Copyright (C) 1997-2017 Nigel P. Brown
+# Copyright (C) 1997-2018 Nigel P. Brown
 
 use strict;
 
 ###########################################################################
 package Bio::MView::Display::Any;
 
+use Universal qw(vmstat);
 use Bio::MView::Display::Display;
 
 sub new {
@@ -94,7 +95,7 @@ sub new {
         }
     }
 
-    #Universal::vmstat("Display::Any::new done");
+    #vmstat("Display::Any::new done");
     $self;
 }
 
@@ -496,12 +497,7 @@ sub close_tag {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump {
-    my $self = shift;
-    foreach my $k (sort keys %$self) {
-        warn sprintf "%15s => %s\n", $k, $self->{$k};
-    }
-}
+sub dump { warn Universal::dump_object(@_) }
 
 ###########################################################################
 package Bio::MView::Display::Sequence;

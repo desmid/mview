@@ -492,19 +492,7 @@ sub _substr {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump {
-    sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "$v [@{[$self->string]}]" if $k eq 'seq';
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
-    }
-    my $self = shift;
-    warn "$self\n";
-    map { warn $self->_format($_, $self->{$_}) } sort keys %$self;
-    $self;
-}
+sub dump { warn Universal::dump_object(@_) }
 
 ###########################################################################
 package Bio::MView::Reverse_Sequence;

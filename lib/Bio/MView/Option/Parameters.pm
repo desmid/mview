@@ -78,10 +78,7 @@ sub get_set {
 ######################################################################
 #Return pretty-printed parameter listing; operate on supplied keys or
 #all keys if none given.
-sub dump {
-    my $self = shift;
-    return Universal::dump_hash($self->{'p'}, @_);
-}
+sub dump { my $self = shift; return Universal::dump_hash($self->{'p'}, @_) }
 
 ###########################################################################
 1;
