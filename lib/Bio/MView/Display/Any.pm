@@ -507,11 +507,4 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Display::Any);
 
 ###########################################################################
-package Bio::MView::Display::Subrange;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Display::Any);
-
-###########################################################################
 1;
