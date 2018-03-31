@@ -133,19 +133,14 @@ sub print_alignment_display {
     # warn "lf[@{[join(',', @$labelflags)]}]\n";
     # warn "lw[@{[join(',', @$labelwidths)]}]\n";
 
-    my $pass = 0;
     while (my $dis = shift @{$self->{'display'}}) {
         if ($PAR->get('html')) {
-            print $stm "<P>\n"   if $pass > 0;
             $self->print_html_alignment($stm, $dis, $posnwidth,
                                         $labelflags, $labelwidths);
-            print $stm "</P>\n"  if $pass > 0;
         } else {
-            print $stm "\n"  if $dis->{'headers'}->[0] or $dis->{'headers'}->[1];
             $self->print_text_alignment($stm, $dis, $posnwidth,
                                         $labelflags, $labelwidths);
         }
-        $pass++;
     }
 }
 
@@ -169,6 +164,7 @@ sub print_text_alignment {
                   'labelflags'  => $labelflags,
                   'labelwidths' => $labelwidths,
     );
+    print $stm "\n";  #spacer
 }
 
 sub print_html_alignment {
@@ -225,6 +221,7 @@ sub print_html_alignment {
     );
     print $stm "</PRE></TD></TR>\n";
 
+    print $stm "<TR><TD></TD></TR>\n";  #spacer
     print $stm "</TABLE>\n";
 }
 

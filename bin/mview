@@ -246,7 +246,7 @@ sub copyright {
     return "# $message\n"                 if want_dump_colors($par);
     return "# $message\n"                 if want_dump_groups($par);
     return "# $message\n# $INVOCATION\n"  if want_convert_rdb($par);
-    return "\n$message\n\n"               if want_text($par);
+    return "$message\n\n"                 if want_text($par);
 
     my $s = "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
     $s .= "$VERSION, Copyright \&copy; ";
