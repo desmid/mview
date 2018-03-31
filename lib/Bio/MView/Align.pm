@@ -230,7 +230,7 @@ sub append_display {
 	my $r = $self->{'index2row'}->[$i];
 
 	next  unless defined $r;
-	next  if $self->is_hidden($r->uid);  #also let nops through
+	next  if $self->is_hidden($r->uid);  #but let nops through
 
 	#append the row data structure to the Display object
 	$dis->append($r->get_display);

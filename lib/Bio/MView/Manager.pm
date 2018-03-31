@@ -73,34 +73,32 @@ sub parse {
 
         while (defined (my $aln = $bld->next_align)) {
 
-	    if ($aln < 1) {  #null alignment
+	    if ($aln < 1) {  #empty alignment
                 #warn $PAR->get('prog') . ": empty alignment\n";
 		next;
 	    }
 
             $self->{'acount'}++;
 
-            #do format conversion
             if ($PAR->get('outfmt') ne 'mview') {
+
                 $self->print_format_conversion($PAR, $bld, $aln);
-                next;
+
+            } else {
+
+                $self->add_alignment_display($bld, $aln, $pass++);
+
+                #display item now?
+                unless ($PAR->get('register')) {
+                    $self->print_alignment_display;
+                    #vmstat("Manager: print_alignment done");
+                }
             }
 
-            #do alignment display
-            $self->add_display($bld, $aln, $pass++);
-
-	    #display item now?
-	    unless ($PAR->get('register')) {
-		$self->print_alignment;
-		#vmstat("Manager: print_alignment done");
-	    }
-
-	    #drop Align object to gc before next iteration
             $aln = undef;  #gc
             #vmstat("Manager: Align dropped");
         }
 
-	#drop Build object to gc before next iteration
 	$bld = undef;  #gc
         #vmstat("Manager: Build dropped");
     }
@@ -110,7 +108,7 @@ sub parse {
 
 sub get_alignment_count { return $_[0]->{'acount'} }
 
-sub print_alignment {
+sub print_alignment_display {
     my ($self, $stm) = (@_, \*STDOUT);
 
     my ($posnwidth, $labelflags, $labelwidths) = $self->initialise_labels;
@@ -138,10 +136,13 @@ sub print_alignment {
     my $pass = 0;
     while (my $dis = shift @{$self->{'display'}}) {
         if ($PAR->get('html')) {
-            $self->print_html_alignment($stm, $dis, $pass, $posnwidth,
+            print $stm "<P>\n"   if $pass > 0;
+            $self->print_html_alignment($stm, $dis, $posnwidth,
                                         $labelflags, $labelwidths);
+            print $stm "</P>\n"  if $pass > 0;
         } else {
-            $self->print_text_alignment($stm, $dis, $pass, $posnwidth,
+            print $stm "\n"  if $dis->{'headers'}->[0] or $dis->{'headers'}->[1];
+            $self->print_text_alignment($stm, $dis, $posnwidth,
                                         $labelflags, $labelwidths);
         }
         $pass++;
@@ -149,10 +150,9 @@ sub print_alignment {
 }
 
 sub print_text_alignment {
-    my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
+    my ($self, $stm, $dis, $posnwidth, $labelflags, $labelwidths) = @_;
 
     #header
-    print $stm "\n"  if $dis->{'headers'}->[0] or $dis->{'headers'}->[1];
     print $stm $dis->{'headers'}->[0]  if $dis->{'headers'}->[0];
     print $stm $dis->{'headers'}->[1]  if $dis->{'headers'}->[1];
     print "\n";
@@ -172,7 +172,7 @@ sub print_text_alignment {
 }
 
 sub print_html_alignment {
-    my ($self, $stm, $dis, $pass, $posnwidth, $labelflags, $labelwidths) = @_;
+    my ($self, $stm, $dis, $posnwidth, $labelflags, $labelwidths) = @_;
 
     my $alncolor   = $PAR->get('alncolor');
     my $labcolor   = $PAR->get('labcolor');
@@ -180,7 +180,7 @@ sub print_html_alignment {
     my $alinkcolor = $PAR->get('alinkcolor');
     my $vlinkcolor = $PAR->get('vlinkcolor');
 
-    #body attrs
+    #table attrs
     my $s = "style=\"border:0px;";
     if (! $PAR->get('css1')) {
         #supported in HTML 4.01:
@@ -192,16 +192,21 @@ sub print_html_alignment {
     }
     $s .= "\"";
 
-    print $stm "<P>\n"  if $pass > 0;
     print $stm "<TABLE $s>\n";
 
     #header
-    print $stm "<TR><TD><PRE>\n";
-    print $stm $dis->{'headers'}->[0]  if $dis->{'headers'}->[0];
-    print $stm $dis->{'headers'}->[1]  if $dis->{'headers'}->[1];
-    print $stm "</PRE></TD></TR>\n";
+    if ($dis->{'headers'}->[0]) {
+        print $stm "<TR><TD><PRE>\n";
+        print $stm $dis->{'headers'}->[0];
+        print $stm "</PRE></TD></TR>\n";
+    }
+    if ($dis->{'headers'}->[1]) {
+        print $stm "<TR><TD><PRE>\n";
+        print $stm $dis->{'headers'}->[1];
+        print $stm "</PRE></TD></TR>\n";
+    }
 
-    #subheader
+    #subsubheader
     if ($dis->{'headers'}->[2]) {
         print $stm "<TR><TD><PRE>\n";
         print $stm $dis->{'headers'}->[2];
@@ -221,7 +226,6 @@ sub print_html_alignment {
     print $stm "</TD></TR>\n";
 
     print $stm "</TABLE>\n";
-    print $stm "</P>\n"  if $pass > 0;
 }
 
 ######################################################################
@@ -311,7 +315,7 @@ sub initialise_labels {
     return ($posnwidth, $labelflags, $labelwidths);
 }
 
-sub add_display {
+sub add_alignment_display {
     my ($self, $bld, $aln, $pass) = @_;
 
     my $refobj = $bld->get_row_from_id($PAR->get('ref_id'));
