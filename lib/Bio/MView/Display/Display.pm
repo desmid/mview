@@ -27,21 +27,20 @@ my %Known_Types = (
 sub new {
     my $type = shift;
     die "${type}::new: missing arguments\n"  if @_ < 2;
-    my ($labelwidths, $headers, $sequence) = (shift, shift, shift);
+    my ($labelwidths, $headers, $startseq) = (shift, shift, shift);
 
     my $self = {};
     bless $self, $type;
 
     $self->{'labelwidths'} = $labelwidths;
     $self->{'headers'}     = $headers;
-    $self->{'string'}      = $sequence;
 
-    $self->{'length'}      = $sequence->length;
-    $self->{'forwards'}    = $sequence->is_forwards;
+    $self->{'length'}      = $startseq->length;
+    $self->{'forwards'}    = $startseq->is_forwards;
 
     #start/stop, counting extent forwards
-    $self->{'start'}       = $sequence->lo;
-#   $self->{'stop'}        = $sequence->hi;
+    $self->{'start'}       = $startseq->lo;
+#   $self->{'stop'}        = $startseq->hi;
     $self->{'stop'}        = $self->{'start'} + $self->{'length'} - 1;
 
     #initial width of left/right sequence position as text
