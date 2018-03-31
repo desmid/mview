@@ -23,8 +23,8 @@ sub new {
     $self->{'file'}    = undef;
     $self->{'format'}  = undef;
     $self->{'stream'}  = undef;
-    $self->{'filter'}  = undef;
     $self->{'class'}   = undef;
+    $self->{'build'}  = undef;
 
     $self;
 }
@@ -267,9 +267,9 @@ sub next_build {
     my $self = shift;
 
     #free the last entry and garbage its Bio::MView::Build
-    if (defined $self->{'filter'}) {
-        $self->{'filter'}->get_entry->free;
-        $self->{'filter'} = undef;
+    if (defined $self->{'build'}) {
+        $self->{'build'}->get_entry->free;
+        $self->{'build'} = undef;
     }
 
     #read the next chunk of data
@@ -280,7 +280,7 @@ sub next_build {
     }
 
     #construct a new Bio::MView::Build
-    return $self->{'filter'} = $self->{'class'}->new($entry);
+    return $self->{'build'} = $self->{'class'}->new($entry);
 }
 
 sub gc_flag {
