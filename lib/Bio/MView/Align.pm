@@ -496,10 +496,10 @@ sub color_header {
 	$s .= "Colored by: consensus group/$threshold\%";
     }
 
-    #overlay any find pattern colouring
+    #append any find pattern colouring
     if ($find ne '') {
         $s .= $s eq '' ? "Colored by: " : "; ";
-        $s .= "search pattern '$find'\n";
+        $s .= "search pattern '$find'";
     }
     $s .= "\n"  if $s ne '';
 
