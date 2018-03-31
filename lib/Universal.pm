@@ -81,6 +81,8 @@ sub vmstat {
 ###########################################################################
 # private fnuctions
 ###########################################################################
+use NPB::Parse::Regexps;
+
 #pretty-print hash contents by given ordered keys, or all sorted
 sub _dump_body {
     my $hash = shift;
@@ -106,7 +108,7 @@ sub _dump_body {
         if (exists $hash->{$key}) {
             my $val = $hash->{$key};
             if (! defined $val) {
-                $s .= layout($w, $key, '<UNDEF>');
+                $s .= layout($w, $key, 'UNDEF');
                 next;
             }
             my $ref = ref $val;
@@ -120,15 +122,19 @@ sub _dump_body {
                     $s .= layout($w, $key, "%{" . join(',', @tmp) . "}");
                     next;
                 }
-                $s .= layout($w, $key, '<$ref>');  #other ref
+                $s .= layout($w, $key, "<$ref>");  #other ref
                 next;
             }
-            #SCALAR
-            $s .= layout($w, $key, (length($val) > 0 ? $val : "'$val'"));
+            # numeric
+            if ($val =~ /^$RX_Sreal$/) {
+                $s .= layout($w, $key, (length($val) > 0 ? $val : "'$val'"));
+                next;
+            }
+            #string
+            $s .= layout($w, $key, "'$val'");
         } else {
-            $s .= layout($w, $key, '<NOEXIST>');
+            $s .= layout($w, $key, 'NOEXIST');
         }
-
     }
     return $s;
 }
