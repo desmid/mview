@@ -125,11 +125,7 @@ sub display {
 
     #map { warn "$_ => '$par{$_}'\n" } sort keys %par;
 
-    print $stm "<PRE>\n"   if $par{'html'};
-
     $self->display_pane(\%par, $stm, $prefix, $suffix);
-
-    print $stm "</PRE>\n"  if $par{'html'};
 
     $self->free_rows;  #garbage collect rows
 }

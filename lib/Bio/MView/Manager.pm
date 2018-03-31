@@ -214,7 +214,7 @@ sub print_html_alignment {
     }
 
     #alignment
-    print $stm "<TR><TD>\n";
+    print $stm "<TR><TD><PRE>\n";
     $dis->display($stm,
                   'html'        => $PAR->get('html'),
                   'bold'        => $PAR->get('bold'),
@@ -223,7 +223,7 @@ sub print_html_alignment {
                   'labelflags'  => $labelflags,
                   'labelwidths' => $labelwidths,
     );
-    print $stm "</TD></TR>\n";
+    print $stm "</PRE></TD></TR>\n";
 
     print $stm "</TABLE>\n";
 }
