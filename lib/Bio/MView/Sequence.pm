@@ -503,7 +503,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Sequence);
 
-sub is_forwards  {0}
+sub is_forwards {0}
 
 sub reverse {
     no strict qw(subs);

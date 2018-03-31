@@ -6,7 +6,7 @@ use strict;
 package Bio::MView::Display::Display;
 
 use Universal qw(max vmstat);
-use Bio::MView::Display::Any;
+use Bio::MView::Display::Track;
 use Bio::MView::Display::Ruler;
 
 my $Default_Width         = 80;        #sequence display width
@@ -48,7 +48,7 @@ sub new {
     $self->{'posnwidth'}   = max(length("$self->{'start'}"),
                                  length("$self->{'stop'}"));
 
-    $self->{'object'}      = [];  #display objects
+    $self->{'track'}       = [];  #display objects
 
     $self->append(@_)  if @_;
 
@@ -61,6 +61,40 @@ sub new {
 sub length   { $_[0]->{'length'} }
 
 sub forwards { $_[0]->{'forwards'} }
+
+sub append {
+    my $self = shift;
+    #warn "${self}::append(@_)\n";
+
+    #handle data rows
+    foreach my $row (@_) {
+
+        unless (exists $row->{'type'}) {
+            warn "${self}::append: missing type in '$row'\n";
+            next;
+        }
+
+        my $type = $row->{'type'};
+
+        unless (exists $Known_Types{$type}) {
+            warn "${self}::append: unknown alignment type '$type'\n";
+            next;
+        }
+
+        $type = ucfirst $type;
+
+        my $o = construct_display_row($type, $self, $row);
+
+        push @{$self->{'track'}}, $o;
+
+        #update column widths seen so far
+        for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
+            $self->{'labelwidths'}->[$i] =
+                max($self->{'labelwidths'}->[$i], $o->labelwidth($i));
+        }
+    }
+    #vmstat("Display::append done");
+}
 
 sub display {
     my ($self, $stm) = (shift, shift);
@@ -93,45 +127,11 @@ sub display {
 
     print $stm "<PRE>\n"   if $par{'html'};
 
-    $self->display_panes(\%par, $stm, $prefix, $suffix);
+    $self->display_pane(\%par, $stm, $prefix, $suffix);
 
     print $stm "</PRE>\n"  if $par{'html'};
 
     $self->free_rows;  #garbage collect rows
-}
-
-sub append {
-    my $self = shift;
-    #warn "${self}::append(@_)\n";
-
-    #handle data rows
-    foreach my $row (@_) {
-
-        unless (exists $row->{'type'}) {
-            warn "${self}::append: missing type in '$row'\n";
-            next;
-        }
-
-        my $type = $row->{'type'};
-
-        unless (exists $Known_Types{$type}) {
-            warn "${self}::append: unknown alignment type '$type'\n";
-            next;
-        }
-
-        $type = ucfirst $type;
-
-        my $o = construct_display_row($type, $self, $row);
-
-        push @{$self->{'object'}}, $o;
-
-        #update column widths seen so far
-        for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
-            $self->{'labelwidths'}->[$i] =
-                max($self->{'labelwidths'}->[$i], $o->labelwidth($i));
-        }
-    }
-    #vmstat("Display::append done");
 }
 
 ######################################################################
@@ -139,85 +139,88 @@ sub append {
 ######################################################################
 sub free_rows {
     #print "free: $_[0]\n";
-    foreach my $o (@{$_[0]->{'object'}}) {
+    foreach my $o (@{$_[0]->{'track'}}) {
         $o = undef;
     }
 }
 
-#iterate over display panes of par{'width'}
-sub display_panes {
+#output a pane of par{'width'} chunks
+sub display_pane {
     my ($self, $par, $stm, $prefix, $suffix) = @_;
 
-    return  unless @{$self->{'object'}};
+    return  unless @{$self->{'track'}};
 
-    map { $_->reset } @{$self->{'object'}};
+    map { $_->reset } @{$self->{'track'}};
 
     #need space for sequence position numbers?
     my $has_positions = 0;
-    foreach my $o (@{$self->{'object'}}) {
+    foreach my $o (@{$self->{'track'}}) {
         $has_positions = 1, last  if $o->has_positions;
     }
 
+    #vmstat("display pane");
     while (1) {
-        #vmstat("display pane");
+        last  unless $self->display_chunk($par, $stm, $prefix, $suffix,
+                                          $has_positions);
 
-        #do one pane
-        foreach my $o (@{$self->{'object'}}) {
+        #space between chunks except final
+        print $stm "\n"  unless $self->{'track'}->[0]->done;
+    }
+    #vmstat("display pane done");
+}
 
-            #do one line
-            my $row = $o->next($par->{'html'}, $par->{'bold'}, $par->{'width'},
-                               $par->{'gap'}, $par->{'pad'}, $par->{'lap'});
+#output a single par{'width'} chunk
+sub display_chunk {
+    my ($self, $par, $stm, $prefix, $suffix, $has_positions) = @_;
 
-            return  unless $row;  #all done
+    #display each track's segment for this chunk
+    foreach my $o (@{$self->{'track'}}) {
 
-            #warn "[@$row]\n";
+        my $seg = $o->next_segment($par);
 
-            #clear new row
-            my @row = ();
+        return 0  unless defined $seg;  #all chunks done
 
-            #label0: rownum
-            push @row, label_rownum($par, $o)
-                if $par->{'labelflags'}->[0];
+        #display rowment
+        my @row = ();
 
-            #label1: identifier
-            push @row, label_identifier($par, $o)
-                if $par->{'labelflags'}->[1];
+        #label0: rownum
+        push @row, label_rownum($par, $o)
+            if $par->{'labelflags'}->[0];
 
-            #label2: description
-            push @row, label_description($par, $o)
-                if $par->{'labelflags'}->[2];
+        #label1: identifier
+        push @row, label_identifier($par, $o)
+            if $par->{'labelflags'}->[1];
 
-            #labels3-7: info
-            for (my $i=3; $i < @{$par->{'labelwidths'}}; $i++) {
-                push @row, label_annotation($par, $o, $i)
-                    if $par->{'labelflags'}->[$i];
-            }
+        #label2: description
+        push @row, label_description($par, $o)
+            if $par->{'labelflags'}->[2];
 
-            #left position
-            push @row, left_position($par, $o, $row->[0], $prefix, $suffix)
-                if $has_positions;
-            push @row, $Spacer;
+        #labels3-7: info
+        for (my $i=3; $i < @{$par->{'labelwidths'}}; $i++) {
+            push @row, label_annotation($par, $o, $i)
+                if $par->{'labelflags'}->[$i];
+        }
 
-            #sequence string
-            push @row, $row->[1], $Spacer;
+        #left position
+        push @row, left_position($par, $o, $seg->[0], $prefix, $suffix)
+            if $has_positions;
+        push @row, $Spacer;
 
-            #right position
-            push @row, right_position($par, $o, $row->[2], $prefix, $suffix)
-                if $has_positions;
+        #sequence string
+        push @row, $seg->[1], $Spacer;
 
-            #end of line
-            push @row, "\n";
+        #right position
+        push @row, right_position($par, $o, $seg->[2], $prefix, $suffix)
+            if $has_positions;
 
-            #output
-            print $stm @row;
+        #end of line
+        push @row, "\n";
 
-        } #foreach
+        #output
+        print $stm @row;
+    }
 
-        #end of pane
-        print $stm "\n"  unless $self->{'object'}->[0]->done;
-
-        #vmstat("display pane done");
-    } #while
+    return 1;  #end of chunk
 }
 
 ######################################################################
@@ -300,7 +303,7 @@ sub dump {
     foreach my $k (sort keys %$self) {
         warn sprintf "%15s => %s\n", $k, $self->{$k};
     }
-    map { $_->dump } @{$self->{'object'}};
+    map { $_->dump } @{$self->{'track'}};
 }
 
 ###########################################################################

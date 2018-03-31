@@ -3,7 +3,7 @@
 use strict;
 
 ###########################################################################
-package Bio::MView::Display::Any;
+package Bio::MView::Display::Track;
 
 use Universal qw(vmstat);
 use Bio::MView::Display::Display;
@@ -38,7 +38,7 @@ sub new {
     $self->{'prefix'} = $hash->{'prefix'}   if exists $hash->{'prefix'};
     $self->{'suffix'} = $hash->{'suffix'}   if exists $hash->{'suffix'};
 
-    #warn "Any::labels: [@{[join(',', @{$self->{'labels'}})]}]\n";
+    #warn "Track::labels: [@{[join(',', @{$self->{'labels'}})]}]\n";
 
     $self->{'cursor'} = 0;  #current position in display stream, 1-based
 
@@ -63,15 +63,9 @@ sub new {
             die "${type}::new: parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
         }
 
-        # no idea what this is/was for... 1/10/98
-        #starting numbering wrt 'string' or 'parent'?
-        if (exists $hash->{'start'}) {
-            $self->{'start'} = $hash->{'start'};
-            $self->{'stop'}  = $hash->{'stop'};
-        } else {
-            $self->{'start'} = $parent->{'start'};
-            $self->{'stop'}  = $parent->{'stop'};
-        }
+        #starting numbering wrt 'string'
+        $self->{'start'} = $parent->{'start'};
+        $self->{'stop'}  = $parent->{'stop'};
 
     } else {
         #starting numbering wrt 'parent'
@@ -95,7 +89,7 @@ sub new {
         }
     }
 
-    #vmstat("Display::Any::new done");
+    #vmstat("Track::new: done");
     $self;
 }
 
@@ -126,31 +120,28 @@ sub done {
 }
 
 #iterator: subclass overrides
-sub next {
-    my $self = shift;
-    #warn "${self}::next(@_)\n";
-    my ($html, $bold, $col, $gap, $pad, $lap) = @_;
+sub next_segment {
+    my ($self, $par) = @_;
+    #warn "${self}::next_segment\n";
 
-    return 0  if $self->{'cursor'} > $self->{'length'};
-
-    my $rest = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
+    return undef  if $self->{'cursor'} > $self->{'length'};
 
     #current real position
     my $start = $self->{'start'} + $self->{'cursor'} - 1;
 
-    $col = $rest  if $col > $rest;  #override caller: consume smaller amount
-    $col++;
+    my $rest  = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
+    my $chunk = ($par->{'width'} < $rest ? $par->{'width'} : $rest);
 
-    #warn "($self->{'cursor'}, $col, $rest, ($self->{'start'}, $self->{'stop'}))\n";
+    #warn "($self->{'length'}, $self->{'cursor'}, $chunk, $rest, ($self->{'start'}, $self->{'stop'}))\n";
 
     my $string = [];
     my $pos = $start - 1;
 
-    for (my $i = 1; $i < $col; $i++, $self->{'cursor'}++) {
+    for (my $i = 0; $i < $chunk; $i++, $self->{'cursor'}++) {
 
         $pos++;  #real data position
 
-        #warn "$self->{'cursor'}, $pos ", mapcount=$self->{'r_map'}, "\n";
+        #warn "$self->{'cursor'}, $pos, mapcount=$self->{'r_map'}\n";
 
         #any range specifications?
         if (defined $self->{'r_map'}->[$self->{'cursor'}]) {
@@ -159,12 +150,12 @@ sub next {
             if (! $self->{'paint'} and
                 $self->{'r_map'}->[$self->{'cursor'}] > 1) {
 
-                if ($html and length $lap > 1) {
-                    push @$string, "<SPAN style=\"color:$lap\">";
+                if ($par->{'html'} and length $par->{'lap'} > 1) {
+                    push @$string, "<SPAN style=\"color:$par->{'lap'}\">";
                     push @$string, $self->col($self->{'cursor'});
                     push @$string, "</SPAN>";
                 } else {
-                    push @$string, $lap;
+                    push @$string, $par->{'lap'};
                 }
                 next;
             }
@@ -184,20 +175,21 @@ sub next {
                 #default to sequence symbol
                 $c = $self->col($self->{'cursor'});
             }
-            push @$string, $self->html_wrap($self->{'cursor'}, $c)  if $html;
+            push @$string, $self->html_wrap($self->{'cursor'}, $c)
+                if $par->{'html'};
 
         } elsif ($self->{'type'} eq 'sequence') {
             #class Sequence: use sequence character
             push @$string, $self->col($self->{'cursor'});
         } elsif ($self->{'type'} eq 'subrange') {
             #class Subrange: use gap character
-            push @$string, $gap;
+            push @$string, $par->{'gap'};
         } else {
-            die "${self}::next: unknown type 'self->{'type'}'\n";
+            die "${self}::next_segment: unknown type 'self->{'type'}'\n";
         }
     }
 
-    $string = $self->finish_html($string, $bold)  if $html;
+    $string = $self->finish_html($string, $par->{'bold'})  if $par->{'html'};
 
     return [ $start, join('', @$string), $pos ];
 }
@@ -504,7 +496,7 @@ package Bio::MView::Display::Sequence;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Display::Any);
+@ISA = qw(Bio::MView::Display::Track);
 
 ###########################################################################
 1;

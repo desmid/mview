@@ -2,7 +2,7 @@ TREE = lib/Bio/MView/Display
 DIRS = 
 FILE =
 EXES = 
-SRCS = Any.pm Display.pm Ruler.pm
+SRCS = Display.pm Ruler.pm Track.pm
 HTML = 
 
 include $(HOME)/etc/MAKEFILE.templ

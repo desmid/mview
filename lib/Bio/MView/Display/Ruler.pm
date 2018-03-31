@@ -5,15 +5,15 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Ruler;
 
-use Bio::MView::Display::Any;
+use Bio::MView::Display::Track;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Display::Any);
+@ISA = qw(Bio::MView::Display::Track);
 
 sub new {
     my $type = shift;
-    my $self = new Bio::MView::Display::Any(@_);
+    my $self = new Bio::MView::Display::Track(@_);
     bless $self, $type;
 
     if ($self->{'forwards'}) {
@@ -28,36 +28,31 @@ sub new {
 }
 
 #overrides
-sub next {
-    my $self = shift;
-    #warn "${self}::next(@_)\n";
-    my ($html, $bold, $col, $gap, $pad, $lap) = @_;
+sub next_segment {
+    my ($self, $par) = @_;
+    #warn "${self}::next_segment\n";
 
-    return 0  if $self->{'cursor'} > $self->{'length'};
+    return undef  if $self->{'cursor'} > $self->{'length'};
 
-    my $rest = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
-
-    #orientation
-    my $forwards = $self->{'forwards'};
-
-    #current real position
+    #current real position: by orientation
     my $start;
-    if ($forwards) {
+    if ($self->{'forwards'}) {
         $start = $self->{'start'} + $self->{'cursor'} - 1;
     } else {
         $start = $self->{'stop'} - $self->{'cursor'} + 1;
     }
 
-    $col = $rest  if $col > $rest;  #override caller: consume smaller amount
+    my $rest  = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
+    my $chunk = $par->{'width'} < $rest ? $par->{'width'} : $rest;
 
-    #warn "($self->{'cursor'}, $col, $rest, ($self->{'start'}, $self->{'stop'}))\n";
+    #warn "($self->{'length'}, $self->{'cursor'}, $chunk, $rest, ($self->{'start'}, $self->{'stop'}))\n";
 
     my $string = [];
-    my $pos = $start + ($forwards ? -1 : +1);
+    my $pos = $start + ($self->{'forwards'} ? -1 : +1);
 
-    for (my $i = 0; $i < $col; $i++) {
+    for (my $i = 0; $i < $chunk; $i++) {
 
-        $forwards ? $pos++ : $pos--;  #real data position
+        $self->{'forwards'} ? $pos++ : $pos--;  #real data position
 
         #ruler ends
         if ($pos == $self->{'start'}) {
@@ -89,9 +84,9 @@ sub next {
 
         push @$string, ' ';
     }
-    $self->{'cursor'} += $col;
+    $self->{'cursor'} += $chunk;
 
-    $string = $self->finish_html($string, $bold)  if $html;
+    $string = $self->finish_html($string, $par->{'bold'})  if $par->{'html'};
 
     return [ $start, join('', @$string), $pos ];
 }
