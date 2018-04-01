@@ -46,7 +46,6 @@ sub reset_display {
     #warn "labels: [@{[join(',', @labels)]}]\n";
 
     $self->SUPER::reset_display(
-        'number' => 1,         #show positions at margins
         'labels' => \@labels,  #label strings
     );
 }

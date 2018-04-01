@@ -72,10 +72,9 @@ sub get_label {
 sub reset_display {
     my $self = shift;
     $self->{'display'} = {
-        'type'   => $self->{'type'},
-        'number' => 0,   #override: show positions at margins
-        'range'  => [],  #override: feature column range
-        'labels' => [],  #subclass inserts: empty labels
+        'type'    => $self->{'type'},
+        'range'   => [],  #override: feature column range
+        'labels'  => [],  #subclass inserts: empty labels
     };
     $self->set_display(@_);
 }

@@ -14,76 +14,50 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'parent'}   = $parent;           #parent sequence object
-    $self->{'length'}   = $parent->length;   #length of parent sequence
-    $self->{'forwards'} = $parent->forwards; #parent sequence orientation
-    $self->{'type'}     = $hash->{'type'};   #type of this row
+    $self->{'parent'}   = $parent;  #parent sequence object
 
-    $self->{'start'}  = 0;      #start position of parent sequence
-    $self->{'stop'}   = 0;      #stop position of parent sequence
+    $self->{'length'}   = $parent->length;
+    $self->{'start'}    = $parent->{'start'};
+    $self->{'stop'}     = $parent->{'stop'};
+    $self->{'forwards'} = $parent->forwards;
 
-    $self->{'string'} = undef;  #alternative sequence to parent
-    $self->{'labels'} = undef;  #annotation column labels
-    $self->{'number'} = 0;      #marginal numbers flag
-    $self->{'url'}    = '';     #URL; to associate with label1
-    $self->{'paint'}  = 0;      #overlap behaviour for this row
-    $self->{'prefix'} = '';     #prefix; whole row with string
-    $self->{'suffix'} = '';     #suffix; whole row with string
+    $self->{'string'}   = undef;  #alternative sequence to parent
+    $self->{'labels'}   = undef;  #annotation column labels
+    $self->{'url'}      = '';     #URL; to associate with label1
 
-    $self->{'string'} = $hash->{'sequence'} if exists $hash->{'sequence'};
-    $self->{'labels'} = $hash->{'labels'}   if exists $hash->{'labels'};
-    $self->{'number'} = $hash->{'number'}   if exists $hash->{'number'};
-    $self->{'url'}    = $hash->{'url'}      if exists $hash->{'url'};
-    $self->{'paint'}  = $hash->{'paint'}    if exists $hash->{'paint'};
-    $self->{'prefix'} = $hash->{'prefix'}   if exists $hash->{'prefix'};
-    $self->{'suffix'} = $hash->{'suffix'}   if exists $hash->{'suffix'};
+    $self->{'string'}   = $hash->{'sequence'} if exists $hash->{'sequence'};
+    $self->{'labels'}   = $hash->{'labels'}   if exists $hash->{'labels'};
+    $self->{'url'}      = $hash->{'url'}      if exists $hash->{'url'};
 
     #warn "Track::labels: [@{[join(',', @{$self->{'labels'}})]}]\n";
 
     $self->{'cursor'} = 0;  #current position in display stream, 1-based
 
-    $self->{'r_map'}    = [];
-    $self->{'r_color'}  = [];
-    $self->{'r_class'}  = [];
-    $self->{'r_prefix'} = [];
-    $self->{'r_suffix'} = [];
-    $self->{'r_sym'}    = [];
-    $self->{'r_url'}    = [];
-    $self->{'r_case'}   = [];
-
-    #warn Universal::dump_hash($hash);
-
+    #are 'parent' and 'string' the same length?
     if (defined $self->{'string'}) {
-        my $seqlen = $self->{'string'}->length;
-
-        #are 'parent' and 'string' the same length?
-        if ($seqlen != $self->{'length'}) {
-            die "${type}::new: parent/sequence length mismatch ($self->{'length'}, $seqlen)\n";
+        my $len = $self->{'string'}->length;
+        if ($len != $self->{'length'}) {
+            die "${type}::new: parent/sequence length mismatch ($self->{'length'}, $len)\n";
         }
-
-        #starting numbering wrt 'string'
-        $self->{'start'} = $parent->{'start'};
-        $self->{'stop'}  = $parent->{'stop'};
-
-    } else {
-        #starting numbering wrt 'parent'
-        $self->{'start'} = $parent->{'start'};
-        $self->{'stop'}  = $parent->{'stop'};
     }
 
-    #ensure 'range' attribute has a value
-    $hash->{'range'} = []  unless exists $hash->{'range'};
+    #character range maps: hold attributes by column
+    $self->{'r_color'}  = [];  #colors
+    $self->{'r_class'}  = [];  #solid/thin
 
-    #populate the range map
+    $hash->{'range'}    = []  unless exists $hash->{'range'};
+
+    #warn "range: [@{[join(',', @{$hash->{'range'}})]}]\n";
+
+    #populate the range maps
     foreach my $range (@{$self->parse_range($hash->{'range'})}) {
         my $start = $range->{'pos'}->[0];
         my $stop  = $range->{'pos'}->[$#{$range->{'pos'}}] + 1;
         for (my $i = $start; $i < $stop; $i++) {
-            foreach my $j (keys %$range) {
-                next  if $j eq 'pos';
-                $self->{"r_$j"}->[$i] = $range->{$j};
+            foreach my $key (keys %$range) {
+                next  if $key eq 'pos';
+                $self->{"r_$key"}->[$i] = $range->{$key};
             }
-            $self->{'r_map'}->[$i]++;  #count hits per position
         }
     }
 
@@ -94,7 +68,7 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-sub has_positions { return $_[0]->{'number'} != 0 }
+sub has_positions { 0 }
 
 #return kth label string
 sub label {
@@ -135,56 +109,19 @@ sub next_segment {
     my $string = [];
     my $pos = $start - 1;
 
-    for (my $i = 0; $i < $chunk; $i++, $self->{'cursor'}++) {
+    for (my $i = 0; $i < $chunk; $i++) {
 
         $pos++;  #real data position
 
-        #warn "$self->{'cursor'}, $pos, mapcount=$self->{'r_map'}\n";
+        my $c = $self->char_at($self->{'cursor'});
 
-        #any range specifications?
-        if (defined $self->{'r_map'}->[$self->{'cursor'}]) {
-
-            #overlapped position if 'paint' mode is off
-            if (! $self->{'paint'} and
-                $self->{'r_map'}->[$self->{'cursor'}] > 1) {
-
-                if ($par->{'html'} and length $par->{'lap'} > 1) {
-                    push @$string, "<SPAN style=\"color:$par->{'lap'}\">";
-                    push @$string, $self->col($self->{'cursor'});
-                    push @$string, "</SPAN>";
-                } else {
-                    push @$string, $par->{'lap'};
-                }
-                next;
-            }
-
-            my $c;
-
-            #non-overlapped position, or 'paint' mode is on
-            if (defined $self->{'r_sym'}->[$self->{'cursor'}]) {
-                #caller specified symbol
-                $c = $self->{'r_sym'}->[$self->{'cursor'}];
-            } elsif (defined $self->{'r_case'}->[$self->{'cursor'}]) {
-                #caller specified case
-                $c = $self->{'r_case'}->[$self->{'cursor'}];
-                $c = uc $self->col($self->{'cursor'})  if $c eq 'uc';
-                $c = lc $self->col($self->{'cursor'})  if $c eq 'lc';
-            } else {
-                #default to sequence symbol
-                $c = $self->col($self->{'cursor'});
-            }
-            push @$string, $self->html_wrap($self->{'cursor'}, $c)
-                if $par->{'html'};
-
-        } elsif ($self->{'type'} eq 'sequence') {
-            #class Sequence: use sequence character
-            push @$string, $self->col($self->{'cursor'});
-        } elsif ($self->{'type'} eq 'subrange') {
-            #class Subrange: use gap character
-            push @$string, $par->{'gap'};
+        if ($par->{'html'}) {
+            push @$string, $self->html_wrap($self->{'cursor'}, $c);
         } else {
-            die "${self}::next_segment: unknown type 'self->{'type'}'\n";
+            push @$string, $c;
         }
+
+        $self->{'cursor'}++;  #stuff output so far
     }
 
     $string = $self->finish_html($string, $par->{'bold'})  if $par->{'html'};
@@ -198,64 +135,9 @@ sub finish_html {
     $string = $self->strip_html_repeats($string);
 
     unshift @$string, '<STRONG>'         if $bold;
-    unshift @$string, $self->{'prefix'}  if $self->{'prefix'};
-    push    @$string, $self->{'suffix'}  if $self->{'suffix'};
     push    @$string, '</STRONG>'        if $bold;
 
     return $string;
-}
-
-sub strip_html_repeats {
-    my ($self, $list) = @_;
-    my ($new, $i, $limit) = [];
-
-    return $list  if @$list < 4;
-
-    #warn " IN=[", @$list, "]\n";
-
-    #use 1 element lookahead
-    $limit = @$list;
-
-    for ($i=0; $i<$limit; $i++) {
-
-        if ($list->[$i] =~ /^</) {
-            #looking at: <tag> or </tag>
-
-            #empty stack
-            if (@$new < 1) {
-                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
-                push @$new, $list->[$i];
-                #warn "[", @$new, "]\n";
-                next;
-            }
-
-            #non-empty stack: different tag
-            if ($list->[$i] ne $new->[$#$new]) {
-                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
-                push @$new, $list->[$i];
-                #warn "[", @$new, "]\n";
-                next;
-            }
-
-            #non-empty stack: same tag
-            #warn "NOP(@{[scalar @$new]}) lex[$i]     $new->[$#$new]\n";
-            #warn "[", @$new, "]\n";
-
-        } else {
-            #non-tag
-            #warn "ARG(@{[scalar @$new]})    [$i] <-- $list->[$i]\n";
-            push @$new, $list->[$i];
-            #warn "[", @$new, "]\n";
-        }
-    }
-
-    #warn "SR1=[", @$new, "]\n";
-
-    $new = $self->strip_html_tandem_repeats($new);
-
-    #warn "SR2=[", @$new, "]\n\n";
-
-    return $new;
 }
 
 ######################################################################
@@ -312,7 +194,7 @@ sub parse_range {
         }
 
         #position range attributes: key=>value pair
-        if (grep /^$data->[$i]$/, qw(color class prefix suffix sym url case)) {
+        if (grep /^$data->[$i]$/, qw(color class)) {
             #warn "ATTR   [$i] $data->[$i] $data->[$i+1]\n";
             $attr->{$data->[$i]} = $data->[$i+1]  if defined $data->[$i+1];
             $i++;    #jump value
@@ -344,53 +226,78 @@ sub parse_range {
     ];
 }
 
-sub col {
-    defined $_[0]->{'string'} ?
-        $_[0]->{'string'}->col($_[1]) :
-            $_[0]->{'parent'}->{'string'}->col($_[1]);
+sub char_at {
+    defined $_[0]->{'string'} ? $_[0]->{'string'}->col($_[1]) :
+        $_[0]->{'parent'}->{'string'}->col($_[1]);
 }
 
 sub html_wrap {
     my ($self, $i, $c) = @_;
 
-    my @string = ();
+    my $class = $self->{'r_class'}->[$i];
+    if (defined $class) {
+        return ("<SPAN CLASS=$class>", $c, "</SPAN>");
+    }
 
-    #open new url?
-    push @string, "<A HREF=\"$self->{'r_url'}->[$i]\">"
-        if defined $self->{'r_url'}->[$i];
+    my $color = $self->{'r_color'}->[$i];
+    if (defined $color) {
+        return "<SPAN style=\"color:$color\">", $c, "</SPAN>";
+    }
 
-    #change color?
-    push @string, "<SPAN style=\"color:$self->{'r_color'}->[$i]\">"
-        if defined $self->{'r_color'}->[$i] and
-            ! defined $self->{'r_class'}->[$i];
+    return ($c);
+}
 
-    #css1 class?
-    push @string, "<SPAN CLASS=$self->{'r_class'}->[$i]>"
-        if defined $self->{'r_class'}->[$i];
+sub strip_html_repeats {
+    my ($self, $list) = @_;
+    my ($new, $i, $limit) = [];
 
-    #prefix
-    push @string, $self->{'r_prefix'}->[$i]
-        if defined $self->{'r_prefix'}->[$i];
+    return $list  if @$list < 4;
 
-    #embedded character
-    push @string, $c;
+    #warn " IN=[", @$list, "]\n";
 
-    #suffix
-    push @string, $self->{'r_suffix'}->[$i]
-        if defined $self->{'r_suffix'}->[$i];
+    #use 1 element lookahead
+    $limit = @$list;
 
-    #unchange css1 class?
-    push @string, "</SPAN>"  if defined $self->{'r_class'}->[$i];
+    for ($i=0; $i<$limit; $i++) {
 
-    #unchange color?
-    push @string, "</SPAN>"
-        if defined $self->{'r_color'}->[$i] and
-            ! defined $self->{'r_class'}->[$i];
+        if ($list->[$i] =~ /^</) {
+            #looking at: <tag> or </tag>
 
-    #close URL?
-    push @string, "</A>"     if defined $self->{'r_url'}->[$i];
+            #empty stack
+            if (@$new < 1) {
+                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
+                push @$new, $list->[$i];
+                #warn "[", @$new, "]\n";
+                next;
+            }
 
-    return @string;
+            #non-empty stack: different tag
+            if ($list->[$i] ne $new->[$#$new]) {
+                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
+                push @$new, $list->[$i];
+                #warn "[", @$new, "]\n";
+                next;
+            }
+
+            #non-empty stack: same tag
+            #warn "NOP(@{[scalar @$new]}) lex[$i]     $new->[$#$new]\n";
+            #warn "[", @$new, "]\n";
+
+        } else {
+            #non-tag
+            #warn "ARG(@{[scalar @$new]})    [$i] <-- $list->[$i]\n";
+            push @$new, $list->[$i];
+            #warn "[", @$new, "]\n";
+        }
+    }
+
+    #warn "SR1=[", @$new, "]\n";
+
+    $new = $self->strip_html_tandem_repeats($new);
+
+    #warn "SR2=[", @$new, "]\n\n";
+
+    return $new;
 }
 
 sub strip_html_tandem_repeats {

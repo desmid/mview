@@ -85,8 +85,6 @@ sub color_by_type {
 
         push @$color, $self->color_tag($kw->{'css1'}, $SYMCOLOR, $i, @tmp);
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 #override
@@ -126,8 +124,6 @@ sub color_by_identity {
        #symbol not in consensus group: use contrast colour
        push @$color, $i, 'color' => $SYMCOLOR;
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 #this is analogous to Bio::MView::Align::Sequence::color_by_identity()
@@ -182,8 +178,6 @@ sub color_by_consensus_sequence {
         #symbol not in consensus group: use contrast colour
 	push @$color, $i, 'color' => $kw->{'symcolor'};
     }
-
-    $othr->{'display'}->{'paint'} = 1;
 }
 
 #this is analogous to Bio::MView::Align::Sequence::color_by_identity()
@@ -239,8 +233,6 @@ sub color_by_consensus_group {
 	#symbol not in consensus group: use contrast colour
 	push @$color, $i, 'color' => $kw->{'symcolor'};
     }
-
-    $othr->{'display'}->{'paint'} = 1;
 }
 
 ######################################################################

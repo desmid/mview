@@ -41,8 +41,6 @@ sub color_none {
 
         push @$color, $i, 'color' => $kw->{'symcolor'};
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 sub color_by_find_block {
@@ -79,8 +77,6 @@ sub color_by_find_block {
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 #subclass overrides
@@ -114,8 +110,6 @@ sub color_by_type {
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 #subclass overrides
@@ -221,8 +215,6 @@ sub color_by_identity_body {
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
     }
-
-    $self->{'display'}->{'paint'} = 1;
 }
 
 ###########################################################################

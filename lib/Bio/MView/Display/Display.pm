@@ -9,15 +9,10 @@ use Universal qw(max vmstat);
 use Bio::MView::Display::Track;
 use Bio::MView::Display::Ruler;
 
-my $Default_Width         = 80;        #sequence display width
-my $Default_Gap           = '-';       #sequence gap character
-my $Default_Pad           = '';        #sequence trailing space character
-my $Default_Bold          = 0;         #embolden some text
+my $Default_Width = 80;   #sequence display width
+my $Default_Bold  = 0;    #embolden some text
 
-my $Default_Overlap       = '%';       #sequence overlap character
-my $Default_Overlap_Color = '#474747'; #sequence overlap color if HTML
-
-my $Spacer                = ' ';       #space between output columns
+my $Spacer        = ' ';  #space between output columns
 
 my %Known_Types = (
     'ruler'    => 1,
@@ -100,8 +95,6 @@ sub display {
     my %par = @_;
 
     $par{'width'} = $Default_Width  unless exists $par{'width'};
-    $par{'gap'}   = $Default_Gap    unless exists $par{'gap'};
-    $par{'pad'}   = $Default_Pad    unless exists $par{'pad'};
     $par{'bold'}  = $Default_Bold   unless exists $par{'bold'};
 
     # warn "pw[$par{'posnwidth'}]\n";
@@ -111,10 +104,8 @@ sub display {
     my ($prefix, $suffix) = ('','');
 
     if ($par{'html'}) {
-        $par{'lap'}  = $Default_Overlap_Color  unless exists $par{'lap'};
         ($prefix, $suffix) = ('<STRONG>','</STRONG>')  if $par{'bold'};
     } else {
-        $par{'lap'}  = $Default_Overlap        unless exists $par{'lap'};
         $par{'bold'} = 0;  #ensure off
     }
 
