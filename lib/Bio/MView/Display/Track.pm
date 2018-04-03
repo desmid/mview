@@ -6,7 +6,6 @@ use strict;
 package Bio::MView::Display::Track;
 
 use Universal qw(vmstat);
-use Bio::MView::Display::Display;
 
 sub new {
     my $type = shift;
@@ -68,7 +67,7 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-sub has_positions { 0 }
+sub is_ruler { 0 }
 
 #return kth label string
 sub label {
@@ -85,60 +84,8 @@ sub labelwidth {
 #forward/reverse oriented rulers/sequences
 sub reset { $_[0]->{'cursor'} = 1 }
 
-#stop iterating
-sub done {
-    return 1  if $_[0]->{'cursor'} > $_[0]->{'length'};
-    return 0;
-}
-
 #iterator: subclass overrides
-sub next_segment {
-    my ($self, $par) = @_;
-    #warn "${self}::next_segment\n";
-
-    return undef  if $self->{'cursor'} > $self->{'length'};
-
-    #current real position
-    my $start = $self->{'start'} + $self->{'cursor'} - 1;
-
-    my $rest  = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
-    my $chunk = ($par->{'width'} < $rest ? $par->{'width'} : $rest);
-
-    #warn "($self->{'length'}, $self->{'cursor'}, $chunk, $rest, ($self->{'start'}, $self->{'stop'}))\n";
-
-    my $string = [];
-    my $pos = $start - 1;
-
-    for (my $i = 0; $i < $chunk; $i++) {
-
-        $pos++;  #real data position
-
-        my $c = $self->char_at($self->{'cursor'});
-
-        if ($par->{'html'}) {
-            push @$string, $self->html_wrap($self->{'cursor'}, $c);
-        } else {
-            push @$string, $c;
-        }
-
-        $self->{'cursor'}++;  #stuff output so far
-    }
-
-    $string = $self->finish_html($string, $par->{'bold'})  if $par->{'html'};
-
-    return [ $start, join('', @$string), $pos ];
-}
-
-sub finish_html {
-    my ($self, $string, $bold) = @_;
-
-    $string = $self->strip_html_repeats($string);
-
-    unshift @$string, '<STRONG>'         if $bold;
-    push    @$string, '</STRONG>'        if $bold;
-
-    return $string;
-}
+sub next_segment { die "$_[0]::new: virtual function called\n" }
 
 ######################################################################
 # private methods
@@ -226,182 +173,12 @@ sub parse_range {
     ];
 }
 
-sub char_at {
-    defined $_[0]->{'string'} ? $_[0]->{'string'}->col($_[1]) :
-        $_[0]->{'parent'}->{'string'}->col($_[1]);
-}
-
-sub html_wrap {
-    my ($self, $i, $c) = @_;
-
-    my $class = $self->{'r_class'}->[$i];
-    if (defined $class) {
-        return ("<SPAN CLASS=$class>", $c, "</SPAN>");
-    }
-
-    my $color = $self->{'r_color'}->[$i];
-    if (defined $color) {
-        return "<SPAN style=\"color:$color\">", $c, "</SPAN>";
-    }
-
-    return ($c);
-}
-
-sub strip_html_repeats {
-    my ($self, $list) = @_;
-    my ($new, $i, $limit) = [];
-
-    return $list  if @$list < 4;
-
-    #warn " IN=[", @$list, "]\n";
-
-    #use 1 element lookahead
-    $limit = @$list;
-
-    for ($i=0; $i<$limit; $i++) {
-
-        if ($list->[$i] =~ /^</) {
-            #looking at: <tag> or </tag>
-
-            #empty stack
-            if (@$new < 1) {
-                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
-                push @$new, $list->[$i];
-                #warn "[", @$new, "]\n";
-                next;
-            }
-
-            #non-empty stack: different tag
-            if ($list->[$i] ne $new->[$#$new]) {
-                #warn "NEW(@{[scalar @$new]}) lex[$i] <-- $list->[$i]\n";
-                push @$new, $list->[$i];
-                #warn "[", @$new, "]\n";
-                next;
-            }
-
-            #non-empty stack: same tag
-            #warn "NOP(@{[scalar @$new]}) lex[$i]     $new->[$#$new]\n";
-            #warn "[", @$new, "]\n";
-
-        } else {
-            #non-tag
-            #warn "ARG(@{[scalar @$new]})    [$i] <-- $list->[$i]\n";
-            push @$new, $list->[$i];
-            #warn "[", @$new, "]\n";
-        }
-    }
-
-    #warn "SR1=[", @$new, "]\n";
-
-    $new = $self->strip_html_tandem_repeats($new);
-
-    #warn "SR2=[", @$new, "]\n\n";
-
-    return $new;
-}
-
-sub strip_html_tandem_repeats {
-    my ($self, $list) = @_;
-    my ($new, @mem, $i, $limit) = ([]);
-
-    return $list  if @$list < 6;
-
-    #warn " IN=[", @$list, "]\n";
-
-    #use 1 element lookahead
-    $limit = @$list;
-
-    for ($i=0; $i<$limit; $i++) {
-
-        #looking at: tag
-        if ($list->[$i] =~ /^<[^\/]/) {
-
-            #empty stack
-            if (@mem < 1) {
-                #warn "NEW(@{[scalar @mem]}) lex[$i] <-- $list->[$i]\n";
-                push @mem, $list->[$i];
-                #scan until next closing tag
-                $i = close_tag($list, $limit, ++$i, \@mem);
-                next;
-            }
-
-            #non-empty stack: different tag
-            if ($list->[$i] ne $mem[0]) {
-                #warn "NEW(@{[scalar @mem]}) lex[$i] <-- $list->[$i]\n";
-                push @$new, @mem;
-                @mem = ();
-                redo;
-            }
-
-            #non-empty stack: same tag
-            #warn "POP(@{[scalar @mem]}) lex[$i] --> $mem[$#mem]\n";
-            pop @mem;
-            #scan until next closing tag
-            $i = close_tag($list, $limit, ++$i, \@mem);
-            next;
-
-        } else {
-            #non-tag
-            #warn "ARG(@{[scalar @mem]}) lex[$i] <-- $list->[$i]\n";
-            push @$new, @mem, $list->[$i];
-            @mem = ();
-        }
-    }
-
-    push @$new, @mem    if @mem;
-
-    #warn "SR2=[", @$new, "]\n\n";
-
-    return $new;
-}
-
-sub close_tag {
-    my ($list, $limit, $i, $mem) = @_;
-    my $tag = 0;
-    while ($i < $limit) {
-
-        if ($list->[$i] =~ /^<[^\/]/) {
-            #inner tag
-            $tag++;
-            #warn "I  tag[$i] <-- $list->[$i]\n";
-            push @$mem, $list->[$i++];
-            next;
-        }
-
-        if ($list->[$i] =~ /^<\//) {
-            if ($tag) {
-                #inner /tag
-                $tag--;
-                #warn "I /tag[$i] <-- $list->[$i]\n";
-                push @$mem, $list->[$i++];
-                next;
-            }
-            #outer /tag
-            #warn "O /tag[$i] <-- $list->[$i]\n";
-            push @$mem, $list->[$i];
-            last;
-        }
-
-        #datum
-        #warn "  data[$i] <-- $list->[$i]\n";
-        push @$mem, $list->[$i++];
-    }
-    return $i;
-}
-
 ######################################################################
 # debug
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
 sub dump { warn Universal::dump_object(@_) }
-
-###########################################################################
-package Bio::MView::Display::Sequence;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::MView::Display::Track);
 
 ###########################################################################
 1;

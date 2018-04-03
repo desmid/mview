@@ -19,7 +19,7 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'param'}   = { 'prog' => $prog, 'argv' => '' };
+    $self->{'param'}   = { 'prog' => $prog, 'argv' => [] };
 
     $self->{'types'}   = {};
     $self->{'options'} = {};
@@ -61,7 +61,7 @@ sub parse_argv {
     my @errors = ();
 
     #save input ARGV for posterity
-    $self->{'param'}->{'argv'} .= "@$argv";
+    $self->{'param'}->{'argv'} = [@$argv];
 
     #look for '--' to stop option processing
     #warn "argv: [@$argv]\n";
@@ -85,6 +85,9 @@ sub parse_argv {
         push @$argv, $arg;
     }
     push @$argv, @rhs;  #replace explicit non-options
+
+    #save remaining ARGV for posterity
+    $self->{'param'}->{'argvfiles'} = [@$argv];
 
     #instantiate global parameter object
     unless (@errors) {

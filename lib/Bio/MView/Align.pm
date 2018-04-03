@@ -16,9 +16,7 @@ use Bio::MView::Align::Special;
 sub new {
     my $type = shift;
     #warn "${type}::new: @_\n";
-    if (@_ < 2) {
-	die "${type}::new: missing arguments\n";
-    }
+    die "${type}::new: missing arguments\n"  if @_ < 2;
     my ($build, $parent) = (shift, shift);
 
     my $self = {};
@@ -213,7 +211,7 @@ sub set_consensus_color_scheme {
     }
 }
 
-sub init_display { $_[0]->{'parent'}->{'string'} }
+sub init_display { return $_[0]->{'parent'}->{'string'} }
 
 #Append Row data to the input Display object: done one at a time to reduce
 #memory usage instead of accumulating a potentially long list before passing

@@ -15,9 +15,7 @@ use NPB::Parse::Stream;
 sub new {
     my $type = shift;
     #warn "${type}::new(@_)\n";
-    if (@_ < 1) {
-	die "${type}::new() missing argument\n";
-    }
+    die "${type}::new() missing argument\n"  if @_ < 1;
     my $entry = shift;
 
     my $self = {};

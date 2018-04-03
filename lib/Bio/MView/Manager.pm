@@ -9,22 +9,23 @@ use Universal qw(max vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Display::Display;
 use Bio::MView::Build;
 use Bio::MView::Convert;
 
 sub new {
     my $type = shift;
+    die "${type}::new() missing argument\n"  if @_ < 1;
     my $self = {};
     bless $self, $type;
 
-    $self->{'acount'}  = 0;
-    $self->{'display'} = [];
+    $self->{'acount'}  = 0;      #alignments processed
+    $self->{'fcount'}  = 0;      #files processed
     $self->{'file'}    = undef;
     $self->{'format'}  = undef;
     $self->{'stream'}  = undef;
     $self->{'class'}   = undef;
-    $self->{'build'}  = undef;
+    $self->{'build'}   = undef;
+    $self->{'display'} = shift;  #display object
 
     $self;
 }
@@ -64,35 +65,34 @@ sub parse {
 
     return 0  unless defined $self->{'stream'};
 
-    my $pass = 0;
+    my $dis = $self->{'display'};
+
     while (my $bld = $self->next_build) {
 
         last  unless defined $bld;  #all done
 
+        $self->{'fcount'}++;  #file count
+
         $bld->reset;
+
+        my $ac = 0;  #local aln count
 
         while (defined (my $aln = $bld->next_align)) {
 
-	    if ($aln < 1) {  #empty alignment
-                #warn $PAR->get('prog') . ": empty alignment\n";
+	    if ($aln < 1) {
+                #warn "parse: empty alignment\n";
 		next;
 	    }
 
-            $self->{'acount'}++;
+            $self->{'acount'}++;  #global aln count
 
             if ($PAR->get('outfmt') ne 'mview') {
-
                 $self->print_format_conversion($PAR, $bld, $aln);
-
             } else {
-
-                $self->add_alignment_display($bld, $aln, $pass++);
+                $self->add_alignment_display($bld, $aln, $dis, ++$ac);
 
                 #display item now?
-                unless ($PAR->get('register')) {
-                    $self->print_alignment_display;
-                    #vmstat("Manager: print_alignment done");
-                }
+                $self->{'display'}->render  unless $PAR->get('register');
             }
 
             $aln = undef;  #gc
@@ -107,123 +107,6 @@ sub parse {
 }
 
 sub get_alignment_count { return $_[0]->{'acount'} }
-
-sub print_alignment_display {
-    my ($self, $stm) = (@_, \*STDOUT);
-
-    my ($posnwidth, $labelflags, $labelwidths) = $self->initialise_labels;
-
-    #consolidate field widths across multiple Display objects
-    foreach my $dis (@{$self->{'display'}}) {
-
-        #numeric left/right position width
-        $posnwidth = max($posnwidth, $dis->{'posnwidth'});
-
-        #labelwidths
-        for (my $i=0; $i < @$labelflags; $i++) {
-            if ($labelflags->[$i]) {
-                $labelwidths->[$i] =
-                    max($labelwidths->[$i],
-                                   $dis->{'labelwidths'}->[$i]);
-            }
-        }
-    }
-
-    # warn "pw[$posnwidth]\n";
-    # warn "lf[@{[join(',', @$labelflags)]}]\n";
-    # warn "lw[@{[join(',', @$labelwidths)]}]\n";
-
-    while (my $dis = shift @{$self->{'display'}}) {
-        if ($PAR->get('html')) {
-            $self->print_html_alignment($stm, $dis, $posnwidth,
-                                        $labelflags, $labelwidths);
-        } else {
-            $self->print_text_alignment($stm, $dis, $posnwidth,
-                                        $labelflags, $labelwidths);
-        }
-    }
-}
-
-sub print_text_alignment {
-    my ($self, $stm, $dis, $posnwidth, $labelflags, $labelwidths) = @_;
-
-    #header
-    print $stm $dis->{'headers'}->[0]  if $dis->{'headers'}->[0];
-    print $stm $dis->{'headers'}->[1]  if $dis->{'headers'}->[1];
-    print "\n";
-
-    #subheader
-    print $stm $dis->{'headers'}->[2], "\n"  if $dis->{'headers'}->[2];
-
-    #alignment
-    $dis->display($stm,
-                  'html'        => $PAR->get('html'),
-                  'bold'        => $PAR->get('bold'),
-                  'width'       => $PAR->get('width'),
-                  'posnwidth'   => $posnwidth,
-                  'labelflags'  => $labelflags,
-                  'labelwidths' => $labelwidths,
-    );
-    print $stm "\n";  #spacer
-}
-
-sub print_html_alignment {
-    my ($self, $stm, $dis, $posnwidth, $labelflags, $labelwidths) = @_;
-
-    my $alncolor   = $PAR->get('alncolor');
-    my $labcolor   = $PAR->get('labcolor');
-    my $linkcolor  = $PAR->get('linkcolor');
-    my $alinkcolor = $PAR->get('alinkcolor');
-    my $vlinkcolor = $PAR->get('vlinkcolor');
-
-    #table attrs
-    my $s = "style=\"border:0px;";
-    if (! $PAR->get('css1')) {
-        #supported in HTML 4.01:
-        $s .= " background-color:$alncolor;"  if defined $alncolor;
-        $s .= " color:$labcolor;"             if defined $labcolor;
-        $s .= " a:link:$linkcolor;"           if defined $linkcolor;
-        $s .= " a:active:$alinkcolor;"        if defined $alinkcolor;
-        $s .= " a:visited:$vlinkcolor;"       if defined $vlinkcolor;
-    }
-    $s .= "\"";
-
-    print $stm "<TABLE $s>\n";
-
-    #header
-    if ($dis->{'headers'}->[0]) {
-        print $stm "<TR><TD><PRE>\n";
-        print $stm $dis->{'headers'}->[0];
-        print $stm "</PRE></TD></TR>\n";
-    }
-    if ($dis->{'headers'}->[1]) {
-        print $stm "<TR><TD><PRE>\n";
-        print $stm $dis->{'headers'}->[1];
-        print $stm "</PRE></TD></TR>\n";
-    }
-
-    #subsubheader
-    if ($dis->{'headers'}->[2]) {
-        print $stm "<TR><TD><PRE>\n";
-        print $stm $dis->{'headers'}->[2];
-        print $stm "</PRE></TD></TR>\n";
-    }
-
-    #alignment
-    print $stm "<TR><TD><PRE>\n";
-    $dis->display($stm,
-                  'html'        => $PAR->get('html'),
-                  'bold'        => $PAR->get('bold'),
-                  'width'       => $PAR->get('width'),
-                  'posnwidth'   => $posnwidth,
-                  'labelflags'  => $labelflags,
-                  'labelwidths' => $labelwidths,
-    );
-    print $stm "</PRE></TD></TR>\n";
-
-    print $stm "<TR><TD></TD></TR>\n";  #spacer
-    print $stm "</TABLE>\n";
-}
 
 ######################################################################
 # private class methods
@@ -253,14 +136,6 @@ sub get_parser_stream {
 ######################################################################
 # private methods
 ######################################################################
-#construct a header string describing this alignment
-sub header {
-    my ($self, $quiet) = (@_, 0);
-    return ''  if $quiet;
-    my $s = "File: $self->{'file'}  Format: $self->{'format'}\n";
-    return $s;
-}
-
 #return next entry worth of parse data as in a Bio::MView::Build object
 #ready for parsing, or undef if no more data.
 sub next_build {
@@ -289,70 +164,78 @@ sub gc_flag {
     return 1;
 }
 
-sub initialise_labels {
+#construct a header string describing this alignment
+sub header {
     my $self = shift;
+    return "Input: $self->{'file'}\n";
+}
 
-    my $posnwidth   = 0;   #default width of numeric left/rightpositions
-    my $labelflags  = [];  #collected column on/off flags
-    my $labelwidths = [];  #collected initial label widths
+sub assemble_headers {
+    my ($self, $bld, $aln, $acount) = @_;
 
-    push @$labelflags, $PAR->get('label0');
-    push @$labelflags, $PAR->get('label1');
-    push @$labelflags, $PAR->get('label2');
-    push @$labelflags, $PAR->get('label3');
-    push @$labelflags, $PAR->get('label4');
-    push @$labelflags, $PAR->get('label5');
-    push @$labelflags, $PAR->get('label6');
-    push @$labelflags, $PAR->get('label7');
+    my $nfiles  = scalar @{$PAR->get('argvfiles')};
+    my $fcount = $self->{'fcount'};
+    my @headers = ();
+    my $s;
 
-    for (my $i=0; $i < @$labelflags; $i++) {
-        $labelwidths->[$i] = 0;
+    #first alignment
+    if ($acount < 2) {
+
+        #multiple input files: filename on first alignment
+        if ($nfiles > 1) {
+            $s = $self->header;
+            if ($fcount > 1) {
+                push @headers, undef; #mark start of new file
+            }
+            push @headers, $s;
+        }
+
+        #build and alignment headers on first alignment
+        $s = $bld->header; push @headers, $s  if $s ne '';
+        $s = $aln->header; push @headers, $s  if $s ne '';
     }
 
-    return ($posnwidth, $labelflags, $labelwidths);
+    #subheaders
+    $s = $bld->subheader; push @headers, "\n", $s  if $s ne '';
+    push @headers, undef  if @headers;  #mark end of headers
+
+    #warn "(fcount: $fcount, acount: $acount)\n";
+    #my @tmp=map {$_=defined $_?$_:'undef';s/\n/\\n/g;"\"$_\""} @{[@headers]};
+    #warn "assemble_headers: [@{[join(',', @tmp)]}]\n";
+
+    return \@headers;
 }
 
 sub add_alignment_display {
-    my ($self, $bld, $aln, $pass) = @_;
+    my ($self, $bld, $aln, $dis, $acount) = @_;
 
     my $refobj = $bld->get_row_from_id($PAR->get('ref_id'));
     my $refid  = $bld->get_uid_from_id($PAR->get('ref_id'));
 
-    my ($header0, $header1, $header2) = ('', '', '');
+    my $headers = $self->assemble_headers($bld, $aln, $acount);
 
-    if ($pass < 1) {
-        #$header0 = $self->header;
-        $header1 = $bld->header . $aln->header;
-    }
-    $header2 = $bld->subheader;
-
-    #vmstat("display constructor");
-    my $dis = new Bio::MView::Display::Display(
-        [$refobj->display_column_widths],
-        [$header0, $header1, $header2],
-        $aln->init_display,
-        );
-    #vmstat("display constructor DONE");
+    #vmstat("display panel constructor");
+    my $pan = $dis->new_panel($headers, $aln->init_display);
+    #vmstat("display panel constructor DONE");
 
     #attach a ruler? (may include header text)
     if ($PAR->get('ruler')) {
         my $tmp = $aln->build_ruler($refobj);
-	$tmp->append_display($dis);
+	$tmp->append_display($pan);
         #vmstat("ruler added");
     }
 
     #attach the alignment
     if ($PAR->get('alignment')) {
         $aln->set_color_scheme($refid);
-        #vmstat("set_color_scheme done");
-	$aln->append_display($dis, $self->gc_flag);
+	$aln->append_display($pan, $self->gc_flag);
         #vmstat("alignment added");
     }
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
 	my $tmp = $aln->build_conservation_row;
-	$tmp->append_display($dis);
+	$tmp->append_display($pan);
         #vmstat("conservation added");
     }
 
@@ -360,8 +243,8 @@ sub add_alignment_display {
     if ($PAR->get('consensus')) {
 	my $tmp = $aln->build_consensus_rows;
         $tmp->set_consensus_color_scheme($aln, $refid);
-	$tmp->append_display($dis);
-        #vmstat("consensi added");
+	$tmp->append_display($pan);
+        #vmstat("consensus added");
     }
 
     #garbage collect if not already done piecemeal
@@ -369,9 +252,6 @@ sub add_alignment_display {
 	$aln->do_gc;
 	#vmstat("final garbage collect");
     }
-
-    #save this display
-    push @{$self->{'display'}}, $dis;
 }
 
 sub print_format_conversion {

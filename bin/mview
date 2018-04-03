@@ -24,6 +24,7 @@ use lib '/home/brown/HOME/work/MView/dev/lib';
 use Universal qw(basename tmpfile vmstat);
 use Bio::MView::Option::Arguments;
 use Bio::MView::Option::Parser;
+use Bio::MView::Display::Display;
 use Bio::MView::Manager;
 use strict;
 
@@ -122,8 +123,25 @@ exit 0;
 sub mview {
     my $par = shift;
 
+    my $labelflags = consolidate_labelflags($par);
+
     #vmstat("mview: call Manager constructor");
-    my $mgr = new Bio::MView::Manager;
+    my $dis = new Bio::MView::Display::Display(
+        'html'       => $par->{'html'},
+        'bold'       => $par->{'bold'},
+        'width'      => $par->{'width'},
+        'css1'       => $par->{'css1'},
+        'alncolor'   => $par->{'alncolor'},
+        'labcolor'   => $par->{'labcolor'},
+        'linkcolor'  => $par->{'linkcolor'},
+        'alinkcolor' => $par->{'alinkcolor'},
+        'vlinkcolor' => $par->{'vlinkcolor'},
+        'register'   => $par->{'register'},
+        'labelflags' => $labelflags,
+        'stream'     => \*STDOUT,
+        );
+
+    my $mgr = new Bio::MView::Manager($dis);
 
     my $check_format = $par->{'infmt'} ? 0 : 1;
 
@@ -151,10 +169,10 @@ sub mview {
     }
     #vmstat("mview: Manager.parse all files done");
 
-    #save printing until end?
+    #saved output until end?
     if (want_in_register($par) and want_mview_layout($par)) {
-	$mgr->print_alignment_display;
-	#vmstat("mview: in register print_alignment done");
+	$dis->render;
+	#vmstat("mview: in register render done");
     }
     return $mgr->get_alignment_count;
 }
@@ -183,6 +201,17 @@ sub capture_stdin {
     while (<>) { print TMP }
     close TMP;
     push @ARGV, $file;
+}
+
+sub consolidate_labelflags {
+    my $par = shift;
+    my @labelflags = ();
+    for (my $i=0; 1; $i++) {
+        my $key = "label$i";
+        last  unless defined $par->{$key};
+        push @labelflags, $par->{$key};
+    }
+    return \@labelflags;
 }
 
 sub dump_css {
@@ -229,11 +258,11 @@ sub echo_argv {
     my $s = '';
     if (want_html($par)) {
 	$s .= "<H4>command line:</H4>\n<CODE>";
-	$s .= "$PROG $data";
+	$s .= "$PROG @$data";
 	$s .= "</CODE>\n<H4>produced:</H4>\n";
     } else {
 	$s .= "command line:\n";
-	$s .= "$PROG $data\n";
+	$s .= "$PROG @$data\n";
 	$s .= "produced:\n\n";
     }
     return $s
