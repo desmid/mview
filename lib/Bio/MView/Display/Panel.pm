@@ -5,12 +5,13 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Panel;
 
-use Universal qw(max vmstat);
+use Universal qw(max swap vmstat);
 use Bio::MView::Display::Sequence;
 use Bio::MView::Display::Ruler;
 use Bio::MView::Display::Out::Text qw($LJUST $RJUST);
 
-my $HSPACE = 1;    #extra spaces between columns
+my $MINPOSWIDTH = 2;  #smallest ruler left/right position width
+my $HSPACE      = 1;  #extra spaces between columns
 
 my %Known_Track_Types = (
     'ruler'    => 1,
@@ -25,22 +26,26 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'par'}        = $par;
-    $self->{'header'}     = $headers;
+    $self->{'par'}      = $par;
+    $self->{'header'}   = $headers;
 
-    $self->{'length'}     = $startseq->length;
-    $self->{'forwards'}   = $startseq->is_forwards;
+    $self->{'length'}   = $startseq->length;
+    $self->{'forwards'} = $startseq->is_forwards;
 
     #start/stop, counting extent forwards
-    $self->{'start'}      = $startseq->lo;
-#   $self->{'stop'}       = $startseq->hi;
-    $self->{'stop'}       = $self->{'start'} + $self->{'length'} - 1;
+    $self->{'start'}    = $startseq->lo;
+#   $self->{'stop'}     = $startseq->hi;
+    $self->{'stop'}     = $self->{'start'} + $self->{'length'} - 1;
 
-    $self->{'track'}      = [];  #display objects
+    $self->{'track'}    = [];  #display objects
+
+    #warn "${type}::new: start= $self->{'start'}, stop= $self->{'stop'}, (fw= $self->{'forwards'})";
 
     #initial width of left/right sequence position as text
-    $self->{'posnwidths'}  = max(length("$self->{'start'}"),
-                                 length("$self->{'stop'}"));
+    my ($pos1, $pos2) = (length("$self->{'start'}"), length("$self->{'stop'}"));
+    ($pos1, $pos2) = swap($pos1, $pos2)  unless $self->{'forwards'};
+
+    $self->{'posnwidths'} = [max($pos1, $MINPOSWIDTH), max($pos2, $MINPOSWIDTH)];
 
     #initial label widths
     $self->{'labelwidths'} = [];
@@ -54,10 +59,10 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-sub length      { return $_[0]->{'length'} }
-sub forwards    { return $_[0]->{'forwards'} }
-sub posnwidths  { return $_[0]->{'posnwidths'} }
-sub labelwidths { return $_[0]->{'labelwidths'}->[$_[1]] }
+sub length     { return $_[0]->{'length'} }
+sub forwards   { return $_[0]->{'forwards'} }
+sub posnwidth  { return $_[0]->{'posnwidths'}->[$_[1]] }
+sub labelwidth { return $_[0]->{'labelwidths'}->[$_[1]] }
 
 sub append {
     my $self = shift;
@@ -192,19 +197,21 @@ sub render_chunk {
 
         #left position
         if ($has_ruler) {
-            $par->{'dev'}->render_position($RJUST, $posnwidths, $seg->[0],
-                                           $o->is_ruler, $par->{'bold'})
+            $par->{'dev'}->render_position($RJUST, $posnwidths->[0],
+                                           $seg->[0], $o->is_ruler,
+                                           $par->{'bold'})
         }
         $par->{'dev'}->render_hspace($HSPACE);
 
         #sequence string
-        $par->{'dev'}->render_sequence($seg->[1], $par->{'bold'});
+        $par->{'dev'}->render_sequence($seg->[2], $par->{'bold'});
         $par->{'dev'}->render_hspace($HSPACE);
 
         #right position
         if ($has_ruler) {
-            $par->{'dev'}->render_position($LJUST, $posnwidths, $seg->[2],
-                                           $o->is_ruler, $par->{'bold'});
+            $par->{'dev'}->render_position($LJUST, $posnwidths->[1],
+                                           $seg->[1], $o->is_ruler,
+                                           $par->{'bold'});
         }
         $par->{'dev'}->render_newline;
     }

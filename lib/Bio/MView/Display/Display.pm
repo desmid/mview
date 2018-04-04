@@ -75,7 +75,7 @@ sub initialise_parameters {
     $par->{'bold'} = 0
         unless exists $par->{'bold'} and defined $par->{'bold'};
 
-    $self->{'par'}  = $par;
+    $self->{'par'} = $par;
 }
 
 sub initialise_fieldwidths {
@@ -83,15 +83,13 @@ sub initialise_fieldwidths {
 
     my $par = $self->{'par'};
 
-    my $labelwidths = [];
+    $self->{'posnwidths'}  = [0, 0];
+    $self->{'labelwidths'} = [];
 
     #initialise labelwidths
     for (my $i=0; $i < @{$par->{'labelflags'}}; $i++) {
-        $labelwidths->[$i] = 0;
+        $self->{'labelwidths'}->[$i] = 0;
     }
-
-    $self->{'posnwidths'}  = 0;
-    $self->{'labelwidths'} = $labelwidths;
 }
 
 sub update_panel_fieldwidths {
@@ -99,20 +97,20 @@ sub update_panel_fieldwidths {
 
     return (undef, undef)  unless $self->{'par'}->{'register'};
 
-    my $fields = $self->{'fieldwidths'};
-
     my $posnwidths  = $self->{'posnwidths'};
     my $labelwidths = $self->{'labelwidths'};
 
     #consolidate widths across multiple Panel objects
     foreach my $pan (@{$self->{'panel'}}) {
 
-        #numeric left/right position width
-        $posnwidths = max($posnwidths, $pan->posnwidths);
+        #numeric left/right position widths
+        for (my $i=0; $i < @$posnwidths; $i++) {
+            $posnwidths->[$i] = max($posnwidths->[$i], $pan->posnwidth($i));
+        }
 
         #labelwidths
         for (my $i=0; $i < @$labelwidths; $i++) {
-            $labelwidths->[$i] = max($labelwidths->[$i], $pan->labelwidths($i));
+            $labelwidths->[$i] = max($labelwidths->[$i], $pan->labelwidth($i));
         }
     }
 

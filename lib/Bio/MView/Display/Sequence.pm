@@ -44,7 +44,7 @@ sub next_segment {
 
     $string = $par->{'dev'}->process_segment($string);
 
-    return [ $pos1, join('', @$string), $pos2 ];
+    return [ $pos1, $pos2, join('', @$string) ];
 }
 
 ######################################################################
