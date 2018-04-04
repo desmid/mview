@@ -13,24 +13,11 @@ use vars qw(@ISA);
 # public methods
 ######################################################################
 #overrides
-sub process_url {
-    my ($self, $s, $url) = @_;
-    return "<A HREF=\"$url\">$s</A>"  if $url;
-    return $s;
-}
-
-#overrides
-sub process_bold {
-    my ($self, $s) = @_;
-    return "<STRONG>$s</STRONG>";
-}
-
-#overrides
 sub process_char {
-    my ($self, $caller, $c) = @_;
+    my ($self, $c, $caller) = @_;
 
     my $i = $caller->{'cursor'};
-    
+
     my $class = $caller->{'r_class'}->[$i];
     if (defined $class) {
         return ("<SPAN CLASS=$class>", $c, "</SPAN>");
@@ -46,22 +33,41 @@ sub process_char {
 
 #overrides
 sub process_segment {
-    my ($self, $string, $bold) = @_;
-
-    $string = strip_html_repeats($string);
-
-    if ($bold) {
-        unshift @$string, '<STRONG>';
-        push    @$string, '</STRONG>';
-    }
-
-    return $string;
+    my ($self, $string) = @_;
+    return strip_html_repeats($string);
 }
 
 ###########################################################################
+#overrides
+sub render_identifier {
+    my ($self, $w, $s, $url) = @_;
+    if (defined $url and $url) {
+        $self->write("<A HREF=\"$url\">$s</A>");
+    } else {
+        $self->write($s);
+    }
+    $self->write(' ' x ($w - length($s)));
+}
+
+#overrides
+sub render_position {
+    my ($self, $just, $w, $s, $isruler, $bold) = @_;
+    $s = $self->format_label($just, $w, ($isruler ? $s : ''));
+    $s = "<STRONG>$s</STRONG>"  if $bold;
+    $self->write($s);
+}
+
+#overrides
+sub render_sequence {
+    my ($self, $s, $bold) = @_;
+    $self->write("<STRONG>")   if $bold;
+    $self->write($s);
+    $self->write("</STRONG>")  if $bold;
+}
+
+#overrides
 sub render_table_begin {
     my $self = shift;
-    my $stm = $self->{'stm'};
     my $par = shift;
 
     my $alncolor   = $par->{'alncolor'};
@@ -81,38 +87,34 @@ sub render_table_begin {
         $s .= " a:visited:$vlinkcolor;"       if defined $vlinkcolor;
     }
     $s .= "\"";
-    print $stm "<TABLE $s>\n";
+    $self->write("<TABLE $s>\n");
 }
 
-#overrides
+#overrides: any undef will be ignored
 sub render_text {
     my $self = shift;
-    my $stm = $self->{'stm'};
     foreach my $s (@_) {
-        print($stm $s), next  if defined $s;
-        #ignore undef (HTML mode overrides)
+        $self->write($s), next  if defined $s;
+        #ignore undef
     }
 }
 
 #overrides
 sub render_table_end {
     my $self = shift;
-    my $stm = $self->{'stm'};
-    print $stm "</TABLE>\n";
+    $self->write("</TABLE>\n");
 }
 
 #overrides
 sub render_tr_pre_begin {
     my $self = shift;
-    my $stm = $self->{'stm'};
-    print $stm "<TR><TD><PRE>\n";
+    $self->write("<TR><TD><PRE>\n");
 }
 
 #overrides
 sub render_tr_pre_end {
     my $self = shift;
-    my $stm = $self->{'stm'};
-    print $stm "</PRE></TD></TR>\n";
+    $self->write("</PRE></TD></TR>\n");
 }
 
 ######################################################################
@@ -120,16 +122,15 @@ sub render_tr_pre_end {
 ######################################################################
 sub strip_html_repeats {
     my ($list) = @_;
-    my ($new, $i, $limit) = [];
 
     return $list  if @$list < 4;
 
     #warn " IN=[", @$list, "]\n";
 
     #use 1 element lookahead
-    $limit = @$list;
+    my ($limit, $new) = (scalar @$list, []);
 
-    for ($i=0; $i<$limit; $i++) {
+    for (my $i=0; $i<$limit; $i++) {
 
         if ($list->[$i] =~ /^</) {
             #looking at: <tag> or </tag>
@@ -173,16 +174,15 @@ sub strip_html_repeats {
 
 sub strip_html_tandem_repeats {
     my ($list) = @_;
-    my ($new, @mem, $i, $limit) = ([]);
 
     return $list  if @$list < 6;
 
     #warn " IN=[", @$list, "]\n";
 
     #use 1 element lookahead
-    $limit = @$list;
+    my ($limit, $new, @mem) = (scalar @$list, []);
 
-    for ($i=0; $i<$limit; $i++) {
+    for (my $i=0; $i<$limit; $i++) {
 
         #looking at: tag
         if ($list->[$i] =~ /^<[^\/]/) {

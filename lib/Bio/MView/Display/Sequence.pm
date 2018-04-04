@@ -37,12 +37,12 @@ sub next_segment {
 
         my $c = $self->char_at($self->{'cursor'});
 
-        push @$string, $par->{'dev'}->process_char($self, $c);
+        push @$string, $par->{'dev'}->process_char($c, $self);
 
         $self->{'cursor'}++;
     }
 
-    $string = $par->{'dev'}->process_segment($string, $par->{'bold'});
+    $string = $par->{'dev'}->process_segment($string);
 
     return [ $pos1, join('', @$string), $pos2 ];
 }

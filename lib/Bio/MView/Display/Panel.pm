@@ -8,8 +8,9 @@ package Bio::MView::Display::Panel;
 use Universal qw(max vmstat);
 use Bio::MView::Display::Sequence;
 use Bio::MView::Display::Ruler;
+use Bio::MView::Display::Out::Text qw($LJUST $RJUST);
 
-my $Spacer = ' ';  #space between output columns
+my $HSPACE = 1;    #extra spaces between columns
 
 my %Known_Track_Types = (
     'ruler'    => 1,
@@ -161,40 +162,51 @@ sub render_chunk {
 
         return 0  unless defined $seg;  #all chunks done
 
-        my @row = ();
-
         #label0: rownum
-        push @row, label_rownum($par, $labelwidths, $o)
-            if $par->{'labelflags'}->[0];
+        if ($par->{'labelflags'}->[0] and $labelwidths->[0]) {
+            $par->{'dev'}->render_rownum($labelwidths->[0], $o->label(0));
+            $par->{'dev'}->render_hspace($HSPACE);
+        }
 
         #label1: identifier
-        push @row, label_identifier($par, $labelwidths, $o)
-            if $par->{'labelflags'}->[1];
+        if ($par->{'labelflags'}->[1] and $labelwidths->[1]) {
+            $par->{'dev'}->render_identifier($labelwidths->[1], $o->label(1),
+                                             $o->{'url'});
+            $par->{'dev'}->render_hspace($HSPACE);
+        }
 
         #label2: description
-        push @row, label_description($par, $labelwidths, $o)
-            if $par->{'labelflags'}->[2];
+        if ($par->{'labelflags'}->[2] and $labelwidths->[2]) {
+            $par->{'dev'}->render_description($labelwidths->[2], $o->label(2));
+            $par->{'dev'}->render_hspace($HSPACE);
+        }
 
         #labels3-7: info
         for (my $i=3; $i < @$labelwidths; $i++) {
-            push @row, label_annotation($par, $labelwidths, $o, $i)
-                if $par->{'labelflags'}->[$i];
+            if ($par->{'labelflags'}->[$i] and $labelwidths->[$i]) {
+                $par->{'dev'}->render_annotation($labelwidths->[$i],
+                                                 $o->label($i));
+                $par->{'dev'}->render_hspace($HSPACE);
+            }
         }
 
         #left position
-        push @row, left_position($par, $posnwidths, $o, $seg->[0])
-            if $has_ruler;
-        push @row, $Spacer;
+        if ($has_ruler) {
+            $par->{'dev'}->render_position($RJUST, $posnwidths, $seg->[0],
+                                           $o->is_ruler, $par->{'bold'})
+        }
+        $par->{'dev'}->render_hspace($HSPACE);
 
         #sequence string
-        push @row, $seg->[1], $Spacer;
+        $par->{'dev'}->render_sequence($seg->[1], $par->{'bold'});
+        $par->{'dev'}->render_hspace($HSPACE);
 
         #right position
-        push @row, right_position($par, $posnwidths, $o, $seg->[2])
-            if $has_ruler;
-
-        #output segment
-        $par->{'dev'}->render_text(@row, "\n");
+        if ($has_ruler) {
+            $par->{'dev'}->render_position($LJUST, $posnwidths, $seg->[2],
+                                           $o->is_ruler, $par->{'bold'});
+        }
+        $par->{'dev'}->render_newline;
     }
 
     #blank between chunks
@@ -212,66 +224,6 @@ sub construct_row {
     my $row = "Bio::MView::Display::$type"->new($owner, $data);
     use strict 'refs';
     return $row;
-}
-
-#left or right justify as string or numeric identifier
-sub label_rownum {
-    my ($par, $labelwidths, $o) = @_;
-    my ($just, $w, $s) = ('-', $labelwidths->[0], $o->label(0));
-    return ()  unless $w;
-    $just = ''  if $s =~ /^\d+$/;
-    return (format_label($just, $w, $s), $Spacer);
-}
-
-#left justify
-sub label_identifier {
-    my ($par, $labelwidths, $o) = @_;
-    my ($w, $s) = ($labelwidths->[1], $o->label(1));
-    return ()  unless $w;
-    my @tmp = ();
-    push @tmp, $par->{'dev'}->process_url($s, $o->{'url'});
-    push @tmp, " " x ($w - CORE::length($s));
-    return (@tmp, $Spacer);
-}
-
-#left justify
-sub label_description {
-    my ($par, $labelwidths, $o) = @_;
-    my ($w, $s) = ($labelwidths->[2], $o->label(2));
-    return ()  unless $w;
-    return (format_label('-', $w, $s), $Spacer);
-}
-
-#right justify
-sub label_annotation {
-    my ($par, $labelwidths, $o, $n) = @_;
-    my ($w, $s) = ($labelwidths->[$n], $o->label($n));
-    return ()  unless $w;
-    return (format_label('', $w, $s), $Spacer);
-}
-
-#right justify: does not add $Spacer
-sub left_position {
-    my ($par, $posnwidths, $o, $n) = @_;
-    my ($w, $n) = ($posnwidths, ($o->is_ruler ? $n : ''));
-    my $s = format_label('', $w, $n);
-    return $par->{'dev'}->process_bold($s)  if $par->{'bold'};
-    return $s;
-}
-
-#left justify: does not add $Spacer
-sub right_position {
-    my ($par, $posnwidths, $o, $n) = @_;
-    my ($w, $n) = ($posnwidths, ($o->is_ruler ? $n : ''));
-    my $s = format_label('-', $w, $n);
-    return $par->{'dev'}->process_bold($s)  if $par->{'bold'};
-    return $s;
-}
-
-#left or right justify in padded fieldwidth
-sub format_label {
-    my ($just, $w, $s) = @_;
-    return sprintf("%${just}${w}s", $s);
 }
 
 ######################################################################
