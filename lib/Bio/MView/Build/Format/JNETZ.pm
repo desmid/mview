@@ -82,7 +82,7 @@ package Bio::MView::Build::Format::JNETZ::Align;
 use Bio::MView::Option::Parameters;  #for $PAR
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Align);
+@ISA = qw(Bio::MView::Align::Alignment);
 
 #override
 sub make_sequence {

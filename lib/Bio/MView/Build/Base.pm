@@ -8,7 +8,7 @@ package Bio::MView::Build;
 use Universal qw(vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Scheduler;
-use Bio::MView::Align;
+use Bio::MView::Align::Alignment;
 use NPB::Parse::Regexps;
 use NPB::Parse::Stream;
 
@@ -353,7 +353,7 @@ sub build_block {
     $self->build_indices;
     $self->build_rows($lo, $hi);
 
-    my $aln = new Bio::MView::Align($self, undef);
+    my $aln = new Bio::MView::Align::Alignment($self, undef);
 
     $self->rebless_alignment($aln);  #allow child to change type
 

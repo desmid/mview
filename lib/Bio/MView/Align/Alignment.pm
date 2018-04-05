@@ -3,7 +3,7 @@
 use strict;
 
 ######################################################################
-package Bio::MView::Align;
+package Bio::MView::Align::Alignment;
 
 use Universal qw(swap);
 use Bio::MView::Option::Parameters;  #for $PAR
@@ -118,7 +118,7 @@ sub visible_ids {
 #ignore id's in remaining arglist
 sub set_identity {
     my ($self, $ref, $mode) = @_;
-    #warn "Bio::MView::Align::set_identity(@_)\n";
+    #warn "Bio::MView::Align::Alignment::set_identity(@_)\n";
 
     $ref = $self->uid2row($ref);
     return  unless defined $ref;
@@ -132,7 +132,7 @@ sub set_identity {
 #ignore id's in remaining arglist
 sub set_coverage {
     my ($self, $ref) = @_;
-    #warn "Bio::MView::Align::set_coverage(@_)\n";
+    #warn "Bio::MView::Align::Alignment::set_coverage(@_)\n";
 
     $ref = $self->uid2row($ref);
     return  unless defined $ref;
@@ -296,14 +296,16 @@ sub prune_identities {
         push @obj, $row;
     }
 
-    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, @obj);
+    return new Bio::MView::Align::Alignment($self->{'build'},
+                                            $self->{'parent'}, @obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
 sub build_ruler {
     my ($self, $refobj) = @_;
     my $obj = new Bio::MView::Align::Ruler($self->length, $refobj);
-    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align::Alignment($self->{'build'},
+                                            $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with a line of
@@ -326,7 +328,8 @@ sub build_conservation_row {
     #sequence object lo/hi numbering
     my $obj = new Bio::MView::Align::Conservation($from, $to, $string);
 
-    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, $obj);
+    return new Bio::MView::Align::Alignment($self->{'build'},
+                                            $self->{'parent'}, $obj);
 }
 
 #generate a new alignment using an existing one but with lines showing
@@ -351,7 +354,8 @@ sub build_consensus_rows {
                                                    $group, $thresh, $ignore);
     }
 
-    return new Bio::MView::Align($self->{'build'}, $self->{'parent'}, @obj);
+    return new Bio::MView::Align::Alignment($self->{'build'},
+                                            $self->{'parent'}, @obj);
 }
 
 sub conservation {
