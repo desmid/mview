@@ -6,10 +6,10 @@ use strict;
 package Bio::MView::Build::Search;
 
 use Bio::MView::Option::Parameters;  #for $PAR
-use Bio::MView::Build;
+use Bio::MView::Build::Base;
 use vars qw(@ISA);
 
-@ISA = qw(Bio::MView::Build);
+@ISA = qw(Bio::MView::Build::Base);
 
 ######################################################################
 # public methods

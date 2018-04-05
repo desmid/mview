@@ -9,7 +9,7 @@ use Universal qw(max vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Build;
+use Bio::MView::Build::Base;
 use Bio::MView::Convert;
 
 sub new {
@@ -136,12 +136,12 @@ sub get_parser_stream {
 ######################################################################
 # private methods
 ######################################################################
-#return next entry worth of parse data as in a Bio::MView::Build object
-#ready for parsing, or undef if no more data.
+#return next entry worth of parse data as in a Bio::MView::Build::Base
+#derived object ready for parsing, or undef if no more data.
 sub next_build {
     my $self = shift;
 
-    #free the last entry and garbage its Bio::MView::Build
+    #free last entry and garbage its Bio::MView::Build derived object
     if (defined $self->{'build'}) {
         $self->{'build'}->get_entry->free;
         $self->{'build'} = undef;
@@ -154,7 +154,7 @@ sub next_build {
         return undef;
     }
 
-    #construct a new Bio::MView::Build
+    #construct a new Bio::MView::Build derived object
     return $self->{'build'} = $self->{'class'}->new($entry);
 }
 

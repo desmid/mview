@@ -3,7 +3,7 @@
 use strict;
 
 ######################################################################
-package Bio::MView::Build;
+package Bio::MView::Build::Base;
 
 use Universal qw(vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
