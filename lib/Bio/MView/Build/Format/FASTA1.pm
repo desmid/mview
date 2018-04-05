@@ -223,7 +223,7 @@ sub parse {
 	$query = $1;
     }
 
-    my $coll = new Bio::MView::Build::BLAST::Collector($self);
+    my $coll = new Bio::MView::Build::Search::Collector($self);
 
     my $rtype = $1  if ref($self) =~ /::([^:]+)$/;
     my $class = "Bio::MView::Build::Row::FASTA1::$rtype";
