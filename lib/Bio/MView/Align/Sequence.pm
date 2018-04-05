@@ -38,11 +38,11 @@ sub new {
 #override
 sub is_sequence { 1 }
 
-sub from     { $_[0]->{'from'} }
-sub seqobj   { $_[0]->{'string'} }
-sub string   { $_[0]->{'string'}->string }
-sub sequence { $_[0]->{'string'}->sequence }
-sub seqlen   { $_[0]->{'string'}->seqlen }
+sub from     { return $_[0]->{'from'} }
+sub seqobj   { return $_[0]->{'string'} }
+sub string   { return $_[0]->{'string'}->string }
+sub sequence { return $_[0]->{'string'}->sequence }
+sub seqlen   { return $_[0]->{'string'}->seqlen }
 
 sub set_coverage {
     my ($self, $ref) = @_;

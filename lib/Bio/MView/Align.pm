@@ -211,7 +211,15 @@ sub set_consensus_color_scheme {
     }
 }
 
-sub init_display { return $_[0]->{'parent'}->{'string'} }
+#return tuple of (orientation, length, start, stop) for the alignment
+sub init_display {
+    my $self = shift;
+    return ()  unless defined $self->{'parent'};
+
+    my $seq = $self->{'parent'}->{'string'};
+
+    return ($seq->is_forwards, $seq->length, $seq->lo, $seq->hi);
+}
 
 #Append Row data to the input Display object: done one at a time to reduce
 #memory usage instead of accumulating a potentially long list before passing

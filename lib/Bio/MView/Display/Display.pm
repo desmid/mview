@@ -31,11 +31,10 @@ sub new {
 ######################################################################
 sub new_panel {
     my $self = shift;
-    my ($headers, $startseq) = @_;
 
     my $par = $self->{'par'};
 
-    my $panel = new Bio::MView::Display::Panel($par, $headers, $startseq);
+    my $panel = new Bio::MView::Display::Panel($par, @_);
     push @{$self->{'panel'}}, $panel;
 
     return $panel;

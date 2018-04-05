@@ -20,30 +20,26 @@ my %Known_Track_Types = (
 
 sub new {
     my $type = shift;
-    die "${type}::new: missing arguments\n"  if @_ < 3;
-    my ($par, $headers, $startseq) = @_;
+    die "${type}::new(@_): missing arguments\n"  if @_ < 6;
+    my ($par, $headers, $forwards, $length, $start, $stop) = @_;
 
     my $self = {};
     bless $self, $type;
 
-    $self->{'par'}      = $par;
-    $self->{'header'}   = $headers;
-
-    $self->{'length'}   = $startseq->length;
-    $self->{'forwards'} = $startseq->is_forwards;
-
-    #start/stop, counting extent forwards
-    $self->{'start'}    = $startseq->lo;
-#   $self->{'stop'}     = $startseq->hi;
-    $self->{'stop'}     = $self->{'start'} + $self->{'length'} - 1;
+    $self->{'par'}      = $par;       #parameters
+    $self->{'header'}   = $headers;   #list of header strings
+    $self->{'forwards'} = $forwards;  #alignment orientation
+    $self->{'length'}   = $length;    #alignment length
+    $self->{'start'}    = $start;     #alignment start position
+    $self->{'stop'}     = $stop;      #alignment stop position
 
     $self->{'track'}    = [];  #display objects
 
-    #warn "${type}::new: start= $self->{'start'}, stop= $self->{'stop'}, (fw= $self->{'forwards'})";
+    #warn "${type}::new: start= $start, stop= $stop, (fw= $forwards)";
 
-    #initial width of left/right sequence position as text
-    my ($pos1, $pos2) = (length("$self->{'start'}"), length("$self->{'stop'}"));
-    ($pos1, $pos2) = swap($pos1, $pos2)  unless $self->{'forwards'};
+    #initial width of left/right sequence positions as text
+    my ($pos1, $pos2) = (length("$start"), length("$stop"));
+    ($pos1, $pos2) = swap($pos1, $pos2)  unless $forwards;
 
     $self->{'posnwidths'} = [max($pos1, $MINPOSWIDTH), max($pos2, $MINPOSWIDTH)];
 

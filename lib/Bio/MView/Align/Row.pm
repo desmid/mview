@@ -56,9 +56,9 @@ sub set_display {
     }
 }
 
-sub uid          { $_[0]->{'uid'} }
+sub uid { return $_[0]->{'uid'} }
 
-sub get_display  { $_[0]->{'display'} }
+sub get_display { return $_[0]->{'display'} }
 
 sub get_label {
     return ''  unless defined $_[0]->{'display'}->{'labels'}->[$_[1]];
