@@ -16,7 +16,7 @@ use vars qw(@ISA);
 ######################################################################
 #iterator: subclass overrides
 sub next_segment {
-    my ($self, $par) = @_;
+    my ($self, $par, $chunksize) = @_;
     #warn "${self}::next_segment\n";
 
     return undef  if $self->{'cursor'} > $self->{'length'};
@@ -25,7 +25,7 @@ sub next_segment {
     my $pos1 = $self->{'start'} + $self->{'cursor'} - 1;
 
     my $rest  = $self->{'length'} - $self->{'cursor'} + 1;  #length remaining
-    my $chunk = ($par->{'chunk'} < $rest ? $par->{'chunk'} : $rest);
+    my $chunk = ($chunksize < $rest ? $chunksize : $rest);
 
     #warn "($self->{'length'}, $self->{'cursor'}, $chunk, $rest, ($self->{'start'}, $self->{'stop'}))\n";
 

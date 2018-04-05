@@ -47,7 +47,7 @@ sub render {
 
     my $par = $self->{'par'};
 
-    my ($posnwidths, $labelwidths) = $self->update_panel_fieldwidths;
+    my ($posnwidths, $labelwidths) = $self->update_multipanel_fieldwidths;
 
     $par->{'dev'} = select_output($par, $mode, $self->{'par'}->{'stream'});
 
@@ -82,16 +82,17 @@ sub initialise_fieldwidths {
 
     my $par = $self->{'par'};
 
+    #initialise left/right posnwidths
     $self->{'posnwidths'}  = [0, 0];
-    $self->{'labelwidths'} = [];
 
     #initialise labelwidths
+    $self->{'labelwidths'} = [];
     for (my $i=0; $i < @{$par->{'labelflags'}}; $i++) {
         $self->{'labelwidths'}->[$i] = 0;
     }
 }
 
-sub update_panel_fieldwidths {
+sub update_multipanel_fieldwidths {
     my $self = shift;
 
     return (undef, undef)  unless $self->{'par'}->{'register'};

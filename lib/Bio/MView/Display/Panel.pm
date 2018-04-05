@@ -37,17 +37,7 @@ sub new {
 
     #warn "${type}::new: start= $start, stop= $stop, (fw= $forwards)";
 
-    #initial width of left/right sequence positions as text
-    my ($pos1, $pos2) = (length("$start"), length("$stop"));
-    ($pos1, $pos2) = swap($pos1, $pos2)  unless $forwards;
-
-    $self->{'posnwidths'} = [max($pos1, $MINPOSWIDTH), max($pos2, $MINPOSWIDTH)];
-
-    #initial label widths
-    $self->{'labelwidths'} = [];
-    for (my $i=0; $i < @{$par->{'labelflags'}}; $i++) {
-        $self->{'labelwidths'}->[$i] = 0;
-    }
+    $self->initialise_fieldwidths;
 
     $self;
 }
@@ -78,17 +68,11 @@ sub append {
             next;
         }
 
-        $type = ucfirst $type;
-
         my $o = construct_row($type, $self, $row);
 
         push @{$self->{'track'}}, $o;
 
-        #update column widths seen so far in this panel
-        for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
-            $self->{'labelwidths'}->[$i] =
-                max($self->{'labelwidths'}->[$i], $o->labelwidth($i));
-        }
+        $self->update_fieldwidths($o);
     }
     #vmstat("Panel::append done");
 }
@@ -103,9 +87,6 @@ sub render_panel {
         $posnwidths  = $self->{'posnwidths'};
         $labelwidths = $self->{'labelwidths'};
     }
-
-    $par->{'chunk'} = $par->{'width'};
-    $par->{'chunk'} = $self->{'length'}  if $par->{'chunk'} < 1;  #full width
 
     if (@{$self->{'header'}}) {
         $par->{'dev'}->render_tr_pre_begin;
@@ -133,7 +114,56 @@ sub free_rows {
     }
 }
 
-#output a pane of par{'width'} chunks
+sub initialise_fieldwidths {
+    my $self = shift;
+
+    my $par = $self->{'par'};
+
+    #initialise left/right position widths seen so far in this panel,
+    #accounting for chunking which creates new positions
+    my $chunk      = $self->get_chunk_size;
+    my $start      = $self->{'start'};
+    my $stop       = $self->{'stop'};
+    my $posnwidths = [$MINPOSWIDTH, $MINPOSWIDTH];
+
+    for (my $j=$start; $j < $stop; $j += $chunk) {
+
+        my ($pos0, $pos1) = (length("$j"), length("@{[$j+$chunk-1]}"));
+
+        $posnwidths->[0] = max($posnwidths->[0], $pos0);
+        $posnwidths->[1] = max($posnwidths->[1], $pos1);
+    }
+    @$posnwidths = swap(@$posnwidths)  unless $self->{'forwards'};
+
+    $self->{'chunk'}      = $chunk;
+    $self->{'posnwidths'} = $posnwidths;
+
+    #warn "pw: [@{$self->{'posnwidths'}}] fw: $self->{'forwards'}\n";
+
+    #initialise labelwidths
+    $self->{'labelwidths'} = [];
+    for (my $i=0; $i < @{$par->{'labelflags'}}; $i++) {
+        $self->{'labelwidths'}->[$i] = 0;
+    }
+}
+
+sub update_fieldwidths {
+    my ($self, $o) = @_;
+    #update label widths seen so far in this panel
+    for (my $i=0; $i < @{$self->{'labelwidths'}}; $i++) {
+        $self->{'labelwidths'}->[$i] =
+            max($self->{'labelwidths'}->[$i], $o->labelwidth($i));
+    }
+}
+
+sub get_chunk_size {
+    my $self = shift;
+    my $chunk = $self->{'par'}->{'width'};
+    $chunk = $self->{'length'}  if $chunk < 1;  #full width
+    return $chunk;
+}
+
+#output a pane of chunks
 sub render_pane {
     my ($self, $par, $posnwidths, $labelwidths) = @_;
 
@@ -146,7 +176,7 @@ sub render_pane {
 
     #vmstat("render pane");
     while (1) {
-        last  unless $self->render_chunk($par, $has_ruler,
+        last  unless $self->render_chunk($par, $has_ruler, $self->{'chunk'},
                                          $posnwidths, $labelwidths);
     }
     #vmstat("render pane done");
@@ -154,12 +184,12 @@ sub render_pane {
 
 #output a single chunk
 sub render_chunk {
-    my ($self, $par, $has_ruler, $posnwidths, $labelwidths) = @_;
+    my ($self, $par, $has_ruler, $chunk, $posnwidths, $labelwidths) = @_;
 
     #render each track's segment for this chunk
     foreach my $o (@{$self->{'track'}}) {
 
-        my $seg = $o->next_segment($par);
+        my $seg = $o->next_segment($par, $chunk);
 
         return 0  unless defined $seg;  #all chunks done
 
@@ -223,6 +253,7 @@ sub render_chunk {
 ######################################################################
 sub construct_row {
     my ($type, $owner, $data) = @_;
+    $type = ucfirst $type;
     no strict 'refs';
     my $row = "Bio::MView::Display::$type"->new($owner, $data);
     use strict 'refs';
