@@ -73,11 +73,11 @@ SourceForge").
 
 ### Found a bug?
 
-Please send an email to `biomview _at_ gmail.com`.
+Please open an issue on the MView [issue tracker](https://github.com/desmid/mview/issues "issue tracker") or send an email to `biomview@gmail.com`.
 
 If MView isn't able to parse your input file or produces a warning message, it
-would be very helpful if you can include/attach the data file in your email so
-that I can (1) quickly reproduce the error, and (2) add the example to the
+would be very helpful if you can include/attach the data file in your message
+so that I can (1) quickly reproduce the error, and (2) add the example to the
 test suite.
 
 

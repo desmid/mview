@@ -75,7 +75,10 @@ Tarballs and bzip2 archives of releases can also be found at the older
 Found a bug?
 ^^^^^^^^^^^^
 
-Please send an email to *biomview _at_ gmail.com*.
+Please open an issue on the MView `issue tracker`_ or send an email to
+*biomview@gmail.com*.
+
+.. _issue tracker: https://github.com/desmid/mview/issues
 
 If MView isn't able to parse your input file or produces a warning message, it
 would be very helpful if you can include/attach the data file in your email so
