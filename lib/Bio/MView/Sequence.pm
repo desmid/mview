@@ -69,22 +69,22 @@ sub new {
     my $type = shift;
     my $self = {};
 
-    $self->{'seq'}    	= {};   	#sequence hash of char
+    $self->{'seq'}      = {};           #sequence hash of char
 
-    $self->{'lo'}     	= 0;    	#absolute start of string
-    $self->{'hi'}     	= 0;    	#absolute end of string
+    $self->{'lo'}       = 0;            #absolute start of string
+    $self->{'hi'}       = 0;            #absolute end of string
 
-    $self->{'pfxlen'} 	= 0;    	#length of non-sequence prefix
-    $self->{'sfxlen'} 	= 0;    	#length of non-sequence suffix
+    $self->{'pfxlen'}   = 0;            #length of non-sequence prefix
+    $self->{'sfxlen'}   = 0;            #length of non-sequence suffix
 
-    $self->{'reflo'} 	= 0;    	#first position of sequence data
-    $self->{'refhi'} 	= 0;    	#last  position of sequence data
+    $self->{'reflo'}    = 0;            #first position of sequence data
+    $self->{'refhi'}    = 0;            #last  position of sequence data
 
-    $self->{'f1'}  	= undef;    	#from label of sequence
-    $self->{'t1'}   	= undef;    	#to   label of sequence
+    $self->{'f1'}       = undef;        #from label of sequence
+    $self->{'t1'}       = undef;        #to   label of sequence
 
-    $self->{'f2'}  	= undef;    	#2nd from label of sequence (optional)
-    $self->{'t2'}   	= undef;    	#2nd to   label of sequence (optional)
+    $self->{'f2'}       = undef;        #2nd from label of sequence (optional)
+    $self->{'t2'}       = undef;        #2nd to   label of sequence (optional)
 
     $self->{'fs'}       = 0;            #has frameshifts
 
@@ -112,7 +112,7 @@ sub string {
     $s =~ s/$Mark_Spc/$_[0]->{'text_spc'}/g;
     $s =~ s/$Mark_Fs1/$_[0]->{'text_fs1'}/g;
     $s =~ s/$Mark_Fs2/$_[0]->{'text_fs2'}/g;
-    $s;
+    return $s;
 }
 
 sub sequence {
@@ -122,7 +122,7 @@ sub sequence {
     $s =~ s/$Mark_Spc//og;
     $s =~ s/$Mark_Fs1//og;
     $s =~ s/$Mark_Fs2//og;
-    $s;
+    return $s;
 }
 
 # sub length {
@@ -131,7 +131,7 @@ sub sequence {
 #     my $true = $self->trulen;
 #     warn "$self: length: true: $true  claim: $claim\n";
 #     warn "T= [@{[$self->string]}]\n";
-#     $claim;
+#     return $claim;
 # }
 
 #return actual string length; includes special characters
@@ -199,11 +199,12 @@ sub set_range {
         die "$self: range values in wrong order ($lo, $hi)\n"    if $lo > $hi;
         ($self->{'lo'}, $self->{'hi'}) = ($lo, $hi);
     }
-    $self;
 }
 
+#subclass overrides
 sub is_forwards {1}
 
+#subclass overrides
 sub reverse {
     no strict qw(subs);
     bless $_[0], Bio::MView::Reverse_Sequence;
@@ -251,18 +252,17 @@ sub findall {
     return $list;
 }
 
-#input each argument frag as [string, from, to], where from <= to
+#subclass overrides: input each argument frag as [string, from, to], where
+#from <= to
 sub insert {
     my $self = shift;
-    my ($string, $frag, $len, $i, $p, $c, $state);
+    my ($o, $state) = ('+', 0);
 
-    $state = 0;
-
-    foreach $frag (@_) {
-	die "insert(+) wrong direction ($frag->[1], $frag->[2])\n"
+    foreach my $frag (@_) {
+	die "insert($o) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[1] > $frag->[2];
 
-        my ($lo, $hi);
+        my ($len, $lo, $hi, $string);
 
         if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
             $string = ${ $frag->[-1] };
@@ -275,99 +275,15 @@ sub insert {
             $lo = $frag->[1];
             $hi = $frag->[2];
         }
-        #warn "frg(+)=@$frag\n";
-        #warn "frg(+)=$frag->[1], $frag->[2] => $len [$string]\n";
+        #warn "frg($o)=@$frag\n";
+        #warn "frg($o)=$frag->[1], $frag->[2] => $len [$string]\n";
 
-	$self->_encode(\$string);
-	#warn "frg(+)=$frag->[1], $frag->[2] [$string]\n";
+        $self->update_sequence_limits($lo, $hi);
+        $self->update_sequence_labels($frag->[3], $frag->[4], 'f1', 't1');
+        $self->update_sequence_labels($frag->[5], $frag->[6], 'f2', 't2');
+	$self->populate_sequence_array($o, $state, $len, $lo, $hi, \$string);
 
-        $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
-        $self->{'hi'} = $hi  if $hi > $self->{'hi'} or $self->{'hi'} == 0;
-
-        #update sequence labels: optional first pair
-        if (defined $frag->[3] and $frag->[3] != 0) {
-	    $self->{'f1'} = $frag->[3]   unless defined $self->{'f1'};
-	    $self->{'t1'} = $frag->[4]   unless defined $self->{'t1'};
-	    my $f = $frag->[3];
-	    my $t = $frag->[4];
-	    if ($f < $t or $self->{'f1'} < $self->{'t1'}) {
-		#label pair orientated positive
-		$self->{'f1'} = $f  if $f < $self->{'f1'};
-		$self->{'t1'} = $t  if $t > $self->{'t1'};
-	    } else {
-		#label pair orientated negative
-		$self->{'f1'} = $f  if $f > $self->{'f1'};
-		$self->{'t1'} = $t  if $t < $self->{'t1'};
-	    }
-	}
-
-        #update sequence labels: optional second pair
-        if (defined $frag->[5] and $frag->[5] != 0) {
-	    $self->{'f2'} = $frag->[5]   unless defined $self->{'f2'};
-	    $self->{'t2'} = $frag->[6]   unless defined $self->{'t2'};
-	    my $f = $frag->[5];
-	    my $t = $frag->[6];
-	    if ($f < $t or $self->{'f2'} < $self->{'t2'}) {
-		#label pair orientated positive
-		$self->{'f2'} = $f  if $f < $self->{'f2'};
-		$self->{'t2'} = $t  if $t > $self->{'t2'};
-	    } else {
-		#label pair orientated negative
-		$self->{'f2'} = $f  if $f > $self->{'f2'};
-		$self->{'t2'} = $t  if $t < $self->{'t2'};
-	    }
-	}
-
-	#populate sequence array
-	for ($i=0; $i < $len; $i++) {
-
-	    $c = substr($string, $i, 1);
-
-	    #begin/end
-	    if ($c eq $Mark_Pad) {
-		if ($state == 0) {
-		    $self->{'pfxlen'}++;
-		} elsif ($state > 0) {
-		    $self->{'sfxlen'}++;
-		    $state = 2;
-		}
-		next;
-	    }
-
-	    #middle
-	    $state = 1    if $state < 1;
-
-	    #skip gaps
-	    next    if $c eq $Mark_Gap;
-
-	    $p = $lo + $i;
-
-	    #warn "insert(+): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
-
-	    #store other text, including Mark_Spc or Mark_Fs[12] symbols
-	    if (exists $self->{'seq'}->{$p}) {
-		next if $self->{'seq'}->{$p} eq $c;
-		warn "${self}::insert(+): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::WARNCLASH;
-		next unless $Bio::MView::Sequence::OVERWRITE;
-		#unrecord old frameshift
-		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
-		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs2;
-	    }
-	    #record frameshift
-	    $self->{'fs'}++  if $c eq $Mark_Fs1;
-	    $self->{'fs'}++  if $c eq $Mark_Fs2;
-
-	    #write the character
-	    $self->{'seq'}->{$p} = $c;
-	}
-
-	
-	if ($Bio::MView::Sequence::HARDFASTA and
-	    $len != $hi-$lo+1 and $self->{'fs'} < 1) {
-	    warn "${self}::insert(+) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
-	}
-	#warn "insert(+): $self->{'lo'} $self->{'hi'}\n";
+	#warn "insert($o): $self->{'lo'} $self->{'hi'}\n";
     }
 
     #adjust prefix/suffix positions given new lengths
@@ -375,10 +291,9 @@ sub insert {
     $self->{'refhi'} = $self->{'hi'} - $self->{'sfxlen'};
 
     #$self->dump;
-
-    $self;
 }
 
+#subclass overrides
 sub raw {
     my ($self, $col, $p) = @_;
 
@@ -393,6 +308,7 @@ sub raw {
     return $Mark_Gap;
 }
 
+#subclass overrides
 sub col {
     my ($self, $col, $p) = @_;
 
@@ -427,7 +343,7 @@ sub is_internal_gap { $_[1] eq $Mark_Gap }
 sub is_gap          { $_[1] eq $Mark_Pad or $_[1] eq $Mark_Gap }
 
 ######################################################################
-# private methods
+# protected methods
 ######################################################################
 sub _encode {
     my ($self, $s) = @_;
@@ -449,10 +365,9 @@ sub _encode {
 
     #frameshift '\'
     $$s =~ s/$self->{'find_fs2'}/$Mark_Fs2/g;
-
-    $self;
 }
 
+#subclass overrides
 sub _substr {
     my ($self, $start, $stop) = @_;
 
@@ -484,7 +399,93 @@ sub _substr {
 	    $s .= $Mark_Gap;
 	}
     }
-    $s;
+    return $s;
+}
+
+sub update_sequence_limits {
+    my ($self, $lo, $hi) = @_;
+    $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
+    $self->{'hi'} = $hi  if $hi > $self->{'hi'} or $self->{'hi'} == 0;
+}
+
+sub update_sequence_labels {
+    my ($self, $f, $t, $fs, $ts) = @_;
+
+    if (defined $f and $f != 0) {
+
+        $self->{$fs} = $f  unless defined $self->{$fs};
+        $self->{$ts} = $t  unless defined $self->{$ts};
+
+        if ($f < $t or $self->{$fs} < $self->{$ts}) {
+            #label pair orientated positive
+            $self->{$fs} = $f  if $f < $self->{$fs};
+            $self->{$ts} = $t  if $t > $self->{$ts};
+        } else {
+            #label pair orientated negative
+            $self->{$fs} = $f  if $f > $self->{$fs};
+            $self->{$ts} = $t  if $t < $self->{$ts};
+        }
+    }
+}
+
+#subclass overrides
+sub get_sequence_index {
+    my ($self, $lo, $hi, $i) = @_;
+    return $lo + $i;  #forwards
+}
+
+sub populate_sequence_array {
+    my ($self, $o, $state, $len, $lo, $hi, $string) = @_;
+
+    $self->_encode($string);
+
+    for (my $i=0; $i < $len; $i++) {
+
+        my $c = substr($$string, $i, 1);
+
+        #begin/end
+        if ($c eq $Mark_Pad) {
+            if ($state == 0) {
+                $self->{'pfxlen'}++;
+            } elsif ($state > 0) {
+                $self->{'sfxlen'}++;
+                $state = 2;
+            }
+            next;
+        }
+
+        #middle
+        $state = 1    if $state < 1;
+
+        #skip gaps
+        next    if $c eq $Mark_Gap;
+
+        my $p = $self->get_sequence_index($lo, $hi, $i);
+
+        #warn "insert($o): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
+
+        #store other text, including Mark_Spc or Mark_Fs[12] symbols
+        if (exists $self->{'seq'}->{$p}) {
+            next if $self->{'seq'}->{$p} eq $c;
+            warn "${self}::insert($o): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
+                if $Bio::MView::Sequence::WARNCLASH;
+            next unless $Bio::MView::Sequence::OVERWRITE;
+            #unrecord old frameshift
+            $self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
+            $self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs2;
+        }
+        #record frameshift
+        $self->{'fs'}++  if $c eq $Mark_Fs1;
+        $self->{'fs'}++  if $c eq $Mark_Fs2;
+
+        #write the character
+        $self->{'seq'}->{$p} = $c;
+    }
+
+    if ($Bio::MView::Sequence::HARDFASTA and
+        $len != $hi-$lo+1 and $self->{'fs'} < 1) {
+        warn "insert($o) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
+    }
 }
 
 ######################################################################
@@ -503,25 +504,25 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Sequence);
 
+#overrides
 sub is_forwards {0}
 
+#overrides
 sub reverse {
     no strict qw(subs);
     bless $_[0], Bio::MView::Sequence;
 }
 
-#input each argument frag as [string, from, to], where from >= to
+#overrides: input each argument frag as [string, from, to], where from >= to
 sub insert {
     my $self = shift;
-    my ($string, $frag, $len, $i, $p, $c, $state);
+    my ($o, $state) = ('-', 0);
 
-    $state = 0;
-
-    foreach $frag (@_) {
-	die "insert(-) wrong direction ($frag->[1], $frag->[2])\n"
+    foreach my $frag (@_) {
+	die "insert($o) wrong direction ($frag->[1], $frag->[2])\n"
 	    if $frag->[2] > $frag->[1];
 
-        my ($lo, $hi);
+        my ($len, $lo, $hi, $string);
 
         if (ref $frag->[-1] and ${ $frag->[-1] } ne '')  {
             $string = ${ $frag->[-1] };
@@ -534,100 +535,15 @@ sub insert {
             $lo = $frag->[2];
             $hi = $frag->[1];
         }
-        #warn "frg(-)=@$frag\n";
-        #warn "frg(-)=$frag->[1], $frag->[2] => $len [$string]\n";
+        #warn "frg($o)=@$frag\n";
+        #warn "frg($o)=$frag->[1], $frag->[2] => $len [$string]\n";
 
-	$self->_encode(\$string);
-	#warn "frg(-)=$frag->[1], $frag->[2] [$string]\n";
+        $self->update_sequence_limits($lo, $hi);
+        $self->update_sequence_labels($frag->[3], $frag->[4], 'f1', 't1');
+        $self->update_sequence_labels($frag->[5], $frag->[6], 'f2', 't2');
+        $self->populate_sequence_array($o, $state, $len, $lo, $hi, \$string);
 
-	$len = CORE::length $string;
-	
-        $self->{'lo'} = $lo  if $lo < $self->{'lo'} or $self->{'lo'} == 0;
-        $self->{'hi'} = $hi  if $hi > $self->{'hi'} or $self->{'hi'} == 0;
-
-        #update sequence labels: optional first pair
-        if (defined $frag->[3] and $frag->[3] != 0) {
-	    $self->{'f1'} = $frag->[3]   unless defined $self->{'f1'};
-	    $self->{'t1'} = $frag->[4]   unless defined $self->{'t1'};
-	    my $f = $frag->[3];
-	    my $t = $frag->[4];
-	    if ($f < $t or $self->{'f1'} < $self->{'t1'}) {
-		#label pair orientated positive
-		$self->{'f1'} = $f  if $f < $self->{'f1'};
-		$self->{'t1'} = $t  if $t > $self->{'t1'};
-	    } else {
-		#label pair orientated negative
-		$self->{'f1'} = $f  if $f > $self->{'f1'};
-		$self->{'t1'} = $t  if $t < $self->{'t1'};
-	    }
-	}
-
-        #update sequence labels: optional second pair
-        if (defined $frag->[5] and $frag->[5] != 0) {
-	    $self->{'f2'} = $frag->[5]   unless defined $self->{'f2'};
-	    $self->{'t2'} = $frag->[6]   unless defined $self->{'t2'};
-	    my $f = $frag->[5];
-	    my $t = $frag->[6];
-	    if ($f < $t or $self->{'f2'} < $self->{'t2'}) {
-		#label pair orientated positive
-		$self->{'f2'} = $f  if $f < $self->{'f2'};
-		$self->{'t2'} = $t  if $t > $self->{'t2'};
-	    } else {
-		#label pair orientated negative
-		$self->{'f2'} = $f  if $f > $self->{'f2'};
-		$self->{'t2'} = $t  if $t < $self->{'t2'};
-	    }
-	}
-
-	#populate sequence array
-	for ($i=0; $i < $len; $i++) {
-
-	    $c = substr($string, $i, 1);
-
-	    #begin/end
-	    if ($c eq $Mark_Pad) {
-		if ($state == 0) {
-		    $self->{'pfxlen'}++;
-		} elsif ($state > 0) {
-		    $self->{'sfxlen'}++;
-		    $state = 2;
-		}
-		next;
-	    }
-
-	    #middle
-	    $state = 1    if $state < 1;
-
-	    #skip gaps
-	    next    if $c eq $Mark_Gap;
-
-	    $p = $hi - $i;    #REVERSE
-
-	    #warn "insert(-): $p/($self->{'lo'},$self->{'hi'}) = $i/$len\t[$c]\n";
-
-	    #store other text, including Mark_Spc or Mark_Fs[12] symbols
-	    if (exists $self->{'seq'}->{$p}) {
-		next if $self->{'seq'}->{$p} eq $c;
-		warn "${self}::insert(-): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
-		    if $Bio::MView::Sequence::WARNCLASH;
-		next unless $Bio::MView::Sequence::OVERWRITE;
-		#unrecord old frameshift
-		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
-		$self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs2;
-	    }
-	    #record frameshift
-	    $self->{'fs'}++  if $c eq $Mark_Fs1;
-	    $self->{'fs'}++  if $c eq $Mark_Fs2;
-
-	    #write the character
-	    $self->{'seq'}->{$p} = $c;
-	}
-
-	if ($Bio::MView::Sequence::HARDFASTA and
-	    $len != $hi-$lo+1 and $self->{'fs'} < 1) {
-	    warn "${self}::insert(-) unframeshifted length mismatch ($len != $hi-$lo+1)\n";
-	}
-	#warn "insert(-): $self->{'lo'} $self->{'hi'}\n";
+	#warn "insert($o): $self->{'lo'} $self->{'hi'}\n";
     }
 
     #adjust prefix/suffix positions given new lengths
@@ -635,10 +551,9 @@ sub insert {
     $self->{'refhi'} = $self->{'lo'} + $self->{'sfxlen'};
 
     #$self->dump;
-
-    $self;
 }
 
+#overrides
 sub raw {
     my ($self, $col, $p) = @_;
 
@@ -653,6 +568,7 @@ sub raw {
     return $Mark_Gap;
 }
 
+#overrides
 sub col {
     my ($self, $col, $p) = @_;
 
@@ -681,8 +597,9 @@ sub col {
 }
 
 ######################################################################
-# private methods
+# protected methods
 ######################################################################
+#overrides
 sub _substr {
     my ($self, $stop, $start) = @_; #REVERSE
 
@@ -714,7 +631,13 @@ sub _substr {
 	    $s .= $Mark_Gap;
 	}
     }
-    $s;
+    return $s;
+}
+
+#overrides
+sub get_sequence_index {
+    my ($self, $lo, $hi, $i) = @_;
+    return $hi - $i;  #reverse
 }
 
 ###########################################################################
