@@ -396,6 +396,13 @@ $Options = [
             },
 
             {
+                'option'  => "sequences",
+                'usage'   => "Output sequences",
+                'type'    => "binary",
+                'default' => "on",
+            },
+
+            {
                 'option'  => "register",
                 'usage'   => "Output multi-pass alignments with columns in register",
                 'type'    => "binary",

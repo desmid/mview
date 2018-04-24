@@ -137,6 +137,7 @@ sub mview {
         'alinkcolor' => $par->{'alinkcolor'},
         'vlinkcolor' => $par->{'vlinkcolor'},
         'register'   => $par->{'register'},
+        'sequences'  => $par->{'sequences'},
         'labelflags' => $labelflags,
         'stream'     => \*STDOUT,
         );

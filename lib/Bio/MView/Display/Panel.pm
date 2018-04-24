@@ -221,24 +221,27 @@ sub render_chunk {
             }
         }
 
-        #left position
-        if ($has_ruler) {
-            $par->{'dev'}->render_position($RJUST, $posnwidths->[0],
-                                           $seg->[0], $o->is_ruler,
-                                           $par->{'bold'})
-        }
-        $par->{'dev'}->render_hspace($HSPACE);
+        if ($par->{'sequences'}) {
+            #left position
+            if ($has_ruler) {
+                $par->{'dev'}->render_position($RJUST, $posnwidths->[0],
+                                               $seg->[0], $o->is_ruler,
+                                               $par->{'bold'})
+            }
+            $par->{'dev'}->render_hspace($HSPACE);
 
-        #sequence string
-        $par->{'dev'}->render_sequence($seg->[2], $par->{'bold'});
-        $par->{'dev'}->render_hspace($HSPACE);
+            #sequence string
+            $par->{'dev'}->render_sequence($seg->[2], $par->{'bold'});
+            $par->{'dev'}->render_hspace($HSPACE);
 
-        #right position
-        if ($has_ruler) {
-            $par->{'dev'}->render_position($LJUST, $posnwidths->[1],
-                                           $seg->[1], $o->is_ruler,
-                                           $par->{'bold'});
+            #right position
+            if ($has_ruler) {
+                $par->{'dev'}->render_position($LJUST, $posnwidths->[1],
+                                               $seg->[1], $o->is_ruler,
+                                               $par->{'bold'});
+            }
         }
+
         $par->{'dev'}->render_newline;
     }
 

@@ -26,6 +26,7 @@ sub new {
 ###########################################################################
 package Bio::MView::Build::Row;
 
+use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::RowInfoMixin;
 use Bio::MView::Sequence;
 use Bio::MView::SRS;
@@ -58,7 +59,10 @@ sub new {
     $self->{'num'}  = $num;                     #row number/string
     $self->{'desc'} = $desc;                    #description string
     $self->{'frag'} = [];                       #list of fragments
-    $self->{'seq'}  = new Bio::MView::Sequence; #finished sequence
+
+    $self->{'seq'}  =
+        new Bio::MView::Sequence($PAR->get('sequences')); #finished sequence
+
     $self->{'url'}  = Bio::MView::SRS::srsLink($self->{'cid'});  #url
 
     $self->save_info(@_);                       #other info
@@ -92,8 +96,9 @@ sub pcid  { $_[0]->{'pcid'} }  #percent identity
 sub posn1 { '' }  #subclass overrides: first sequence range
 sub posn2 { '' }  #subclass overrides: second sequence range
 
-#return the sequence string
+#return the sequence string, if any
 sub seq {
+    return ''  unless $PAR->get('sequences');  #no interpolation
     return ''  unless defined $_[0]->{'seq'};
     return $_[0]->{'seq'}->string
 }

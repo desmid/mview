@@ -5,6 +5,8 @@ use strict;
 ###########################################################################
 package Bio::MView::Build::RowInfoMixin;
 
+use Bio::MView::Option::Parameters;  #for $PAR
+
 my $DIS_SCHEMA = [
     # unf ukey       label
     [ 1,  'num',     '',       ],
@@ -56,6 +58,9 @@ my $RDB_SCHEMA = [
     [ 8,   'posn2',   'sbjct',   '15S'  ],
     [ 9,   'seq',     'seq',     '500S' ],
     ];
+
+#ignore these keys if sequence output is off
+my $IGNORE_SEQUENCE_KEYS = [ 'covr', 'pcid', 'seq' ];
 
 ######################################################################
 # public methods
@@ -133,7 +138,7 @@ sub get_val {
 sub row_as_rdb_string {
     my ($self, $mode) = @_;
     my @cols = ();
-    my $ignore = $self->ignore_columns;
+    my $ignore = $self->ignore_child_columns;
     #warn "ignore: @$ignore\n";
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$RDB_SCHEMA) {
         my ($n, $key, $label, $format) = @$row;
@@ -149,7 +154,7 @@ sub row_as_rdb_string {
 sub row_as_string {
     my ($self, $delim, $ignore) = @_;
     $ignore = []  unless defined $ignore;
-    push @$ignore, @{$self->ignore_columns};
+    push @$ignore, @{$self->ignore_child_columns};
     #warn "ignore: @$ignore\n";
     my @cols = ();
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$UNF_SCHEMA) {
@@ -167,7 +172,7 @@ sub row_as_string {
 sub display_column_widths {
     my $self = shift;
     my @cols = ();
-    my $ignore = $self->ignore_columns;
+    my $ignore = $self->ignore_child_columns;
     #warn @$ignore;
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
         my ($n, $key, $label) = @$row;
@@ -196,7 +201,7 @@ sub display_column_widths {
 sub display_column_labels {
     my $self = shift;
     my @cols = ();
-    my $ignore = $self->ignore_columns;
+    my $ignore = $self->ignore_child_columns;
     #warn @$ignore;
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
         my ($n, $key, $label) = @$row;
@@ -225,7 +230,7 @@ sub display_column_labels {
 sub display_column_values {
     my $self = shift;
     my @cols = ();
-    my $ignore = $self->ignore_columns;
+    my $ignore = $self->ignore_child_columns;
     #warn @$ignore;
     foreach my $row (sort { $a->[0] <=> $b->[0] } @$DIS_SCHEMA) {
         my ($n, $key, $label) = @$row;
@@ -259,6 +264,13 @@ sub ignore_columns { [] }  #subclass overrides: default is empty
 ######################################################################
 # private methods
 ######################################################################
+sub ignore_child_columns {
+    my $self = shift;
+    my $ignore = $self->ignore_columns;  #from subclass
+    push @$ignore, @$IGNORE_SEQUENCE_KEYS  unless $PAR->get('sequences');
+    return $ignore;
+}
+
 #return a concatenated string of formatted schema data suitable for
 #screen display
 sub schema_data_as_formatted_string {

@@ -67,8 +67,11 @@ my $Mark_Fs2 = "\005";    #encoded frameshift
 #
 sub new {
     my $type = shift;
+    my ($save) = (@_, 1);
+
     my $self = {};
 
+    $self->{'save'}     = $save;        #flag: save sequences if true
     $self->{'seq'}      = {};           #sequence hash of char
 
     $self->{'lo'}       = 0;            #absolute start of string
@@ -436,6 +439,8 @@ sub get_sequence_index {
 
 sub populate_sequence_array {
     my ($self, $o, $state, $len, $lo, $hi, $string) = @_;
+
+    return  unless $self->{'save'};
 
     $self->_encode($string);
 
