@@ -93,6 +93,7 @@ sub pearson_row {
 	for (my $i=0; $i<$len; $i+=$PEARSON_SEQ_WIDTH) {
 	    $s .= substr($seq, $i, $PEARSON_SEQ_WIDTH) . "\n";
 	}
+        $s .= "\n"  unless $s =~ /\n$/;
 	return $s;
     };
 
@@ -283,9 +284,11 @@ sub clustal {
     }
 
   LOOP:
-    for (my $from = 0; ;$from+=$CLUSTAL_SEQ_WIDTH) {
+    for (my $from = 0; ;$from += $CLUSTAL_SEQ_WIDTH) {
         foreach my $uid ($aln->visible_ids) {
-            last LOOP  if $from >= length($seq{$uid});
+            #stop when sequences completed, but make at least one pass
+            #in the case of an empty alignment to show the identifiers
+            last LOOP  if $from >= length($seq{$uid}) and $from > 0;
             my $row = $bld->uid2row($uid);
             my $tmp = substr($seq{$uid}, $from, $CLUSTAL_SEQ_WIDTH);
             $s .= sprintf("%-${w}s", $names{$uid});
