@@ -141,11 +141,11 @@ sub new {
 
 	#Search lines
 	if ($line =~ /$SEARCH_START/o) {
-            if ($line =~ /^Searching/) {  #BLAST2
+            if ($line =~ /^Searching/o) {  #BLAST2
                 $text->scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
                 next;
             }
-            if ($line =~ /^Results from round/) {  #BLAST+
+            if ($line =~ /^Results from round/o) {  #BLAST+
                 $text->scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
                 next;
             }
@@ -275,10 +275,10 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	next    if $line =~ /^Sequences used in model and found again:/;
-	next    if $line =~ /^Sequences not found previously or not previously below threshold:/;
-	next    if $line =~ /^CONVERGED!/;
-	next    if $line =~ /^Significant /;    #PHI-BLAST
+	next    if $line =~ /^Sequences used in model and found again:/o;
+	next    if $line =~ /^Sequences not found previously or not previously below threshold:/o;
+	next    if $line =~ /^CONVERGED!/o;
+	next    if $line =~ /^Significant /o;    #PHI-BLAST
 
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -287,8 +287,8 @@ sub new {
         next    if $line =~ /$NPB::Parse::Format::BLAST::GCG_JUNK/o;
 
 	#NCBI web server HTML text-only output: ignore
-	next    if $line =~ /^\s*-+\s*$/;        #dashed line
-	next    if $line =~ /^\s+Alignments/;    #text
+	next    if $line =~ /^\s*-+\s*$/o;        #dashed line
+	next    if $line =~ /^\s+Alignments/o;    #text
 
 	#empty ranking: done
         last    if $line =~ /$NPB::Parse::Format::BLAST2::RANK_NONE/o;

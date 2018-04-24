@@ -77,7 +77,7 @@ sub new {
     $self->{'sbjct_frame'} = $self->{'sbjct_orient'};
 
     #query and sbjct frames
-    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*\/\s*(\S+)/) {
+    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*\/\s*(\S+)/o) {
         $self->{'query_frame'} = $1;
         $self->{'sbjct_frame'} = $2;
     }

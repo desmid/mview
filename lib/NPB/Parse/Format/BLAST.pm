@@ -173,13 +173,13 @@ sub get_entry {
 	    $SAVEVERSION = $1;
 
 	    #reassess version
-	    if ($line =~ /WashU/) {
+	    if ($line =~ /WashU/o) {
 		#WashU series is almost identical to NCBI BLAST1
 		$SAVEVERSION = 1;
 	    }
 
 	    #read program name and determine output format
-	    $line =~ /^(\#)?\s*(\S+)/;
+	    $line =~ /^(\#)?\s*(\S+)/o;
 	    $SAVEPROG = uc $2;
             $SAVEFMT = defined $1 ? '_OF7' : '';
 
@@ -440,10 +440,10 @@ sub parse_alignment {
         next    if $line =~ /$NULL/o;
 
 	#ignore this line (BLASTN)
-	next    if $line =~ /^\s*(?:Plus|Minus) Strand/;
+	next    if $line =~ /^\s*(?:Plus|Minus) Strand/o;
 
 	#first compute sequence indent depth
-	if ($line =~ /^(\s*Query\:?\s+(\d+)\s*)/) {
+	if ($line =~ /^(\s*Query\:?\s+(\d+)\s*)/o) {
 	    $depth = length($1);
 	}
 
@@ -496,7 +496,7 @@ sub parse_alignment {
 	#force read of match line, but note:
 	#PHI-BLAST has an extra line - ignore for the time being
 	$line = $text->next_line(1);
-	$line = $text->next_line(1)  if $line =~ /^pattern/;
+	$line = $text->next_line(1)  if $line =~ /^pattern/o;
 
 	#alignment line
 	$tmp[1] = '';

@@ -71,7 +71,7 @@ sub new {
 	#consume data
 
 	#comment: ignore
-	next    if $line =~ /$Plain_Comment/;
+	next    if $line =~ /$Plain_Comment/o;
 
 	#ALIGNMENT lines		       	      
 	if ($line =~ /$Plain_ALIGNMENT/o) {

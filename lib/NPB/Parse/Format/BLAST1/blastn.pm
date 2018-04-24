@@ -62,7 +62,7 @@ sub new {
 
 	#excise variable length description and append it
 	my $tmp = substr($line, 0, $RANK_CUT);
-	if ($tmp =~ /^\s*([^\s]+)(.*)/) {
+	if ($tmp =~ /^\s*([^\s]+)(.*)/o) {
 	    $line = $1 . substr($line, $RANK_CUT) . $2;
 	}
 

@@ -183,7 +183,7 @@ sub getline {
     #warn "getline:  $self->{'lastoffset'}, $self->{'thisoffset'}\n";
 
     #consume CR in CRLF if file came from DOS/Windows
-    $line =~ s/\015\012/\012/;
+    $line =~ s/\015\012/\012/go;
     $line;
 }
 
@@ -248,7 +248,7 @@ sub getline {
     return undef  unless defined $line;
 
     #consume CR in CRLF if file came from DOS/Windows
-    $line =~ s/\015\012/\012/g;
+    $line =~ s/\015\012/\012/go;
     $line;
 }
 

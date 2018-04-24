@@ -76,7 +76,7 @@ sub new {
     $self->{'sbjct_frame'} = $self->{'sbjct_orient'};
 
     #sbjct frame
-    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*$/) {
+    if ($line =~ /^\s*Frame\s*=\s+(\S+)\s*$/o) {
         $self->{'sbjct_frame'} = $1;
     }
 
