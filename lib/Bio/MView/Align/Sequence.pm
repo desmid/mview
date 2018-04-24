@@ -94,7 +94,8 @@ sub compute_coverage_wrt {
     }
 
     #compute percent coverage
-    return 100.0 * $sc/$oc;
+    return 100.0 * $sc/$oc  if $oc > 0;
+    return 0;
 }
 
 #Compute percent identity to a reference row.
