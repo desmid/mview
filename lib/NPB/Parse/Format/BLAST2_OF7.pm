@@ -1,5 +1,5 @@
 # -*- perl -*-
-# Copyright (C) 2015-2017 Nigel P. Brown
+# Copyright (C) 2015-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -21,7 +21,6 @@ package NPB::Parse::Format::BLAST2_OF7;
 
 use NPB::Parse::Format::BLAST;
 use NPB::Parse::Format::BLAST2;
-use NPB::Parse::Regexps;
 
 use strict;
 
@@ -387,7 +386,6 @@ sub new {
 package NPB::Parse::Format::BLAST2_OF7::SEARCH::RANK;
 
 use vars qw(@ISA);
-use NPB::Parse::Regexps;
 
 @ISA = qw(NPB::Parse::Format::BLAST::RANK);
 
@@ -408,6 +406,7 @@ sub new {
     #ranked search hits
     $self->{'hit'}    = [];
 
+    #fetch fields
     my $fields = $self->get_parent(2)->get_record('HEADER')->{'fields'};
     #warn "[@{[scalar @$fields]}] [@{$fields}]\n";
 
@@ -428,7 +427,7 @@ sub new {
             $tmp->{'n'}       = '0';  #default
             $tmp->{'summary'} = '';
 
-            #extract fields into tmp
+            #extract relevant fields
             my $c = NPB::Parse::Format::BLAST2_OF7::get_fields($line,
                                                                $fields,
                                                                $MAP_RANK,
@@ -490,7 +489,6 @@ sub new {
 package NPB::Parse::Format::BLAST2_OF7::SEARCH::MATCH;
 
 use vars qw(@ISA);
-use NPB::Parse::Regexps;
 
 @ISA = qw(NPB::Parse::Format::BLAST::MATCH);
 
@@ -530,7 +528,6 @@ sub new {
 package NPB::Parse::Format::BLAST2_OF7::SEARCH::MATCH::SUM;
 
 use vars qw(@ISA);
-use NPB::Parse::Regexps;
 
 @ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH::SUM);
 
@@ -551,10 +548,7 @@ sub new {
     $self->{'desc'}   = '';
     $self->{'length'} = '';
 
-    #extract fields into self
-    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $MAP_SUM, $self);
+    $self->extract_relevant_fields($text->next_line(1));
 
     $self->{'desc'} =
         NPB::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
@@ -564,12 +558,20 @@ sub new {
     $self;#->examine;
 }
 
+sub extract_relevant_fields {
+    my ($self, $line) = @_;
+
+    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
+    my $map = $MAP_SUM;
+
+    NPB::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
+}
+
 
 ###########################################################################
 package NPB::Parse::Format::BLAST2_OF7::SEARCH::MATCH::ALN;
 
 use vars qw(@ISA);
-use NPB::Parse::Regexps;
 
 @ISA = qw(NPB::Parse::Format::BLAST2::SEARCH::MATCH::ALN);
 
@@ -608,10 +610,7 @@ sub new {
     $self->{'gap_fraction'} = '';
     $self->{'gap_percent'}  = '';
 
-    #extract fields into self
-    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    NPB::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $MAP_ALN, $self);
+    $self->extract_relevant_fields($text->next_line(1));
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
@@ -620,6 +619,15 @@ sub new {
         $self->{'sbjct_start'} > $self->{'sbjct_stop'} ? '-' : '+';
 
     $self;#->examine;
+}
+
+sub extract_relevant_fields {
+    my ($self, $line) = @_;
+
+    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
+    my $map = $MAP_ALN;
+
+    NPB::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
 }
 
 
