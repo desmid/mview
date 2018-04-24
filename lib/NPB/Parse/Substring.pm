@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
 
 ###########################################################################
 package NPB::Parse::Substring;
@@ -23,10 +23,12 @@ sub new {
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
-sub get_file   {''}
-sub get_length {$_[0]->{'extent'}}
-sub get_base   {$_[0]->{'base'}}
-
+sub get_file    { '' }
+sub get_length  { $_[0]->{'extent'} }
+sub get_base    { $_[0]->{'base'} }
+sub startofline { $_[0]->{'lastoffset'} }
+sub bytesread   { $_[0]->{'thisoffset'} - $_[0]->{'lastoffset'} }
+sub tell        { $_[0]->{'thisoffset'} }
 
 ###########################################################################
 package NPB::Parse::Substring::File;
@@ -60,7 +62,6 @@ sub new {
 
     #find file extent
     #$self->{'fh'}->seek(0, SEEK_END);
-    #$self->{'extent'} = $self->{'fh'}->tell;
     $self->{'extent'} = (stat $self->{'fh'})[7];
 
     $self;
@@ -104,32 +105,15 @@ sub reset {
 
 sub _seek {
     my ($self, $new) = @_;
-    my $old = $self->{'fh'}->tell;
+    my $old = $self->{'thisoffset'};
     #warn "seek: entry: $old, $new\n"  if $NPB::Parse::Substring::Debug;
-    if ($new < $old) {
-	#seek nearer BASE of file
-	if ($old - $new < $new) {
-	    #warn "seek BACKWARDS  from OLD    by ($old - $new) bytes\n"  if $NPB::Parse::Substring::Debug;
-	    seek($self->{'fh'}, $new-$old, SEEK_CUR);
-	} else {
-	    #warn "seek FORWARDS   from BASE   by ($new) bytes\n"  if $NPB::Parse::Substring::Debug;
-	    seek($self->{'fh'}, $new, SEEK_SET);
-	}
-	return;
-    } elsif ($old < $new) {
-	#seek nearer EXTENT of file
-	if ($new - $old < $self->{'extent'} - $new) {
-	    #warn "seek FORWARDS   from OLD    by ($new - $old) bytes\n"  if $NPB::Parse::Substring::Debug;
-	    seek($self->{'fh'}, $new-$old, SEEK_CUR);
-	} else {
-	    #warn "seek BACKWARDS  from EXTENT by ($self->{'extent'} - $new) bytes\n"  if $NPB::Parse::Substring::Debug;
-	    seek($self->{'fh'}, $new-$self->{'extent'}, SEEK_END);
-	}
-	return;
+    if ($old != $new) {
+        unless (seek($self->{'fh'}, $new-$old, SEEK_CUR)) {
+            warn "seek: failed\n";
+            return 0;
+        }
     }
-    #don't seek - already there!
-    #warn "seek nowhere\n"  if $NPB::Parse::Substring::Debug;
-    return;
+    return 1;
 }
 
 sub _reset {
@@ -171,39 +155,37 @@ sub substr {
     }
     my ($offset, $bytes) = (@_, $self->{'base'}, $self->{'extent'}-$self->{'base'});
     my $buff = '';
-    $self->_seek($offset);
-    read($self->{'fh'}, $buff, $bytes);
+
+    $self->{'lastoffset'} = $offset;
+    if ($self->_seek($offset)) {
+        my $c = read($self->{'fh'}, $buff, $bytes);
+        $self->{'thisoffset'} = $offset + $c;
+    }
+
     $buff;
 }
 
 sub getline {
     my $self = shift;
     #warn "getline(@_)\n"  if $NPB::Parse::Substring::Debug;
-
     my ($offset) = (@_, $self->{'thisoffset'});
 
     $self->{'lastoffset'} = $offset;
 
-    $self->_seek($offset);
+    return undef  unless $self->_seek($offset);
 
     my $fh = $self->{'fh'};
     my $line = <$fh>;
 
-    $self->{'thisoffset'} = $self->tell;
-
     return undef  unless defined $line;
 
+    $self->{'thisoffset'} = $offset + length($line);
     #warn "getline:  $self->{'lastoffset'}, $self->{'thisoffset'}\n";
 
     #consume CR in CRLF if file came from DOS/Windows
     $line =~ s/\015\012/\012/;
     $line;
 }
-
-sub startofline { $_[0]->{'lastoffset'} }
-sub bytesread   { $_[0]->{'thisoffset'} - $_[0]->{'lastoffset'} }
-sub tell        { $_[0]->{'fh'}->tell }
-
 
 ###########################################################################
 # A wrapper for a string held in memory to mimic a Substring::File
@@ -244,7 +226,7 @@ sub substr {
     my $self = shift;
     my ($offset, $bytes) = (@_, $self->{'base'}, 
 			    $self->{'extent'}-$self->{'base'});
-    substr(${$self->{'text'}}, $offset, $bytes);
+    CORE::substr(${$self->{'text'}}, $offset, $bytes);
 }
 
 sub getline {
@@ -269,10 +251,6 @@ sub getline {
     $line =~ s/\015\012/\012/g;
     $line;
 }
-
-sub startofline { $_[0]->{'lastoffset'} }
-sub bytesread   { $_[0]->{'thisoffset'} - $_[0]->{'lastoffset'} }
-
 
 ###########################################################################
 1;
