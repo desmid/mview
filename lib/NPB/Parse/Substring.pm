@@ -1,24 +1,28 @@
 # Copyright (C) 1996-2018 Nigel P. Brown
 
+use strict;
+
 ###########################################################################
 package NPB::Parse::Substring;
 
-use vars qw(@ISA);
 use FileHandle;
 use NPB::Parse::Message;
-use strict;
+
+use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Message);
 
-$NPB::Parse::Substring::Debug = 0;
+use vars qw($DEBUG);
+
+$DEBUG = 0;
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "${type}::new()\n"  if $DEBUG;
     NPB::Parse::Message::die($type, "new() invalid argument list (@_)")
 	if @_ < 1;
-    return new NPB::Parse::Substring::String(@_) if ref $_[0];#arg = string ref
-    new NPB::Parse::Substring::File(@_);   #arg = filename
+    return new NPB::Parse::Substring::String(@_) if ref $_[0];  #string ref
+    return new NPB::Parse::Substring::File(@_);                 #filename
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
@@ -33,27 +37,29 @@ sub tell        { $_[0]->{'thisoffset'} }
 ###########################################################################
 package NPB::Parse::Substring::File;
 
-use vars qw(@ISA);
 use POSIX;
 use FileHandle;
-use strict;
+
+use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Substring);
 
-$NPB::Parse::Substring::File::open  = 1;
-$NPB::Parse::Substring::File::close = 2;
-$NPB::Parse::Substring::File::error = 4;
+use vars qw($OPEN $CLOSE $ERROR);
+
+$OPEN  = 1;
+$CLOSE = 2;
+$ERROR = 4;
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "${type}::new()\n"  if $NPB::Parse::Substring::DEBUG;
     my ($file, $base) = (@_, 0);
     my $self = {};
     bless $self, $type;
 
-    $self->{'file'}   = $file;
-    $self->{'base'}   = $base;
-    $self->{'state'}  = $NPB::Parse::Substring::File::close;
+    $self->{'file'}       = $file;
+    $self->{'base'}       = $base;
+    $self->{'state'}      = $CLOSE;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
     $self->{'fh'} = -1;
@@ -70,19 +76,19 @@ sub new {
 sub get_file {$_[0]->{'file'}}
 
 sub close {
-    #warn "close()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "close()\n"  if $NPB::Parse::Substring::DEBUG;
     $_[0]->_close;
 }
 
 sub open {
-    #warn "open()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "open()\n"  if $NPB::Parse::Substring::DEBUG;
     $_[0]->reopen(@_);
 }
 
 sub reopen {
     my $self = shift;
-    #warn "reopen()\n"  if $NPB::Parse::Substring::Debug;
-    if ($self->{'state'} & $NPB::Parse::Substring::File::error or $self->{'state'} & $NPB::Parse::Substring::File::open) {
+    #warn "reopen()\n"  if $NPB::Parse::Substring::DEBUG;
+    if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
 	$self->_close;
     }
     $self->_open;
@@ -92,11 +98,11 @@ sub reopen {
 
 sub reset {
     my $self = shift;
-    #warn "reset(@_)\n"  if $NPB::Parse::Substring::Debug;
-    if ($self->{'state'} & $NPB::Parse::Substring::File::error) {
+    #warn "reset(@_)\n"  if $NPB::Parse::Substring::DEBUG;
+    if ($self->{'state'} & $ERROR) {
 	$self->_close;
 	$self->_open;
-    } elsif ($self->{'state'} & $NPB::Parse::Substring::File::close) {
+    } elsif ($self->{'state'} & $CLOSE) {
 	$self->_open;
     }
     $self->_reset(@_);
@@ -106,7 +112,7 @@ sub reset {
 sub _seek {
     my ($self, $new) = @_;
     my $old = $self->{'thisoffset'};
-    #warn "seek: entry: $old, $new\n"  if $NPB::Parse::Substring::Debug;
+    #warn "seek: entry: $old, $new\n"  if $NPB::Parse::Substring::DEBUG;
     if ($old != $new) {
         unless (seek($self->{'fh'}, $new-$old, SEEK_CUR)) {
             warn "seek: failed\n";
@@ -119,7 +125,7 @@ sub _seek {
 sub _reset {
     my $self = shift;
     my ($offset) = (@_, $self->{'base'});
-    #warn "_reset(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "_reset(@_)\n"  if $NPB::Parse::Substring::DEBUG;
     $self->{'fh'}->seek($offset, SEEK_SET);
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
@@ -128,20 +134,20 @@ sub _reset {
 
 sub _close {
     my $self = shift;
-    warn "_close()\n"  if $NPB::Parse::Substring::Debug;
-    return $self  if $self->{'state'} & $NPB::Parse::Substring::File::close;
+    warn "_close()\n"  if $NPB::Parse::Substring::DEBUG;
+    return $self  if $self->{'state'} & $CLOSE;
     $self->{'fh'}->close;
     $self->{'fh'} = -1;
-    $self->{'state'} = $NPB::Parse::Substring::File::close;
+    $self->{'state'} = $CLOSE;
     $self;
 }
 
 sub _open {
     my $self = shift;
-    #warn "_open()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "_open()\n"  if $NPB::Parse::Substring::DEBUG;
     $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
     $self->{'fh'}->open($self->{'file'}) or $self->die("_open() can't open ($self->{'file'})");
-    $self->{'state'} = $NPB::Parse::Substring::File::open;
+    $self->{'state'} = $OPEN;
     $self->{'lastoffset'} = $self->{'base'};
     $self->{'thisoffset'} = $self->{'base'};
     $self;
@@ -149,8 +155,8 @@ sub _open {
 
 sub substr {
     my $self = shift;
-    #warn "substr(@_)\n"  if $NPB::Parse::Substring::Debug;
-    if ($self->{'state'} & $NPB::Parse::Substring::File::close) {
+    #warn "substr(@_)\n"  if $NPB::Parse::Substring::DEBUG;
+    if ($self->{'state'} & $CLOSE) {
 	$self->die("substr() can't read on closed file '$self->{'file'}'");
     }
     my ($offset, $bytes) = (@_, $self->{'base'}, $self->{'extent'}-$self->{'base'});
@@ -167,7 +173,7 @@ sub substr {
 
 sub getline {
     my $self = shift;
-    #warn "getline(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "getline(@_)\n"  if $NPB::Parse::Substring::DEBUG;
     my ($offset) = (@_, $self->{'thisoffset'});
 
     $self->{'lastoffset'} = $offset;
@@ -192,15 +198,15 @@ sub getline {
 
 package NPB::Parse::Substring::String;
 
-use vars qw(@ISA);
 use NPB::Parse::Message;
-use strict;
+
+use vars qw(@ISA);
 
 @ISA = qw(NPB::Parse::Substring);
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $NPB::Parse::Substring::Debug;
+    #warn "${type}::new()\n"  if $NPB::Parse::Substring::DEBUG;
     my $self = {};
     ($self->{'text'}, $self->{'base'}) = (@_, 0);
     $self->{'extent'} = length ${$self->{'text'}};
@@ -216,7 +222,7 @@ sub reopen {$_[0]}
 sub reset {
     my $self = shift;
     my ($offset) = (@_, $self->{'base'});
-    #warn "reset(@_)\n"  if $NPB::Parse::Substring::Debug;
+    #warn "reset(@_)\n"  if $NPB::Parse::Substring::DEBUG;
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
     $self;
