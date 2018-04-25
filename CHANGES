@@ -1,5 +1,25 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*- 
 
+Version 1.64.rc
+
+New features:
+
+- Added '-sequences on|off' option to disable processing and output of
+  sequences for faster analysis (requested by Mathias Walter).
+
+Bug fixes:
+
+- Fixed regression in output format conversion since v1.62, whereby
+  unaligned input sequences were truncated instead of being passed through
+  unchanged.
+
+Other:
+
+- Speed improvement.
+- Complete rewrite of display mechanism.
+- Ongoing refactoring.
+
+
 Version: 1.63  2018-03-25
 
 Input formats:

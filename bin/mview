@@ -5,8 +5,8 @@
 ###########################################################################
 # Release information
 ###########################################################################
-my $VERSION  = '1.63';
-my $PATCH    = '';
+my $VERSION  = '1.64';
+my $PATCH    = 'rc';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
