@@ -234,7 +234,7 @@ sub new {
         ([^.]+)\.                                                #units
         /xo) {
 
-        $self->test_args($line, $1, $2, $3, $4, $5, $6);
+        $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
         (
          $self->{'id'},
@@ -332,7 +332,7 @@ sub new {
 	(\w+)                                                    #g14412
 	/xo) {
 
-	$self->test_args($line, $1);
+	$self->test_args(\$line, $1);
 
 	$self->{'ni'} = $1;
 	
@@ -516,7 +516,7 @@ sub new {
 	    \s*
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3, $4, $5, $6);
+	    $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	    (
 	     $self->{'length'},
@@ -539,7 +539,7 @@ sub new {
 	    \s*
 	    /xo) {
 
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 
 	    $self->{'sequence'} .= $1;
 

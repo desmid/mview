@@ -124,7 +124,7 @@ sub new {
 
 	#> line
 	if ($line =~ /^>[^;]+;(\S+)/o) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    $self->{'ac'} = $1;
 	    next;
 	}
@@ -174,7 +174,7 @@ sub new {
     while (defined ($line = $text->next_line)) {
 
 	if ($line =~ /^L;(\S+)\s+(.*)/o) {
-	    $self->test_args($line, $1,$2);
+	    $self->test_args(\$line, $1,$2);
 	    $self->{'seq'}->{$1} = NPB::Parse::Record::strip_english_newlines($2);
 	    push @{$self->{'order'}}, $1;
 	    next;
@@ -232,7 +232,7 @@ sub new {
 
 	#id/sequence
 	if ($line =~ /^\s*(\S+)\s+([^0-9]+)\s+\d+$/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    $self->{'seq'}->{$1} .= $2;
 	    next;
 	} 

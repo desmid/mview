@@ -83,7 +83,7 @@ sub new {
 	    (.*)                              #summary
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3, $4, $5, $6); #ignore $7
+	    $self->test_args(\$line, $1, $2, $3, $4, $5, $6); #ignore $7
 	    
 	    push @{$self->{'hit'}}, 
 	    {
@@ -157,7 +157,7 @@ sub new {
 	($RX_Ureal)                          #p-value
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $5);
+	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
 	 $self->{'score'},
@@ -192,7 +192,7 @@ sub new {
 	(\d+)                                #sbjct frame number
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $4, $5, $6, $7, $8);
+	$self->test_args(\$line, $1, $2, $3, $4, $5, $6, $7, $8);
 
 	(
 	 $self->{'id_fraction'},

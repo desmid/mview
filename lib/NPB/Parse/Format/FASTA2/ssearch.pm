@@ -73,7 +73,7 @@ sub new {
 	   \s*
 	   $/xo) {
 	    
-	    $self->test_args($line, $1, $3, $5,$6,$7);
+	    $self->test_args(\$line, $1, $3, $5,$6,$7);
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -147,7 +147,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line, $1, $3);
+	$self->test_args(\$line, $1, $3);
 
 	(
 	 $self->{'id'},
@@ -169,7 +169,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line,$1,$2);
+	$self->test_args(\$line,$1,$2);
 
 	(
 	 $self->{'zscore'},
@@ -189,7 +189,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line,$2,$3);
+	$self->test_args(\$line,$2,$3);
 	
 	(
 	 $self->{'score'},

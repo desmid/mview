@@ -98,7 +98,7 @@ sub new {
 
 	#read header line
 	if ($line =~ /^\s*>\s*(\S+)\s*(.*)?/o) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'id'}, 
 	     $self->{'desc'},

@@ -322,7 +322,7 @@ sub new {
 
 	#blast version info
 	if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    (
 	     $self->{'full_version'},
 	     $self->{'version'},

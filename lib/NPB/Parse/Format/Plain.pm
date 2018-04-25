@@ -123,7 +123,7 @@ sub new {
 
 	#id/sequence
 	if ($line =~ /^\s*(\S+)\s+(\S+)\s*$/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
 	    $self->{'seq'}->{$1} .= $2;
 	    $off = length($line) - length($2);

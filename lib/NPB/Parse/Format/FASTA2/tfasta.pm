@@ -66,7 +66,7 @@ sub new {
 	   \s*
 	   $/xo) {
 	    
-	    $self->test_args($line, $1,$2,$3,$4,$5,$6,$7,$8);
+	    $self->test_args(\$line, $1,$2,$3,$4,$5,$6,$7,$8);
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -141,7 +141,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line, $1, $2, $3);
+	$self->test_args(\$line, $1, $2, $3);
 
 	(
 	 $self->{'id'},
@@ -170,7 +170,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line,$2,$3,$4,$5,$6);
+	$self->test_args(\$line,$2,$3,$4,$5,$6);
 
 	(
 	 $self->{'frame'},
@@ -199,7 +199,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($line,$2,$3);
+	$self->test_args(\$line,$2,$3);
 	
 	(
 	 $self->{'score'},

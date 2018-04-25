@@ -81,7 +81,7 @@ sub new {
 	($RX_Ureal)                          #p-value
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $5);
+	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
 	 $self->{'score'},
@@ -113,7 +113,7 @@ sub new {
 	(\d+)                                #frame number
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $4, $5, $6);
+	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	(
 	 $self->{'id_fraction'},

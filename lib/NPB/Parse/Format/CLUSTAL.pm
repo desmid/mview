@@ -123,7 +123,7 @@ sub new {
 	    \((\S+)\))     #minor version, eg., 1.70
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3);
+	    $self->test_args(\$line, $1, $2, $3);
 	    (
 	     $self->{'version'},
 	     $self->{'major'},
@@ -140,7 +140,7 @@ sub new {
 	    Version_(\S+)),     #version number, eg., 1.37
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3);
+	    $self->test_args(\$line, $1, $2, $3);
 	    (
 	     $self->{'version'},
 	     $self->{'major'},
@@ -208,7 +208,7 @@ sub new {
 
 	#id/sequence (/optional number)
 	if ($line =~ /^\s*(\S+)\s+(\S+)(?:\s+\d+)?$/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
 	    $self->{'seq'}->{$1} .= $2;
 	    $off = length($line) - length($2);

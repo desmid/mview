@@ -44,7 +44,7 @@ sub new {
 
 	if ($line =~ /(\S+)\s*,\s+(\d+)\s+(?:aa|nt)/o) {
 	
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    
 	    (
 	     $self->{'queryfile'},
@@ -55,14 +55,14 @@ sub new {
 	} 
 	
 	if ($line =~ /^\s*>(\S+)\s*\:\s*\d+\s+(?:aa|nt)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    $self->{'query'} = NPB::Parse::Record::clean_identifier($1);
 	    next;
 	}
 	
 	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
 	    
-	    $self->test_args($line, $1,$2);
+	    $self->test_args(\$line, $1,$2);
 	    
 	    (
 	     $self->{'residues'},
@@ -124,7 +124,7 @@ sub new {
 	    \s*
 	    $/xo) {
 	    
-	    $self->test_args($line, $1,$2,$3,$4,$5);
+	    $self->test_args(\$line, $1,$2,$3,$4,$5);
 	    
 	    push @{$self->{'hit'}}, 
 	    {
@@ -188,7 +188,7 @@ sub new {
     
     if ($line =~ /^(\S+)\s+(.*)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/) {
 	
-	$self->test_args($line, $1, $2, $3, $4, $5);    #ignore $2
+	$self->test_args(\$line, $1, $2, $3, $4, $5);    #ignore $2
 	
 	(
 	 $self->{'id'},
@@ -204,7 +204,7 @@ sub new {
     $line = $text->next_line;
 
     if ($line =~ /^\s*($RX_Ureal)\% identity in (\d+) (?:aa|nt) overlap\s*$/) {
-	$self->test_args($line, $1, $2);
+	$self->test_args(\$line, $1, $2);
 	(
 	 $self->{'id_percent'},
 	 $self->{'overlap'},

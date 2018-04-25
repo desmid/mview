@@ -129,7 +129,7 @@ sub new {
 	    \s*version\s+(\S+)
 	    /xo) {
 
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'version'},
 	    ) = ($1);
@@ -144,7 +144,7 @@ sub new {
 	    /xo) {
 	    
 	    if ($self->{'id1'} eq '?') {
-		$self->test_args($line, $1, $3, $4);
+		$self->test_args(\$line, $1, $3, $4);
 		(
 		 $self->{'id1'},
 		 $self->{'desc1'},
@@ -152,7 +152,7 @@ sub new {
 		 $self->{'moltype'},
 		 ) = ($1, (defined $2?$2:''), $3, $4);
 	    } else {
-		$self->test_args($line, $1, $3);
+		$self->test_args(\$line, $1, $3);
 		(
 		 $self->{'id2'},
 		 $self->{'desc2'},

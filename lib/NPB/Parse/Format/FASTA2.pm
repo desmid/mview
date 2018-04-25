@@ -140,7 +140,7 @@ sub new {
 		$self->{'queryfile'} = $1;
 		$self->{'queryfile'} =~ s/,$//;
 	    } else {
-		$self->test_args($line, $1);
+		$self->test_args(\$line, $1);
 		$self->{'query'} = NPB::Parse::Record::clean_identifier($1);
 	    }
 	    $self->{'length'} = $2;
@@ -148,7 +148,7 @@ sub new {
 	}
 
 	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
-	    $self->test_args($line, $1,$2);
+	    $self->test_args(\$line, $1,$2);
 	    (
 	     $self->{'residues'},
 	     $self->{'sequences'},

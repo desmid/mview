@@ -118,7 +118,7 @@ sub new {
 	    \s*version\s+(\S+)Please
 	    /xo) {
 
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'version'},
 	    ) = ($1);
@@ -132,7 +132,7 @@ sub new {
 	    \s*(\d+)\s+(aa|nt)\s+vs #length
 	    /xo) {
 	    
-	    $self->test_args($line, $1, $3, $4);
+	    $self->test_args(\$line, $1, $3, $4);
 	    (
 	     $self->{'id1'},
 	     $self->{'desc1'},
@@ -149,7 +149,7 @@ sub new {
 	    \s*(\d+)\s+(?:aa|nt) #length
 	    /xo) {
 	    
-	    $self->test_args($line, $1, $3);
+	    $self->test_args(\$line, $1, $3);
 	    (
 	     $self->{'id2'},
 	     $self->{'desc2'},

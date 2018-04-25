@@ -197,7 +197,7 @@ sub new {
 
 	#s src start size strand srcsize sequence
 	if ($line =~ /^s\s+(\S+)\s+(\d+)\s+(\d+)\s+([+-])\s+(\d+)\s+(\S+)/o) {
-	    $self->test_args($line, $1, $2, $3, $4, $5, $6);
+	    $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 	    push @{$self->{'row'}}, {
 		'id'      => $1,
 		'start'   => $2,

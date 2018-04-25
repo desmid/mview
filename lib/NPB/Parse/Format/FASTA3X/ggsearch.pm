@@ -76,7 +76,7 @@ sub new {
 	   \s*
 	   $/xo) {
 	    
-	    $self->test_args($line, $1, $3, $5,$6,$7);
+	    $self->test_args(\$line, $1, $3, $5,$6,$7);
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -171,7 +171,7 @@ sub new {
         \s*
 	$/xso) {
 
-	$self->test_args($line, $1, $3, $5,$6,$7,$8,$9,$10,$11,$12,$13);
+	$self->test_args(\$line, $1, $3, $5,$6,$7,$8,$9,$10,$11,$12,$13);
 
 	(
 	 $self->{'id'},

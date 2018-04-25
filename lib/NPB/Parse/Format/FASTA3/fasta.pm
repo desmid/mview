@@ -71,7 +71,7 @@ sub new {
 	    \s*
 	    $/xo) {
 	    
-	    $self->test_args($line, $1, $3, $5,$6, $7,$8,$9); #not $2,$4
+	    $self->test_args(\$line, $1, $3, $5,$6, $7,$8,$9); #not $2,$4
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -111,7 +111,7 @@ sub new {
 	    \s*
 	    $/xo) {
 
-	    $self->test_args($line, $1, $3, $5,$6,$7); #not $2,$4
+	    $self->test_args(\$line, $1, $3, $5,$6,$7); #not $2,$4
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -199,7 +199,7 @@ sub new {
 	    \s*
 	    $/xo) {
 	    
-	    $self->test_args($line,$2,$3,$4,$5,$6); #not $1
+	    $self->test_args(\$line,$2,$3,$4,$5,$6); #not $1
 
 	    (
 	     $self->{'frame'},
@@ -235,7 +235,7 @@ sub new {
 	    \s*
 	    /xo) {
 
-	    $self->test_args($line,$2,$3,$4,$5,$6,$7); #not $1
+	    $self->test_args(\$line,$2,$3,$4,$5,$6,$7); #not $1
 
 	    (
 	     $self->{'frame'},
@@ -263,7 +263,7 @@ sub new {
 	    (?:\s+\((\S+)\))?                        #sequence ranges
 	    /xo) {
 	    
-	    $self->test_args($line,$2,$4);
+	    $self->test_args(\$line,$2,$4);
 
 	    (
 	     $self->{'score'},
@@ -298,7 +298,7 @@ sub new {
 	\(\s*(\d+)\s*(?:aa|nt)\)    #length
 	/xo) {
 	
-	$self->test_args($record, $1, $3); #not $2
+	$self->test_args(\$record, $1, $3); #not $2
 
 	(
 	 $self->{'id'},

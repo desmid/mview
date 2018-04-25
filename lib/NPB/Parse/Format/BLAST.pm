@@ -249,7 +249,7 @@ sub new {
 	#blast version info
 	if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
 	
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    
 	    (
 	     $self->{'full_version'},
@@ -394,7 +394,7 @@ sub new {
 	Length\s*=\s*($RX_Uint)             #length
 	/xso) {
 	
-	$self->test_args($line, $1, $3);    #ignore $2
+	$self->test_args(\$line, $1, $3);    #ignore $2
 
 	(
 	 $self->{'id'},
@@ -460,8 +460,8 @@ sub parse_alignment {
 	    (\d+)?		#stop
 	    /xo) {
 
-	    #$self->test_args($line, $1, $2, $3);
-	    $self->test_args($line, $1);
+	    #$self->test_args(\$line, $1, $2, $3);
+	    $self->test_args(\$line, $1);
 
 	    if (defined $2 and defined $3) {
 		#normal
@@ -516,8 +516,8 @@ sub parse_alignment {
 	    (\d+)?	        #stop
 	    /xo) {
 	    
-	    #$self->test_args($line, $1, $2, $3);
-	    $self->test_args($line, $1);
+	    #$self->test_args(\$line, $1, $2, $3);
+	    $self->test_args(\$line, $1);
 
 	    if (defined $2 and defined $3) {
 		#normal

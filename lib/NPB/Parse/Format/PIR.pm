@@ -99,7 +99,7 @@ sub new {
 
 	#read header line
 	if ($line =~ /^\s*>\s*(..);(\S+)/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    (
 	     $self->{'prefix'}, 
 	     $self->{'id'}, 

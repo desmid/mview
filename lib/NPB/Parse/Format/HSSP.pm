@@ -190,7 +190,7 @@ sub new {
     while (defined ($line = $text->next_line)) {
     
 	if ($line =~ /^HSSP\s+(.*VERSION\s+(.*)\s*)/o) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    (
 	     $self->{'full_version'},
 	     $self->{'version'},
@@ -200,7 +200,7 @@ sub new {
 	} 
 
 	if ($line =~ /^PDBID\s+(.*)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'pdbid'},
 	    ) = ($1);
@@ -208,7 +208,7 @@ sub new {
 	} 
 
 	if ($line =~ /^DATE\s+file generated on\s+(\S+)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'date'},
 	    ) = ($1);
@@ -216,7 +216,7 @@ sub new {
 	} 
 
 	if ($line =~ /^SEQBASE\s+(.*)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'seqbase'},
 	    ) = ($1);
@@ -238,7 +238,7 @@ sub new {
 	} 
 
 	if ($line =~ /^THRESHOLD\s+(.*)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'threshold'},
 	    ) = ($1);
@@ -246,7 +246,7 @@ sub new {
 	} 
 
 	if ($line =~ /^REFERENCE\s+(.*)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'reference'},
 	    ) = ($1);
@@ -254,7 +254,7 @@ sub new {
 	} 
 
 	if ($line =~ /^CONTACT\s+(.*)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'contact'},
 	    ) = ($1);
@@ -302,7 +302,7 @@ sub new {
 	} 
 
 	if ($line =~ /^SEQLENGTH\s+(\d+)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'seqlength'},
 	    ) = ($1);
@@ -310,7 +310,7 @@ sub new {
 	} 
 
 	if ($line =~ /^NCHAIN\s+(\d+)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'nchain'},
 	    ) = ($1);
@@ -318,7 +318,7 @@ sub new {
 	} 
 
 	if ($line =~ /^KCHAIN\s+(\d+)\s+chain\(s\) used here\s*;\s*chain\(s\)\s*:\s*(.*)/) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    (
 	     $self->{'kchain'},
 	     $self->{'chainname'},
@@ -327,7 +327,7 @@ sub new {
 	} 
 
 	if ($line =~ /^NALIGN\s+(\d+)/) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    (
 	     $self->{'nalign'},
 	    ) = ($1);
@@ -427,7 +427,7 @@ sub new {
 	    (\S+)?          #STRID
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, "$3");
+	    $self->test_args(\$line, $1, $2, "$3");
 
 	    (
 	     $data->{'nr'},
@@ -461,7 +461,7 @@ sub new {
 		(.*)?       #PROTEIN
 		/xo) {
 
-		$self->test_args($line, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);
+		$self->test_args(\$line, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);
 		(
 		 $data->{'%ide'},
 		 $data->{'%wsim'},
@@ -634,9 +634,9 @@ sub new {
 	    /xo) {
 
 	    if (defined $2) {
-		$self->test_args($line, $1, $2, $3, $4, $5, $6, $7, $8, $9);
+		$self->test_args(\$line, $1, $2, $3, $4, $5, $6, $7, $8, $9);
 	    } else {
-		$self->test_args($line, $1, $3, $4, $5, $6, $7, $8, $9);
+		$self->test_args(\$line, $1, $3, $4, $5, $6, $7, $8, $9);
 	    }
 
 	    (

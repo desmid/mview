@@ -163,7 +163,7 @@ sub new {
             to:\s+(\d+)          #to position
             /xo) {
 
-            $self->test_args($line, $1, $2);
+            $self->test_args(\$line, $1, $2);
             (
              $self->{'queryfile'},
              $self->{'length'},
@@ -173,14 +173,14 @@ sub new {
 
         #query identifier
         if ($line =~ /^\s*ID\s{3}(\S+);?/) {
-            $self->test_args($line, $1);
+            $self->test_args(\$line, $1);
             $id = $1;
             next;
         }
 
         #query accession
         if ($line =~ /^\s*AC\s{3}(\S+);?/) {
-            $self->test_args($line, $1);
+            $self->test_args(\$line, $1);
             $ac = $1;
             next;
         }
@@ -192,7 +192,7 @@ sub new {
             Symbols:\s+(\S+)         #symbol count (contains commas)
             /xo) {
 
-            $self->test_args($line, $1,$2);
+            $self->test_args(\$line, $1,$2);
 
             (
              $self->{'sequences'},
@@ -274,7 +274,7 @@ sub new {
 
 	    #warn "($1,$2,$3)\n";
 
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    
 	    $id = NPB::Parse::Record::clean_identifier($1);
 
@@ -298,7 +298,7 @@ sub new {
 		
 		#warn "($1,$2,$3,$4,$5)\n";
 
-		$self->test_args($line, $1,$2,$3,$4,$5);
+		$self->test_args(\$line, $1,$2,$3,$4,$5);
 	    
 		($init1,$initn,$opt,$z,$e) = ($1,$2,$3,$4,$5);
 
@@ -461,7 +461,7 @@ sub new {
 	    \s*
 	    $/ixo) {
 	    
-	    $self->test_args($line,$1,$2,$3,$4,$5);
+	    $self->test_args(\$line,$1,$2,$3,$4,$5);
 	    
 	    (
 	     $self->{'init1'},
@@ -485,7 +485,7 @@ sub new {
 	    \s+(?:aa|nt|bp)\s+overlap
 	    \s*$/xo) {
 
-	    $self->test_args($line,$2,$3);
+	    $self->test_args(\$line,$2,$3);
 	    
 	    (
 	     $self->{'score'},

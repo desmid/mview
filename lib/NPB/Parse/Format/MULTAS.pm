@@ -208,7 +208,7 @@ sub new {
 	    (.*)                         #description
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3);
+	    $self->test_args(\$line, $1, $2, $3);
 
 	    push @{$self->{'hit'}},
 	    {

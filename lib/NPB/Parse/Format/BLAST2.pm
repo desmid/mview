@@ -305,7 +305,7 @@ sub new {
 	    \s*$
 	    /xo) {
 
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 
 	    $tmp->{'bits'}   = $1;
 	    $tmp->{'expect'} = NPB::Parse::Format::BLAST2::fix_expect($2);
@@ -320,7 +320,7 @@ sub new {
 		(.*)?                  #summary
 		/xo) {
 
-		$self->test_args($line, $1);    #ignore $2
+		$self->test_args(\$line, $1);    #ignore $2
 
 		$tmp->{'id'} =
 		    NPB::Parse::Record::clean_identifier($1);
@@ -392,7 +392,7 @@ sub new {
 	($RX_Ureal)                 #expectation
 	/xo) {
 
-	$self->test_args($line, $1, $2, $4);
+	$self->test_args(\$line, $1, $2, $4);
 
 	(
 	 $self->{'bits'},
@@ -428,7 +428,7 @@ sub new {
 	)?
 	/xo) {
 
-	$self->test_args($line, $1, $2);
+	$self->test_args(\$line, $1, $2);
 
 	(
 	 $self->{'id_fraction'},

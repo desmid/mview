@@ -74,7 +74,7 @@ sub new {
 	    \s*
 	    $/xo) {
 
-	    $self->test_args($line, $1, $3, $5,$6,$7); #not $2,$4
+	    $self->test_args(\$line, $1, $3, $5,$6,$7); #not $2,$4
 	    
 	    push(@{$self->{'hit'}},
 		 { 

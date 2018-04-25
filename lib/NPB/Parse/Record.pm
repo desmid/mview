@@ -220,10 +220,11 @@ sub list_record_types {
 
 sub test_args {
     my $self = shift;
-    my $line = shift;
+    my $lineref = shift;
     my $i; foreach $i (@_) {
 	next  if $i ne '';
-	$self->warn("incomplete match of line: $line");
+        chomp $$lineref;
+	$self->warn("incomplete match of line: $$lineref");
     }
 }
 

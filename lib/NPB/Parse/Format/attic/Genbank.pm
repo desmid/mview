@@ -193,7 +193,7 @@ sub new {
         ($NPB::Parse::Format::Genbank::id_date)                             #date
         /xo) {
 
-	$self->test_args($line, $1, $2, $3, $4, $5, $6, $7);
+	$self->test_args(\$line, $1, $2, $3, $4, $5, $6, $7);
 
         (
          $self->{'id'},

@@ -67,7 +67,7 @@ sub new {
 	   $/xo) {
 	    
 
-	    $self->test_args($line, $1, $3,$4, $5,$6,$7,$8); #not $2
+	    $self->test_args(\$line, $1, $3,$4, $5,$6,$7,$8); #not $2
 	    
 	    push(@{$self->{'hit'}},
 		 { 
@@ -159,7 +159,7 @@ sub new {
 	    \s*
 	    $/xo) {
 
-	    $self->test_args($line,$1,$2,$3,$4,$5,$6,$7);
+	    $self->test_args(\$line,$1,$2,$3,$4,$5,$6,$7);
 
 	    (
 	     $self->{'frame'},
@@ -189,7 +189,7 @@ sub new {
 	    (?:\s+\((\S+)\))                         #sequence ranges
 	    /xo) {
 
-	    $self->test_args($line,$2,$3);
+	    $self->test_args(\$line,$2,$3);
 	    
 	    (
 	     $self->{'score'},
@@ -222,7 +222,7 @@ sub new {
 	\s*
 	$/xo) {
 
-	$self->test_args($record, $1, $2, $3);
+	$self->test_args(\$record, $1, $2, $3);
 
 	(
 	 $self->{'id'},

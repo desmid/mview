@@ -80,7 +80,7 @@ sub new {
 	    (.*)                              #summary
 	    /xo) {
 
-	    $self->test_args($line, $1, $2, $3, $4); #ignore $5
+	    $self->test_args(\$line, $1, $2, $3, $4); #ignore $5
 	    
 	    push @{$self->{'hit'}}, 
 	    {
@@ -153,7 +153,7 @@ sub new {
 	($RX_Ureal)                  	#p-value
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $5);
+	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
 	 $self->{'score'},
@@ -184,7 +184,7 @@ sub new {
 	(\S+)\s+\/\s+(\S+)              #strand orientations
 	/xo) {
 	
-	$self->test_args($line, $1, $2, $3, $4, $5, $6);
+	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	(
 	 $self->{'id_fraction'},

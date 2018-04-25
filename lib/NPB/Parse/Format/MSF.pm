@@ -133,7 +133,7 @@ sub new {
 	    \s+\.\.
 	    /xo) {
 
-	    $self->test_args($line, $2,$3,$5);
+	    $self->test_args(\$line, $2,$3,$5);
 	    (
 	     $self->{'file'},
 	     $self->{'msf'},
@@ -208,7 +208,7 @@ sub new {
 	        Weight\:\s+(\S+)  #sequence weight
 	        /xo) {
 		
-	        $self->test_args($line, $1,$2,$3);
+	        $self->test_args(\$line, $1,$2,$3);
 	        $self->{'seq'}->{$id} = {
 		    'length' => $1,
 		    'check'  => $2,
@@ -286,7 +286,7 @@ sub new {
 	if ($line =~ /^\s*(.{$maxnamelen})\s+(.*)$/o) {
 	    $id = NPB::Parse::Record::strip_leading_space($1);
 	    $id = NPB::Parse::Record::strip_trailing_space($id);
-	    $self->test_args($line, $id, $2);
+	    $self->test_args(\$line, $id, $2);
 	    $self->{'seq'}->{$id} .= $2;
 	    next;
 	} 

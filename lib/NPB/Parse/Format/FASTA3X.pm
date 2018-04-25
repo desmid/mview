@@ -206,14 +206,14 @@ sub new {
 	}
 
 	if ($line =~ /^\s*Query library\s+(\S+)/o) {
-	    $self->test_args($line, $1);
+	    $self->test_args(\$line, $1);
 	    $self->{'queryfile'} = $1;
 	    $self->{'queryfile'} =~ s/,$//;
 	    next;
 	} 
 
 	if ($line =~ /^\s*\d+>+(\S+).*-\s+(\d+)\s+(?:aa|nt)/) {
-	    $self->test_args($line, $1, $2);
+	    $self->test_args(\$line, $1, $2);
 	    (
 	     $self->{'query'},
 	     $self->{'length'},
@@ -223,7 +223,7 @@ sub new {
 	}
 
 	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
-	    $self->test_args($line, $1,$2);
+	    $self->test_args(\$line, $1,$2);
 	    (
 	     $self->{'residues'},
 	     $self->{'sequences'},

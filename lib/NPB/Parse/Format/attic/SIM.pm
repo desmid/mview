@@ -156,7 +156,7 @@ sub new {
 	    \s+($RX_Sint)               #gap-extension penalty
 	    /xo) {
 	    
-	    $self->test_args($line, $1, $2, $3, $4);
+	    $self->test_args(\$line, $1, $2, $3, $4);
 	    (
 	     $self->{'match'},
 	     $self->{'mismatch'},
