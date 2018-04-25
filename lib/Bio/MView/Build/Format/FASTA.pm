@@ -15,14 +15,14 @@ package Bio::MView::Build::Format::FASTA;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
-use NPB::Parse::Regexps;
+use Bio::Parse::Regexps;
 
 use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
-#the name of the underlying NPB::Parse::Format parser
+#the name of the underlying Bio::Parse::Format parser
 sub parser { 'FASTA' }
 
 my %Known_Parameters =

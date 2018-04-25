@@ -1,5 +1,5 @@
 TREE = lib
-DIRS = Bio NPB
+DIRS = Bio
 FILE =
 EXES = 
 SRCS = Universal.pm

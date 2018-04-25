@@ -9,14 +9,14 @@ package Bio::MView::Build::Format::BLAST;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
-use NPB::Parse::Regexps;
+use Bio::Parse::Regexps;
 
 use strict;
 use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Search);
 
-#the name of the underlying NPB::Parse::Stream parser
+#the name of the underlying Bio::Parse::Stream parser
 sub parser { 'BLAST' }
 
 my $MISSING_QUERY_CHAR = 'X';  #interpolate this between query fragments

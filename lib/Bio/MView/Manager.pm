@@ -130,7 +130,7 @@ sub get_format_parser {
 sub get_parser_stream {
     my ($file, $class) = @_;
     my $parser = get_format_parser($class);
-    return new NPB::Parse::Stream($file, $parser);
+    return new Bio::Parse::Stream($file, $parser);
 }
 
 ######################################################################

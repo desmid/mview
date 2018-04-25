@@ -29,7 +29,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Align);
 
-#the name of the underlying NPB::Parse::Format parser
+#the name of the underlying Bio::Parse::Format parser
 sub parser { 'MSF' }
 
 sub parse {

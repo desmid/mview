@@ -10,7 +10,7 @@ use Bio::MView::Align::Consensus;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;
-use NPB::Parse::Regexps;
+use Bio::Parse::Regexps;
 use Exporter;
 
 use vars qw(@ISA @EXPORT);

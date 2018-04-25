@@ -81,7 +81,7 @@ sub vmstat {
 ###########################################################################
 # private fnuctions
 ###########################################################################
-use NPB::Parse::Regexps;
+use Bio::Parse::Regexps;
 
 #pretty-print hash contents by given ordered keys, or all sorted
 sub _dump_body {

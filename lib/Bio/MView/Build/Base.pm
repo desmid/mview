@@ -9,8 +9,8 @@ use Universal qw(vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Scheduler;
 use Bio::MView::Align::Alignment;
-use NPB::Parse::Regexps;
-use NPB::Parse::Stream;
+use Bio::Parse::Regexps;
+use Bio::Parse::Stream;
 
 sub new {
     my $type = shift;

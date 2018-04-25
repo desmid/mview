@@ -1,5 +1,5 @@
 TREE = lib/Bio
-DIRS = MView
+DIRS = Parse MView
 FILE = 
 EXES = 
 SRCS = 
