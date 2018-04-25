@@ -367,7 +367,7 @@ sub print_data {
 package Bio::Parse::Format::BLAST::MATCH::SUM;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Record);
 
@@ -419,7 +419,7 @@ sub print_data {
 package Bio::Parse::Format::BLAST::MATCH::ALN;
 
 use vars qw(@ISA);
-use Bio::Parse::Math;
+use Bio::Util::Math qw(max);
 
 @ISA = qw(Bio::Parse::Record);
 

@@ -49,7 +49,7 @@ use vars qw(@ISA);
 package Bio::Parse::Format::BLAST1::tblastn::MATCH::ALN;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Format::BLAST1::MATCH::ALN);
 

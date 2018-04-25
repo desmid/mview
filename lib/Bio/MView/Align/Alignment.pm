@@ -5,7 +5,6 @@ use strict;
 ######################################################################
 package Bio::MView::Align::Alignment;
 
-use Universal qw(swap);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Align::Ruler;
 use Bio::MView::Align::Consensus;
@@ -259,6 +258,8 @@ sub do_gc {
 
 sub prune_identities {
     my ($self, $refid, $mode, $min, $max, $topn, $keep) = @_;
+
+    sub swap { return ($_[1], $_[0]) }
 
     $min = 0    if $min < 0;
     $max = 100  if $max > 100;

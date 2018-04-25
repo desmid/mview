@@ -1,8 +1,8 @@
 TREE = lib
 DIRS = Bio
 FILE =
-EXES = 
-SRCS = Universal.pm
-HTML = 
+EXES =
+SRCS =
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

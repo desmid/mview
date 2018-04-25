@@ -5,7 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Option::Arguments;
 
-use Universal qw(fileparts);
+use Bio::Util::File qw(fileparts);
 use Bio::MView::Align::Consensus;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;

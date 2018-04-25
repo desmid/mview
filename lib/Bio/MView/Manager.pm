@@ -5,7 +5,7 @@ use strict;
 ######################################################################
 package Bio::MView::Manager;
 
-use Universal qw(max vmstat);
+use Bio::Util::System qw(vmstat);
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;

@@ -1,8 +1,8 @@
 TREE = lib/Bio/Parse/Format/BLAST2
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = blastn.pm blastp.pm blastx.pm tblastn.pm tblastx.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

@@ -5,7 +5,8 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Panel;
 
-use Universal qw(max swap vmstat);
+use Bio::Util::Math qw(max);
+use Bio::Util::System qw(vmstat);
 use Bio::MView::Display::Sequence;
 use Bio::MView::Display::Ruler;
 use Bio::MView::Display::Out::Text qw($LJUST $RJUST);
@@ -116,6 +117,8 @@ sub free_rows {
 
 sub initialise_fieldwidths {
     my $self = shift;
+
+    sub swap { return ($_[1], $_[0]) }
 
     my $par = $self->{'par'};
 

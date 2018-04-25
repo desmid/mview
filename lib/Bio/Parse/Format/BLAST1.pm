@@ -22,7 +22,7 @@
 package Bio::Parse::Format::BLAST1;
 
 use Bio::Parse::Format::BLAST;
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use strict;
 

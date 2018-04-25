@@ -225,7 +225,7 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::FASTA2::lalign::MATCH::SUM;
 
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use vars qw(@ISA);
 

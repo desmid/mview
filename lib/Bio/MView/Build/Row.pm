@@ -180,7 +180,9 @@ sub truncate {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump { warn Universal::dump_object(@_) }
+use Bio::Util::Object qw(dump_object);
+
+sub dump { warn dump_object(@_) }
 
 ###########################################################################
 1;

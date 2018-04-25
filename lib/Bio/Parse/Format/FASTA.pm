@@ -633,7 +633,7 @@ sub print_data {
 ###########################################################################
 package Bio::Parse::Format::FASTA::MATCH::ALN;
 
-use Bio::Parse::Math;
+use Bio::Util::Math qw(min max);
 
 use vars qw(@ISA);
 

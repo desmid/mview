@@ -84,7 +84,7 @@ sub new { my $self=shift; $self->SUPER::new(@_) }
 ###########################################################################
 package Bio::Parse::Format::FASTA1::MATCH::ALN;
 
-use Bio::Parse::Math;
+use Bio::Util::Math qw(max);
 
 use vars qw(@ISA);
 

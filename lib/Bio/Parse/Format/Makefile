@@ -24,6 +24,6 @@ SRCS = BLAST.pm		\
        Plain.pm		\
        Slurp.pm		\
 
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

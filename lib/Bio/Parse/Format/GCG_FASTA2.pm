@@ -390,7 +390,7 @@ sub new {
 package Bio::Parse::Format::GCG_FASTA2::MATCH::SUM;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Format::FASTA::MATCH);
 

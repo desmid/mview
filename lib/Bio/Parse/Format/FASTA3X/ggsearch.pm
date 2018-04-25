@@ -35,7 +35,7 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::ggsearch::RANK;
 
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use vars qw(@ISA);
 
@@ -121,7 +121,7 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::ggsearch::MATCH::SUM;
 
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use vars qw(@ISA);
 

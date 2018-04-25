@@ -1,8 +1,8 @@
 TREE = lib/Bio/MView/Build
 DIRS = Format
 FILE =
-EXES = 
+EXES =
 SRCS = Align.pm Base.pm Row.pm RowInfoMixin.pm Scheduler.pm Search.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

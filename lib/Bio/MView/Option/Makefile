@@ -1,8 +1,8 @@
 TREE = lib/Bio/MView/Option
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = Arguments.pm Options.pm Parameters.pm Parser.pm Types.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

@@ -3,51 +3,15 @@
 use strict;
 
 ######################################################################
-package Universal;
+package Bio::Util::Object;
 
 use Exporter;
-use vars qw(@ISA @EXPORT);
+
+use vars qw(@ISA @EXPORT_OK);
 
 @ISA = qw(Exporter);
 
-push @EXPORT, qw(min max swap);
-push @EXPORT, qw(basename fileparts tmpfile);
-push @EXPORT, qw(dump_object dump_hash);
-push @EXPORT, qw(stacktrace vmstat);
-
-sub min { return $_[0] < $_[1] ? $_[0] : $_[1] }
-sub max { return $_[0] > $_[1] ? $_[0] : $_[1] }
-
-sub swap { return ($_[1], $_[0]) }
-
-#replacement for /bin/basename
-sub basename {
-    my ($path, $ext) = (@_, "");
-    if ($^O ne 'MSWin32') {
-        ($path) = "/$path" =~ /.*\/(.+)$/;
-        return $1  if $path =~ /(.*)$ext$/;
-        return $path;
-    }
-    ($path) = "\\$path" =~ /.*\\(.+)$/;
-    return $1  if $path =~ /(.*)$ext$/;
-}
-
-#basename and extension
-sub fileparts {
-    my ($path, $wantbase) = (@_, 1); #discard leading path if true (default)
-    $path = basename($path)  if $wantbase;
-    return ($1, $2)  if $path =~ /^(.+?)\.([^.]+)$/; #non-greedy
-    return ('', $1)  if $path =~ /^\.([^.]+)$/;
-    return ($1, '')  if $path =~ /^(.+)\.$/;
-    return ($path, '');
-}
-
-#temporary file name
-sub tmpfile {
-    my ($s) = (@_, $$);
-    return "/tmp/$s"  if $^O ne 'MSWin32';
-    return $s;
-}
+@EXPORT_OK = qw(dump_object dump_hash);
 
 #pretty-print object contents by given ordered keys, or all sorted
 sub dump_object { return "Class: $_[0]\n" . _dump_body(@_) }
@@ -55,33 +19,11 @@ sub dump_object { return "Class: $_[0]\n" . _dump_body(@_) }
 #pretty-print hash contents by given ordered keys, or all sorted
 sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 
-sub stacktrace {
-    warn "Stack Trace:\n"; my $i = 0;
-    my @calls = caller($i++);
-    my ($file, $line, $func) = ($calls[1], $calls[2], $calls[3]);
-    while ( @calls = caller($i++) ){
-        #func is one ahead
-        warn $file . ":" . $line . " in function " . $calls[3] . "\n";
-        ($file, $line, $func) = ($calls[1], $calls[2], $calls[3]);
-    }
-}
-
-#Linux only
-sub vmstat {
-    my ($s) = (@_, '');
-    local ($_, *TMP);
-    if (open(TMP, "cat /proc/$$/stat|")) {
-	$_ = <TMP>; my @ps = split /\s+/; close TMP;
-	print sprintf "VM: %8luk  $s\n", $ps[22] >> 10;
-    } else {
-	print sprintf "VM: -  $s\n";
-    }
-}
-
 ###########################################################################
-# private fnuctions
+# private functions
 ###########################################################################
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
+use Bio::Util::Math qw(max);
 
 #pretty-print hash contents by given ordered keys, or all sorted
 sub _dump_body {

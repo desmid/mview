@@ -159,7 +159,7 @@ sub new {
 package Bio::Parse::Format::Genbank::LOCUS;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Record);
 

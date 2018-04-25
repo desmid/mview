@@ -1,8 +1,8 @@
 TREE = lib/Bio/MView/Color
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = ColorMap.pm Palette.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

@@ -1,8 +1,8 @@
 TREE = lib/Bio/MView/Sequence
 DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = Base.pm Forward.pm Reverse.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

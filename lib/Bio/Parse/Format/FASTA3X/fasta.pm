@@ -116,7 +116,7 @@ use vars qw(@ISA);
 package Bio::Parse::Format::FASTA3X::fasta::MATCH::SUM;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA   = qw(Bio::Parse::Format::FASTA::MATCH::SUM);
 

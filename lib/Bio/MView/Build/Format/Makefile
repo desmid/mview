@@ -1,7 +1,7 @@
 TREE = lib/Bio/MView/Build/Format
-DIRS = 
-FILE = 
-EXES = 
+DIRS =
+FILE =
+EXES =
 SRCS = BLAST.pm		\
        BLAST0.pm	\
        BLAST1.pm	\
@@ -22,6 +22,6 @@ SRCS = BLAST.pm		\
        PIR.pm		\
        Plain.pm		\
 
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

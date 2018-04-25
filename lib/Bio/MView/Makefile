@@ -1,8 +1,8 @@
 TREE = lib/Bio/MView
 DIRS = Align Build Color Display Option Sequence
 FILE =
-EXES = 
+EXES =
 SRCS = Convert.pm GroupMap.pm Manager.pm SRS.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

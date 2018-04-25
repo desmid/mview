@@ -5,13 +5,15 @@ use strict;
 ###########################################################################
 package Bio::MView::Option::Parameters;
 
-use Universal;
 use Exporter;
-use vars qw(@ISA @EXPORT $PAR);
+
+use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
 
 @EXPORT = qw($PAR);
+
+use vars qw($PAR);
 
 $PAR = undef;  #unique global instance
 
@@ -76,9 +78,11 @@ sub get_set {
 ######################################################################
 # debug
 ######################################################################
+use Bio::Util::Object qw(dump_hash);
+
 #Return pretty-printed parameter listing; operate on supplied keys or
 #all keys if none given.
-sub dump { my $self = shift; return Universal::dump_hash($self->{'p'}, @_) }
+sub dump { my $self = shift; return dump_hash($self->{'p'}, @_) }
 
 ###########################################################################
 1;

@@ -109,7 +109,7 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::SIM::HEADER;
 
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use vars qw(@ISA);
 
@@ -259,7 +259,7 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::SIM::MATCH::SUM;
 
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use vars qw(@ISA);
 
@@ -327,7 +327,7 @@ sub print_data {
 ###########################################################################
 package Bio::Parse::Format::SIM::MATCH::ALN;
 
-use Bio::Parse::Math;
+use Bio::Util::Math qw(max);
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);

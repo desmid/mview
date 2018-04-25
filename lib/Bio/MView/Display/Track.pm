@@ -5,7 +5,7 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Track;
 
-use Universal qw(vmstat);
+use Bio::Util::System qw(vmstat);
 
 sub new {
     my $type = shift;
@@ -178,7 +178,9 @@ sub parse_range {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump { warn Universal::dump_object(@_) }
+use Bio::Util::Object qw(dump_object);
+
+sub dump { warn dump_object(@_) }
 
 ###########################################################################
 1;

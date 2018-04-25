@@ -1,8 +1,8 @@
 TREE = lib/Bio/Parse/Format/GCG_FASTA2
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = fasta.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

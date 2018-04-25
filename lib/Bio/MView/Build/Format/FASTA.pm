@@ -15,7 +15,7 @@ package Bio::MView::Build::Format::FASTA;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::Search;
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use strict;
 use vars qw(@ISA);

@@ -5,7 +5,8 @@ use strict;
 ###########################################################################
 package Bio::MView::Display::Display;
 
-use Universal qw(max vmstat);
+use Bio::Util::Math qw(max);
+use Bio::Util::System qw(vmstat);
 use Bio::MView::Display::Panel;
 use Bio::MView::Display::Out::Text;
 use Bio::MView::Display::Out::HTML;

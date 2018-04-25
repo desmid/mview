@@ -1,8 +1,8 @@
 TREE = lib/Bio/Parse/Format/FASTA3
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = fasta.pm fastx.pm tfasta.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

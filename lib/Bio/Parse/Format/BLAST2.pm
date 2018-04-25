@@ -21,7 +21,7 @@
 package Bio::Parse::Format::BLAST2;
 
 use Bio::Parse::Format::BLAST;
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 use strict;
 
@@ -251,7 +251,7 @@ sub new {
 package Bio::Parse::Format::BLAST2::SEARCH::RANK;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Format::BLAST::RANK);
 
@@ -363,7 +363,7 @@ use vars qw(@ISA);
 package Bio::Parse::Format::BLAST2::SEARCH::MATCH::ALN;
 
 use vars qw(@ISA);
-use Bio::Parse::Regexps;
+use Bio::Util::Regexp;
 
 @ISA = qw(Bio::Parse::Format::BLAST::MATCH::ALN);
 

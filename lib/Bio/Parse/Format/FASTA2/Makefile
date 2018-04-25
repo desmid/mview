@@ -1,8 +1,8 @@
 TREE = lib/Bio/Parse/Format/FASTA2
-DIRS = 
+DIRS =
 FILE =
-EXES = 
+EXES =
 SRCS = align.pm lalign.pm fasta.pm tfasta.pm ssearch.pm
-HTML = 
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ

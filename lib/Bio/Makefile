@@ -1,8 +1,8 @@
 TREE = lib/Bio
-DIRS = Parse MView
-FILE = 
-EXES = 
-SRCS = 
-HTML = 
+DIRS = Parse MView Util
+FILE =
+EXES =
+SRCS =
+HTML =
 
 include $(HOME)/etc/MAKEFILE.templ
