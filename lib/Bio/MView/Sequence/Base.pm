@@ -231,6 +231,31 @@ sub is_terminal_gap { $_[1] eq $Mark_Pad }
 sub is_internal_gap { $_[1] eq $Mark_Gap }
 sub is_gap          { $_[1] eq $Mark_Pad or $_[1] eq $Mark_Gap }
 
+#subclass overrides
+sub raw { die "$_[0]::raw: virtual function called\n" }
+
+#subclass overrides
+sub col { die "$_[0]::col: virtual function called\n" }
+
+#subclass overrides
+sub is_forwards { die "$_[0]::is_forwards: virtual function called\n" }
+
+sub insert {
+    my $self = shift;
+    my $forward = 1;
+    #get direction from first fragment range longer than 1
+    foreach my $frag (@_) {
+        $forward = 1, last  if $frag->[1] < $frag->[2];
+        $forward = 0, last  if $frag->[1] > $frag->[2];
+    }
+    if ($forward) {
+        $self->make_forward;
+    } else {
+        $self->make_reverse;
+    }
+    $self->_insert(@_);
+}
+
 #Horribly inefficient search for all matches of a regexp in the possibly
 #gapped sequence, ie., regexp matches can span gapchars. Returns a reference
 #to a list of matched non-gap sequence positions (indexing from 1).
@@ -276,25 +301,6 @@ sub findall {
 ######################################################################
 # protected methods
 ######################################################################
-#subclass overrides
-sub is_forwards { die "$_[0]::is_forwards: virtual function called\n" }
-
-sub insert {
-    my $self = shift;
-    my $forward = 1;
-    #get direction from first fragment range longer than 1
-    foreach my $frag (@_) {
-        $forward = 1, last  if $frag->[1] < $frag->[2];
-        $forward = 0, last  if $frag->[1] > $frag->[2];
-    }
-    if ($forward) {
-        $self->make_forward;
-    } else {
-        $self->make_reverse;
-    }
-    $self->_insert(@_);
-}
-
 #subclass overrides
 sub _insert { die "$_[0]::_insert: virtual function called\n" }
 
