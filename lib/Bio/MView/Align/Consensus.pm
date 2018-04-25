@@ -5,6 +5,7 @@ use strict;
 ###########################################################################
 package Bio::MView::Align::Consensus;
 
+use Bio::MView::Sequence::Base;
 use Bio::MView::Align::Sequence;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::GroupMap;

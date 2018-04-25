@@ -5,6 +5,7 @@ use strict;
 ###########################################################################
 package Bio::MView::Align::Conservation;
 
+use Bio::MView::Sequence::Base;
 use Bio::MView::Align::Sequence;
 
 use vars qw(@ISA);

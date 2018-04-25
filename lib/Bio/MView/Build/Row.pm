@@ -28,7 +28,7 @@ package Bio::MView::Build::Row;
 
 use Bio::MView::Option::Parameters;  #for $PAR
 use Bio::MView::Build::RowInfoMixin;
-use Bio::MView::Sequence;
+use Bio::MView::Sequence::Base;
 use Bio::MView::SRS;
 use vars qw(@ISA);
 
@@ -60,8 +60,9 @@ sub new {
     $self->{'desc'} = $desc;                    #description string
     $self->{'frag'} = [];                       #list of fragments
 
-    $self->{'seq'}  =
-        new Bio::MView::Sequence($PAR->get('sequences')); #finished sequence
+    $self->{'seq'}  = new Bio::MView::Sequence(
+        $PAR->get('sequences')                  #finished sequence
+    );
 
     $self->{'url'}  = Bio::MView::SRS::srsLink($self->{'cid'});  #url
 
@@ -154,15 +155,7 @@ sub translate_range {
 #subclass overrides: assemble a row from sequence fragments
 sub assemble {
     my ($self, $lo, $hi, $gap) = @_;
-    my $reverse = 0;
-    #get direction from first fragment range longer than 1
-    foreach my $frag (@{$self->{'frag'}}) {
-        $reverse = 0, last  if $frag->[1] < $frag->[2];
-        $reverse = 1, last  if $frag->[1] > $frag->[2];
-    }
-    #warn "Row::assemble: [@_] $reverse\n";
     $self->sort;                                 #fragment order
-    $self->{'seq'}->reverse  if $reverse;        #before calling insert()
     $self->{'seq'}->insert(@{$self->{'frag'}});  #assemble fragments
     $self->{'seq'}->set_range($lo, $hi);         #set sequence range
     $self->{'seq'}->set_pad($gap);

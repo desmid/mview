@@ -163,7 +163,7 @@ sub find_blocks {
         $FIND_WARNINGS--;
     }
 
-    my $matches = $self->{string}->findall(\@patterns, $mapsize);
+    my $matches = $self->{'string'}->findall(\@patterns, $mapsize);
     my $index = {};
 
     foreach my $block (@$matches) {

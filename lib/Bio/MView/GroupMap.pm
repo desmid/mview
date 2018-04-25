@@ -6,7 +6,7 @@ use strict;
 package Bio::MView::GroupMap;
 
 use Bio::MView::Color::ColorMap;
-use Bio::MView::Sequence;
+use Bio::MView::Sequence::Base;
 use Exporter;
 
 use vars qw(@ISA @EXPORT $GROUPMAP);
