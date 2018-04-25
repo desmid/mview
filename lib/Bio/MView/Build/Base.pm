@@ -442,7 +442,8 @@ sub build_base_alignment {
                                   $self->{'keep_uid'});
 
     #compute columnwise data for aligned output
-    if ($self->{'aligned'} and !$PAR->get('keepinserts')) {
+    if ($self->{'aligned'} and !$PAR->get('keepinserts') and
+        $PAR->get('sequences')) {
         if (defined $self->{'ref_row'}) {
             $aln->set_coverage($self->{'ref_row'}->uid);
             $aln->set_identity($self->{'ref_row'}->uid, $PAR->get('pcid'));
