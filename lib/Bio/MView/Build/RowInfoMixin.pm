@@ -162,7 +162,7 @@ sub row_as_string {
         next  unless $n;                       #ignore row
         next if grep { $key eq $_ } @$ignore;  #ignore row
         my @tmp = $self->schema_item_as_rdb_list('data', $row);
-        push @cols, grep { $_ ne '' } @tmp;    #strip empty strings
+        push @cols, grep { defined and $_ ne '' } @tmp;  #strip empties
     }
     #warn "row_as_string: [@cols]\n\n";
     return join($delim, @cols);

@@ -441,24 +441,27 @@ sub build_base_alignment {
                                   $self->{'topn'},
                                   $self->{'keep_uid'});
 
+    my $sequences = $PAR->get('sequences');
+    my $noinserts = !$PAR->get('keepinserts');
+
     #compute columnwise data for aligned output
-    if ($self->{'aligned'} and !$PAR->get('keepinserts') and
-        $PAR->get('sequences')) {
+    if ($self->{'aligned'} and $sequences and $noinserts) {
+
         if (defined $self->{'ref_row'}) {
             $aln->set_coverage($self->{'ref_row'}->uid);
             $aln->set_identity($self->{'ref_row'}->uid, $PAR->get('pcid'));
         }
-    }
-
-    foreach my $row (@{$self->{'index2row'}}) {
-	next  if exists $self->{'hide_uid'}->{$row->uid};
-
-	my $arow = $aln->uid2row($row->uid);
-	next  unless defined $arow;
 
         #copy computed data into build row objects
-        $row->set_coverage($arow->get_coverage);
-        $row->set_identity($arow->get_identity);
+        foreach my $row (@{$self->{'index2row'}}) {
+            next  if exists $self->{'hide_uid'}->{$row->uid};
+
+            my $arow = $aln->uid2row($row->uid);
+            next  unless defined $arow;
+
+            $row->set_coverage($arow->get_coverage);
+            $row->set_identity($arow->get_identity);
+        }
     }
 
     #foreach my $r ($aln->all_ids) { $aln->uid2row($r)->seqobj->dump }
