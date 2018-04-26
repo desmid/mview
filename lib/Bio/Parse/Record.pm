@@ -635,32 +635,32 @@ sub next_line {
 
     #warn "nextline: $self->{'cursor'} / $self->{'limit'}\n";
 
-    if ($self->{'cursor'} >= $self->{'limit'}) {
-	return $self->{'line'} = undef;    #so next call won't see it
-    }
+    my $line = \$self->{'line'};
+
+    return $$line = undef  if $self->{'cursor'} >= $self->{'limit'};
 
     #ignore 'depth' leading characters
     my $ptr = $self->{'cursor'} + $self->{'depth'};
     
     #read the line
-    $self->{'line'} = $self->{'text'}->getline($ptr);
+    $$line = $self->{'text'}->getline($ptr);
 
-    return undef  unless defined $self->{'line'};
+    return undef  unless defined $$line;
 
     #how many bytes were actually read?
     my $bytes = $self->{'text'}->bytesread;
 
     if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
 	$bytes = $self->{'limit'} - $ptr;
-	$self->{'line'} = substr($self->{'line'}, 0, $bytes);
+	$$line = substr($$line, 0, $bytes);
     }
 
     $self->{'length'}  = $self->{'depth'} + $bytes;
     $self->{'cursor'} += $self->{'length'};
 
-    #return last thing read
-    chomp $self->{'line'}  if $chomp;
-    $self->{'line'};
+    chomp $$line  if $chomp;
+
+    return $$line;
 }
 
 #Read $count lines or all lines until (EOF or end-of-string) if $count==0.
@@ -668,28 +668,29 @@ sub next_line {
 #Assumes next_line() called just previously.
 sub scan_lines {
     my ($self, $count, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
-    
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
     #warn "scan_lines() looking at ($count) lines\n";
 
     if ($count < 1) {  #scan everything
-	while (defined ($line = $self->next_line)) {
-	    $record .= $line;
+	while (defined $self->next_line) {
+	    $record .= $$line;
 	}
     } else {  #scan $count lines
         $count--;  #already seen one line
-        while ($count-- > 0 and defined ($line = $self->next_line)) {
-	    $record .= $line;
+        while ($count-- > 0 and defined $self->next_line) {
+	    $record .= $$line;
 	}
     }
     #no $self->backup as we've read exactly the right amount
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
+
+    return $record;
 }
 
 #Read >= 1 record lines terminating on failure to match $pattern. Store
@@ -697,24 +698,25 @@ sub scan_lines {
 #next_line() called just previously.
 sub scan_while {
     my ($self, $pattern, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
 
     #warn "scan_while() looking at /$pattern/\n";
 
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined ($line = $self->next_line)) {
-	if ($line !~ /$pattern/) {
+    while (defined $self->next_line) {
+	if ($$line !~ /$pattern/) {
             $self->backup;
             last;
         }
-        $record .= $line;
+        $record .= $$line;
     }
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
+
+    return $record;
 }
 
 #Read >= 1 record lines terminating on matching $pattern. Store final
@@ -722,24 +724,25 @@ sub scan_while {
 #next_line() called just previously. Consumed record EXCLUDES matched line.
 sub scan_until {
     my ($self, $pattern, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
 
     #warn "scan_until() looking until /$pattern/\n";
 
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined ($line = $self->next_line)) {
-	if ($line =~ /$pattern/) {
+    while (defined $self->next_line) {
+	if ($$line =~ /$pattern/) {
 	    $self->backup;
 	    last;
 	}
-	$record .= $line;
+	$record .= $$line;
     }
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
+
+    return $record;
 }
 
 #Read >= 1 record lines terminating on matching $pattern. Store final
@@ -747,21 +750,22 @@ sub scan_until {
 #next_line() called just previously. Consumed record INCLUDES matched line.
 sub scan_until_inclusive {
     my ($self, $pattern, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
 
     #warn "scan_until_inclusive() looking until /$pattern/\n";
 
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined ($line = $self->next_line)) {
-	$record .= $line;
-	last  if $line =~ /$pattern/;
+    while (defined $self->next_line) {
+	$record .= $$line;
+	last  if $$line =~ /$pattern/;
     }
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
+
+    return $record;
 }
 
 #Read >= 1 record lines terminating on matching $pattern. Store final
@@ -770,26 +774,27 @@ sub scan_until_inclusive {
 #Skips initial $skipcount instances of $pattern.
 sub scan_skipping_until {
     my ($self, $pattern, $skip, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
 
     #warn "scan_skipping_until() looking until /$pattern/\n";
 
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined ($line = $self->next_line)) {
-	if ($line =~ /$pattern/) {
+    while (defined $self->next_line) {
+	if ($$line =~ /$pattern/) {
 	    if ($skip-- < 1) {
 	        $self->backup;
 	        last;
             }
 	}
-	$record .= $line;
+	$record .= $$line;
     }
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
+
+    return $record;
 }
 
 #Read >= 1 record lines terminating on failure to match empty lines or
@@ -798,26 +803,26 @@ sub scan_skipping_until {
 #previously.
 sub scan_nest {
     my ($self, $nest, $key) = (@_, 0);
-    my ($offset, $bytes, $line, $record) = (0, 0, '', '');
 
     #warn "scan_nest() looking at nest depth $nest\n";
 
-    $record = $self->{'line'};
-    $offset = $self->{'cursor'} - $self->{'length'};
+    my $line   = \$self->{'line'};
+    my $record = $$line;
+    my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined ($line = $self->next_line)) {
-	if ($line !~ /^(\s{$nest}|$)/) {
+    while (defined $self->next_line) {
+	if ($$line !~ /^(\s{$nest}|$)/) {
             $self->backup;
             last;
         }
-        $record .= $line;
+        $record .= $$line;
     }
-    $bytes = $self->{'cursor'} - $offset;
+    my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-    $record;
-}
 
+    return $record;
+}
 
 ###########################################################################
 1;

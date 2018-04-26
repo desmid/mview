@@ -111,15 +111,10 @@ sub reset {
 
 sub _seek {
     my ($self, $new) = @_;
-    my $old = $self->{'thisoffset'};
-    #warn "seek: entry: $old, $new\n"  if $Bio::Parse::Substring::DEBUG;
-    if ($old != $new) {
-        unless (seek($self->{'fh'}, $new-$old, SEEK_CUR)) {
-            warn "seek: failed\n";
-            return 0;
-        }
-    }
-    return 1;
+    my $delta = $new - $self->{'thisoffset'};
+    #warn "seek: entry: $delta\n"  if $Bio::Parse::Substring::DEBUG;
+    return 1  unless $delta;
+    return seek($self->{'fh'}, $delta, SEEK_CUR);
 }
 
 sub _reset {
@@ -180,8 +175,7 @@ sub getline {
 
     return undef  unless $self->_seek($offset);
 
-    my $fh = $self->{'fh'};
-    my $line = <$fh>;
+    my $line = readline($self->{'fh'});
 
     return undef  unless defined $line;
 
