@@ -63,7 +63,7 @@
 <li><a class="reference internal" href="#pagination">Pagination</a></li>
 <li><a class="reference internal" href="#column-ranges">Column ranges</a></li>
 <li><a class="reference internal" href="#filtering-rows">Filtering rows</a></li>
-<li><a class="reference internal" href="#labels-and-annotations">Labels and annotations</a></li>
+<li><a class="reference internal" href="#labels-annotations-and-sequences">Labels, annotations and sequences</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#adding-html">Adding HTML</a><ul>
@@ -101,7 +101,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#linking-identifiers-to-external-resources">Linking identifiers to external resources</a></li>
-<li><a class="reference internal" href="#memory-usage">Memory usage</a></li>
+<li><a class="reference internal" href="#memory-usage-and-speed">Memory usage and speed</a></li>
 </ul>
 </li>
 </ul>
@@ -332,8 +332,8 @@ above still works.</p>
 <p>Note 2: Comment lines like this cannot contain whitespace in the sequence
 region - they look like sequences and are processed as such by MView.</p>
 </div>
-<div class="section" id="labels-and-annotations">
-<h3>Labels and annotations<a class="headerlink" href="#labels-and-annotations" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="labels-annotations-and-sequences">
+<h3>Labels, annotations and sequences<a class="headerlink" href="#labels-annotations-and-sequences" title="Permalink to this headline">¶</a></h3>
 <p>The labelling information at the left of the alignment can be too wide, so you
 can switch some of them off. Labels are in blocks numbered from zero
 (perverse, but the original reasoning was that the input data starts with the
@@ -380,6 +380,9 @@ make that column 0).</p>
 </div></blockquote>
 <p>Any of the of the label types can be switched off with an option like
 <code class="docutils literal"><span class="pre">-label2</span></code> to remove the descriptions label at column 2, and so on.</p>
+<p>You can also disable processing and display of the sequences with the
+<code class="docutils literal"><span class="pre">-sequences</span> <span class="pre">off</span></code> option. This would be useful if you only want to see
+summarized scoring information from many blast runs, for example.</p>
 </div>
 </div>
 <div class="section" id="adding-html">
@@ -1369,17 +1372,20 @@ needed to access the sequence databases of interest.</p>
 <p>Of course, this linking mechanism works for any recognised input data format,
 not just blast results.</p>
 </div>
-<div class="section" id="memory-usage">
-<h2>Memory usage<a class="headerlink" href="#memory-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="memory-usage-and-speed">
+<h2>Memory usage and speed<a class="headerlink" href="#memory-usage-and-speed" title="Permalink to this headline">¶</a></h2>
 <p>Use of memory by MView can be very great, particularly if you try to process
 complete sets of PSI-BLAST cycles each containing 1000s of hits all at
 once. Use of most filtering options should reduce memory requirements by
-cutting down the number of internal data structures created. Likewise,
-processing each alignment separately will save memory or you can use the
-option <code class="docutils literal"><span class="pre">-register</span> <span class="pre">off</span></code> to cause each alignment to be output when ready (by
-default all alignments are saved until the end so they can be printed with
-fields in register). Finally, the choice of malloc library compiled into your
-perl may affect memory use.</p>
+cutting down the number of internal data structures created.</p>
+<p>In particular, if you only want to see the scoring information and don&#8217;t care
+about the sequence alignments, you can switch these off with the <code class="docutils literal"><span class="pre">-sequences</span>
+<span class="pre">off</span></code> option, which will also speed up the program.</p>
+<p>Likewise, processing each alignment (for example, plus strands and then minus
+strands) separately will save memory, or you can use the option <code class="docutils literal"><span class="pre">-register</span>
+<span class="pre">off</span></code> to cause each alignment to be output when ready (by default all
+alignments are saved until the end so they can be printed with fields in
+vertical register).</p>
 </div>
 </div>
 
@@ -1407,7 +1413,7 @@ perl may affect memory use.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 08 Apr 2018.
+      Last updated on 26 Apr 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

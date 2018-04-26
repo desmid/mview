@@ -259,8 +259,8 @@ Note 2: Comment lines like this cannot contain whitespace in the sequence
 region - they look like sequences and are processed as such by MView.
 
 
-Labels and annotations
-^^^^^^^^^^^^^^^^^^^^^^
+Labels, annotations and sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The labelling information at the left of the alignment can be too wide, so you
 can switch some of them off. Labels are in blocks numbered from zero
@@ -283,6 +283,10 @@ make that column 0).
 
 Any of the of the label types can be switched off with an option like
 ``-label2`` to remove the descriptions label at column 2, and so on.
+
+You can also disable processing and display of the sequences with the
+``-sequences off`` option. This would be useful if you only want to see
+summarized scoring information from many blast runs, for example.
 
 
 Adding HTML
@@ -1605,18 +1609,22 @@ Of course, this linking mechanism works for any recognised input data format,
 not just blast results.
 
 
-Memory usage
-------------
+Memory usage and speed
+----------------------
 
 Use of memory by MView can be very great, particularly if you try to process
 complete sets of PSI-BLAST cycles each containing 1000s of hits all at
 once. Use of most filtering options should reduce memory requirements by
-cutting down the number of internal data structures created. Likewise,
-processing each alignment separately will save memory or you can use the
-option ``-register off`` to cause each alignment to be output when ready (by
-default all alignments are saved until the end so they can be printed with
-fields in register). Finally, the choice of malloc library compiled into your
-perl may affect memory use.
+cutting down the number of internal data structures created.
 
+In particular, if you only want to see the scoring information and don't care
+about the sequence alignments, you can switch these off with the ``-sequences
+off`` option, which will also speed up the program.
+
+Likewise, processing each alignment (for example, plus strands and then minus
+strands) separately will save memory, or you can use the option ``-register
+off`` to cause each alignment to be output when ready (by default all
+alignments are saved until the end so they can be printed with fields in
+vertical register).
 
 .. END
