@@ -266,6 +266,7 @@ sub findall {
     my $seqlen = CORE::length $sequence;
     my @gapped = split(//, $self->string);
     my $gapchar = $self->{text_gap};
+    my $ordA = ord('A');
 
     #warn "findall: @{[$self->string]}\n";
     #warn "findall: blocks=[@{[join(', ', @$blocks)]}]\n";
@@ -274,9 +275,8 @@ sub findall {
 
     for (my $blocknum=0; $blocknum<$end; $blocknum++) {
 	#warn "findall: $blocknum, $blocks->[$blocknum]\n";
-	my $blockid = chr(ord('A') + $blocknum % $mapsize);
+	my $blockid = chr($ordA + $blocknum % $mapsize);
 	my $pattern = $blocks->[$blocknum];
-	study $pattern;
 
 	for (my ($i,$j) = (0,0); $j<$seqlen; $i++, $j++) {
 	    while ($gapped[$i] eq $gapchar) {
@@ -381,10 +381,10 @@ sub _populate_sequence_array {
         }
 
         #middle
-        $state = 1    if $state < 1;
+        $state = 1  if $state < 1;
 
         #skip gaps
-        next    if $c eq $Mark_Gap;
+        next  if $c eq $Mark_Gap;
 
         my $p = $self->_get_sequence_index($lo, $hi, $i);
 
@@ -392,10 +392,14 @@ sub _populate_sequence_array {
 
         #store other text, including Mark_Spc or Mark_Fs[12] symbols
         if (exists $self->{'seq'}->{$p}) {
-            next if $self->{'seq'}->{$p} eq $c;
+
+            next  if $self->{'seq'}->{$p} eq $c;
+
             warn "insert($o): assembly clash: [$p] = '$$self->{'seq'}->{$p}' -> '$c'\n"
                 if $WARNCLASH;
-            next unless $OVERWRITE;
+
+            next  unless $OVERWRITE;
+
             #unrecord old frameshift
             $self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs1;
             $self->{'fs'}--  if $self->{'seq'}->{$p} eq $Mark_Fs2;
