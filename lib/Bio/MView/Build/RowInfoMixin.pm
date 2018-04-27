@@ -68,7 +68,7 @@ my $IGNORE_SEQUENCE_KEYS = [ 'covr', 'pcid', 'seq' ];
 #save row information according to schema
 sub save_info {
     my $self = shift;
-    #warn "save_info: [@_]\n";
+    #warn "save_info: [@{[join(',',@_)]}]\n";
 
     my $schema = $self->schema;
     return $self  unless @$schema;
@@ -87,7 +87,7 @@ sub has {
 
     my $schema = $self->schema;
 
-    return exists $self->{$key}  unless @$schema;
+    return exists $self->{'info'}->{$key}  unless @$schema;
 
     foreach my $row (@$schema) {
         my ($n1, $n2, $name, $label, $format, $default) = @$row;
@@ -363,22 +363,22 @@ sub schema_item_unformatted {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_unformatted_string($mode) ];
-            #warn "schema_item_unformatted: $key => [@$data]\n";
+            #warn "schema_item_unformatted($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $self->$key;
-            #warn "schema_item_unformatted: $key => [$data]\n";
+            #warn "schema_item_unformatted($mode): $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_unformatted_string($mode) ];
-            #warn "schema_item_unformatted: $key => [@$data]\n";
+            #warn "schema_item_unformatted($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $label;
-            #warn "schema_item_unformatted: $key => [$data]\n";
+            #warn "schema_item_unformatted($mode): $key => [$data]\n";
             return $data;
         }
     }
@@ -404,35 +404,35 @@ sub schema_item_formatted {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "schema_item_formatted: $key => [$data]\n";
+            #warn "schema_item_formatted($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = sprintf($fmt, $self->$key);
-            #warn "schema_item_formatted: $key => [$data]\n";
+            #warn "schema_item_formatted($mode): $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "schema_item_formatted: $key => [$data]\n";
+            #warn "schema_item_formatted($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = sprintf($fmt, $label);
-            #warn "schema_item_formatted: $key => [$data]\n";
+            #warn "schema_item_formatted($mode): $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'form') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_formatted_string($mode) ];
-            #warn "schema_item_formatted: $key => [$data]\n";
+            #warn "schema_item_formatted($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $format;
+            #warn "schema_item_formatted($mode): $key => [$data]\n";
+            return $data;
         }
-        #warn "schema_item_formatted: $key => [$data]\n";
-        return $data;
     }
     return ();
 }
@@ -445,35 +445,35 @@ sub schema_item_as_rdb_list {
     if ($mode eq 'data') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "schema_item_as_rdb_list: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $self->$key;
-            #warn "schema_item_as_rdb_list: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list($mode): $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'attr') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "schema_item_as_rdb_list: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $label;
-            #warn "schema_item_as_rdb_list: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list($mode): $key => [$data]\n";
             return $data;
         }
     }
     elsif ($mode eq 'form') {
         if ($key eq '_data_') {
             $data = [ $self->schema_data_as_rdb_list($mode) ];
-            #warn "schema_item_as_rdb_list: $key => [$data]\n";
+            #warn "schema_item_as_rdb_list($mode): $key => [@$data]\n";
             return @$data;
         } else {
             $data = $format;
+            #warn "schema_item_as_rdb_list($mode): $key => [$data]\n";
+            return $data;
         }
-        #warn "schema_item_as_rdb_list: $key => [$data]\n";
-        return $data;
     }
     return ();
 }
