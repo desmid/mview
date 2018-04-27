@@ -19,13 +19,18 @@ $DEBUG = 0;
 sub new {
     my $type = shift;
     #warn "${type}::new()\n"  if $DEBUG;
-    Bio::Parse::Message::die($type, "new() invalid argument list (@_)")
+    Bio::Parse::Message::die($type, "new(@_): invalid argument list")
 	if @_ < 1;
     return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                 #filename
+#   return new Bio::Parse::Substring::FileBuffer(@_);           #filename
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub close       {$_[0]}
+sub open        {$_[0]}
+sub reopen      {$_[0]}
 
 sub get_file    { '' }
 sub get_length  { $_[0]->{'extent'} }
@@ -35,6 +40,8 @@ sub bytesread   { $_[0]->{'thisoffset'} - $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
 ###########################################################################
+# Random access a file
+
 package Bio::Parse::Substring::File;
 
 use POSIX;
@@ -141,7 +148,7 @@ sub _open {
     my $self = shift;
     #warn "_open()\n"  if $Bio::Parse::Substring::DEBUG;
     $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
-    $self->{'fh'}->open($self->{'file'}) or $self->die("_open() can't open ($self->{'file'})");
+    $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
     $self->{'state'} = $OPEN;
     $self->{'lastoffset'} = $self->{'base'};
     $self->{'thisoffset'} = $self->{'base'};
@@ -152,7 +159,7 @@ sub substr {
     my $self = shift;
     #warn "substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     if ($self->{'state'} & $CLOSE) {
-	$self->die("substr() can't read on closed file '$self->{'file'}'");
+	$self->die("substr: can't read on closed file '$self->{'file'}'");
     }
     my ($offset, $bytes) = (@_, $self->{'base'}, $self->{'extent'}-$self->{'base'});
     my $buff = '';
@@ -188,7 +195,7 @@ sub getline {
 }
 
 ###########################################################################
-# A wrapper for a string held in memory to mimic a Substring::File
+# Random access a string in memory
 
 package Bio::Parse::Substring::String;
 
@@ -209,10 +216,6 @@ sub new {
     bless $self, $type;
 }
 
-sub close  {$_[0]}
-sub open   {$_[0]}
-sub reopen {$_[0]}
-
 sub reset {
     my $self = shift;
     my ($offset) = (@_, $self->{'base'});
@@ -231,26 +234,82 @@ sub substr {
 
 sub getline {
     my $self = shift;
-    my ($offset) = (@_, $self->{'base'});
+    my ($offset) = (@_, $self->{'thisoffset'});
 
     $self->{'lastoffset'} = $offset;
 
+    return undef  unless -1 < $offset and $offset < $self->{'extent'};
+
     my $i = index(${$self->{'text'}}, "\n", $offset);
     my $line;
-    if ($i > -1) {
+
+    #warn "LOOK: $offset, $i\n";
+
+    if ($i > -1) {  #read line upto and including eol
         $line = CORE::substr(${$self->{'text'}}, $offset, $i-$offset+1);
-    } else {
+    } else {  #read until eot
         $line = CORE::substr(${$self->{'text'}}, $offset);
     }
 
-    $self->{'thisoffset'} = $offset + length($line);
-
     return undef  unless defined $line;
+
+    #warn "READ: [$line]\n";
+
+    $self->{'thisoffset'} = $offset + length($line);
 
     #consume CR in CRLF if file came from DOS/Windows
     $line =~ s/\015\012/\012/go;
     $line;
 }
+
+###########################################################################
+# Load a file into memory, then random access it as a string
+
+package Bio::Parse::Substring::FileBuffer;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::Parse::Substring::String);
+
+sub new {
+    my $type = shift;
+    #warn "${type}::new()\n"  if $Bio::Parse::Substring::DEBUG;
+    my ($file, $base) = (@_, 0);
+
+    my $self = {};
+    bless $self, $type;
+
+    $self->{'file'}       = $file;
+    $self->{'base'}       = $base;
+    $self->{'extent'}     = 0;
+    $self->{'lastoffset'} = undef;
+    $self->{'thisoffset'} = undef;
+    $self->{'text'}       = undef;
+
+    $self->load($file);
+
+    #warn $self->{extent};
+    #warn $self->{text};
+    #warn ${$self->{text}};
+
+    #$self->examine;
+    $self;
+}
+
+sub load {
+    my ($self, $file) = @_;
+    local *TMP;
+    open(TMP, $file) or $self->die("load: can't open '$file'");
+    my $len = (stat TMP)[7];
+    my $buff;
+    my $c = read(TMP, $buff, $len);
+    close(TMP);
+    $self->die("load: unexpected byte count for '$file'")  unless $c == $len;
+    $self->{'extent'} = $len;
+    $self->{'text'}   = \$buff;
+}
+
+sub get_file {$_[0]->{'file'}}
 
 ###########################################################################
 1;
