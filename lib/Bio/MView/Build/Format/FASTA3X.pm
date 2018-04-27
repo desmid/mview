@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -351,14 +351,16 @@ sub parse {
                        '',
                        $query,
                        '',
-                       '',
-                       '',
-                       '',
-                       '',
-                       '',
-                       '',
-                       '+',
-                       '',
+                       {
+                           'initn'        => '',
+                           'init1'        => '',
+                           'bits'         => '',
+                           'expect'       => '',
+                           'sn'           => '',
+                           'sl'           => '',
+                           'query_orient' => '+',
+                           'sbjct_orient' => '',
+                       }
                    )));
 
     #extract hits and identifiers from the ranking
@@ -379,16 +381,17 @@ sub parse {
                            $rank,
                            $hit->{'id'},
                            $hit->{'desc'},
-                           $hit->{'initn'},
-                           $hit->{'init1'},
-                           $hit->{'bits'},
-                           $hit->{'expect'},
-                           $hit->{'sn'},
-                           $hit->{'sl'},
-                           '+',
-                           '',
-                       )),
-                      $key1
+                           {
+                               'initn'        => $hit->{'initn'},
+                               'init1'        => $hit->{'init1'},
+                               'bits'         => $hit->{'bits'},
+                               'expect'       => $hit->{'expect'},
+                               'sn'           => $hit->{'sn'},
+                               'sl'           => $hit->{'sl'},
+                               'query_orient' => '+',
+                               'sbjct_orient' => '',
+                           }
+                       )), $key1
             );
     }
 
@@ -490,14 +493,14 @@ sub strip_query_gaps {
             substr($$sbjct, $pos, 0) = $FASTMFS_SPACER;
         }
     };
-    
+
     &$gapper($query, $sbjct, '-');  #mark gaps in sbjct only
 
     #strip query terminal white space
     $trailer = length($$query) - $leader - $trailer;
     $$query  = substr($$query, $leader, $trailer);
     $$sbjct  = substr($$sbjct, $leader, $trailer);
-	
+
     #replace sbjct leading/trailing white space with gaps
     $$sbjct =~ s/\s/-/g;
 
@@ -600,11 +603,13 @@ sub parse {
                        '',
                        $query,
                        '',
-                       '',
-                       '',
-                       '',
-                       $self->strand,
-                       '',
+                       {
+                           'score'        => '',
+                           'bits'         => '',
+                           'expect'       => '',
+                           'query_orient' => $self->strand,
+                           'sbjct_orient' => '',
+                       }
                    )));
 
     #extract hits and identifiers from the ranking
@@ -625,13 +630,14 @@ sub parse {
                            $rank,
                            $hit->{'id'},
                            $hit->{'desc'},
-                           $hit->{'score'},
-                           $hit->{'bits'},
-                           $hit->{'expect'},
-                           $self->strand,
-                           '',
-                       )),
-                      $key1
+                           {
+                               'score'        => $hit->{'score'},
+                               'bits'         => $hit->{'bits'},
+                               'expect'       => $hit->{'expect'},
+                               'query_orient' => $self->strand,
+                               'sbjct_orient' => '',
+                           }
+                       )), $key1
             );
     }
 

@@ -67,17 +67,9 @@ my $IGNORE_SEQUENCE_KEYS = [ 'covr', 'pcid', 'seq' ];
 ######################################################################
 #save row information according to schema
 sub save_info {
-    my $self = shift;
-    #warn "save_info: [@{[join(',',@_)]}]\n";
-
-    my $schema = $self->schema;
-    return $self  unless @$schema;
-
-    for (my $i=0; $i<@$schema; $i++) {
-        my ($n1, $n2, $name, $label, $format, $default) = @{$schema->[$i]};
-        #warn "save: $name\n";
-        $self->{'info'}->{$name} = defined $_[$i] ? $_[$i] : $default;
-    }
+    my ($self, $hash) = @_;
+    #warn "save_info: @{[join(',',sort keys %$hash)]}\n";
+    $self->{'info'} = $hash;
 }
 
 #test if item has attribute
@@ -296,6 +288,7 @@ sub schema_data_as_formatted_string {
 
         if ($mode eq 'data') {
             my $data = $self->{'info'}->{$name};
+            $data = $default  unless defined $data;
             #warn "schema_data_as_formatted_string: $name => [$data]\n";
             push(@tmp, sprintf($fmt, $data));
             next;
@@ -321,6 +314,7 @@ sub schema_data_as_unformatted_string {
 
         if ($mode eq 'data') {
             my $data = $self->{'info'}->{$name};
+            $data = $default  unless defined $data;
             #warn "schema_data_as_unformatted_string: $name => [$data]\n";
             push @tmp, $data;
             next;
@@ -345,7 +339,8 @@ sub schema_data_as_rdb_list {
 
         if ($mode eq 'data') {
             my $data = $self->{'info'}->{$name};
-            #warn "schema_data_as_rdb_list: $name => $data\n";
+            $data = $default  unless defined $data;
+            #warn "schema_data_as_rdb_list($mode): $name => $data\n";
             push(@tmp, $data);
             next;
         }

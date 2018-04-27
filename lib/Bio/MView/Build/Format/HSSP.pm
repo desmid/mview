@@ -70,7 +70,7 @@ sub subheader {
     my $s = '';
     return $s  if $quiet;
     $s .= "Chain: " . $self->chain . "\n";
-    $s;    
+    $s;
 }
 
 sub parse {
@@ -88,16 +88,16 @@ sub parse {
 	 '',
 	 $head->{'pdbid'},
 	 $head->{'header'},
-	 $self->chain,
+         { 'chain' => $self->chain }
 	);
     $hit[$#hit]->add_frag($align->get_query($self->chain));
 
     #extract cumulative scores and identifiers from the ranking and
     #corresponding sequences from the already parsed alignment.
     foreach $match (@{$prot->{'ranking'}}) {
-	
+
 	$rank++;
-	
+
 	if ($match->{'id'} =~ /\|/) {
 	    #looks like a genequiz generated HSSP file
 	    $id = $match->{'id'};
@@ -121,17 +121,19 @@ sub parse {
 
 	$seq =~ tr/ /-/;    #replace spaces with hyphens
 
-	push @hit, new Bio::MView::Build::Row::HSSP($rank,
-                                                    $id,
-						    $match->{'protein'},
-						    $self->chain);
+	push @hit, new Bio::MView::Build::Row::HSSP(
+            $rank,
+            $id,
+            $match->{'protein'},
+            { 'chain' => $self->chain }
+        );
         $hit[$#hit]->add_frag($seq);
     }
     #map { $_->dump } @hit;
 
     #free objects
     $self->{'entry'}->free(qw(HEADER PROTEIN ALIGNMENT));
-    
+
     return \@hit;
 }
 

@@ -136,7 +136,7 @@ sub strip_query_gaps {
     $trailer = length($$query) - $leader - $trailer;
     $$query  = substr($$query, $leader, $trailer);
     $$sbjct  = substr($$sbjct, $leader, $trailer);
-	
+
     #replace sbjct leading/trailing white space with gaps
     $$sbjct =~ s/\s/-/g;
 

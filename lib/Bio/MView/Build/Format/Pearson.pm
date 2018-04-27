@@ -16,7 +16,7 @@ sub parser { 'Pearson' }
 sub parse {
     my $self = shift;
     my ($rank, $use, $rec, @hit) = (0);
-    
+
     return  unless defined $self->{scheduler}->next;
 
     foreach $rec ($self->{'entry'}->parse(qw(SEQ))) {

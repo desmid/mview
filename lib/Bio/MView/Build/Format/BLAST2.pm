@@ -29,10 +29,10 @@ sub begin_parse {
 
 sub end_parse { $_[0]->{'entry'}->free(qw(SEARCH)) }
 
-#sub str { join ", ", map { defined $_ ? $_ : 'undef' } @_ }
-
 sub parse_record {
     my ($self, $k, $hdr, $sum, $aln) = @_;
+
+    #sub str { join ", ", map { defined $_ ? $_ : 'undef' } @_ }
     #warn "[@{[str($k, $hdr, $sum, $aln)]}]\n";
 
     my ($id, $desc, $bits, $expect, $n) = ('','','','','');
@@ -50,8 +50,14 @@ sub parse_record {
         ($bits, $expect, $n) = ($aln->{'bits'}, $aln->{'expect'}, $aln->{'n'});
     }
 
-    #warn "[$k, $id, $desc, $self->cycle, $bits, $expect, $n]\n";
-    ($k, $id, $desc, $self->cycle, $bits, $expect, $n);
+    my $info = {
+        'cycle'  => $self->cycle,
+        'bits'   => $bits,
+        'expect' => $expect,
+        'n'      => $n,
+    };
+
+    return ($k, $id, $desc, $info);
 }
 
 sub get_scores {

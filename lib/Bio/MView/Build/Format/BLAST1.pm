@@ -33,7 +33,9 @@ sub end_parse { $_[0]->{'entry'}->free(qw(HEADER RANK MATCH)) }
 sub parse_record {
     my ($self, $k, $hdr, $sum, $aln) = @_;
     #warn "[@{[str($k, $hdr, $sum, $aln)]}]\n";
+
     my ($id, $desc, $score, $p, $n) = ('','','','','');
+
     $k = ''  unless defined $k;  #row number = rank
 
     if (defined $hdr) {
@@ -46,8 +48,16 @@ sub parse_record {
     if (defined $aln) {
         ($score, $p, $n) = ($aln->{'score'}, $aln->{'p'}, $aln->{'n'});
     }
-    #warn "[$k, $id, $desc, $score, $p, $n]\n";
-    ($k, $id, $desc, $score, $p, $n);
+
+    my $info = {
+        'score' => $score,
+        'p'     => $p,
+        'n'     => $n,
+    };
+
+    #use Bio::Util::Object qw(dump_hash); warn dump_hash($info);
+
+    return ($k, $id, $desc, $info);
 }
 
 sub get_scores {

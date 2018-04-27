@@ -404,8 +404,8 @@ sub record {
     my $type = $self->record_type;
     my @values = $self->parse_record(@_);
 
-    push @values, '+';  #query orientation
-    push @values, '+';  #sbjct orientation
+    $values[3]->{'query_orient'} = '+';
+    $values[3]->{'sbjct_orient'} = '+';
 
     new $type(@values);
 }
@@ -434,8 +434,8 @@ sub record {
         $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
-    push @values, $qorient;  #query orientation
-    push @values, $sorient;  #sbjct orientation
+    $values[3]->{'query_orient'} = $qorient;
+    $values[3]->{'sbjct_orient'} = $sorient;
 
     new $type(@values);
 }
@@ -457,8 +457,8 @@ sub record {
 
     my $qorient = $self->strand;
 
-    push @values, $qorient;  #query orientation
-    push @values, '+';       #sbjct orientation
+    $values[3]->{'query_orient'} = $qorient;
+    $values[3]->{'sbjct_orient'} = '+';
 
     new $type(@values);
 }
@@ -486,8 +486,8 @@ sub record {
         $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
-    push @values, '+';       #query orientation
-    push @values, $sorient;  #sbjct orientation
+    $values[3]->{'query_orient'} = '+';
+    $values[3]->{'sbjct_orient'} = $sorient;
 
     new $type(@values);
 }
@@ -517,8 +517,8 @@ sub record {
         $sorient = ''; #must be the query row: has no sbjct orientation
     }
 
-    push @values, $qorient;  #query orientation
-    push @values, $sorient;  #sbjct orientation
+    $values[3]->{'query_orient'} = $qorient;
+    $values[3]->{'sbjct_orient'} = $sorient;
 
     new $type(@values);
 }

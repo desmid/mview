@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
 
 ###########################################################################
 #
@@ -151,15 +151,17 @@ sub parse {
                        '',
                        $query,
                        '',
-                       '',
-                       '',
-                       '',
-                       '',
-                       '',
-                       $self->strand,
-                       '',
+                       {
+                           'initn'        => '',
+                           'init1'        => '',
+                           'opt'          => '',
+                           'bits'         => '',
+                           'expect'       => '',
+                           'query_orient' => $self->strand,
+                           'sbjct_orient' => '',
+                       }
                    )));
-    
+
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
@@ -178,15 +180,16 @@ sub parse {
                            $rank,
                            $hit->{'id'},
                            $hit->{'desc'},
-                           $hit->{'initn'},
-                           $hit->{'init1'},
-                           $hit->{'opt'},
-                           $hit->{'bits'},
-                           $hit->{'expect'},
-                           $self->strand,
-                           '',
-                       )),
-                      $key1
+                           {
+                               'initn'        => $hit->{'initn'},
+                               'init1'        => $hit->{'init1'},
+                               'opt'          => $hit->{'opt'},
+                               'bits'         => $hit->{'bits'},
+                               'expect'       => $hit->{'expect'},
+                               'query_orient' => $self->strand,
+                               'sbjct_orient' => '',
+                           }
+                       )), $key1
             );
     }
 
@@ -216,12 +219,12 @@ sub parse {
             #warn "SEE: [$key1]\n";
 
 	    #$aln->dump;
-	    
+
 	    #for gapped alignments
 	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
 				    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
-	    
+
             $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
                     $aln->{'query'},

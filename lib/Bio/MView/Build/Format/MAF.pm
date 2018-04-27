@@ -103,13 +103,16 @@ sub parse {
 
 	#warn "KEEP: ($rank,$row->{'id'})\n";
 
-	push @hit, new Bio::MView::Build::Row::MAF($rank,
-						   $row->{'id'},
-						   '',
-						   $row->{'start'},
-						   $row->{'size'},
-						   $row->{'strand'},
-						   $row->{'srcsize'});
+	push @hit, new Bio::MView::Build::Row::MAF(
+            $rank,
+            $row->{'id'},
+            '',
+            {
+                'start'   => $row->{'start'},
+                'size'    => $row->{'size'},
+                'strand'  => $row->{'strand'},
+                'srcsize' => $row->{'srcsize'}
+            });
         $hit[$#hit]->add_frag($row->{'seq'});
     }
     #map { $_->dump } @hit;

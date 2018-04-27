@@ -50,7 +50,12 @@ sub parse {
 	$wgt = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id}->{'weight'};
 	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::MSF($rank, $id, '', $wgt);
+	push @hit, new Bio::MView::Build::Row::MSF(
+            $rank,
+            $id,
+            '',
+            { 'weight' => $wgt }
+        );
         $hit[$#hit]->add_frag($seq);
     }
     #map { $_->dump } @hit;

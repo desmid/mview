@@ -54,7 +54,7 @@ sub subheader {
     my $s = '';
     return $s    if $quiet;
     $s .= "Block: " . $self->block . " (rank=$self->{'parsed'}->{'number'})\n";
-    $s;    
+    $s;
 }
 
 sub parse {
@@ -70,13 +70,13 @@ sub parse {
 
     $list  = $self->{'parsed'}->parse(qw(LIST));
     $align = $self->{'parsed'}->parse(qw(ALIGNMENT));
-    
+
     if ($list->{'count'} != $align->{'count'}) {
 	die "${self}::parser() different alignment and identifier counts\n";
     }
-    
+
     for ($rank=0; $rank < $list->{'count'}; $rank++) {
-	
+
 	$id   = $list->{'hit'}->[$rank]->{'id'};
 	$desc = $list->{'hit'}->[$rank]->{'desc'};
 	$seq  = $align->{'seq'}->[$rank];
