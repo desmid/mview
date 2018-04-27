@@ -57,6 +57,19 @@ sub parse_record {
         'n'      => $n,
     };
 
+    #extract any optional fields from BLAST_OF7
+    my $item;
+    if (defined $hdr and exists $hdr->{'extra'}) {
+        $item = $hdr;
+    } elsif (defined $aln and exists $aln->{'extra'}) {
+        $item = $aln;
+    }
+    if (defined $item) {
+        map { my ($k,$v) = split("\001"); $info->{$k} = $v }
+            split("\000", $item->{'extra'});
+    }
+    #use Bio::Util::Object qw(dump_hash); warn dump_hash($info);
+
     return ($k, $id, $desc, $info);
 }
 
@@ -99,15 +112,42 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::BLAST);
 
 #suppress cycle in all output; it's only for blastp/psi-blastp
-sub schema {[
-    # use? rdb?  key              label         format   default
-    [ 0,   0,    'cycle',         'cycle',      '2N',      ''  ],
-    [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
-    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
-    [ 4,   4,    'n',             'N',          '2N',      ''  ],
-    [ 5,   5,    'query_orient',  'qy',         '2S',      '?' ],
-    [ 6,   6,    'sbjct_orient',  'ht',         '2S',      '?' ],
+sub main_schema {[
+    # use? rdb?  key              label          format   default
+    [ 0,   0,    'cycle',         'cycle',       '2N',    ''   ],
+    [ 2,   2,    'bits',          'bits',        '5N',    ''   ],
+    [ 3,   3,    'expect',        'E-value',     '9N',    ''   ],
+    [ 4,   4,    'n',             'N',           '2N',    ''   ],
+    [ 5,   5,    'query_orient',  'qy',          '2S',    '?'  ],
+    [ 6,   6,    'sbjct_orient',  'ht',          '2S',    '?'  ],
     ]
+}
+
+sub optional_schema {[
+    # use? rdb?  key              label          format   default
+    [ 0,    10,  'staxid',        'staxid',      '6S',    ''   ],
+    [ 0,    11,  'ssciname',      'ssciname',    '6S',    ''   ],
+    [ 0,    12,  'scomname',      'scomname',    '6S',    ''   ],
+    [ 0,    13,  'sblastname',    'sblastname',  '6S',    ''   ],
+    [ 0,    14,  'sskingdom',     'sskingdom',   '6S',    ''   ],
+    [ 0,    15,  'staxids',       'staxids',     '6S',    ''   ],
+    [ 0,    16,  'sscinames',     'sscinames',   '6S',    ''   ],
+    [ 0,    17,  'scomnames',     'scomnames',   '6S',    ''   ],
+    [ 0,    18,  'sblastnames',   'sblastnames', '6S',    ''   ],
+    [ 0,    19,  'sskingdoms',    'sskingdoms',  '6S',    ''   ],
+    ]
+}
+
+sub schema {
+    my $self = shift;
+    my @schema = @{$self->main_schema};
+    foreach my $row (@{$self->optional_schema}) {
+        my ($n1, $n2, $name, $label, $format, $default) = @$row;
+        if (exists $self->{'info'}->{$name}) {
+            push @schema, $row;
+        }
+    }
+    return \@schema;
 }
 
 
@@ -120,14 +160,14 @@ use vars qw(@ISA);
 
 #enable cycle in rdb tabulated output
 #suppress query and sbjct orientations for blastp data
-sub schema {[
-    # use? rdb?  key              label         format   default
-    [ 0,   1,    'cycle',         'cycle',      '2N',      ''  ],
-    [ 2,   2,    'bits',          'bits',       '5N',      ''  ],
-    [ 3,   3,    'expect',        'E-value',    '9N',      ''  ],
-    [ 4,   4,    'n',             'N',          '2N',      ''  ],
-    [ 0,   0,    'query_orient',  'qy',         '2S',      '?' ],
-    [ 0,   0,    'sbjct_orient',  'ht',         '2S',      '?' ],
+sub main_schema {[
+    # use? rdb?  key              label          format   default
+    [ 0,   1,    'cycle',         'cycle',       '2N',    ''   ],
+    [ 2,   2,    'bits',          'bits',        '5N',    ''   ],
+    [ 3,   3,    'expect',        'E-value',     '9N',    ''   ],
+    [ 4,   4,    'n',             'N',           '2N',    ''   ],
+    [ 0,   0,    'query_orient',  'qy',          '2S',    '?'  ],
+    [ 0,   0,    'sbjct_orient',  'ht',          '2S',    '?'  ],
     ]
 }
 
@@ -147,7 +187,9 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLASTX);
 
-sub schema { Bio::MView::Build::Row::BLAST2::schema }
+sub main_schema { Bio::MView::Build::Row::BLAST2::main_schema }
+sub optional_schema { Bio::MView::Build::Row::BLAST2::optional_schema }
+sub schema { Bio::MView::Build::Row::BLAST2::schema($_[0]) }
 
 
 ###########################################################################
@@ -165,7 +207,9 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLASTX);
 
-sub schema { Bio::MView::Build::Row::BLAST2::schema }
+sub main_schema { Bio::MView::Build::Row::BLAST2::main_schema }
+sub optional_schema { Bio::MView::Build::Row::BLAST2::optional_schema }
+sub schema { Bio::MView::Build::Row::BLAST2::schema($_[0]) }
 
 
 ###########################################################################

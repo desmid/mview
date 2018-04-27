@@ -73,7 +73,7 @@ sub new {
     $self->{'query_frame'} = '';
     $self->{'sbjct_frame'} = '';
 
-    $self->extract_relevant_fields($MAP_ALN, $text->next_line(1));
+    $self->extract_fields($MAP_ALN, $text->next_line(1));
 
     if ($self->{'query_frame'} eq '') {
         $self->die("blast column specifier 'qframe' is needed");
