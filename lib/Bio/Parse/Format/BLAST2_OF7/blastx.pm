@@ -68,9 +68,7 @@ sub new {
     #BLAST2 -outfmt 7
     $self->{'query_frame'} = '';
 
-    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    Bio::Parse::Format::BLAST2_OF7::get_fields($text->next_line(1),
-                                               $fields, $MAP_ALN, $self);
+    $self->extract_relevant_fields($MAP_ALN, $text->next_line(1));
 
     if ($self->{'query_frame'} eq '') {
         $self->die("blast column specifier 'qframe' is needed");

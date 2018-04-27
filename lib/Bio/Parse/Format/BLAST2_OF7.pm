@@ -209,29 +209,30 @@ sub save_fields {
     return $out;
 }
 
-#Given a string in 'line' of tab-separated fields named as in 'all', extract
-#those in 'wanted' storing each such key/value into 'hash'; returns number of
-#fields read or -1 on error.
+#Given a string in 'line' of tab-separated fields named as in 'blast_opts',
+#extract those in 'wanted' storing each such key/value into 'hash'; returns
+#number of fields read or -1 on error.
 sub get_fields {
-    my ($line, $all, $wanted, $hash, $debug) = (@_, 0);
+    my ($line, $blast_opts, $wanted, $hash, $debug) = (@_, 0);
     my @list = split("\t", $line);
     if ($debug) {
-        warn "GF: [@$all] => [@{[keys %$wanted]}] => [@{[values %$wanted]}]\n";
+        warn "GF: [@$blast_opts] => [@{[keys %$wanted]}] => [@{[values %$wanted]}]\n";
         warn "GF: [$line]\n";
     }
-    return -1  if scalar @list != scalar @$all;
+    return -1  if scalar @list != scalar @$blast_opts;
     my $c = 0;
-    foreach my $key1 (@$all) {
+    foreach my $blast_opt (@$blast_opts) {
         my $val = shift @list;
-        next  unless exists $wanted->{$key1};
-        my $key2 = $wanted->{$key1};  #blast fieldname => MView fieldname
-        $val =~ s/^\s+|\s+$//g;
-        #create or update key/value
-        if (exists $hash->{$key2} and length($val) > length($hash->{$key2})) {
-            $hash->{$key2} = $val;
-            warn "GF: [$key1] => [$key2] => [$val]\n"  if $debug;
+        if (exists $wanted->{$blast_opt}) {
+            my $mview_attr = $wanted->{$blast_opt};
+            $val =~ s/^\s+|\s+$//g;
+            #create or update key/value
+            if (exists $hash->{$mview_attr} and length($val) > length($hash->{$mview_attr})) {
+                $hash->{$mview_attr} = $val;
+                warn "GF: [$blast_opt] => [$mview_attr] => [$val]\n"  if $debug;
+            }
+            $c++;
         }
-        $c++;
     }
     warn "GF: read $c fields\n"  if $debug;
     return $c;
@@ -554,7 +555,7 @@ sub new {
     $self->{'desc'}   = '';
     $self->{'length'} = '';
 
-    $self->extract_relevant_fields($text->next_line(1));
+    $self->extract_relevant_fields($MAP_SUM, $text->next_line(1));
 
     $self->{'desc'} =
         Bio::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
@@ -565,11 +566,8 @@ sub new {
 }
 
 sub extract_relevant_fields {
-    my ($self, $line) = @_;
-
+    my ($self, $map, $line) = @_;
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    my $map = $MAP_SUM;
-
     Bio::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
 }
 
@@ -616,7 +614,7 @@ sub new {
     $self->{'gap_fraction'} = '';
     $self->{'gap_percent'}  = '';
 
-    $self->extract_relevant_fields($text->next_line(1));
+    $self->extract_relevant_fields($MAP_ALN, $text->next_line(1));
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =
@@ -628,11 +626,8 @@ sub new {
 }
 
 sub extract_relevant_fields {
-    my ($self, $line) = @_;
-
+    my ($self, $map, $line) = @_;
     my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    my $map = $MAP_ALN;
-
     Bio::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
 }
 
