@@ -60,32 +60,39 @@ sub parse_record {
 
     $k = ''  unless defined $k;  #row number = rank
 
+    #not mutually exclusive: order of preference
     if (defined $hdr) {
         ($id, $desc) = ($hdr->{'query'}, $hdr->{'summary'});
     } elsif (defined $sum) {
         ($id, $desc) = ($sum->{'id'}, $sum->{'desc'});
     } elsif (defined $aln) {
         ($id, $desc) = ($aln->{'id'}, $aln->{'summary'});
+    }
+
+    #always
+    if (defined $aln) {
         ($bits, $expect, $n) = ($aln->{'bits'}, $aln->{'expect'}, $aln->{'n'});
     }
 
-    my $info = {
+    my $info1 = {
         'cycle'  => $self->cycle,
         'bits'   => $bits,
         'expect' => $expect,
         'n'      => $n,
     };
 
+    my $info2 = {};
+
     #extract any optional fields from BLAST_OF7 skipping any fields
     #with zero occupancy
     if (defined $hdr and exists $hdr->{'extra'}) {
-        $self->{'extra_keys'} = load_hdr_extra($hdr, $info);
+        $self->{'extra_keys'} = load_hdr_extra($hdr, $info2);
     } elsif (defined $aln and exists $aln->{'extra'}) {
-        load_row_extra($self->{'extra_keys'}, $aln, $info);
+        load_row_extra($self->{'extra_keys'}, $aln, $info2);
     }
     #use Bio::Util::Object qw(dump_hash); warn dump_hash($info);
 
-    return ($k, $id, $desc, $info);
+    return ($k, $id, $desc, $info1, $info2);
 }
 
 sub get_scores {
@@ -127,7 +134,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::MView::Build::Row::BLAST);
 
 #suppress cycle in all output; it's only for blastp/psi-blastp
-sub main_schema {[
+sub schema {[
     # use? rdb?  key              label          format   default
     [ 0,   0,    'cycle',         'cycle',       '2N',    ''   ],
     [ 2,   2,    'bits',          'bits',        '5N',    ''   ],
@@ -140,29 +147,17 @@ sub main_schema {[
 
 sub optional_schema {[
     # use? rdb?  key              label          format   default
-    [ 0,   10,   'staxid',        'staxid',      '6S',    ''   ],
-    [ 0,   11,   'ssciname',      'ssciname',    '6S',    ''   ],
-    [ 0,   12,   'scomname',      'scomname',    '6S',    ''   ],
-    [ 0,   13,   'sblastname',    'sblastname',  '6S',    ''   ],
-    [ 0,   14,   'sskingdom',     'sskingdom',   '6S',    ''   ],
-    [ 0,   15,   'staxids',       'staxids',     '6S',    ''   ],
-    [ 0,   16,   'sscinames',     'sscinames',   '6S',    ''   ],
-    [ 0,   17,   'scomnames',     'scomnames',   '6S',    ''   ],
-    [ 0,   18,   'sblastnames',   'sblastnames', '6S',    ''   ],
-    [ 0,   19,   'sskingdoms',    'sskingdoms',  '6S',    ''   ],
+    [ 10,  10,   'staxid',        'staxid',      '6S',    ''   ],
+    [ 11,  11,   'ssciname',      'ssciname',    '8S',    ''   ],
+    [ 12,  12,   'scomname',      'scomname',    '8S',    ''   ],
+    [ 13,  13,   'sblastname',    'sblastname',  '10S',   ''   ],
+    [ 14,  14,   'sskingdom',     'sskingdom',   '9S',    ''   ],
+    [ 15,  15,   'staxids',       'staxids',     '7S',    ''   ],
+    [ 16,  16,   'sscinames',     'sscinames',   '9S',    ''   ],
+    [ 17,  17,   'scomnames',     'scomnames',   '9S',    ''   ],
+    [ 18,  18,   'sblastnames',   'sblastnames', '11S',   ''   ],
+    [ 19,  19,   'sskingdoms',    'sskingdoms',  '10S',   ''   ],
     ]
-}
-
-sub schema {
-    my $self = shift;
-    my @schema = @{$self->main_schema};
-    foreach my $row (@{$self->optional_schema}) {
-        my ($n1, $n2, $name, $label, $format, $default) = @$row;
-        if (exists $self->{'info'}->{$name}) {
-            push @schema, $row;
-        }
-    }
-    return \@schema;
 }
 
 
@@ -175,7 +170,7 @@ use vars qw(@ISA);
 
 #enable cycle in rdb tabulated output
 #suppress query and sbjct orientations for blastp data
-sub main_schema {[
+sub schema {[
     # use? rdb?  key              label          format   default
     [ 0,   1,    'cycle',         'cycle',       '2N',    ''   ],
     [ 2,   2,    'bits',          'bits',        '5N',    ''   ],
@@ -202,9 +197,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLASTX);
 
-sub main_schema { Bio::MView::Build::Row::BLAST2::main_schema }
+sub schema { Bio::MView::Build::Row::BLAST2::schema }
 sub optional_schema { Bio::MView::Build::Row::BLAST2::optional_schema }
-sub schema { Bio::MView::Build::Row::BLAST2::schema($_[0]) }
 
 
 ###########################################################################
@@ -222,9 +216,8 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::MView::Build::Row::BLASTX);
 
-sub main_schema { Bio::MView::Build::Row::BLAST2::main_schema }
+sub schema { Bio::MView::Build::Row::BLAST2::schema }
 sub optional_schema { Bio::MView::Build::Row::BLAST2::optional_schema }
-sub schema { Bio::MView::Build::Row::BLAST2::schema($_[0]) }
 
 
 ###########################################################################
