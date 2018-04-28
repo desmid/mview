@@ -35,6 +35,27 @@ sub parse_record {
     #sub str { join ", ", map { defined $_ ? $_ : 'undef' } @_ }
     #warn "[@{[str($k, $hdr, $sum, $aln)]}]\n";
 
+    sub load_hdr_extra {
+        my ($hdr, $info) = @_;
+        my ($keep, $k, $v) = ({});
+        while (($k, $v) = each %{$hdr->{'extra'}}) {
+            if ($hdr->{'counts'}->{$k} > 0) {
+                $keep->{$k} = 1;
+                $info->{$k} = $v;
+            }
+        }
+        return $keep;
+    }
+
+    sub load_row_extra {
+        my ($keep, $row, $info) = @_;
+        my ($k, $v);
+        while (my ($k, $v) = each %{$row->{'extra'}}) {
+            next  unless exists $keep->{$k};
+            $info->{$k} = $v;
+        }
+    }
+
     my ($id, $desc, $bits, $expect, $n) = ('','','','','');
 
     $k = ''  unless defined $k;  #row number = rank
@@ -57,16 +78,12 @@ sub parse_record {
         'n'      => $n,
     };
 
-    #extract any optional fields from BLAST_OF7
-    my $item;
+    #extract any optional fields from BLAST_OF7 skipping any fields
+    #with zero occupancy
     if (defined $hdr and exists $hdr->{'extra'}) {
-        $item = $hdr;
+        $self->{'extra_keys'} = load_hdr_extra($hdr, $info);
     } elsif (defined $aln and exists $aln->{'extra'}) {
-        $item = $aln;
-    }
-    if (defined $item) {
-        map { my ($k,$v) = split("\001"); $info->{$k} = $v }
-            split("\000", $item->{'extra'});
+        load_row_extra($self->{'extra_keys'}, $aln, $info);
     }
     #use Bio::Util::Object qw(dump_hash); warn dump_hash($info);
 
@@ -125,16 +142,16 @@ sub main_schema {[
 
 sub optional_schema {[
     # use? rdb?  key              label          format   default
-    [ 0,    10,  'staxid',        'staxid',      '6S',    ''   ],
-    [ 0,    11,  'ssciname',      'ssciname',    '6S',    ''   ],
-    [ 0,    12,  'scomname',      'scomname',    '6S',    ''   ],
-    [ 0,    13,  'sblastname',    'sblastname',  '6S',    ''   ],
-    [ 0,    14,  'sskingdom',     'sskingdom',   '6S',    ''   ],
-    [ 0,    15,  'staxids',       'staxids',     '6S',    ''   ],
-    [ 0,    16,  'sscinames',     'sscinames',   '6S',    ''   ],
-    [ 0,    17,  'scomnames',     'scomnames',   '6S',    ''   ],
-    [ 0,    18,  'sblastnames',   'sblastnames', '6S',    ''   ],
-    [ 0,    19,  'sskingdoms',    'sskingdoms',  '6S',    ''   ],
+    [ 0,   10,   'staxid',        'staxid',      '6S',    ''   ],
+    [ 0,   11,   'ssciname',      'ssciname',    '6S',    ''   ],
+    [ 0,   12,   'scomname',      'scomname',    '6S',    ''   ],
+    [ 0,   13,   'sblastname',    'sblastname',  '6S',    ''   ],
+    [ 0,   14,   'sskingdom',     'sskingdom',   '6S',    ''   ],
+    [ 0,   15,   'staxids',       'staxids',     '6S',    ''   ],
+    [ 0,   16,   'sscinames',     'sscinames',   '6S',    ''   ],
+    [ 0,   17,   'scomnames',     'scomnames',   '6S',    ''   ],
+    [ 0,   18,   'sblastnames',   'sblastnames', '6S',    ''   ],
+    [ 0,   19,   'sskingdoms',    'sskingdoms',  '6S',    ''   ],
     ]
 }
 

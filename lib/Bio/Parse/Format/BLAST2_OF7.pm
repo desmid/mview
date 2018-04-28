@@ -1,4 +1,3 @@
-# -*- perl -*-
 # Copyright (C) 2015-2018 Nigel P. Brown
 
 ###########################################################################
@@ -168,6 +167,7 @@ my $FIELD_MAP    = {  #blastp -help for -outfmt 7 fields
     'query coverage per uniq subject' => 'qcovus',         #from 2.3.0+
 };
 
+#required fields: blast option name to mview internal key
 my $MAP_RANK = {
     'sseqid'      => 'id',    #upto 2.4.0+
     'sacc'        => 'id',    #from 2.5.0+
@@ -199,6 +199,7 @@ my $MAP_ALN = {
     'pident'      => 'id_percent',
 };
 
+#pass-through fields: blast option name
 my $MAP_EXTRA = {
     'staxid'      => 1,
     'ssciname'    => 1,
@@ -216,40 +217,36 @@ my $MAP_EXTRA = {
 #extract those in 'wanted' storing each such key/value into 'hash'; returns
 #number of fields read or -1 on error.
 sub get_fields {
-    my ($line, $blastopts, $wanted, $hash, $debug) = (@_, 0);
+    my ($hash, $wanted, $line, $fields, $counts, $debug) = (@_, 0);
+
     my @list = split("\t", $line);
+
     if ($debug) {
-        #warn "GF: [@$blastopts] => [@{[keys %$wanted]}] => [@{[values %$wanted]}]\n";
+        #warn "GF: [@$fields] => [@{[keys %$wanted]}] => [@{[values %$wanted]}]\n";
         #warn "GF: [$line]\n";
     }
-    return -1  if scalar @list != scalar @$blastopts;
+    return -1  if scalar @list != scalar @$fields;
+
     my $c = 0;
-    my @extra = ();
-    foreach my $blastopt (@$blastopts) {
+    foreach my $blastopt (@$fields) {
         my $val = shift @list;
-        $val =~ s/^\s+|\s+$//g;  #strip trailing pipes
 
-        #warn "$blastopt\n";
-        if (exists $wanted->{$blastopt}) {
+        $val =~ s/^\s+|\s+$//g;  #blast 2.2.28+, strip extra space
 
+        next  if $val eq 'N/A' or $val eq 'n/a' or $val eq '';
+
+        $counts->{$blastopt}++  if defined $counts;
+
+        if (exists $wanted->{$blastopt}) {  #required key/value
             my $mview_attr = $wanted->{$blastopt};
-
-            #create or update key/value
-            if (exists $hash->{$mview_attr} and
-                length($val) > length($hash->{$mview_attr})) {
-                $hash->{$mview_attr} = $val;
-                warn "GF(update): [$blastopt] => [$mview_attr] => [$val]\n"  if $debug;
-            } else {
-                $hash->{$mview_attr} = $val;
-                warn "GF(new):    [$blastopt] => [$mview_attr] => [$val]\n"  if $debug;
-            }
+            $hash->{$mview_attr} = $val;
+            warn "GF: [$blastopt] => [$mview_attr] => [$val]\n"  if $debug;
             $c++;  #count required fields
-        } elsif (exists $MAP_EXTRA->{$blastopt}) {
-            #warn "save extra: $blastopt\n";
-            push @extra, "$blastopt\001$val";
+        } elsif (exists $MAP_EXTRA->{$blastopt}) {  #optional key/value
+            $hash->{'extra'}->{$blastopt} = $val;
+            warn "GF: [extra] => [$blastopt] => [$val]\n"  if $debug;
         }
     }
-    $hash->{'extra'} = join("\000", @extra)  if @extra;
     #warn "GF: read $c fields\n"  if $debug;
     return $c;
 }
@@ -257,10 +254,8 @@ sub get_fields {
 #strip leading identifier from summary string
 sub strip_id {
     my ($id, $s) = @_;
-    if (my $c = index($s, $id) == 0) {
-        $s = substr($s, length($id));
-    }
-    $s =~ s/^\s+|\s+$//g;
+    $s = substr($s, length($id))  if index($s, $id) == 0;
+    $s =~ s/^\s+|\s+$//g;  #strip extra space
     $s;
 }
 
@@ -334,6 +329,7 @@ sub new {
 
     #BLAST2_OF7
     $self->{'fields'}       = [];
+    $self->{'counts'}       = {};
 
     while ($line = $text->next_line(1)) {
 
@@ -354,7 +350,7 @@ sub new {
         }
 
         if ($line =~ /^# Fields:\s+(.*)/o) {
-            $self->save_field_list($1);
+            $self->init_fields($1);
             $self->extract_fields;
             next;
         }
@@ -369,38 +365,35 @@ sub new {
     $self;
 }
 
-sub save_field_list {
+sub init_fields {
     my $self = shift;
-    my $out = [];
-    my @extra = ();
     foreach my $f (split(/,\s+/, $_[0])) {
-        if (exists $FIELD_MAP->{$f}) {
-            my $blastopt = $FIELD_MAP->{$f};
-            push @$out, $blastopt;
-        } else {
-            push @$out, $FIELD_SKIP;
-        }
+        my $blastopt = $FIELD_SKIP;
+        $blastopt = $FIELD_MAP->{$f}  if exists $FIELD_MAP->{$f};
+        push @{$self->{'fields'}}, $blastopt;
+        $self->{'counts'}->{$blastopt} = 0;
     }
-    $self->{'fields'} = $out;
 }
 
 sub extract_fields {
     my $self = shift;
-    my @extra = ();
     foreach my $blastopt (@{$self->{'fields'}}) {
-        push @extra, "$blastopt\001"  if exists $MAP_EXTRA->{$blastopt};
+        $self->{'extra'}->{$blastopt} = ''  if exists $MAP_EXTRA->{$blastopt};
     }
-    $self->{'extra'}  = join("\000", @extra)  if @extra;
 }
 
 sub print_data {
     my ($self, $indent) = (@_, 0);
+    sub dohash { my @tmp = map { "$_:$_[0]->{$_}" } sort keys %{$_[0]};
+                 return "{" . join(',', @tmp) . "}";
+    }
     my $x = ' ' x $indent;
     printf "$x%20s -> %s\n", 'version',      $self->{'version'};
     printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
     printf "$x%20s -> %s\n", 'query',        $self->{'query'};
     printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
-    printf "$x%20s -> %s\n", 'fields',       "@{$self->{'fields'}}";
+    printf "$x%20s -> [%s]\n", 'fields',     "@{$self->{'fields'}}";
+    printf "$x%20s -> %s (initial)\n",       'counts', dohash($self->{'counts'});
 }
 
 
@@ -456,7 +449,12 @@ sub new {
 
     #fetch fields
     my $fields = $self->get_parent(2)->get_record('HEADER')->{'fields'};
+    my $counts = $self->get_parent(2)->get_record('HEADER')->{'counts'};
+
+    $self->init_field_counts($counts);
+
     #warn "[@{[scalar @$fields]}] [@{$fields}]\n";
+    #warn "[@{[scalar @$counts]}] [@{$counts}]\n";
 
     #accumulate text block data for same hit id on successive lines
     my ($mid, $moffset, $mbytes) = ('', 0, 0);
@@ -476,10 +474,11 @@ sub new {
             $tmp->{'summary'} = '';
 
             #extract relevant fields
-            my $c = Bio::Parse::Format::BLAST2_OF7::get_fields($line,
-                                                               $fields,
+            my $c = Bio::Parse::Format::BLAST2_OF7::get_fields($tmp,
                                                                $MAP_RANK,
-                                                               $tmp);
+                                                               $line,
+                                                               $fields,
+                                                               $counts);
 
             if ($c < 0) {
                 $self->die("field count mismatch (expect @{[scalar @$fields]}, got $c)\n");
@@ -528,20 +527,32 @@ sub new {
 	#default
 	$self->warn("unknown field: $line");
     }
+    #warn "RANK(counts): [@{[scalar @$counts]}] [@{$counts}]\n";
 
     $self;#->examine;
 }
 
+sub init_field_counts {
+    my ($self, $counts) = @_;
+    foreach my $k (keys %$counts) {
+        $counts->{$k} = 0;
+    }
+}
+
 sub print_data {
     my ($self, $indent) = (@_, 0);
+    sub dohash { my @tmp = map { "$_:$_[0]->{$_}" } sort keys %{$_[0]};
+                 return "{" . join(',', @tmp) . "}";
+    }
     my $x = ' ' x $indent;
     printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
 	foreach my $field (sort keys %$hit) {
-            my $s = $hit->{$field};
-            $s =~ s/\000/,/g;
-            $s =~ s/\001/:/g;
-            printf "$x%20s -> %s\n", $field, $s;
+            my $val = $hit->{$field};
+            if ($field eq 'extra') {
+                $val = dohash($val);
+            }
+            printf "$x%20s -> %s\n", $field, $val;
 	}
     }
 }
@@ -621,9 +632,10 @@ sub new {
 }
 
 sub extract_fields {
-    my ($self, $map, $line) = @_;
-    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    Bio::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
+    my ($self, $want, $line) = @_;
+    my $record = $self->get_parent(3)->get_record('HEADER');
+    Bio::Parse::Format::BLAST2_OF7::get_fields($self, $want, $line,
+                                               $record->{'fields'}, undef);
 }
 
 
@@ -681,9 +693,10 @@ sub new {
 }
 
 sub extract_fields {
-    my ($self, $map, $line) = @_;
-    my $fields = $self->get_parent(3)->get_record('HEADER')->{'fields'};
-    Bio::Parse::Format::BLAST2_OF7::get_fields($line, $fields, $map, $self);
+    my ($self, $want, $line) = @_;
+    my $record = $self->get_parent(3)->get_record('HEADER');
+    Bio::Parse::Format::BLAST2_OF7::get_fields($self, $want, $line,
+                                               $record->{'fields'}, undef);
 }
 
 
