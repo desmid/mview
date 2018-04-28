@@ -282,6 +282,15 @@ sub unpack_hash {
     }
 }
 
+sub fmt_hash {
+    my @tmp = map { "$_:$_[1]->{$_}" } sort keys %{$_[1]};
+    return "{" . join(',', @tmp) . "}";
+}
+
+sub fmt_array {
+    return "[" . join(',', @{$_[1]}) . "]";
+}
+
 sub print {
     my ($self, $indent) = (@_, 0);
     my ($tmp, $r, $i, $rec) = ('');

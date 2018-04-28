@@ -384,16 +384,13 @@ sub extract_fields {
 
 sub print_data {
     my ($self, $indent) = (@_, 0);
-    sub dohash { my @tmp = map { "$_:$_[0]->{$_}" } sort keys %{$_[0]};
-                 return "{" . join(',', @tmp) . "}";
-    }
     my $x = ' ' x $indent;
     printf "$x%20s -> %s\n", 'version',      $self->{'version'};
     printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
     printf "$x%20s -> %s\n", 'query',        $self->{'query'};
     printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
     printf "$x%20s -> [%s]\n", 'fields',     "@{$self->{'fields'}}";
-    printf "$x%20s -> %s (initial)\n",       'counts', dohash($self->{'counts'});
+    printf "$x%20s -> %s (initial)\n",       'counts', $self->fmt_hash($self->{'counts'});
 }
 
 
@@ -541,17 +538,12 @@ sub init_field_counts {
 
 sub print_data {
     my ($self, $indent) = (@_, 0);
-    sub dohash { my @tmp = map { "$_:$_[0]->{$_}" } sort keys %{$_[0]};
-                 return "{" . join(',', @tmp) . "}";
-    }
     my $x = ' ' x $indent;
     printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
 	foreach my $field (sort keys %$hit) {
             my $val = $hit->{$field};
-            if ($field eq 'extra') {
-                $val = dohash($val);
-            }
+            $val = $self->fmt_hash($val)  if $field eq 'extra';
             printf "$x%20s -> %s\n", $field, $val;
 	}
     }
