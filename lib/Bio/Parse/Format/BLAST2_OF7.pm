@@ -228,14 +228,15 @@ sub get_fields {
     return -1  if scalar @list != scalar @$fields;
 
     my $c = 0;
-    foreach my $blastopt (@$fields) {
-        my $val = shift @list;
+    for (my $i=0; $i < @$fields; $i++) {
+        my $blastopt = $fields->[$i];
+        my $val = $list[$i];
 
         $val =~ s/^\s+|\s+$//g;  #blast 2.2.28+, strip extra space
 
         next  if $val eq 'N/A' or $val eq 'n/a' or $val eq '';
 
-        $counts->{$blastopt}++  if defined $counts;
+        $counts->[$i]++  if defined $counts;
 
         if (exists $wanted->{$blastopt}) {  #required key/value
             my $mview_attr = $wanted->{$blastopt};
@@ -329,7 +330,7 @@ sub new {
 
     #BLAST2_OF7
     $self->{'fields'}       = [];
-    $self->{'counts'}       = {};
+    $self->{'counts'}       = [];
 
     while ($line = $text->next_line(1)) {
 
@@ -371,7 +372,7 @@ sub init_fields {
         my $blastopt = $FIELD_SKIP;
         $blastopt = $FIELD_MAP->{$f}  if exists $FIELD_MAP->{$f};
         push @{$self->{'fields'}}, $blastopt;
-        $self->{'counts'}->{$blastopt} = 0;
+        push @{$self->{'counts'}}, 0;
     }
 }
 
@@ -389,8 +390,8 @@ sub print_data {
     printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
     printf "$x%20s -> %s\n", 'query',        $self->{'query'};
     printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
-    printf "$x%20s -> [%s]\n", 'fields',     "@{$self->{'fields'}}";
-    printf "$x%20s -> %s (initial)\n",       'counts', $self->fmt_hash($self->{'counts'});
+    printf "$x%20s -> %s\n", 'fields',       $self->fmt_array($self->{'fields'});
+    printf "$x%20s -> %s (initial)\n", 'counts', $self->fmt_array($self->{'counts'});
 }
 
 
@@ -531,8 +532,8 @@ sub new {
 
 sub init_field_counts {
     my ($self, $counts) = @_;
-    foreach my $k (keys %$counts) {
-        $counts->{$k} = 0;
+    for (my $i=0; $i < @$counts; $i++) {
+        $counts->[$i] = 0;
     }
 }
 

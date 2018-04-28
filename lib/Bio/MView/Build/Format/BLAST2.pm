@@ -37,19 +37,19 @@ sub parse_record {
 
     sub load_hdr_extra {
         my ($hdr, $info) = @_;
-        my ($keep, $k, $v) = ({});
-        while (($k, $v) = each %{$hdr->{'extra'}}) {
-            if ($hdr->{'counts'}->{$k} > 0) {
-                $keep->{$k} = 1;
-                $info->{$k} = $v;
-            }
+        my $keep = {};
+        for (my $i=0; $i < @{$hdr->{'fields'}}; $i++) {
+            my $k = $hdr->{'fields'}->[$i];
+            next  unless exists $hdr->{'extra'}->{$k};  #unwanted field
+            next  unless $hdr->{'counts'}->[$i] > 0;    #zero occupancy
+            $keep->{$k} = 1;
+            $info->{$k} = $hdr->{'extra'}->{$k};
         }
         return $keep;
     }
 
     sub load_row_extra {
         my ($keep, $row, $info) = @_;
-        my ($k, $v);
         while (my ($k, $v) = each %{$row->{'extra'}}) {
             next  unless exists $keep->{$k};
             $info->{$k} = $v;
@@ -63,11 +63,9 @@ sub parse_record {
     if (defined $hdr) {
         ($id, $desc) = ($hdr->{'query'}, $hdr->{'summary'});
     } elsif (defined $sum) {
-        ($id, $desc) = ($sum->{'id'},    $sum->{'desc'});
+        ($id, $desc) = ($sum->{'id'}, $sum->{'desc'});
     } elsif (defined $aln) {
-        ($id, $desc) = ($aln->{'id'},    $aln->{'summary'});
-    }
-    if (defined $aln) {
+        ($id, $desc) = ($aln->{'id'}, $aln->{'summary'});
         ($bits, $expect, $n) = ($aln->{'bits'}, $aln->{'expect'}, $aln->{'n'});
     }
 
