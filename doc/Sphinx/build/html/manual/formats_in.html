@@ -214,7 +214,7 @@ produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</
 </tbody>
 </table>
 </div></blockquote>
-<p>The <cite>-outfmt 7</cite> fields or columns recognised by MView are:</p>
+<p>The main <cite>-outfmt 7</cite> fields or columns recognised by MView are:</p>
 <ul class="simple">
 <li><cite>std</cite> to report standard fields: <cite>qaccver</cite>, <cite>saccver</cite>, <cite>pident</cite>, <cite>length</cite>, <cite>mismatch</cite>, <cite>gapopen</cite>, <cite>qstart</cite>, <cite>qend</cite>, <cite>sstart</cite>, <cite>send</cite>, <cite>evalue</cite>, <cite>bitscore</cite>;</li>
 <li><cite>qseq</cite>, <cite>sseq</cite> to report the query and sbjct sequences;</li>
@@ -232,8 +232,22 @@ MView are:</p>
 <p><cite>tblastx  -outfmt &#8216;7 std qseq sseq stitle qframe sframe&#8217;</cite></p>
 <p><cite>psiblast -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
 </div></blockquote>
-<p>MView will silently ignore any fields other than those listed above. The field
-ordering given does not matter as MView identifies this automatically.</p>
+<p>Additional fields that are currently recognised by MView are:</p>
+<ul class="simple">
+<li><cite>staxid</cite></li>
+<li><cite>ssciname</cite></li>
+<li><cite>scomname</cite></li>
+<li><cite>sblastname</cite></li>
+<li><cite>sskingdom</cite></li>
+<li><cite>staxids</cite></li>
+<li><cite>sscinames</cite></li>
+<li><cite>scomnames</cite></li>
+<li><cite>sblastnames</cite></li>
+<li><cite>sskingdoms</cite></li>
+</ul>
+<p>but these are only passed through in the format conversions (<cite>-out
+fasta</cite>, <cite>-out pir</cite>, <cite>-out rdb</cite>) not to the normal MView display mode.</p>
+<p>MView will silently ignore any fields other than those listed above.</p>
 <p>Note: There are some differences in the output (seen in BLAST <cite>2.2.28+</cite>)
 produced by the default BLAST format versus <cite>-outfmt 7</cite>. The latter lacks the
 list of ranked database hits and best scores and their associated fragment
@@ -839,7 +853,7 @@ maintained:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 15 Mar 2018.
+      Last updated on 28 Apr 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

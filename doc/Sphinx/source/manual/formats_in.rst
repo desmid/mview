@@ -51,7 +51,7 @@ MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
  `psiblast`   2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+  ok
  ===========  ========================================================  ============
 
-The `-outfmt 7` fields or columns recognised by MView are:
+The main `-outfmt 7` fields or columns recognised by MView are:
 
 - `std` to report standard fields: `qaccver`, `saccver`, `pident`, `length`, `mismatch`, `gapopen`, `qstart`, `qend`, `sstart`, `send`, `evalue`, `bitscore`;
 - `qseq`, `sseq` to report the query and sbjct sequences;
@@ -74,8 +74,23 @@ MView are:
 
     `psiblast -outfmt '7 std qseq sseq stitle'`
 
-MView will silently ignore any fields other than those listed above. The field
-ordering given does not matter as MView identifies this automatically.
+Additional fields that are currently recognised by MView are:
+
+- `staxid`
+- `ssciname`
+- `scomname`
+- `sblastname`
+- `sskingdom`
+- `staxids`
+- `sscinames`
+- `scomnames`
+- `sblastnames`
+- `sskingdoms`
+   
+but these are only passed through in the format conversions (`-out
+fasta`, `-out pir`, `-out rdb`) not to the normal MView display mode.
+
+MView will silently ignore any fields other than those listed above.
 
 Note: There are some differences in the output (seen in BLAST `2.2.28+`)
 produced by the default BLAST format versus `-outfmt 7`. The latter lacks the
