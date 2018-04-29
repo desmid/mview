@@ -389,6 +389,12 @@ $Options = [
             },
 
             {
+                'option'  => "label8",
+                'usage'   => "Switch off label {8= trailing fields}",
+                'type'    => "flag::invert",
+            },
+
+            {
                 'option'  => "gap",
                 'usage'   => "Use this gap character",
                 'type'    => "char",

@@ -483,7 +483,7 @@ sub build_mview_alignment {
 
         $labels[0] = ''  if $self->is_nop($row->uid);
 
-        #warn "labels: [@{[join(',', @labels)]}]\n";
+        #warn "labels: [@{[scalar @labels]}] [@{[join(',', @labels)]}]\n";
 
         $arow->set_display(
             'label0' => $labels[0],
@@ -494,6 +494,7 @@ sub build_mview_alignment {
             'label5' => $labels[5],
             'label6' => $labels[6],
             'label7' => $labels[7],
+            'label8' => $labels[8],
             'url'    => $row->url,
             );
     }

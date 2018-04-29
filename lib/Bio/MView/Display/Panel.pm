@@ -216,7 +216,7 @@ sub render_chunk {
         }
 
         #labels3-7: info
-        for (my $i=3; $i < @$labelwidths; $i++) {
+        for (my $i=3; $i < 8; $i++) {
             if ($par->{'labelflags'}->[$i] and $labelwidths->[$i]) {
                 $par->{'dev'}->render_annotation($labelwidths->[$i],
                                                  $o->label($i));
@@ -242,6 +242,15 @@ sub render_chunk {
                 $par->{'dev'}->render_position($LJUST, $posnwidths->[1],
                                                $seg->[1], $o->is_ruler,
                                                $par->{'bold'});
+            }
+        }
+
+        #labels8+: optional info
+        for (my $i=8; $i < @$labelwidths; $i++) {
+            if ($par->{'labelflags'}->[$i] and $labelwidths->[$i]) {
+                $par->{'dev'}->render_hspace($HSPACE);
+                $par->{'dev'}->render_annotation($labelwidths->[$i],
+                                                 $o->label($i));
             }
         }
 
