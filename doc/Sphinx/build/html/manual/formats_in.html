@@ -245,8 +245,11 @@ MView are:</p>
 <li><cite>sblastnames</cite></li>
 <li><cite>sskingdoms</cite></li>
 </ul>
-<p>but these are only passed through in the format conversions (<cite>-out
-fasta</cite>, <cite>-out pir</cite>, <cite>-out rdb</cite>) not to the normal MView display mode.</p>
+<p>If present, these are passed through in the format conversions (<cite>-out fasta</cite>,
+<cite>-out pir</cite>, <cite>-out rdb</cite>) and to the normal MView display mode where they appear
+as extra columns at the right margin of the alignment. Having very variable
+field widths they may appear badly aligned vertically. To disable them, use
+the <cite>-label8</cite> option.</p>
 <p>MView will silently ignore any fields other than those listed above.</p>
 <p>Note: There are some differences in the output (seen in BLAST <cite>2.2.28+</cite>)
 produced by the default BLAST format versus <cite>-outfmt 7</cite>. The latter lacks the
@@ -853,7 +856,7 @@ maintained:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 28 Apr 2018.
+      Last updated on 29 Apr 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

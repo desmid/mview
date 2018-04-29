@@ -334,11 +334,10 @@ region - they look like sequences and are processed as such by MView.</p>
 </div>
 <div class="section" id="labels-annotations-and-sequences">
 <h3>Labels, annotations and sequences<a class="headerlink" href="#labels-annotations-and-sequences" title="Permalink to this headline">¶</a></h3>
-<p>The labelling information at the left of the alignment can be too wide, so you
-can switch some of them off. Labels are in blocks numbered from zero
-(perverse, but the original reasoning was that the input data starts with the
-sequence identifiers in column 1 and MView tacks on a rank number in front, so
-make that column 0).</p>
+<p>You can switch off some of the displayed columns, referred to here as
+labels. Labels are in blocks numbered from zero (perverse, but the original
+reasoning was that the input data starts with the sequence identifiers in
+column 1 and MView tacks on a rank number in front, so make that column 0).</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -374,6 +373,9 @@ make that column 0).</p>
 </tr>
 <tr class="row-odd"><td>7</td>
 <td>hit sequence positions (blast or fasta searches)</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>trailing optional fields (blast -outfmt 7 data)</td>
 </tr>
 </tbody>
 </table>
@@ -1413,7 +1415,7 @@ vertical register).</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 28 Apr 2018.
+      Last updated on 29 Apr 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

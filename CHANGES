@@ -5,12 +5,11 @@ Version 1.64.rc
 New features:
 
 - Added '-sequences on|off' option to disable processing and output of
-  sequences for faster analysis. Requested by Mathias Walter.
+  sequences for faster analysis. Requested by Mathias Walter (issue #13).
 
 - Added pass-through of extra 'blast -outfmt 7' sbjct fields (staxid,
   ssciname, scomname, sblastname, sskingdom, staxids, sscinames, scomnames,
-  sblastnames, sskingdoms) for use with MView format conversions (-out
-  fasta, -out pir, -out rdb). Requested by Mathias Walter.
+  sblastnames, sskingdoms). Requested by Mathias Walter (issue #14).
 
 Bug fixes:
 

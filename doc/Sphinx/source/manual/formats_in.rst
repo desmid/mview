@@ -87,8 +87,11 @@ Additional fields that are currently recognised by MView are:
 - `sblastnames`
 - `sskingdoms`
    
-but these are only passed through in the format conversions (`-out
-fasta`, `-out pir`, `-out rdb`) not to the normal MView display mode.
+If present, these are passed through in the format conversions (`-out fasta`,
+`-out pir`, `-out rdb`) and to the normal MView display mode where they appear
+as extra columns at the right margin of the alignment. Having very variable
+field widths they may appear badly aligned vertically. To disable them, use
+the `-label8` option.
 
 MView will silently ignore any fields other than those listed above.
 

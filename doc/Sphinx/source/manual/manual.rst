@@ -262,11 +262,10 @@ region - they look like sequences and are processed as such by MView.
 Labels, annotations and sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The labelling information at the left of the alignment can be too wide, so you
-can switch some of them off. Labels are in blocks numbered from zero
-(perverse, but the original reasoning was that the input data starts with the
-sequence identifiers in column 1 and MView tacks on a rank number in front, so
-make that column 0).
+You can switch off some of the displayed columns, referred to here as
+labels. Labels are in blocks numbered from zero (perverse, but the original
+reasoning was that the input data starts with the sequence identifiers in
+column 1 and MView tacks on a rank number in front, so make that column 0).
 
  ======   ==================================================
  Column   Description
@@ -279,6 +278,7 @@ make that column 0).
  5        percent identity
  6        query sequence positions (blast or fasta searches)
  7        hit sequence positions (blast or fasta searches)
+ 8        trailing optional fields (blast -outfmt 7 data)
  ======   ==================================================
 
 Any of the of the label types can be switched off with an option like
