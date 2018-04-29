@@ -170,7 +170,10 @@ sub substr {
         $self->{'thisoffset'} = $offset + $c;
     }
 
-    $buff;
+    #convert any CRLF if file came from DOS/Windows
+    $buff =~ s/\015\012/\012/go;
+
+    return $buff;
 }
 
 sub getline {
@@ -186,12 +189,18 @@ sub getline {
 
     return undef  unless defined $line;
 
-    $self->{'thisoffset'} = $offset + length($line);
+    my $bytes = length($line);
+
+    $self->{'thisoffset'} = $offset + $bytes;
     #warn "getline:  $self->{'lastoffset'}, $self->{'thisoffset'}\n";
 
-    #consume CR in CRLF if file came from DOS/Windows
-    $line =~ s/\015\012/\012/go;
-    $line;
+    #convert terminal CRLF if file came from DOS/Windows
+    CORE::substr($line, $bytes-2, 1, '')  if
+        CORE::substr($line, $bytes-2, 2) eq "\015\012";
+
+    #warn "getline: [$line]\n";
+
+    return $line;
 }
 
 ###########################################################################
@@ -227,9 +236,15 @@ sub reset {
 
 sub substr {
     my $self = shift;
-    my ($offset, $bytes) = (@_, $self->{'base'}, 
+    my ($offset, $bytes) = (@_, $self->{'base'},
 			    $self->{'extent'}-$self->{'base'});
-    CORE::substr(${$self->{'text'}}, $offset, $bytes);
+
+    my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
+
+    #convert any CRLF if file came from DOS/Windows
+    $buff =~ s/\015\012/\012/go;
+
+    return $buff;
 }
 
 sub getline {
@@ -253,13 +268,17 @@ sub getline {
 
     return undef  unless defined $line;
 
-    #warn "READ: [$line]\n";
+    my $bytes = length($line);
 
-    $self->{'thisoffset'} = $offset + length($line);
+    $self->{'thisoffset'} = $offset + $bytes;
 
-    #consume CR in CRLF if file came from DOS/Windows
-    $line =~ s/\015\012/\012/go;
-    $line;
+    #convert terminal CRLF if file came from DOS/Windows
+    CORE::substr($line, $bytes-2, 1, '')  if
+        CORE::substr($line, $bytes-2, 2) eq "\015\012";
+
+    #warn "getline: [$line]\n";
+
+    return $line;
 }
 
 ###########################################################################
