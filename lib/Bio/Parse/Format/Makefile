@@ -22,7 +22,6 @@ SRCS = BLAST.pm		\
        PIR.pm		\
        Pearson.pm	\
        Plain.pm		\
-       Slurp.pm		\
 
 HTML =
 

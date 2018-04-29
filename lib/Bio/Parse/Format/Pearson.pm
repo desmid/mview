@@ -17,7 +17,7 @@ my $Pearson_SEQend   = "(?:$Pearson_SEQ|$Pearson_Null)";
 
 
 #Consume one entry-worth of input on text stream associated with $file and
-#return a new Slurp instance.
+#return a new Pearson instance.
 sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
