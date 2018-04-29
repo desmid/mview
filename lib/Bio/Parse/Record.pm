@@ -128,49 +128,6 @@ sub test_records {
     }
 }
 
-sub pack_hash {
-    my $self = shift;
-    my ($val, $rec, @indicies);
-
-    @indicies = $self->get_indices;
-
-    $val = join($PACK_DELIM,
-		(
-		 $self->relative_key,
-		 $self->{'offset'},
-		 $self->{'bytes'},
-		 scalar(@indicies),
-		 @indicies,
-		));
-    foreach $rec (@{$self->{'record_by_posn'}}) {
-	#append (key, offset, bytes)
-	$val .= join($PACK_DELIM,
-		     (
-		      '',
-		      $rec->[0],
-		      $rec->[1],
-		      $rec->[2],
-		     ));
-    }
-    return $val;
-}
-
-sub unpack_hash {
-    my ($self, $val) = @_;
-    my (@tmp, $num, $rec);
-
-    @tmp = split($PACK_DELIM, $val);
-
-    $self->{'relative_key'} = shift @tmp;
-    $self->{'offset'}       = shift @tmp;
-    $self->{'bytes'}        = shift @tmp;
-    $num                    = shift @tmp;
-    push @{$self->{'indices'}}, splice(@tmp, 0, $num);
-    while (@tmp) {
-	$self->push_record(splice(@tmp, 0, 3));
-    }
-}
-
 sub fmt {
     my ($self, $val, $undef) = (@_, '<undef>');
     my $ref = ref $val;
