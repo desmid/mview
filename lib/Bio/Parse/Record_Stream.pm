@@ -35,7 +35,6 @@ sub new {
 
 sub DESTROY {
     #warn "DESTROY $_[0]\n";
-    ####Bio no effect
     map { $_[0]->{$_} = undef } keys %{$_[0]};
 }
 
@@ -65,7 +64,8 @@ sub inspect_stream {
 			    $_[0]->{'limit'} - $_[0]->{'cursor'} + 1);
 }
 
-#return next line of text or undef if the text stream is done
+#read next line of text into self.line and return 1 on success; otherwise set
+#self.line to undef and return 0
 sub _next_line {
     my $self = shift;
 
@@ -73,7 +73,7 @@ sub _next_line {
 
     my $line = \$self->{'line'};
 
-    return $$line = undef  if $self->{'cursor'} >= $self->{'limit'};
+    $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
 
     #ignore 'depth' leading characters
     my $ptr = $self->{'cursor'} + $self->{'depth'};
@@ -81,7 +81,7 @@ sub _next_line {
     #read the line
     $$line = $self->{'text'}->getline($ptr);
 
-    return undef  unless defined $$line;
+    return 0  unless defined $$line;
 
     #how many bytes were actually read?
     my $bytes = $self->{'text'}->bytesread;
@@ -94,22 +94,19 @@ sub _next_line {
     $self->{'length'}  = $self->{'depth'} + $bytes;
     $self->{'cursor'} += $self->{'length'};
 
-    return $$line;
+    return 1;
 }
 
-#return next line of text or undef if the text stream is done. chomp returned
-#string if optional non-zero argument (defaults to zero).
+#return next line of text or undef if the text stream is done; chomp line if
+#optional argument is non-zero.
 sub next_line {
     my ($self, $chomp) = (@_, 0);
 
     #warn "next_line(chomp=$chomp)\n";
 
+    return undef  unless $self->_next_line;
+
     my $line = \$self->{'line'};
-
-    $self->_next_line;
-
-    return undef  unless defined $$line;
-
     chomp $$line  if $chomp;
 
     return $$line;
@@ -128,12 +125,12 @@ sub scan_lines {
     my $offset = $self->{'cursor'} - $self->{'length'};
 
     if ($count < 1) {  #scan everything
-	while (defined $self->_next_line) {
+	while ($self->_next_line) {
 	    $record .= $$line;
 	}
     } else {  #scan $count lines
         $count--;  #already seen one line
-        while ($count-- > 0 and defined $self->_next_line) {
+        while ($count-- > 0 and $self->_next_line) {
 	    $record .= $$line;
 	}
     }
@@ -157,7 +154,7 @@ sub scan_while {
     my $record = $$line;
     my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined $self->_next_line) {
+    while ($self->_next_line) {
 	if ($$line !~ /$pattern/) {
             $self->backup;
             last;
@@ -183,7 +180,7 @@ sub scan_until {
     my $record = $$line;
     my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined $self->_next_line) {
+    while ($self->_next_line) {
 	if ($$line =~ /$pattern/) {
 	    $self->backup;
 	    last;
@@ -209,7 +206,7 @@ sub scan_until_inclusive {
     my $record = $$line;
     my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined $self->_next_line) {
+    while ($self->_next_line) {
 	$record .= $$line;
 	last  if $$line =~ /$pattern/;
     }
@@ -233,7 +230,7 @@ sub scan_skipping_until {
     my $record = $$line;
     my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined $self->_next_line) {
+    while ($self->_next_line) {
 	if ($$line =~ /$pattern/) {
 	    if ($skip-- < 1) {
 	        $self->backup;
@@ -262,7 +259,7 @@ sub scan_nest {
     my $record = $$line;
     my $offset = $self->{'cursor'} - $self->{'length'};
 
-    while (defined $self->_next_line) {
+    while ($self->_next_line) {
 	if ($$line !~ /^(\s{$nest}|$)/) {
             $self->backup;
             last;
