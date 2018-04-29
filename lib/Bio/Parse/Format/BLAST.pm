@@ -244,7 +244,7 @@ sub new {
     $self->{'query'}        = '';
     $self->{'summary'}      = '';
 
-    while ($line = $text->next_line) {
+    while (defined($line = $text->next_line)) {
 
 	#blast version info
 	if ($line =~ /($HEADER_START\s+(\S+).*)/o) {

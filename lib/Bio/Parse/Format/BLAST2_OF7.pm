@@ -234,6 +234,7 @@ sub get_fields {
 
         $val =~ s/^\s+|\s+$//g;  #blast 2.2.28+, strip extra space
 
+        #ignore empty or missing data
         next  if $val eq 'N/A' or $val eq 'n/a' or $val eq '';
 
         $counts->[$i]++  if defined $counts;
@@ -332,7 +333,7 @@ sub new {
     $self->{'fields'}       = [];
     $self->{'counts'}       = [];
 
-    while ($line = $text->next_line(1)) {
+    while (defined ($line = $text->next_line(1))) {
 
 	#blast version info
 	if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
