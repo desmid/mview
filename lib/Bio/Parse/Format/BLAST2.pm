@@ -126,7 +126,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     while (defined ($line = $text->next_line)) {
 
@@ -203,7 +203,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     while (defined ($line = $text->next_line(1))) {
         #warn "[$line]\n";
@@ -265,7 +265,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #column headers
     $self->{'header'} = $text->scan_until_inclusive('Value(?:\s*N)?\s*$');
@@ -377,7 +377,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #Score line
     $line = $text->next_line;

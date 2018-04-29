@@ -113,7 +113,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     while (defined ($line = $text->next_line)) {
 
@@ -183,7 +183,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     my $tmp;
 
@@ -225,7 +225,7 @@ sub new {
 
 	if ($line =~ /^PARAMETER/) {
 	    $line = $text->scan_while('^PARAMETER');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    chomp $line;
 	    $line = Bio::Parse::Record::strip_english_newlines($line);
@@ -263,7 +263,7 @@ sub new {
 
 	if ($line =~ /^AVAILABLE/) {
 	    $line = $text->scan_while('^AVAILABLE');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    $self->{'available'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
@@ -271,7 +271,7 @@ sub new {
 
 	if ($line =~ /^HEADER/) {
 	    $line = $text->scan_while('^HEADER');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    $self->{'header'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
@@ -279,7 +279,7 @@ sub new {
 
 	if ($line =~ /^COMPND\s+(.*)/) {
 	    $line = $text->scan_while('^COMPND');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    $self->{'compnd'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
@@ -287,7 +287,7 @@ sub new {
 
 	if ($line =~ /^SOURCE\s+(.*)/) {
 	    $line = $text->scan_while('^SOURCE');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    $self->{'source'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
@@ -295,7 +295,7 @@ sub new {
 
 	if ($line =~ /^AUTHOR\s+(.*)/) {
 	    $line = $text->scan_while('^AUTHOR');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    $self->{'author'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
@@ -336,7 +336,7 @@ sub new {
 
 	if ($line =~ /^NOTATION\s+(.*)/) {
 	    $line = $text->scan_while('^NOTATION');
-	    $tmp  = new Bio::Parse::Record_Stream($self, 11, \$line);
+	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
 	    $line = $tmp->scan_lines(0);
 	    chomp $line;
 	    $self->{'notation'} = $line;
@@ -397,7 +397,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     my ($cut, $part1, $part2, $data);
 
@@ -550,7 +550,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     my ($lo, $hi, $cut, $part2, $data, $chaincount, $chain1, $chain2, $i);
 

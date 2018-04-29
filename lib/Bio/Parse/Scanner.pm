@@ -3,7 +3,7 @@
 use strict;
 
 ###########################################################################
-package Bio::Parse::Record_Stream;
+package Bio::Parse::Scanner;
 
 use Bio::Parse::Substring;
 

@@ -31,7 +31,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     $self->{'query'} = '';
 
@@ -103,7 +103,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #ranked search hits
     while (defined ($line = $text->next_line)) {
@@ -182,7 +182,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     $line = $text->next_line;
 

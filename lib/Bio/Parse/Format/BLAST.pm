@@ -237,7 +237,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     $self->{'full_version'} = '';
     $self->{'version'}      = '',
@@ -325,7 +325,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #strand orientations, filled by MATCH::ALN object
     $self->{'orient'} = {};
@@ -381,7 +381,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     $line = $text->scan_lines(0);
 
@@ -634,7 +634,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self, 0, undef);
+    $text = new Bio::Parse::Scanner($self, 0, undef);
 
     $line = $text->scan_lines(0);
 
@@ -667,7 +667,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self, 0, undef);
+    $text = new Bio::Parse::Scanner($self, 0, undef);
 
     $line = $text->scan_lines(0);
 
@@ -700,7 +700,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self, 0, undef);
+    $text = new Bio::Parse::Scanner($self, 0, undef);
 
     $line = $text->scan_lines(0);
 

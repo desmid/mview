@@ -41,7 +41,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #column headers
     $self->{'header'} = $text->scan_lines(5);
@@ -139,7 +139,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     #Score line
     $line = $text->next_line;

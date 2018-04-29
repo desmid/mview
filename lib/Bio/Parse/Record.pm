@@ -5,7 +5,7 @@ use strict;
 ###########################################################################
 package Bio::Parse::Record;
 
-use Bio::Parse::Record_Stream;
+use Bio::Parse::Scanner;
 use Bio::Parse::Message;
 
 use vars qw(@ISA);

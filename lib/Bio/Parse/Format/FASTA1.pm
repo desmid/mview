@@ -100,7 +100,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Record_Stream($self);
+    $text = new Bio::Parse::Scanner($self);
 
     my ($query_start, $query_stop, $sbjct_start, $sbjct_stop) = (0,0,0,0);
     my ($query_leader,$query_trailer,$sbjct_leader,$sbjct_trailer) = (0,0,0,0);

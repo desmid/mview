@@ -62,7 +62,7 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     my $self = new Bio::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
-    my $text = new Bio::Parse::Record_Stream($self);
+    my $text = new Bio::Parse::Scanner($self);
 
     my $line;
 
