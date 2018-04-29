@@ -23,7 +23,6 @@ sub new {
 	if @_ < 1;
     return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                 #filename
-#   return new Bio::Parse::Substring::FileBuffer(@_);           #filename
 }
 
 #sub DESTROY { warn "DESTROY $_[0]\n" }
@@ -100,7 +99,6 @@ sub reopen {
     }
     $self->_open;
     $self->_reset;
-    $self;
 }
 
 sub reset {
@@ -113,7 +111,6 @@ sub reset {
 	$self->_open;
     }
     $self->_reset(@_);
-    $self;
 }
 
 sub _seek {
@@ -131,7 +128,6 @@ sub _reset {
     $self->{'fh'}->seek($offset, SEEK_SET);
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
-    $self;
 }
 
 sub _close {
@@ -141,7 +137,6 @@ sub _close {
     $self->{'fh'}->close;
     $self->{'fh'} = -1;
     $self->{'state'} = $CLOSE;
-    $self;
 }
 
 sub _open {
@@ -152,7 +147,6 @@ sub _open {
     $self->{'state'} = $OPEN;
     $self->{'lastoffset'} = $self->{'base'};
     $self->{'thisoffset'} = $self->{'base'};
-    $self;
 }
 
 sub substr {
@@ -231,7 +225,6 @@ sub reset {
     #warn "reset(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
-    $self;
 }
 
 sub substr {
@@ -280,55 +273,6 @@ sub getline {
 
     return $line;
 }
-
-###########################################################################
-# Load a file into memory, then random access it as a string
-
-package Bio::Parse::Substring::FileBuffer;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::Parse::Substring::String);
-
-sub new {
-    my $type = shift;
-    #warn "${type}::new()\n"  if $Bio::Parse::Substring::DEBUG;
-    my ($file, $base) = (@_, 0);
-
-    my $self = {};
-    bless $self, $type;
-
-    $self->{'file'}       = $file;
-    $self->{'base'}       = $base;
-    $self->{'extent'}     = 0;
-    $self->{'lastoffset'} = undef;
-    $self->{'thisoffset'} = undef;
-    $self->{'text'}       = undef;
-
-    $self->load($file);
-
-    #warn $self->{extent};
-    #warn $self->{text};
-    #warn ${$self->{text}};
-
-    #$self->examine;
-    $self;
-}
-
-sub load {
-    my ($self, $file) = @_;
-    local *TMP;
-    open(TMP, $file) or $self->die("load: can't open '$file'");
-    my $len = (stat TMP)[7];
-    my $buff;
-    my $c = read(TMP, $buff, $len);
-    close(TMP);
-    $self->die("load: unexpected byte count for '$file'")  unless $c == $len;
-    $self->{'extent'} = $len;
-    $self->{'text'}   = \$buff;
-}
-
-sub get_file {$_[0]->{'file'}}
 
 ###########################################################################
 1;
