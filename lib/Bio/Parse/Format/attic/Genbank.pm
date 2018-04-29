@@ -263,8 +263,8 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'ac',         $self->{'ac'};
-    printf "$x%20s -> [%s]\n", 'accessions', join(',', @{$self->{'accessions'}});
+    printf "$x%20s -> %s\n", 'ac',         $self->{'ac'};
+    printf "$x%20s -> %s\n", 'accessions', $self->fmt($self->{'accessions'});
 }
 
 

@@ -391,8 +391,8 @@ sub print_data {
     printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
     printf "$x%20s -> %s\n", 'query',        $self->{'query'};
     printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
-    printf "$x%20s -> %s\n", 'fields',       $self->fmt_array($self->{'fields'});
-    printf "$x%20s -> %s (initial)\n", 'counts', $self->fmt_array($self->{'counts'});
+    printf "$x%20s -> %s\n", 'fields',       $self->fmt($self->{'fields'});
+    printf "$x%20s -> %s (initial)\n", 'counts', $self->fmt($self->{'counts'});
 }
 
 

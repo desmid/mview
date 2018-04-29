@@ -173,13 +173,13 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'location',   $self->{'location'};
-    printf "$x%20s -> %s\n",   'qualifiers', $self->{'qualifiers'};
-    printf "$x%20s -> [%s]\n", 'p_location', join(",",@{$self->{'p_location'}});
+    printf "$x%20s -> %s\n", 'location',   $self->{'location'};
+    printf "$x%20s -> %s\n", 'qualifiers', $self->{'qualifiers'};
+    printf "$x%20s -> %s\n", 'p_location', $self->fmt($self->{'p_location'});
     printf "$x%20s:\n", 'p_qualifiers';
     foreach my $i (sort keys %{$self->{'p_qualifiers'}}) {
-	printf("$x$x%20s -> [%s]\n",
-               $i, join(',', @{$self->{'p_qualifiers'}->{$i}}));
+	printf("$x$x%20s -> %s\n",
+               $i, $self->fmt($self->{'p_qualifiers'}->{$i}));
     }
 }
 

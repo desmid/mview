@@ -302,8 +302,8 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'ac',         $self->{'ac'};
-    printf "$x%20s -> [%s]\n", 'accessions', join(',', @{$self->{'accessions'}});
+    printf "$x%20s -> %s\n", 'ac',         $self->{'ac'};
+    printf "$x%20s -> %s\n", 'accessions', $self->fmt($self->{'accessions'});
 }
 
 
@@ -393,7 +393,7 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> \"%s\"\n", 'description', $self->{'description'};
+    printf "$x%20s -> '%s'\n", 'description', $self->{'description'};
 }
 
 
@@ -555,13 +555,13 @@ sub new {
 sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> \"%s\"\n",  'sequence', $self->{'sequence'};
-    printf "$x%20s -> %d\n",      'length',   $self->{'length'};
-    printf "$x%20s -> %d\n",      'A',        $self->{'A'};
-    printf "$x%20s -> %d\n",      'C',        $self->{'C'};
-    printf "$x%20s -> %d\n",      'G',        $self->{'G'};
-    printf "$x%20s -> %d\n",      'T',        $self->{'T'};
-    printf "$x%20s -> %d\n",      'other',    $self->{'other'};
+    printf "$x%20s -> '%s'\n",  'sequence', $self->{'sequence'};
+    printf "$x%20s -> %d\n",    'length',   $self->{'length'};
+    printf "$x%20s -> %d\n",    'A',        $self->{'A'};
+    printf "$x%20s -> %d\n",    'C',        $self->{'C'};
+    printf "$x%20s -> %d\n",    'G',        $self->{'G'};
+    printf "$x%20s -> %d\n",    'T',        $self->{'T'};
+    printf "$x%20s -> %d\n",    'other',    $self->{'other'};
 }
 
 

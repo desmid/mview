@@ -282,13 +282,20 @@ sub unpack_hash {
     }
 }
 
-sub fmt_hash {
-    my @tmp = map { "$_:$_[1]->{$_}" } sort keys %{$_[1]};
-    return "{" . join(',', @tmp) . "}";
-}
-
-sub fmt_array {
-    return "[" . join(',', @{$_[1]}) . "]";
+sub fmt {
+    my ($self, $val, $undef) = (@_, '<undef>');
+    my $ref = ref $val;
+    if ($ref eq 'HASH') {
+        my @tmp = map {
+            my $v = defined $val->{$_} ? $val->{$_} : $undef; "$_:$v"
+        } sort keys %$val;
+        return "{" . join(',', @tmp) . "}";
+    }
+    if ($ref eq 'ARRAY') {
+        my @tmp = map { defined $_ ? $_ : $undef } @$val;
+        return "[" . join(',', @tmp) . "]";
+    }
+    return defined $val ? $val : $undef;
 }
 
 sub print {
@@ -305,9 +312,9 @@ sub print {
     printf "%s  Subrecords by posn:\n", $x;
     $self->print_records_by_posn($indent);
 
-#    #print records in order of type
-#    printf "%s  Subrecords by type:\n", $x;
-#    $self->print_records_by_type($indent);
+    #print records in order of type
+    #printf "%s  Subrecords by type:\n", $x;
+    #$self->print_records_by_type($indent);
 
     printf "%s  Miscellaneous:\n", $x;
     printf "$x%20s -> %d\n",   'index', $self->{'index'};

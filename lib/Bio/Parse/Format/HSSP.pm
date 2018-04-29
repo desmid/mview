@@ -374,8 +374,7 @@ sub print_data {
     printf "$x%20s -> %s\n",   'seqlength',      $self->{'seqlength'};
     printf "$x%20s -> %s\n",   'nchain',         $self->{'nchain'};
     printf "$x%20s -> %s\n",   'kchain',         $self->{'kchain'};
-    printf "$x%20s -> %s\n",   'chainname',
-        "[" . join(',',@{$self->{'chainname'}}) ."]";
+    printf "$x%20s -> %s\n",   'chainname',      $self->fmt($self->{'chainname'});
     printf "$x%20s -> %s\n",   'nalign',         $self->{'nalign'};
     printf "$x%20s -> %s\n",   'notation',       $self->{'notation'};
 }
