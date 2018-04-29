@@ -52,7 +52,7 @@ sub get_entry {
 
     new Bio::Parse::Format::Plain(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -62,7 +62,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -73,12 +73,12 @@ sub new {
 	#comment: ignore
 	next    if $line =~ /$Plain_Comment/o;
 
-	#ALIGNMENT lines		       	      
+	#ALIGNMENT lines
 	if ($line =~ /$Plain_ALIGNMENT/o) {
 	    $text->scan_until($Plain_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$Plain_Null/o;
 
@@ -104,13 +104,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     local $^W=0;
     local $_;
-    
+
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
     $self->{'match'} = '';
@@ -128,7 +128,7 @@ sub new {
 	    $self->{'seq'}->{$1} .= $2;
 	    $off = length($line) - length($2);
 	    next;
-	} 
+	}
 
 	#default
 	$self->warn("unknown field: $line");

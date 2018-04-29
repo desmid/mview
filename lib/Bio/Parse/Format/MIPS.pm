@@ -49,7 +49,7 @@ sub get_entry {
 
     new Bio::Parse::Format::MIPS(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -59,7 +59,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -70,27 +70,27 @@ sub new {
 	    $text->scan_until($MIPS_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#NAME lines	       	      
-	if ($line =~ /$MIPS_NAME/o) {    
+	#NAME lines
+	if ($line =~ /$MIPS_NAME/o) {
 	    $text->scan_until($MIPS_NAMEend, 'NAME');
-	    next;			       	      
-	}				       	      
-	
-	#ALIGNMENT lines		       	      
-	if ($line =~ /$MIPS_ALIGNMENT/o) {       	      
+	    next;
+	}
+
+	#ALIGNMENT lines
+	if ($line =~ /$MIPS_ALIGNMENT/o) {
 	    $text->scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$MIPS_Null/o;
 
 	#end of NAME section: ignore
 	next    if $line =~ /$MIPS_NAMEend/o;
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -113,14 +113,14 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $self->{'desc'} = '';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 
 	#> line
 	if ($line =~ /^>[^;]+;(\S+)/o) {
@@ -128,7 +128,7 @@ sub new {
 	    $self->{'ac'} = $1;
 	    next;
 	}
-	
+
 	#accumulate other lines
 	$self->{'desc'} .= $line;
     }
@@ -163,13 +163,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $self->{'seq'}   = {};
     $self->{'order'} = [];
-    
+
     #consume Name lines
     while (defined ($line = $text->next_line)) {
 
@@ -178,8 +178,8 @@ sub new {
 	    $self->{'seq'}->{$1} = Bio::Parse::Record::strip_english_newlines($2);
 	    push @{$self->{'order'}}, $1;
 	    next;
-	} 
-	
+	}
+
 	next  if $line =~ /$MIPS_Null/;
 
 	#default
@@ -192,7 +192,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (@{$self->{'order'}}) {
-	printf "$x%20s -> %-15s %s=%s\n", 
+	printf "$x%20s -> %-15s %s=%s\n",
 	'seq',  $i,
 	'desc', $self->{'seq'}->{$i};
     }
@@ -214,17 +214,17 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     local $^W=0;
     local $_;
-    
+
     $self->{'seq'} = {};
 
     while (defined ($line = $text->next_line)) {
-    
+
 	no strict;
 
 	#start/end positions
@@ -235,7 +235,7 @@ sub new {
 	    $self->test_args(\$line, $1, $2);
 	    $self->{'seq'}->{$1} .= $2;
 	    next;
-	} 
+	}
 
 	#default: ignore all other line types (site and consensus data)
     }

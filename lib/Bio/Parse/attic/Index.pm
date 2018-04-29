@@ -77,7 +77,7 @@ sub new {
 	    }
 	}
 	($flags, $mode) = (O_CREAT|O_WRONLY, 0640);
-	
+
     } elsif ($rwa eq 'a') {
 	#check for the existence of all input files for appending
 	if (-w "$dbm.dir" and -w "$dbm.pag" and -w "$dbm.$EXT") {
@@ -85,7 +85,7 @@ sub new {
 	} else {
 	    ($flags, $mode) = (O_CREAT|O_WRONLY, 0640);
 	}
-	
+
     } elsif ($rwa eq 'r') {
 	#check for the existence of all input files for reading
 	if (! (-r "$dbm.dir" and -r "$dbm.pag" and -r "$dbm.$EXT")) {
@@ -93,10 +93,10 @@ sub new {
 	}
 	($flags, $mode) = (O_RDONLY, 0440);
     }
-	
+
     #make a dbmfile tied hash
     #O_RDWR capability fails to allow read on SGI, 'IRIX Release 5.3 IP22'
-    if (! tie(%{$self->{'hash'}}, 'NDBM_File', $dbm, $flags, $mode)){ 
+    if (! tie(%{$self->{'hash'}}, 'NDBM_File', $dbm, $flags, $mode)){
 	$self->die("new() can't open $dbm.{pag,dir}");
     }
 
@@ -133,7 +133,7 @@ sub DESTROY {
 	warn "Bio::Parse::Index closed dbm  file ($self->{'class'}, $self->{'dbm'}, '$self->{'mode'}')\n"
 	    if $VERBOSE;
     }
-    
+
     #close any filehandles onto the raw data files
     my $fh; foreach $fh (keys %{$self->{'data_fh'}}) {
 	if (defined $self->{'data_fh'}->{$fh}) {
@@ -228,7 +228,7 @@ sub _extract_entry {
     #open a new stream if one not already open on this raw data file
     if (exists($self->{'data_fh'}->{$file})) {
 	$fh = $self->{'data_fh'}->{$file};
-    } else {	
+    } else {
 	$fh = new FileHandle;
 
 	if ($fh->open("< $file") != 1) {

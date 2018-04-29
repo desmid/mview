@@ -63,7 +63,7 @@ sub get_entry {
 
     new Bio::Parse::Format::SIM(undef, $text, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -73,7 +73,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -84,15 +84,15 @@ sub new {
 	    $text->scan_until($SIM_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#MATCH lines		       	      
+	#MATCH lines
 	if ($line =~ /$SIM_MATCH/o) {
 	    $text->scan_until($SIM_MATCHend, 'MATCH');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#skip LALIGN alignment delimiter
 	next    if $line =~ /$SIM_ALNSEP/o;
 
@@ -123,7 +123,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -142,8 +142,8 @@ sub new {
     $self->{gapextend} = '?';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
-	#print $line;	
+    while (defined ($line = $text->next_line)) {
+	#print $line;
 
 	#scoring parameter line
 	#Match   Mismatch   Gap-Open Penalty   Gap-Extension Penalty
@@ -155,7 +155,7 @@ sub new {
 	    \s+($RX_Sint)               #gap-open penalty
 	    \s+($RX_Sint)               #gap-extension penalty
 	    /xo) {
-	    
+
 	    $self->test_args(\$line, $1, $2, $3, $4);
 	    (
 	     $self->{'match'},
@@ -181,7 +181,7 @@ sub new {
 	     ) = ($1, (defined $2?$2:''));
 	    next;
 	}
-	
+
 	#sequence length
 	if ($line =~ /^\s*Length:\s+(\S+)/) {
 	    if ($self->{'length1'} == 0) {
@@ -273,7 +273,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -281,7 +281,7 @@ sub new {
     $self->{'score'}    = '?';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 	#print $line;
 
 	if ($line =~ /^\s*Number/) {
@@ -340,7 +340,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -354,7 +354,7 @@ sub new {
     #warn $text->inspect_stream;
 
     $line = $text->next_line(1);
-    
+
     if ($line =~ /^\s*[0-9]+[.: ]*$/) {
 	$tmp[0] = $line;                  #ruler
 	$tmp[1] = $text->next_line(1);    #query sequence
@@ -363,7 +363,7 @@ sub new {
     } else {
 	$self->die("unexpected line: $line\n");
     }
-    
+
     #initialise query and match start
     $tmp[1] =~ /^\s*(\S+)\s*/;
     $query_start = $1;
@@ -377,18 +377,18 @@ sub new {
     $tmp[3] =~ /^(\s*\S+\s*)/;
     $x = length $1;
     $depth = ($depth < $x ? $depth : $x);
-    
+
     #strip width of leading number
     $tmp[0] = substr($tmp[0], $depth);
     $tmp[1] = substr($tmp[1], $depth);
     $tmp[2] = substr($tmp[2], $depth);
     $tmp[3] = substr($tmp[3], $depth);
-    
+
     #warn "#0##$tmp[0]\n";
     #warn "#1##$tmp[1]\n";
     #warn "#2##$tmp[2]\n";
     #warn "#3##$tmp[3]\n";
-    
+
     #query/sbjct/match lines
     #warn "|$tmp[1]|\n|$tmp[2]|\n|$tmp[3]|\n";
     $len = max(length($tmp[1]), length($tmp[3]));
@@ -406,7 +406,7 @@ sub new {
     $query = $tmp[1];
     $align = $tmp[2];
     $sbjct = $tmp[3];
-    
+
     #remaining records
     while (defined ($line = $text->next_line(1))) {
 
@@ -422,7 +422,7 @@ sub new {
 	} else {
 	    $self->die("unexpected line: $line\n");
 	}
-    
+
 	#if ($tmp[1] =~ /^\s*(\d+)/) {
 	#    warn "query_stop: old=$query_stop new=$1\n";
 	#}
@@ -435,7 +435,7 @@ sub new {
 	$tmp[1] = substr($tmp[1], $depth);
 	$tmp[2] = substr($tmp[2], $depth);
 	$tmp[3] = substr($tmp[3], $depth);
-	
+
 	#warn "#0##$tmp[0]\n";
 	#warn "#1##$tmp[1]\n";
 	#warn "#2##$tmp[2]\n";
@@ -452,7 +452,7 @@ sub new {
 	$align .= $tmp[2];
 	$sbjct .= $tmp[3];
     }
-    
+
     #warn $text->inspect_stream;
     #warn "EXIT ($query_start, $query_stop) ($sbjct_start, $sbjct_stop)\n";
 

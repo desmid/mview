@@ -11,7 +11,7 @@ use strict;
 
 use vars qw(
 	    @ISA
-	    
+
 	    $ALIGN_START
 	    $ALIGN_END
 );
@@ -42,7 +42,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -53,15 +53,15 @@ sub new {
 	    $text->scan_until($ALIGN_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#MATCH lines		       	      
+	#MATCH lines
 	if ($line =~ /$ALIGN_MATCH/o) {
 	    $text->scan_until($ALIGN_MATCHend, 'MATCH');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$ALIGN_Null/o;
 
@@ -87,7 +87,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -104,15 +104,15 @@ sub new {
     $self->{'length2'} = 0;
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
-	#warn $line;	
+    while (defined ($line = $text->next_line)) {
+	#warn $line;
 
 	#program information
 	if ($line =~ /^\s*ALIGN/x) {
 	    $self->{'program'} = 'ALIGN';
 	    next;
 	}
-	
+
 	#ALIGN version information
 	if ($line =~ /^
 	    \s*version\s+(\S+)Please
@@ -131,7 +131,7 @@ sub new {
 	    \s*(.*)\s+	#description (empty?)
 	    \s*(\d+)\s+(aa|nt)\s+vs #length
 	    /xo) {
-	    
+
 	    $self->test_args(\$line, $1, $3, $4);
 	    (
 	     $self->{'id1'},
@@ -148,7 +148,7 @@ sub new {
 	    \s*(.*)\s+	#description (empty?)
 	    \s*(\d+)\s+(?:aa|nt) #length
 	    /xo) {
-	    
+
 	    $self->test_args(\$line, $1, $3);
 	    (
 	     $self->{'id2'},
@@ -235,7 +235,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -243,7 +243,7 @@ sub new {
     $self->{'score'}    = '?';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 	#print $line;
 
 	#ALIGN

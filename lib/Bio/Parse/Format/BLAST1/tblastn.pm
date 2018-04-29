@@ -80,7 +80,7 @@ sub new {
 	(?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
 	($RX_Ureal)                          #p-value
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
@@ -94,7 +94,7 @@ sub new {
     else {
 	$self->warn("expecting 'Score' line: $line");
     }
-    
+
     #Identities line
     $line = $text->next_line;
 
@@ -112,7 +112,7 @@ sub new {
 	([+-])                               #frame sign
 	(\d+)                                #frame number
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	(
@@ -122,10 +122,10 @@ sub new {
 	 $self->{'pos_percent'},
 	 $self->{'sbjct_frame'},
 	) = ($1, $2, $3, $4, $5 . $6);
-	
+
 	#record sbjct orientation in MATCH list
 	push @{$parent->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
-	
+
     } else {
 	$self->warn("expecting 'Identities' line: $line");
     }

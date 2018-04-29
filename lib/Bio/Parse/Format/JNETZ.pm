@@ -30,7 +30,7 @@ sub get_entry {
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     while (defined ($line = $parent->{'text'}->getline)) {
-	
+
 	#start of entry
 	if ($line =~ /$JNETZ_START/o and $offset < 0) {
             $offset = $parent->{'text'}->startofline;
@@ -48,7 +48,7 @@ sub get_entry {
 
     new Bio::Parse::Format::JNETZ(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -58,18 +58,18 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     while (defined ($line = $text->next_line)) {
 
-	#ALIGNMENT lines	       	      
+	#ALIGNMENT lines
 	if ($line =~ /$JNETZ_ALIGNMENT/o) {
 	    $text->scan_until($JNETZ_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next  if $line =~ /$JNETZ_Null/o;
 
@@ -99,7 +99,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 

@@ -61,7 +61,7 @@ use vars qw(@ISA
 
 @ISA   = qw(Bio::Parse::Format::BLAST);
 
-@VERSIONS = ( 
+@VERSIONS = (
 	     '1' => [
 		     'BLASTP',
 		     'BLASTN',
@@ -139,29 +139,29 @@ sub new {
 	}
 
 	#Rank lines: override $RANK_END definition
-	if ($line =~ /$RANK_START/o) {       	      
+	if ($line =~ /$RANK_START/o) {
 	    $text->scan_while($RANK_MATCH, 'RANK');
 	    next;
-	}				       	      
-	
+	}
+
 	#Hit lines
 	if ($line =~ /$MATCH_START/o) {
 	    $text->scan_until($MATCH_END, 'MATCH');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#WARNING lines
-	if ($line =~ /$WARNING_START/o) {       	      
+	if ($line =~ /$WARNING_START/o) {
 	    $text->scan_until($WARNING_END, 'WARNING');
-	    next;			       	      
-	}				       	      
+	    next;
+	}
 
 	#Parameter lines
-	if ($line =~ /$PARAMETERS_START/o) {       	      
+	if ($line =~ /$PARAMETERS_START/o) {
 	    $text->scan_until($PARAMETERS_END, 'PARAMETERS');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#WARNINGS ISSUED line: ignore
 	next    if $line =~ /$WARNINGS_START/o;
 

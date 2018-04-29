@@ -49,7 +49,7 @@ sub get_entry {
 
     new Bio::Parse::Format::MSF(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -59,7 +59,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -70,27 +70,27 @@ sub new {
 	    $text->scan_until($MSF_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#NAME lines	       	      
-	if ($line =~ /$MSF_NAME/o) {    
+	#NAME lines
+	if ($line =~ /$MSF_NAME/o) {
 	    $text->scan_until($MSF_NAMEend, 'NAME');
-	    next;			       	      
-	}				       	      
-	
-	#ALIGNMENT lines		       	      
-	if ($line =~ /$MSF_ALIGNMENT/o) {       	      
+	    next;
+	}
+
+	#ALIGNMENT lines
+	if ($line =~ /$MSF_ALIGNMENT/o) {
 	    $text->scan_until($MSF_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$MSF_Null/o;
 
 	#end of NAME section: ignore
 	next    if $line =~ /$MSF_NAMEend/o;
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -113,12 +113,12 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 
 	#MSF line
 	if ($line =~ /^
@@ -128,7 +128,7 @@ sub new {
 	    \s+
 	    Type\:\s+(\S+)
             \s*
-	    ((?:.+)?)            
+	    ((?:.+)?)
 	    Check\:\s+(\d+)
 	    \s+\.\.
 	    /xo) {
@@ -145,7 +145,7 @@ sub new {
                  Bio::Parse::Record::strip_trailing_space($4),
                  $5);
 	}
-	
+
 	#ignore any other text
     }
 
@@ -180,17 +180,17 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $self->{'seq'}   = {};
     $self->{'order'} = [];
-    
+
     #consume Name lines
     while (defined ($line = $text->next_line)) {
 	my $id = "";
-	
+
 	if ($line =~ /^(\s*Name:\s+(.+))Len:\s+\d/) {
 	    $line = substr($line, length($1));
 	    $id = $2;
@@ -207,7 +207,7 @@ sub new {
 	        \s+
 	        Weight\:\s+(\S+)  #sequence weight
 	        /xo) {
-		
+
 	        $self->test_args(\$line, $1,$2,$3);
 	        $self->{'seq'}->{$id} = {
 		    'length' => $1,
@@ -217,8 +217,8 @@ sub new {
 	        push @{$self->{'order'}}, $id;
 	        next;
 	    }
-	}  
-	
+	}
+
 	next  if $line =~ /$MSF_Null/;
 
 	#default
@@ -231,7 +231,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (@{$self->{'order'}}) {
-	printf "$x%20s -> %-15s %s=%5s %s=%5s %s=%5s\n", 
+	printf "$x%20s -> %-15s %s=%5s %s=%5s %s=%5s\n",
 	'seq',    $i,
 	'length', $self->{'seq'}->{$i}->{'length'},
 	'check',  $self->{'seq'}->{$i}->{'check'},
@@ -255,13 +255,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     local $^W=0;
     local $_;
-    
+
     $self->{'seq'} = {};
 
     #warn "@{[keys %$parent]}";
@@ -271,9 +271,9 @@ sub new {
 	$maxnamelen = $len  if $len > $maxnamelen;
     }
     #warn $maxnamelen;
-    
+
     while (defined ($line = $text->next_line)) {
-    
+
 	no strict;
 
 	#start/end positions
@@ -289,7 +289,7 @@ sub new {
 	    $self->test_args(\$line, $id, $2);
 	    $self->{'seq'}->{$id} .= $2;
 	    next;
-	} 
+	}
 
 	next  if $line =~ /$MSF_Null/;
 

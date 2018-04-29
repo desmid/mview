@@ -244,41 +244,41 @@ sub consensus {
 
     #iterate over all columns
     for (my $i=0; $i<@$tally; $i++) {
-	
+
 	my ($score, $bstscore, $bstclass) = ($tally->[$i], 0, undef);
-	
+
 	#iterate over all allowed subsets
 	foreach my $class (keys %$group) {
 
 	    next  if $class eq $Group_Any;  #wildcard
-	
+
 	    if ($class ne '') {
 		#non-gap classes: may want to ignore certain classes
 		next  if $ignore eq 'singleton' and $class eq $group->{$class}->[0];
-		
+
 		next  if $ignore eq 'class'     and $class ne $group->{$class}->[0];
 	    }
 
 	    #choose smallest class exceeding threshold and highest
 	    #score percentage when same size
-	
+
 	    #warn "[$i] $class, $score->{$class}\n";
 
 	    if ($score->{$class} >= $threshold) {
-		
+
 		#first pass
 		if (! defined $bstclass) {
 		    $bstclass = $class;
 		    $bstscore = $score->{$class};
 		    next;
 		}
-		
+
 		#larger? this set should be rejected
 		if (keys %{$group->{$class}->[1]} >
 		    keys %{$group->{$bstclass}->[1]}) {
 		    next;
 		}
-		
+
 		#smaller? this set should be kept
 		if (keys %{$group->{$class}->[1]} <
 		    keys %{$group->{$bstclass}->[1]}) {
@@ -286,7 +286,7 @@ sub consensus {
 		    $bstscore = $score->{$class};
 		    next;
 		}
-		
+
 		#same size: new set has better score?
 		if ($score->{$class} > $bstscore) {
 		    $bstclass = $class;

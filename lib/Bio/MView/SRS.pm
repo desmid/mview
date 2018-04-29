@@ -12,7 +12,7 @@ use Bio::MView::Option::Parameters;  #for $PAR
 my $URL_NCBI = 'http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi';
 
 my %MAP_NCBI = (
-    #protein databases	       
+    #protein databases
     'dbj'     => "$URL_NCBI?val=&AC",
     'emb'     => "$URL_NCBI?val=&AC",
     'gb'      => "$URL_NCBI?val=&AC",
@@ -82,7 +82,7 @@ $MAP_EBI{'EM_OM'}  = \$MAP_EBI{'EM_REL'};
 sub srsLink {
     my ($tag) = @_;
     return ''  unless $PAR->get('srs');
-    
+
     my $link = '';
 
     #EDIT: PLACE SITE SPECIFIC PATTERNS FIRST

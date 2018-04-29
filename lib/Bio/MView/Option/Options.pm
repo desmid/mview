@@ -226,7 +226,7 @@ $Options = [
     ##################################################
     # colouring: alignment
     ##################################################
-    
+
     {
         'group'   => "ALIGNMENT",
         'header'  => "Alignment coloring:",

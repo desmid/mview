@@ -57,7 +57,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -68,15 +68,15 @@ sub new {
 	    $text->scan_until($CLUSTAL_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#ALIGNMENT lines		       	      
+	#ALIGNMENT lines
 	if ($line =~ /$CLUSTAL_ALIGNMENT/o) {
 	    $text->scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$CLUSTAL_Null/o;
 
@@ -102,7 +102,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -111,7 +111,7 @@ sub new {
     $self->{'minor'}   = '';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 
 	#first part of CLUSTAL line
 	if ($line =~ /^
@@ -129,9 +129,9 @@ sub new {
 	     $self->{'major'},
 	     $self->{'minor'},
 	    ) = ($1, $2, $3);
-	    
+
 	}
-	
+
 	#first part of T-COFFEE line
 	if ($line =~ /^
 	    \s*
@@ -146,9 +146,9 @@ sub new {
 	     $self->{'major'},
 	     $self->{'minor'},
 	    ) = ($1, $2, $3);
-	    
+
 	}
-	
+
 	#ignore any other text
     }
 
@@ -179,13 +179,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $id, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     local $^W=0;
     local $_;
-    
+
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
     $self->{'match'} = '';
@@ -193,7 +193,7 @@ sub new {
     my $off = 0;
 
     while (defined ($line = $text->next_line)) {
-    
+
 	no strict;
 
 	chomp $line;
@@ -213,7 +213,7 @@ sub new {
 	    $self->{'seq'}->{$1} .= $2;
 	    $off = length($line) - length($2);
 	    next;
-	} 
+	}
 
 	next    if $line =~ /$CLUSTAL_Null/o;
 

@@ -19,21 +19,21 @@ $Bio::Parse::Format::Genbank::skip          = 12;
 $Bio::Parse::Format::Genbank::indent        = 2;
 
 #special Genbank record fields
-$Bio::Parse::Format::Genbank::id_entryname  = '[A-Z]\w{1,8}';    #### CHANGE?????? 
+$Bio::Parse::Format::Genbank::id_entryname  = '[A-Z]\w{1,8}';    #### CHANGE??????
 $Bio::Parse::Format::Genbank::id_date       = '[0-9]{2}-[A-Z]{3}-[0-9]{4}';
 $Bio::Parse::Format::Genbank::ac_accession  = $Bio::Parse::FT::ac_accession;
 
 
 #Genbank record types
-my $Genbank_LOCUS         = '^LOCUS';       
-my $Genbank_ACCESSION     = '^ACCESSION';   
-my $Genbank_DEFINITION    = '^DEFINITION';  
-my $Genbank_KEYWORDS      = '^KEYWORDS';    
-my $Genbank_SOURCE        = '^SOURCE';      
-my $Genbank_REFERENCE     = '^REFERENCE';   
-my $Genbank_COMMENT       = '^COMMENT';     
-my $Genbank_FEATURES      = '^FEATURES';    
-my $Genbank_BASECOUNT     = '^BASE\ COUNT';   
+my $Genbank_LOCUS         = '^LOCUS';
+my $Genbank_ACCESSION     = '^ACCESSION';
+my $Genbank_DEFINITION    = '^DEFINITION';
+my $Genbank_KEYWORDS      = '^KEYWORDS';
+my $Genbank_SOURCE        = '^SOURCE';
+my $Genbank_REFERENCE     = '^REFERENCE';
+my $Genbank_COMMENT       = '^COMMENT';
+my $Genbank_FEATURES      = '^FEATURES';
+my $Genbank_BASECOUNT     = '^BASE\ COUNT';
 my $Genbank_End           = '^\/\/';        # end of entry: two slashes
 my $Genbank_Null          = '^\S*\s*$';#'   # blank line or empty record
 
@@ -48,7 +48,7 @@ sub get_entry {
     my $text = $parent->{'text'};
 
     while (defined ($line = <$fh>)) {
-	
+
 	#LOCUS line: start of entry
 	if ($line =~ /$Genbank_LOCUS/o and $offset < 0) {
 	    $offset = $fh->tell - length($line);
@@ -66,7 +66,7 @@ sub get_entry {
 
     new Bio::Parse::Format::Genbank(undef, $text, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -76,7 +76,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -91,7 +91,7 @@ sub new {
  	    $self->push_indices($ob->{'id'});
  	    next;
  	}
-	
+
  	#ACCESSION line
  	if ($line =~ /$Genbank_ACCESSION/o) {
  	    $record = $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'ACCESSION');
@@ -100,49 +100,49 @@ sub new {
 	    ##$self->push_indices(@{$ob->{'accessions'}});
  	    next;
  	}
-	
+
  	#DEFINITION line
  	if ($line =~ /$Genbank_DEFINITION/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'DEFINITION');
  	    next;
  	}
-	
+
  	#KEYWORDS line
  	if ($line =~ /$Genbank_KEYWORDS/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'KEYWORDS');
  	    next;
  	}
-	
+
  	#SOURCE line
  	if ($line =~ /$Genbank_SOURCE/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'SOURCE');
  	    next;
  	}
-	
+
  	#REFERENCE line
  	if ($line =~ /$Genbank_REFERENCE/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'REFERENCE');
  	    next;
  	}
-	
+
  	#COMMENT line
  	if ($line =~ /$Genbank_COMMENT/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'COMMENT');
  	    next;
  	}
-	
+
  	#FEATURES line
  	if ($line =~ /$Genbank_FEATURES/o) {
  	    $text->scan_nest($Bio::Parse::Format::Genbank::indent, 'FEATURES');
  	    next;
  	}
-	
+
  	#BASECOUNT line
  	if ($line =~ /$Genbank_BASECOUNT/o) {
  	    $text->scan_until($Genbank_End, 'BASECOUNT');
 	    last;
  	}
-	
+
 	#blank line or empty record: ignore
 	if ($line =~ /$Genbank_Null/o) {
 	    next;
@@ -171,12 +171,12 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::Genbank::skip);
 
     $line = $text->next_line;
-    
+
     if ($line =~ /^\s*
         ($Bio::Parse::Format::Genbank::id_entryname)                        #id
         \s*
@@ -240,7 +240,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::Genbank::skip);
 
@@ -256,7 +256,7 @@ sub new {
     }
 
     $self->{'ac'} = $self->{'accessions'}->[0];
-    
+
     $self;
 }
 

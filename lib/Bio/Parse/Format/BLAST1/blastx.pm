@@ -50,7 +50,7 @@ sub new {
     $self->{'hit'}    = [];
 
     while (defined ($line = $text->next_line(1))) {
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -79,7 +79,7 @@ sub new {
 	    ($RX_Uint)                        #score
 	    \s+
 	    ($RX_Ureal)               	      #p-value
-	    \s+	       
+	    \s+
 	    ($RX_Uint)                	      #n fragments
 	    \s*
 	    \!?                               #GCG junk
@@ -88,8 +88,8 @@ sub new {
 	    /xo) {
 
 	    $self->test_args(\$line, $1, $4, $5, $6); #ignore $2, $3, $7
-	    
-	    push @{$self->{'hit'}}, 
+
+	    push @{$self->{'hit'}},
 	    {
 	     'id'          => Bio::Parse::Record::clean_identifier($1),
 	     #merge sign and number components
@@ -102,7 +102,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -161,7 +161,7 @@ sub new {
 	(?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
 	($RX_Ureal)                          #p-value
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
@@ -175,7 +175,7 @@ sub new {
     else {
 	$self->warn("expecting 'Score' line: $line");
     }
-    
+
     #Identities line
     $line = $text->next_line;
 
@@ -193,7 +193,7 @@ sub new {
 	([+-])                               #frame sign
 	(\d+)                                #frame number
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	(
@@ -203,10 +203,10 @@ sub new {
 	 $self->{'pos_percent'},
 	 $self->{'query_frame'},
 	) = ($1, $2, $3, $4, $5 . $6);
-	
+
 	#record query orientation in MATCH list
 	push @{$parent->{'orient'}->{$self->{'query_frame'}}}, $self;
-	
+
     } else {
 	$self->warn("expecting 'Identities' line: $line");
     }

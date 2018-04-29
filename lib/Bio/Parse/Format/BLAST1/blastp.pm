@@ -50,7 +50,7 @@ sub new {
     $self->{'hit'}    = [];
 
     while (defined ($line = $text->next_line(1))) {
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -81,8 +81,8 @@ sub new {
 	    /xo) {
 
 	    $self->test_args(\$line, $1, $2, $3, $4); #ignore $5
-	    
-	    push @{$self->{'hit'}}, 
+
+	    push @{$self->{'hit'}},
 	    {
 	     'id'      => Bio::Parse::Record::clean_identifier($1),
 	     'score'   => $2,
@@ -93,7 +93,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -152,7 +152,7 @@ sub new {
 	(?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
 	($RX_Ureal)                          #p-value
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
@@ -166,7 +166,7 @@ sub new {
     else {
 	$self->warn("expecting 'Score' line: $line");
     }
-    
+
     #Identities line
     $line = $text->next_line;
 
@@ -181,7 +181,7 @@ sub new {
 	\s+
 	\((\d+)%\)                           #positives percentage
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $4);
 
 	(
@@ -193,7 +193,7 @@ sub new {
 
 	#record query orientation in MATCH list (always +)
 	push @{$parent->{'orient'}->{'+'}}, $self;
-	
+
     } else {
 	$self->warn("expecting 'Identities' line: $line");
     }

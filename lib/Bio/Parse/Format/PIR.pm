@@ -23,7 +23,7 @@ sub get_entry {
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     while (defined ($line = $parent->{'text'}->getline)) {
-	
+
 	#start of entry
 	if ($offset < 0) {
             $offset = $parent->{'text'}->startofline;
@@ -37,7 +37,7 @@ sub get_entry {
 
     new Bio::Parse::Format::PIR(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -52,13 +52,13 @@ sub new {
     $text = new Bio::Parse::Record_Stream($self);
 
     while (defined ($line = $text->next_line)) {
-	
-	#SEQ lines		       	      
+
+	#SEQ lines
 	if ($line =~ /$PIR_SEQ/o) {
 	    $text->scan_until($PIR_SEQend, 'SEQ');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	if ($line =~ /$PIR_Null/o) {
 	    next;
@@ -86,7 +86,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -94,15 +94,15 @@ sub new {
     $self->{'id'}     = '';
     $self->{'desc'}   = '';
     $self->{'seq'}    = '';
-    
+
     while (defined ($line = $text->next_line(1))) {
 
 	#read header line
 	if ($line =~ /^\s*>\s*(..);(\S+)/o) {
 	    $self->test_args(\$line, $1, $2);
 	    (
-	     $self->{'prefix'}, 
-	     $self->{'id'}, 
+	     $self->{'prefix'},
+	     $self->{'id'},
 	    ) = ($1, $2);
 
 	    #force read of next line for description
@@ -111,7 +111,7 @@ sub new {
             $self->{'desc'} = Bio::Parse::Record::strip_trailing_space($self->{'desc'});
 
 	    next;
-	} 
+	}
 
 	#read sequence lines upto asterisk, if present
 	if ($line =~ /([^\*]+)/) {
@@ -124,7 +124,7 @@ sub new {
 
 	#default
 	$self->warn("unknown field: $line");
-	
+
     }
     #strip internal whitespace from sequence
     $self->{'seq'} =~ s/\s//g;

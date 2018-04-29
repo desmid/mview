@@ -50,7 +50,7 @@ sub new {
     $self->{'hit'}    = [];
 
     while (defined ($line = $text->next_line(1))) {
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -81,8 +81,8 @@ sub new {
 	    /xo) {
 
 	    $self->test_args(\$line, $1, $2, $3, $4); #ignore $5
-	    
-	    push @{$self->{'hit'}}, 
+
+	    push @{$self->{'hit'}},
 	    {
 	     'id'      => Bio::Parse::Record::clean_identifier($1),
 	     'score'   => $2,
@@ -93,7 +93,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -143,16 +143,16 @@ sub new {
     if ($line =~ /^\s*
 	Score\s*=\s*
 	($RX_Uint)                   	#score
-	\s+   
+	\s+
 	\(($RX_Ureal)\s+bits\),      	#bits
-	\s+   
-	Expect\s*=\s*	
+	\s+
+	Expect\s*=\s*
 	($RX_Ureal),                 	#expectation
-	\s+   
+	\s+
 	(?:Sum\sP\((\d+)\)|P)\s*=\s* 	#number of frags
 	($RX_Ureal)                  	#p-value
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $5);
 
 	(
@@ -166,24 +166,24 @@ sub new {
     else {
 	$self->warn("expecting 'Score' line: $line");
     }
-    
+
     #Identities line
     $line = $text->next_line;
 
     if ($line =~ /^\s*
 	Identities\s*=\s*
 	(\d+\/\d+)                      #identities fraction
-	\s+				
+	\s+
 	\((\d+)%\),                     #identities percentage
-	\s+				
-	Positives\s*=\s*		
+	\s+
+	Positives\s*=\s*
 	(\d+\/\d+)                      #positives fraction
-	\s+				
+	\s+
 	\((\d+)%\)                      #positives percentage
-	,\s+Strand\s+=\s+		
+	,\s+Strand\s+=\s+
 	(\S+)\s+\/\s+(\S+)              #strand orientations
 	/xo) {
-	
+
 	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
 	(
@@ -194,10 +194,10 @@ sub new {
 	 $self->{'query_orient'},
 	 $self->{'sbjct_orient'},
 	) = ($1, $2, $3, $4, $5 eq 'Plus'?'+':'-', $6 eq 'Plus'?'+':'-');
-	
+
 	#record query orientation in MATCH list
 	push @{$parent->{'orient'}->{$self->{'query_orient'}}}, $self;
-	
+
     } else {
 	$self->warn("expecting 'Identities' line: $line");
     }

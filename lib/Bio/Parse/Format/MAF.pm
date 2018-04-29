@@ -69,7 +69,7 @@ sub new {
 	    $text->scan_until($MAF_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
 	#BLOCK lines
@@ -116,7 +116,7 @@ sub new {
     #consume header lines
     while (defined ($line = $text->next_line)) {
 
-	#first line: always has version: 
+	#first line: always has version:
 	if ($line =~ /^##maf\s+version=(\S+)/o) {
 	    $self->{'version'} = $1;
 	}

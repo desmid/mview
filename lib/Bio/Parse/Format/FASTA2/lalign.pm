@@ -11,7 +11,7 @@ use strict;
 
 use vars qw(
 	    @ISA
-	    
+
 	    $ALIGN_START
 	    $ALIGN_END
 );
@@ -43,7 +43,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -54,15 +54,15 @@ sub new {
 	    $text->scan_until($ALIGN_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#MATCH lines		       	      
+	#MATCH lines
 	if ($line =~ /$ALIGN_MATCH/o) {
 	    $text->scan_until($ALIGN_MATCHend, 'MATCH');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#skip LALIGN alignment delimiter
 	next    if $line =~ /$ALIGN_ALNSEP/o;
 
@@ -91,7 +91,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -108,15 +108,15 @@ sub new {
     $self->{'length2'} = 0;
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
-	#print $line;	
+    while (defined ($line = $text->next_line)) {
+	#print $line;
 
 	#program information
 	if ($line =~ /^LALIGN/x) {
 	    $self->{'program'} = 'LALIGN';
 	    next;
 	}
-	
+
 	#guess program information for LALIGN missing stderr
 	if ($line =~ /^\s*Comparison of:/) {
 	    if ($self->{'program'} eq '?') {
@@ -142,7 +142,7 @@ sub new {
 	    \s*(.*)\s	                #description (empty?)
 	    -\s*(\d+)\s+(aa|nt)             #length
 	    /xo) {
-	    
+
 	    if ($self->{'id1'} eq '?') {
 		$self->test_args(\$line, $1, $3, $4);
 		(
@@ -239,7 +239,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -247,7 +247,7 @@ sub new {
     $self->{'score'}    = '?';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) { 
+    while (defined ($line = $text->next_line)) {
 	#print $line;
 
 	#LALIGN

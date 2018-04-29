@@ -37,13 +37,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     #ranked search hits
     while (defined ($line = $text->next_line)) {
-	
+
 	next    if $line =~ /$Bio::Parse::Format::FASTA2::RANK_START/o;
 
 	if($line =~ /^
@@ -52,7 +52,7 @@ sub new {
 	   \s+
 	   (.*)                    #description
 	   \s+
-	   (\d+)                   #initn 
+	   (\d+)                   #initn
 	   \s+
 	   (\d+)                   #init1
 	   \s+
@@ -63,11 +63,11 @@ sub new {
 	   (\S+)                   #E(58765)
 	   \s*
 	   $/xo) {
-	    
+
 	    $self->test_args(\$line, $1,$2,$3,$4,$5,$6,$7);
-	    
+
 	    push(@{$self->{'hit'}},
-		 { 
+		 {
 		  'id'     => Bio::Parse::Record::clean_identifier($1),
 		  'desc'   => $2,
 		  'initn'  => $3,
@@ -78,10 +78,10 @@ sub new {
 		 });
 	    next;
 	}
-    
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$Bio::Parse::Format::FASTA2::NULL/o;
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -121,12 +121,12 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $line = $text->next_line;
-	
+
     if ($line =~ /^
 	>*
 	(\S+)                      #id
@@ -150,7 +150,7 @@ sub new {
     }
 
     $line = $text->next_line;
-    
+
     if ($line =~ /^
 	initn\:\s*(\S+)        #initn
 	\s*
@@ -176,7 +176,7 @@ sub new {
     } else {
 	$self->warn("unknown field: $line");
     }
-    
+
     $line = $text->next_line;
 
     if ($line =~ /^
@@ -188,7 +188,7 @@ sub new {
 	$/xo) {
 
 	$self->test_args(\$line,$2,$3);
-	
+
 	(
 	 $self->{'score'},
 	 $self->{'id_percent'},
@@ -197,7 +197,7 @@ sub new {
     } else {
 	$self->warn("unknown field: $line");
     }
-    
+
     $self;
 }
 

@@ -83,7 +83,7 @@ sub get_entry {
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     while (defined ($line = $parent->{'text'}->getline)) {
-	
+
 	#start of entry
 	if ($line =~ /$HSSP_START/o and $offset < 0) {
 	    $offset = $parent->{'text'}->startofline;
@@ -101,7 +101,7 @@ sub get_entry {
 
     new Bio::Parse::Format::HSSP(undef, $parent->{'text'}, $offset, $bytes);
 }
-	   
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -111,7 +111,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -122,33 +122,33 @@ sub new {
 	    $text->scan_until($HSSP_HEADERend, 'HEADER');
 	    next;
 	}
-	
+
 	#consume data
 
-	#PROTEIN lines	       	      
-	if ($line =~ /$HSSP_PROTEIN/o) {       	      
+	#PROTEIN lines
+	if ($line =~ /$HSSP_PROTEIN/o) {
 	    $text->scan_until($HSSP_PROTEINend, 'PROTEIN');
-	    next;			       	      
-	}				       	      
-	
-	#ALIGNMENT lines		       	      
-	if ($line =~ /$HSSP_ALIGNMENT/o) {       	      
+	    next;
+	}
+
+	#ALIGNMENT lines
+	if ($line =~ /$HSSP_ALIGNMENT/o) {
 	    $text->scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
-	
-	#PROFILE lines		       	      
-	if ($line =~ /$HSSP_PROFILE/o) {       	      
+	    next;
+	}
+
+	#PROFILE lines
+	if ($line =~ /$HSSP_PROFILE/o) {
 	    $text->scan_until($HSSP_PROFILEend, 'PROFILE');
-	    next;			       	      
-	}				       	      
-	
-	#INSERTION lines		       	      
-	if ($line =~ /$HSSP_INSERTION/o) {       	      
+	    next;
+	}
+
+	#INSERTION lines
+	if ($line =~ /$HSSP_INSERTION/o) {
 	    $text->scan_until($HSSP_INSERTIONend, 'INSERTION');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	if ($line =~ /$HSSP_Null/o) {
 	    next;
@@ -181,14 +181,14 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     my $tmp;
 
     while (defined ($line = $text->next_line)) {
-    
+
 	if ($line =~ /^HSSP\s+(.*VERSION\s+(.*)\s*)/o) {
 	    $self->test_args(\$line, $1, $2);
 	    (
@@ -197,7 +197,7 @@ sub new {
 	    ) = ($1, $2);
 	    chomp $self->{'full_version'};
 	    next;
-	} 
+	}
 
 	if ($line =~ /^PDBID\s+(.*)/) {
 	    $self->test_args(\$line, $1);
@@ -205,7 +205,7 @@ sub new {
 	     $self->{'pdbid'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^DATE\s+file generated on\s+(\S+)/) {
 	    $self->test_args(\$line, $1);
@@ -213,7 +213,7 @@ sub new {
 	     $self->{'date'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^SEQBASE\s+(.*)/) {
 	    $self->test_args(\$line, $1);
@@ -221,7 +221,7 @@ sub new {
 	     $self->{'seqbase'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^PARAMETER/) {
 	    $line = $text->scan_while('^PARAMETER');
@@ -235,7 +235,7 @@ sub new {
 	    $line =~ s/([^:]+):\s*(\S+)\s*/$1: $2. /g;
 	    $self->{'parameter'} = $line;
 	    next;
-	} 
+	}
 
 	if ($line =~ /^THRESHOLD\s+(.*)/) {
 	    $self->test_args(\$line, $1);
@@ -243,7 +243,7 @@ sub new {
 	     $self->{'threshold'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^REFERENCE\s+(.*)/) {
 	    $self->test_args(\$line, $1);
@@ -251,7 +251,7 @@ sub new {
 	     $self->{'reference'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^CONTACT\s+(.*)/) {
 	    $self->test_args(\$line, $1);
@@ -259,7 +259,7 @@ sub new {
 	     $self->{'contact'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^AVAILABLE/) {
 	    $line = $text->scan_while('^AVAILABLE');
@@ -267,7 +267,7 @@ sub new {
 	    $line = $tmp->scan_lines(0);
 	    $self->{'available'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^HEADER/) {
 	    $line = $text->scan_while('^HEADER');
@@ -275,7 +275,7 @@ sub new {
 	    $line = $tmp->scan_lines(0);
 	    $self->{'header'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^COMPND\s+(.*)/) {
 	    $line = $text->scan_while('^COMPND');
@@ -283,7 +283,7 @@ sub new {
 	    $line = $tmp->scan_lines(0);
 	    $self->{'compnd'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^SOURCE\s+(.*)/) {
 	    $line = $text->scan_while('^SOURCE');
@@ -291,7 +291,7 @@ sub new {
 	    $line = $tmp->scan_lines(0);
 	    $self->{'source'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^AUTHOR\s+(.*)/) {
 	    $line = $text->scan_while('^AUTHOR');
@@ -299,7 +299,7 @@ sub new {
 	    $line = $tmp->scan_lines(0);
 	    $self->{'author'} = Bio::Parse::Record::strip_english_newlines($line);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^SEQLENGTH\s+(\d+)/) {
 	    $self->test_args(\$line, $1);
@@ -307,7 +307,7 @@ sub new {
 	     $self->{'seqlength'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^NCHAIN\s+(\d+)/) {
 	    $self->test_args(\$line, $1);
@@ -315,7 +315,7 @@ sub new {
 	     $self->{'nchain'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^KCHAIN\s+(\d+)\s+chain\(s\) used here\s*;\s*chain\(s\)\s*:\s*(.*)/) {
 	    $self->test_args(\$line, $1, $2);
@@ -324,7 +324,7 @@ sub new {
 	     $self->{'chainname'},
 	    ) = ($1, [ split(/,\s*/, $2) ]);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^NALIGN\s+(\d+)/) {
 	    $self->test_args(\$line, $1);
@@ -332,7 +332,7 @@ sub new {
 	     $self->{'nalign'},
 	    ) = ($1);
 	    next;
-	} 
+	}
 
 	if ($line =~ /^NOTATION\s+(.*)/) {
 	    $line = $text->scan_while('^NOTATION');
@@ -374,7 +374,7 @@ sub print_data {
     printf "$x%20s -> %s\n",   'seqlength',      $self->{'seqlength'};
     printf "$x%20s -> %s\n",   'nchain',         $self->{'nchain'};
     printf "$x%20s -> %s\n",   'kchain',         $self->{'kchain'};
-    printf "$x%20s -> %s\n",   'chainname',     
+    printf "$x%20s -> %s\n",   'chainname',
         "[" . join(',',@{$self->{'chainname'}}) ."]";
     printf "$x%20s -> %s\n",   'nalign',         $self->{'nalign'};
     printf "$x%20s -> %s\n",   'notation',       $self->{'notation'};
@@ -396,7 +396,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -412,10 +412,10 @@ sub new {
     $self->{'ranking'} = [];
 
     while (defined ($line = $text->next_line)) {
-	
+
 	$part1 = substr($line, 0, $cut+1);
 	$part2 = substr($line, $cut);
-	
+
 	$data = {};
 
 	if ($part1 =~ /^
@@ -481,7 +481,7 @@ sub new {
 	    }
 
 	    push @{$self->{'ranking'}}, $data;
-	    
+
 	    next;
 	}
 
@@ -549,7 +549,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -578,7 +578,7 @@ sub new {
     $cut   = index($line, '..');
 
     ($chain1, $chaincount) = ('', 1);
-     
+
     while (defined ($line = $text->next_line(1))) {
 
 	if ($cut < length $line) {
@@ -587,7 +587,7 @@ sub new {
 	    #warn length($line), "($cut) $line\n";
 	    $part2 = ' ' x ($hi-$lo+1);
 	}
-	
+
 	$data = {};
 
 	#chain discontinuity
@@ -685,11 +685,11 @@ sub new {
 #	    }
 	    $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
 	    $data = [ split '', $part2 ];
-	    
+
 	    for ($i=0; $i < $hi-$lo+1; $i++) {
 		push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
 	    }
-	    
+
 	    next;
 	}
 
@@ -721,7 +721,7 @@ sub new {
 	    #warn length($line), "($cut) $line\n";
 	    $part2 = ' ' x ($hi-$lo+1);
 	}
-	
+
 	$data = {};
 
 	if ($line =~ /^
@@ -737,11 +737,11 @@ sub new {
 #	    }
 	    $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
 	    $data = [ split '', $part2 ];
-	    
+
 	    for ($i=0; $i < $hi-$lo+1; $i++) {
 		push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
 	    }
-	    
+
 	    next;
 	}
 
@@ -751,13 +751,13 @@ sub new {
 	    for ($i=0; $i < $hi-$lo+1; $i++) {
 		push @{$self->{'alignment'}->[$lo+$i]}, '!';
 	    }
-	    
+
 	    next;
 	}
 
 	if ($line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/) {
 
-	    ($lo, $hi) = ($1, $2); 
+	    ($lo, $hi) = ($1, $2);
 
 	    #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
 	    $line  = $text->next_line;

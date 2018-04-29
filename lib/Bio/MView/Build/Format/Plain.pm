@@ -31,7 +31,7 @@ sub parse {
 	#warn "KEEP: ($rank,$id)\n";
 
 	$seq = $entry->parse(qw(ALIGNMENT))->{'seq'}->{$id};
-	
+
 	push @hit, new Bio::MView::Build::Row::Plain($rank, $id, '', $seq);
     }
     #map { $_->dump } @hit;

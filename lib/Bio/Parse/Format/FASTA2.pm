@@ -24,28 +24,28 @@ use vars qw(
 	    $ENTRY_START
 	    $ENTRY_END
 
-	    $HEADER_START  
-	    $HEADER_END    
-	                   
-	    $RANK_START 
-	    $RANK_END   
-	                   
-	    $TRAILER_START 
-	    $TRAILER_END   
-	                   
-	    $MATCH_START     
-	    $MATCH_END       
-	                   
-	    $SUM_START     
-	    $SUM_END       
-	                   
-	    $ALN_START     
-	    $ALN_END       
+	    $HEADER_START
+	    $HEADER_END
+
+	    $RANK_START
+	    $RANK_END
+
+	    $TRAILER_START
+	    $TRAILER_END
+
+	    $MATCH_START
+	    $MATCH_END
+
+	    $SUM_START
+	    $SUM_END
+
+	    $ALN_START
+	    $ALN_END
 );
 
 @ISA   = qw(Bio::Parse::Format::FASTA);
 
-@VERSIONS = ( 
+@VERSIONS = (
 	     '2' => [
 		     'FASTA',
 		     'TFASTX',
@@ -77,13 +77,13 @@ $ENTRY_END     = '(?:'
     . '|'
     . $Bio::Parse::Format::FASTA2::lalign::ALIGN_END
     . ')';
-    
+
 $HEADER_START  = $ENTRY_START;
-$HEADER_END    = '^The best scores are:'; 
-               
+$HEADER_END    = '^The best scores are:';
+
 $RANK_START    = $HEADER_END;
 $RANK_END      = $NULL;
-               
+
 $TRAILER_START = $ENTRY_END;
 $TRAILER_END   = $ENTRY_END;
 
@@ -92,7 +92,7 @@ $MATCH_END     = "(?:$MATCH_START|$ENTRY_END)";
 
 $SUM_START     = $MATCH_START;
 $SUM_END       = $NULL;
-       
+
 $ALN_START     = '^(?:\s+\d+\s+|\s+$)';  #the ruler
 $ALN_END       = $MATCH_END;
 
@@ -114,7 +114,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -122,7 +122,7 @@ sub new {
     $self->{'queryfile'} = '';
 
     while (defined ($line = $text->next_line)) {
-    
+
 	if ($line =~ /^\s*(version\s+(\S+).*)/) {
 	    $self->{'full_version'} = $1;
 	    $self->{'version'}      = $2;
@@ -154,7 +154,7 @@ sub new {
 	     $self->{'sequences'},
 	    ) = ($1, $2);
 	    next;
-	} 
+	}
 
 	#ignore any other text
     }

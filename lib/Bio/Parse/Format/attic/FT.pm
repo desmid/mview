@@ -20,14 +20,14 @@ $Bio::Parse::Format::FT::skip    =  5;
 $Bio::Parse::Format::FT::Format::FT_skip = 21;
 
 #Generic EMBL/Genban accession number pattern
-$Bio::Parse::Format::FT::ac_accession = '[A-Z][0-9]{5}';   #### CHANGE?????? 
+$Bio::Parse::Format::FT::ac_accession = '[A-Z][0-9]{5}';   #### CHANGE??????
 
 
 my $MARK                  = '*';
 my $Debug                 = 0;
 
 #These recognised features were taken from EMBL release 46
-my %Valid_Features = 
+my %Valid_Features =
 (
  '-'                     => 1,
  '-10_signal'            => 1,
@@ -104,7 +104,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::FT::skip);
 
@@ -116,7 +116,7 @@ sub new {
 		next;
 	    }
 	}
-	
+
 	#default
 	$line = substr($line, 0, $Bio::Parse::Format::FT::indent);
 	$line =~ tr/ //d;
@@ -150,7 +150,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::FT::Format::FT_skip);
 
@@ -226,7 +226,7 @@ sub parse_qualifiers {
 	    $self->warn("unmatched qualifier: $text");
 	    last;
 	}
-	
+
 	#read optional value, possibly over multiple lines, stripping
 	#newlines where present.
 
@@ -234,7 +234,7 @@ sub parse_qualifiers {
 	if ($text =~ /^\s*=\s*(\".*)/s) {
 	    #print STDERR "LOOKING AT: ($qualifier) quoted string\n";
 	    ($value, $text) = _match_value($1);
-	    
+
 	    if      ($qualifier eq '/note') {
 		$value = Bio::Parse::Record::strip_english_newlines($value);
 	    } elsif ($qualifier eq '/function') {
@@ -280,7 +280,7 @@ sub parse_qualifiers {
 	    push @{$self->{'p_qualifiers'}->{$qualifier}}, $value;
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unmatched value: $text");
     }
@@ -301,7 +301,7 @@ sub _match_value {
 	 \n*
 	)/sxo) {
 	return ($1, $');
-    } 
+    }
 
     #test paired non-nested ( ), ignoring contained newlines
     if ($text =~ /^
@@ -328,7 +328,7 @@ sub _match_value {
     }
 
     ('', $text)
-}	
+}
 
 sub _parse_location {
     my ($self, $loc) = @_;
@@ -476,7 +476,7 @@ sub _parse_binary {
 	    push @parse, ($MARK, $2, "S($1)");
 	    next;
 	}
-	
+
 	#numeric item
 	if ($expr =~ /^(\d+)$/o) {
 	    push @parse, $1;
@@ -499,7 +499,7 @@ sub _parse_binary {
     return @parse;
 }
 
-#expand a string composed of a $pattern separated list by one level, leaving 
+#expand a string composed of a $pattern separated list by one level, leaving
 #nested lists within parenthetic pairs. return the list so formed.
 sub _expand_one_level {
     my ($self, $string, $pattern) = @_;

@@ -53,7 +53,7 @@ sub get_entry {
 sub print {
     my $self = shift;
     $self->examine(qw(file format));
-} 
+}
 
 sub close { $_[0]->{'text'}->close }
 

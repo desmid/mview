@@ -53,7 +53,7 @@ sub new {
 
     #ranked search hits
     while (defined ($line = $text->next_line)) {
-	
+
 	next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 
 	if($line =~ /^
@@ -73,11 +73,11 @@ sub new {
 	   (\S+)                   #E-value
 	   \s*
 	   $/xo) {
-	    
+
 	    $self->test_args(\$line, $1, $3, $5,$6,$7);
-	    
+
 	    push(@{$self->{'hit'}},
-		 { 
+		 {
 		  'id'      => Bio::Parse::Record::clean_identifier($1),
 		  'desc'    => $2,
 		  #ignore $3
@@ -89,10 +89,10 @@ sub new {
 		 });
 	    next;
 	}
-    
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -133,7 +133,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 

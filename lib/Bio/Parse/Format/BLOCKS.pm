@@ -53,7 +53,7 @@ sub get_entry {
 
     new Bio::Parse::Format::BLOCKS(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -63,7 +63,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -75,12 +75,12 @@ sub new {
 	    next;
 	}
 
-	#BLOCK lines	       	      
+	#BLOCK lines
 	if ($line =~ /$BLOCKS_BLOCK/o) {
 	    $text->scan_until($BLOCKS_BLOCKend, 'BLOCK');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	next  if $line =~ /$BLOCKS_Null/o;
 
@@ -115,18 +115,18 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     while (defined ($line = $text->next_line)) {
-	
+
 	#header line
 	if ($line =~ /^(BL\d+):\s+(\S+)?/o) {
 	    $self->{'ac'} = $1;
 	    $self->{'id'} = (defined $2 ? $2 : '');
 	}
-	
+
 	#default: ignore
 	next;
     }
@@ -153,7 +153,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -186,7 +186,7 @@ sub new {
 	    next;
 	}
 
-	if ($line =~ /^BL\s{3}(.*)/) {	
+	if ($line =~ /^BL\s{3}(.*)/) {
 	    $self->{'bl'} = $1;
 	    next;
 	}

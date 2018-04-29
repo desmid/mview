@@ -12,7 +12,7 @@ use Bio::Parse::Format::FASTA;
 use strict;
 
 use vars qw(
-            @ISA 
+            @ISA
 
             @VERSIONS
 
@@ -54,11 +54,11 @@ $ENTRY_START   = '^\(\S+\)\s+FASTA of:';
 $ENTRY_END     = '! Output File:';
 
 $HEADER_START  = $ENTRY_START;
-$HEADER_END    = '^The best scores are:'; 
-               
+$HEADER_END    = '^The best scores are:';
+
 $RANK_START    = $HEADER_END;
 $RANK_END      = $Bio::Parse::Format::FASTA::GCG_JUNK;
-               
+
 $TRAILER_START = '^! CPU time used:';
 $TRAILER_END   = $ENTRY_END;
 
@@ -67,7 +67,7 @@ $MATCH_END     = "(?:$MATCH_START|$TRAILER_START|$ENTRY_END)";
 
 $SUM_START     = $MATCH_START;
 $SUM_END       = '% identity in';
-       
+
 $ALN_START     = '^\s+\d+\s+';    #the ruler
 $ALN_END       = '(?:^\S+(?:\s+/rev)?\s*$' . "|$MATCH_END)";#for emacs'
 
@@ -82,7 +82,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -94,13 +94,13 @@ sub new {
 	    next;
 	}
 
-	#Rank lines		       	      
+	#Rank lines
 	if ($line =~ /$RANK_START/o) {
 	    $text->scan_until_inclusive($RANK_END, 'RANK');
-	    next;			       	      
-	}				       	      
+	    next;
+	}
 
-	#Hit lines		       	      
+	#Hit lines
 	if ($line =~ /$MATCH_START/o) {
 	    $text->scan_skipping_until($MATCH_END, 1, 'MATCH');
 	    next;
@@ -109,12 +109,12 @@ sub new {
 	#Trailer lines
 	if ($line =~ /$TRAILER_START/o) {
 	    $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
-	    next;			       	      
+	    next;
 	}
-	
+
 	#end of FASTA job
 	next    if $line =~ /$ENTRY_END/o;
-	
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$NULL/o;
 
@@ -275,7 +275,7 @@ sub new {
 	    #warn "($1,$2,$3)\n";
 
 	    $self->test_args(\$line, $1);
-	    
+
 	    $id = Bio::Parse::Record::clean_identifier($1);
 
 	    #read next line
@@ -295,11 +295,11 @@ sub new {
 		(\S+)                   #E(58765)
 		\s*$
 		$/xo) {
-		
+
 		#warn "($1,$2,$3,$4,$5)\n";
 
 		$self->test_args(\$line, $1,$2,$3,$4,$5);
-	    
+
 		($init1,$initn,$opt,$z,$e) = ($1,$2,$3,$4,$5);
 
 		$desc = $`;
@@ -317,10 +317,10 @@ sub new {
 		  'zscore' => $z,
 		  'expect' => $e,
 		 });
-	    
+
 	    next;
         }
-	
+
         #blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
 
@@ -355,7 +355,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -372,7 +372,7 @@ sub new {
 	    $text->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
 	    next;
 	}
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
 
@@ -402,7 +402,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -445,7 +445,7 @@ sub new {
 
 	#blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
-	
+
 	#scores
 	if ($line =~ /^
 	    SCORES\s+
@@ -460,9 +460,9 @@ sub new {
 	    E\(\)\:\s*(\S+)        #E
 	    \s*
 	    $/ixo) {
-	    
+
 	    $self->test_args(\$line,$1,$2,$3,$4,$5);
-	    
+
 	    (
 	     $self->{'init1'},
 	     $self->{'initn'},
@@ -476,7 +476,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	if ($line =~ /^
 	    #smith-waterman in fasta2 and fasta3, maybe in gcg?
 	    (?:Smith-Waterman\s+score:\s*(\d+);)?    #sw score
@@ -486,7 +486,7 @@ sub new {
 	    \s*$/xo) {
 
 	    $self->test_args(\$line,$2,$3);
-	    
+
 	    (
 	     $self->{'score'},
 	     $self->{'id_percent'},
@@ -495,7 +495,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }

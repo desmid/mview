@@ -21,20 +21,20 @@ $Bio::Parse::Format::EMBL::ac_accession  = $Bio::Parse::FT::ac_accession;
 
 
 #EMBL record types
-my $EMBL_ID            = '^ID';    
-my $EMBL_AC            = '^AC';    
-my $EMBL_NI            = '^NI';    
-my $EMBL_DT            = '^DT';    
-my $EMBL_DE            = '^DE';    
-my $EMBL_KW            = '^KW';    
-my $EMBL_OS            = '^OS';    
-my $EMBL_OG            = '^OG';    
-my $EMBL_RN            = '^RN';    
-my $EMBL_DR            = '^DR';    
-my $EMBL_CC            = '^CC';    
-my $EMBL_FH            = '^FH';    
-my $EMBL_FT            = '^FT';    
-my $EMBL_SQ            = '^SQ';    
+my $EMBL_ID            = '^ID';
+my $EMBL_AC            = '^AC';
+my $EMBL_NI            = '^NI';
+my $EMBL_DT            = '^DT';
+my $EMBL_DE            = '^DE';
+my $EMBL_KW            = '^KW';
+my $EMBL_OS            = '^OS';
+my $EMBL_OG            = '^OG';
+my $EMBL_RN            = '^RN';
+my $EMBL_DR            = '^DR';
+my $EMBL_CC            = '^CC';
+my $EMBL_FH            = '^FH';
+my $EMBL_FT            = '^FT';
+my $EMBL_SQ            = '^SQ';
 my $EMBL_XX            = '^XX';        # end of simple or compound record
 my $EMBL_End           = '^\/\/';      # end of entry: two slashes
 my $EMBL_Null          = '^\S*\s*$';#' # blank line or empty record {FH,KW}
@@ -50,7 +50,7 @@ sub get_entry {
     my $text = $parent->{'text'};
 
     while (defined ($line = <$fh>)) {
-	
+
 	#ID line: start of entry
 	if ($line =~ /$EMBL_ID/o and $offset < 0) {
 	    $offset = $fh->tell - length($line);
@@ -68,7 +68,7 @@ sub get_entry {
 
     new Bio::Parse::Format::EMBL(undef, $text, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -78,7 +78,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -114,73 +114,73 @@ sub new {
 	#DT line
 	if ($line =~ /$EMBL_DT/o) {
 	    $text->scan_while($EMBL_DT, 'DT');
-	    next;			       	      
-	}				       	      
-	
-	#DE line			       	      
-	if ($line =~ /$EMBL_DE/o) {       	      
+	    next;
+	}
+
+	#DE line
+	if ($line =~ /$EMBL_DE/o) {
 	    $text->scan_while($EMBL_DE, 'DE');
-	    next;			       	      
-	}				       	      
-	
-	#KW line			       	      
-	if ($line =~ /$EMBL_KW/o) {       	      
+	    next;
+	}
+
+	#KW line
+	if ($line =~ /$EMBL_KW/o) {
 	    $text->scan_while($EMBL_KW, 'KW');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#OS line (+ lines: OC)
-	if ($line =~ /$EMBL_OS/o) {       	      
+	if ($line =~ /$EMBL_OS/o) {
 	    $text->scan_until($EMBL_XX, 'OS');
 	    next;
 	}
-	
-	#OG line			       	      
-	if ($line =~ /$EMBL_OG/o) {       	      
+
+	#OG line
+	if ($line =~ /$EMBL_OG/o) {
 	    $text->scan_while($EMBL_OG, 'OG');
 	    next;
 	}
-	
+
 	#RN line (+lines: RP, RX, RA, RT, RL, RC)
-	if ($line =~ /$EMBL_RN/o) {		     
+	if ($line =~ /$EMBL_RN/o) {
 	    $text->scan_until($EMBL_XX, 'RN');
-	    next;					     
-	}						     
-	
-	#DR line			             	     
-	if ($line =~ /$EMBL_DR/o) {             	     
+	    next;
+	}
+
+	#DR line
+	if ($line =~ /$EMBL_DR/o) {
 	    $text->scan_while($EMBL_DR, 'DR');
-	    next;			             	     
-	}				             	     
-	
-	#CC line			             	     
-	if ($line =~ /$EMBL_CC/o) {             	     
+	    next;
+	}
+
+	#CC line
+	if ($line =~ /$EMBL_CC/o) {
 	    $text->scan_while($EMBL_CC, 'CC');
-	    next;			             	     
-	}				             	     
-	
+	    next;
+	}
+
 	#FH line: ignore
 	if ($line =~ /$EMBL_FH/o) {
 	    next;
-	} 
-	
-	#FT line			             	     
-	if ($line =~ /$EMBL_FT/o) {             	     
+	}
+
+	#FT line
+	if ($line =~ /$EMBL_FT/o) {
 	    $text->scan_while($EMBL_FT, 'FT');
-	    next;			             	     
-	}				             	     
-	
-	#SQ line 
-	if ($line =~ /$EMBL_SQ/o) {             	     
+	    next;
+	}
+
+	#SQ line
+	if ($line =~ /$EMBL_SQ/o) {
 	    $text->scan_until($EMBL_End, 'SQ');
 	    next;
 	}
-	
+
 	#XX line: ignore
 	if ($line =~ /$EMBL_XX/o) {
 	    next;
-	} 
-	
+	}
+
 	#blank line or empty record: ignore
 	if ($line =~ /$EMBL_Null/o) {
 	    next;
@@ -214,17 +214,17 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::EMBL::skip);
 
     $line = $text->next_line;
-    
+
     if ($line =~ /^\s*
         ($Bio::Parse::Format::EMBL::id_entryname)                     #id
         \s*
         (standard|unreviewed|preliminary|unannotated|backbone)   #dataclass
-        \s*;\s* 
+        \s*;\s*
         (DNA|RNA|xxx|circular\ DNA|circular\ RNA|circular\ xxx)  #molecule
         \s*;\s*
         ([A-Z]{3})                                               #division
@@ -279,7 +279,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::EMBL::skip);
 
@@ -322,7 +322,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::EMBL::skip);
 
@@ -335,7 +335,7 @@ sub new {
 	$self->test_args(\$line, $1);
 
 	$self->{'ni'} = $1;
-	
+
     }
 
     if ($self->{'ni'} eq '') {
@@ -379,7 +379,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::EMBL::skip);
 
@@ -494,7 +494,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, $Bio::Parse::Format::EMBL::skip);
 
@@ -525,11 +525,11 @@ sub new {
 	     $self->{'G'},
 	     $self->{'T'},
 	     $self->{'other'}
-	     
+
 	    ) = ($1, $2, $3, $4, $5, $6);
-	    
+
 	    next;
-	} 
+	}
 
 	#sequence lines
 	if ($line =~ /^\s*
@@ -545,7 +545,7 @@ sub new {
 
 	    next;
 	}
-	
+
     }
 
     $self->{'sequence'} =~ tr/ \n//d;    #strip space

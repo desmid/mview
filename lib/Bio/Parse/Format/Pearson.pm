@@ -37,7 +37,7 @@ sub get_entry {
 
     new Bio::Parse::Format::Pearson(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -47,18 +47,18 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     while (defined ($line = $text->next_line)) {
-	
-	#SEQ lines		       	      
+
+	#SEQ lines
 	if ($line =~ /$Pearson_SEQ/o) {
 	    $text->scan_until($Pearson_SEQend, 'SEQ');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	if ($line =~ /$Pearson_Null/o) {
 	    next;
@@ -86,27 +86,27 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $self->{'id'}    = '';
     $self->{'desc'}  = '';
     $self->{'seq'}   = '';
-    
+
     while (defined ($line = $text->next_line(1))) {
 
 	#read header line
 	if ($line =~ /^\s*>\s*(\S+)\s*(.*)?/o) {
 	    $self->test_args(\$line, $1);
 	    (
-	     $self->{'id'}, 
+	     $self->{'id'},
 	     $self->{'desc'},
 	    ) = ($1, "$2");
 	    #2015-01-19, GeneDoc puts a '.' in after the identifier
 	    $self->{'desc'} = ''  if $self->{'desc'} =~ /^\s*\.\s*$/;
 	    next;
-	} 
+	}
 
 	#read sequence lines up to asterisk, if present
 	if ($line =~ /([^\*]+)/) {

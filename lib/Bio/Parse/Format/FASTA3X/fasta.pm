@@ -37,13 +37,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     #ranked search hits
     while (defined ($line = $text->next_line)) {
-	
+
 	next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 
 	#fasta3X behaviour
@@ -68,9 +68,9 @@ sub new {
 	    $/xo) {
 
 	    $self->test_args(\$line, $1, $3, $5,$6,$7); #not $2,$4
-	    
+
 	    push(@{$self->{'hit'}},
-		 { 
+		 {
 		  'id'     => Bio::Parse::Record::clean_identifier($1),
 		  'desc'   => $2,
 		  'length' => $3,
@@ -85,10 +85,10 @@ sub new {
 		 });
 	    next;
 	}
-     
+
    	#blank line or empty record: ignore
 	next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
-	 
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -128,7 +128,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -175,7 +175,7 @@ sub new {
 	    );
 	    next;
 	}
-	
+
 	if ($line =~ /^
 	    (?:(?:banded\s+)?Smith-Waterman\s+score:\s*(\d+);)?  #sw score
 	    \s*($RX_Ureal)%\s*identity               #percent identity
@@ -184,7 +184,7 @@ sub new {
 	    \s+(?:aa|nt)\s+overlap
 	    (?:\s+\((\S+)\))?                        #sequence ranges
 	    /xo) {
-	    
+
 	    $self->test_args(\$line,$2,$4);
 
 	    (
@@ -199,7 +199,7 @@ sub new {
 
    	#blank line or empty record: ignore
 	next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
- 	
+
 	#should only get here for multiline descriptions
 	if (defined $self->{'initn'}) {
 	    $self->warn("unknown field: $line");
@@ -219,7 +219,7 @@ sub new {
 	\s+
 	\(\s*(\d+)\s*(?:aa|nt)\)    #length
 	/xo) {
-	
+
 	$self->test_args(\$record, $1, $3); #not $2
 
 	(

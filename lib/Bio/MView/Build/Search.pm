@@ -144,7 +144,7 @@ sub use_row {
     my ($self, $num, $nid, $sid) = @_;
 
     #warn "use_row($num, $nid, $sid)\n";
-    
+
     #first, check explicit keeplist and reference row
     foreach my $pat (@{$PAR->get('keeplist')}, $PAR->get('ref_id')) {
 
@@ -161,7 +161,7 @@ sub use_row {
 	    #major.* matched by major
 	    return 1  if $1 eq $pat;
 	}
-	
+
 	#look at identifier
 	return 1  if $sid eq $pat;      #exact match
 	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
@@ -185,7 +185,7 @@ sub use_row {
 	    #major.* matched by major
 	    return 0  if $1 eq $pat;
 	}
-	
+
 	#look at identifier
 	return 0  if $sid eq $pat;      #exact match
 	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)

@@ -24,28 +24,28 @@ use vars qw(@ISA
 	    $ENTRY_START
 	    $ENTRY_END
 
-	    $HEADER_START  
-	    $HEADER_END    
-	                   
-	    $RANK_START 
-	    $RANK_END   
-	                   
-	    $TRAILER_START 
-	    $TRAILER_END   
-	                   
-	    $MATCH_START     
-	    $MATCH_END       
-	                   
-	    $SUM_START     
-	    $SUM_END       
-	                   
-	    $ALN_START     
-	    $ALN_END       
+	    $HEADER_START
+	    $HEADER_END
+
+	    $RANK_START
+	    $RANK_END
+
+	    $TRAILER_START
+	    $TRAILER_END
+
+	    $MATCH_START
+	    $MATCH_END
+
+	    $SUM_START
+	    $SUM_END
+
+	    $ALN_START
+	    $ALN_END
 	   );
 
 @ISA   = qw(Bio::Parse::Format::FASTA);
 
-@VERSIONS = ( 
+@VERSIONS = (
 	     '1' => [
 		     'FASTA',
 		    ],
@@ -61,11 +61,11 @@ $ENTRY_START   = '(?:'
 $ENTRY_END     = 'Library scan:';
 
 $HEADER_START  = $ENTRY_START;
-$HEADER_END    = '^The best scores are:'; 
-               
+$HEADER_END    = '^The best scores are:';
+
 $RANK_START    = $HEADER_END;
 $RANK_END      = $NULL;
-               
+
 $TRAILER_START = $ENTRY_END;
 $TRAILER_END   = $ENTRY_END;
 
@@ -74,7 +74,7 @@ $MATCH_END     = "(?:$MATCH_START|$ENTRY_END)";
 
 $SUM_START     = $MATCH_START;
 $SUM_END       = $NULL;
-       
+
 $ALN_START     = '^(?:\s+\d+\s+|\s+$)';  #the ruler
 $ALN_END       = $MATCH_END;
 
@@ -98,7 +98,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -118,8 +118,8 @@ sub new {
     #initial empty line before the alignment ruler
     if ($line =~ /^$/) {
 	$line = $text->next_line(1);
-    } 
-    
+    }
+
     if ($line =~ /^\s*(\S+)\s+([^0-9 ]+)$/) {
 	#no query ruler on first line, due to pure leading gaps seen
 	#in ALIGN and ALIGN0 or very short sequences in LALIGN.
@@ -154,22 +154,22 @@ sub new {
     $tmp[3] =~ /^(\s*\S+\s*)/;
     $x = length $1;
     $depth = ($depth < $x ? $depth : $x);
-    
+
     #recover sequence row names
     $querykey = substr($tmp[1], 0, $depth);
     $sbjctkey = substr($tmp[3], 0, $depth);
-    
+
     #strip leading name
     $tmp[1] = substr($tmp[1], $depth);
     $tmp[2] = substr($tmp[2], $depth);
     $tmp[3] = substr($tmp[3], $depth);
-    
+
     #warn "#0##$tmp[0]\n";
     #warn "#1##$tmp[1]\n";
     #warn "#2##$tmp[2]\n";
     #warn "#3##$tmp[3]\n";
     #warn "#4##$tmp[4]\n";
-    
+
     #query/sbjct/match lines
     #warn "|$tmp[1]|\n|$tmp[2]|\n|$tmp[3]|\n";
     $len = max(length($tmp[1]), length($tmp[3]));
@@ -179,7 +179,7 @@ sub new {
     $query = $tmp[1];
     $align = $tmp[2];
     $sbjct = $tmp[3];
-   
+
     #initialise query length
     $x = $tmp[1]; $x =~ tr/- //d; $query_length = length($x);
 
@@ -190,7 +190,7 @@ sub new {
     if ($tmp[0] =~ /(\d+)\s*$/) {
 	$query_stop  = $1;
     }
-    
+
     #compute length of query before query_start label
     $x = index($tmp[0], $query_start) + length($query_start) -1;
     $x = substr($tmp[1], 0, $x-$depth);  #whole leader
@@ -229,7 +229,7 @@ sub new {
 	    #warn "QUERY+RULER\n";
 
 	    $tmp[0] = $line;                     #query ruler
-	    
+
 	    $line = $text->next_line(1);
 	    $tmp[1] = substr($line, $depth);     #query sequence
 
@@ -246,7 +246,7 @@ sub new {
 	    } else {
 		$tmp[3] = ' ' x length $tmp[1];
 	    }
-	    
+
 	    $line = $text->next_line(1);
 	    if ($line) {
 		$tmp[4] = $line;                 #sbjct ruler
@@ -263,7 +263,7 @@ sub new {
 	    } else {
 		$tmp[3] = ' ' x length $tmp[1];
 	    }
-	    
+
 	    $line = $text->next_line(1);
 	    if ($line) {
 		$tmp[4] = $line;                 #sbjct ruler
@@ -294,7 +294,7 @@ sub new {
 	    } else {
 		$tmp[3] = ' ' x length $tmp[1];
 	    }
-	    
+
 	    $line = $text->next_line(1);
 	    if ($line) {
 		$tmp[4] = $line;                 #sbjct ruler
@@ -326,7 +326,7 @@ sub new {
 	if ($tmp[0] =~ /(\d+)\s*$/) {
 	    $query_stop  = $1;    #always update stop
 	}
-    
+
 	#subsequent sbjct start/stop, if any
 	if ($sbjct_start < 1 and $tmp[4] =~ /^\s*(\d+)/) {
 	    $sbjct_start = $1;
@@ -356,10 +356,10 @@ sub new {
 	$query .= $tmp[1];
 	$align .= $tmp[2];
 	$sbjct .= $tmp[3];
-	
+
 	#warn "($query_length) ($sbjct_length)\n";
     }
-    
+
     #warn "$query\n$sbjct\n";
     #warn $text->inspect_stream;
 
@@ -382,13 +382,13 @@ sub new {
     $query_leader   = length $1;
     $query =~ /(\s*)$/;
     $query_trailer  = length $1;
-    
+
     #sbjct_leader/sbjct_trailer
     $sbjct =~ /^(\s*)/;
     $sbjct_leader   = length $1;
     $sbjct =~ /(\s*)$/;
     $sbjct_trailer  = length $1;
-    
+
     $self->{'query'} = $query;
     $self->{'align'} = $align;
     $self->{'sbjct'} = $sbjct;
@@ -426,7 +426,7 @@ sub adjust_counts {
     my $orient = '+';
 
     $orient = '-' if $start > $stop;
-    
+
     $leader *= $base;
     $length *= $base;
 

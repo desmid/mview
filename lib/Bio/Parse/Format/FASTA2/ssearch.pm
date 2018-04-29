@@ -46,13 +46,13 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     #ranked search hits
     while (defined ($line = $text->next_line)) {
-	
+
 	next    if $line =~ /$Bio::Parse::Format::FASTA2::RANK_START/o;
 
 	if($line =~ /^
@@ -72,11 +72,11 @@ sub new {
 	   (\S+)                   #E-value
 	   \s*
 	   $/xo) {
-	    
+
 	    $self->test_args(\$line, $1, $3, $5,$6,$7);
-	    
+
 	    push(@{$self->{'hit'}},
-		 { 
+		 {
 		  'id'      => Bio::Parse::Record::clean_identifier($1),
 		  'desc'    => $2,
 		  #ignore $3
@@ -88,10 +88,10 @@ sub new {
 		 });
 	    next;
 	}
-    
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$Bio::Parse::Format::FASTA2::NULL/o;
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -131,12 +131,12 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     $line = $text->next_line;
-	
+
     if ($line =~ /^
 	>*
 	(\S+)                      #id
@@ -160,7 +160,7 @@ sub new {
     }
 
     $line = $text->next_line;
-    
+
     if ($line =~ /^
 	\s*
 	z-score\:\s*(\S+)      #z
@@ -178,7 +178,7 @@ sub new {
     } else {
 	$self->warn("unknown field: $line");
     }
-    
+
     $line = $text->next_line;
 
     if ($line =~ /^
@@ -190,7 +190,7 @@ sub new {
 	$/xo) {
 
 	$self->test_args(\$line,$2,$3);
-	
+
 	(
 	 $self->{'score'},
 	 $self->{'id_percent'},
@@ -199,7 +199,7 @@ sub new {
     } else {
 	$self->warn("unknown field: $line");
     }
-    
+
     $self;
 }
 

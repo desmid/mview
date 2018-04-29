@@ -53,7 +53,7 @@ sub new {
     $self;
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" } 
+#sub DESTROY { warn "DESTROY $_[0]\n" }
 
 #Explicitly call this when finished with a Record to ensure indirect
 #circular references through 'parent' and 'record_by_*' fields are
@@ -83,7 +83,7 @@ sub free {
     foreach $rec (@{$self->{'record_by_posn'}}) {
         $self->free_record($rec);
     }
-    
+
     #free our records
     $self->{'parent'} = undef;
     $self->{'record_by_type'} = undef;
@@ -182,7 +182,7 @@ sub get_record_number {
     if (defined $parent) {
 	$type   = $self->get_type;
 	for ($i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
-	    if ($parent->{'record_by_type'}->{$type}->[$i]->[1] == 
+	    if ($parent->{'record_by_type'}->{$type}->[$i]->[1] ==
 		$self->{'offset'}) {
 		return $i+1;
 	    }
@@ -354,7 +354,7 @@ sub print_records_by_type {
 	    $rec = $self->{'record_by_type'}->{$key}->[0];
 	    printf "$x%20s -> [%s]\n",
 	    $rec->[0],                             join(", ", @$rec);
-	} 
+	}
     }
 }
 
@@ -376,7 +376,7 @@ sub substr {
 
 #Given a record key for this entry, return an array of corresponding record
 #strings or the first string if called in a scalar context. If called with
-#just '*' return an array of all record strings at this level. If called 
+#just '*' return an array of all record strings at this level. If called
 #with no argument return the whole database entry string as a scalar.
 sub string {
     my ($self, $key) = (@_, undef);
@@ -411,12 +411,12 @@ sub string {
 
 #Given a record key for this entry, parse corresponding records and return
 #an array of the parsed objects or the first object if called in a scalar
-#context. If called with no argument or just '*' parse everything at this 
+#context. If called with no argument or just '*' parse everything at this
 #level.
 sub parse {
     my ($self, $key) = (@_, '*');
     my (@list, @keys, $rec) = ();
-    
+
     #warn "parse($key)\n";
 
     if ($key eq '*') {
@@ -424,7 +424,7 @@ sub parse {
     } else {
 	push @keys, $key;
     }
-    
+
     foreach $key (@keys) {
         #warn "parse: $key\n";
 	foreach $rec ($self->key_range($key)) {
@@ -457,7 +457,7 @@ sub key_range {
 
     #does the key map to a record type?
     return unless exists $self->{'record_by_type'}->{$key};
-	    
+
     #was a range requested?
     if (defined $lo) {
 
@@ -490,15 +490,15 @@ sub key_range {
 sub count {
     my ($self, $key) = (@_, '*');
     my (@list, @keys) = ();
-    
+
     if ($key eq '*') {
 	@keys = sort keys %{$self->{'record_by_type'}};
     } else {
 	push @keys, $key;
     }
-    
+
     foreach $key (@keys) {
-	
+
 	#is there a record instance for this type?
 	if (exists $self->{'record_by_type'}->{$key}) {
 	    push @list, scalar @{$self->{'record_by_type'}->{$key}};
@@ -506,7 +506,7 @@ sub count {
 	    push @list, 0;
 	}
     }
-    
+
     return @list    if wantarray;
     return $list[0] if @list;
     return 0;  #no data
@@ -535,7 +535,7 @@ sub strip_english_newlines {
 
     #skip trailing white space added after last newline was removed
     $text =~ s/\s+$//s;
-    
+
     $text;
 }
 
@@ -605,7 +605,7 @@ sub new {
     $self->reset;
 }
 
-sub DESTROY { 
+sub DESTROY {
     #warn "DESTROY $_[0]\n";
     ####Bio no effect
     map { $_[0]->{$_} = undef } keys %{$_[0]};
@@ -649,7 +649,7 @@ sub _next_line {
 
     #ignore 'depth' leading characters
     my $ptr = $self->{'cursor'} + $self->{'depth'};
-    
+
     #read the line
     $$line = $self->{'text'}->getline($ptr);
 

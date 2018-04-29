@@ -185,7 +185,7 @@ sub get_entry {
 
 	    next;
 	}
-	
+
     }
     return 0  if $offset < 0;
 
@@ -248,16 +248,16 @@ sub new {
 
 	#blast version info
 	if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
-	
+
 	    $self->test_args(\$line, $1, $2);
-	    
+
 	    (
 	     $self->{'full_version'},
 	     $self->{'version'},
 	    ) = ($1, $2);
-	    
+
 	    next;
-	} 
+	}
 
 	#query line
 	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
@@ -270,7 +270,7 @@ sub new {
             $self->{'query'} =~ s/.*\/([^\/]+)$/$1/;
 
 	    next;
-	} 
+	}
 
 	#ignore any other text
     }
@@ -343,7 +343,7 @@ sub new {
 	    $text->scan_until($SCORE_END, 'ALN');
 	    next;
 	}
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -393,7 +393,7 @@ sub new {
 	\s*
 	Length\s*=\s*($RX_Uint)             #length
 	/xso) {
-	
+
 	$self->test_args(\$line, $1, $3);    #ignore $2
 
 	(
@@ -435,7 +435,7 @@ sub parse_alignment {
 
     #alignment lines
     while (defined ($line = $text->next_line(1))) {
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -492,7 +492,7 @@ sub parse_alignment {
 	    $self->warn("expecting 'Query' line: [$line]");
 	    next;
 	}
-	
+
 	#force read of match line, but note:
 	#PHI-BLAST has an extra line - ignore for the time being
 	$line = $text->next_line(1);
@@ -515,7 +515,7 @@ sub parse_alignment {
 	    \s+
 	    (\d+)?	        #stop
 	    /xo) {
-	    
+
 	    #$self->test_args(\$line, $1, $2, $3);
 	    $self->test_args(\$line, $1);
 
@@ -571,7 +571,7 @@ sub parse_alignment {
 	    $tmp[1] = substr($tmp[1], 0, $qlen);
 	    #warn "after [$tmp[1]]\n";
 	}
-	
+
 	#append sequence strings
 	$query .= $tmp[0];
 	$align .= $tmp[1];

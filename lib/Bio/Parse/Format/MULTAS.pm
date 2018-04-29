@@ -8,7 +8,7 @@
 # BLOCK
 #    LIST
 #    ALIGNMENT
-# 
+#
 #
 ###########################################################################
 package Bio::Parse::Format::MULTAS;
@@ -61,7 +61,7 @@ sub get_entry {
 
     new Bio::Parse::Format::MULTAS(undef, $parent->{'text'}, $offset, $bytes);
 }
-	    
+
 #Parse one entry
 sub new {
     my $type = shift;
@@ -71,18 +71,18 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
     while (defined ($line = $text->next_line)) {
 
-	#BLOCK lines	       	      
+	#BLOCK lines
 	if ($line =~ /$MULTAS_BLOCK/o) {
 	    $text->scan_until($MULTAS_BLOCKend, 'BLOCK');
-	    next;			       	      
-	}				       	      
-	
+	    next;
+	}
+
 	#blank line or empty record: ignore
 	if ($line =~ /$MULTAS_Null/o) {
 	    next;
@@ -118,7 +118,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -130,23 +130,23 @@ sub new {
 	    next;
 	}
 
-	#LIST lines		       	      
-	if ($line =~ /$MULTAS_LIST/o) {       	      
+	#LIST lines
+	if ($line =~ /$MULTAS_LIST/o) {
 	    $text->scan_while($MULTAS_LISTmid, 'LIST');
-	    next;			       	      
-	}				       	      
+	    next;
+	}
 
-#	#LIST lines		       	      
-#	if ($line =~ /$MULTAS_LIST/o) {       	      
+#	#LIST lines
+#	if ($line =~ /$MULTAS_LIST/o) {
 #	    $text->scan_until($MULTAS_LISTend, 'LIST');
-#	    next;			       	      
-#	}				       	      
+#	    next;
+#	}
 
-	#ALIGNMENT lines		       	      
-	if ($line =~ /$MULTAS_ALIGNMENT/o) {       	      
+	#ALIGNMENT lines
+	if ($line =~ /$MULTAS_ALIGNMENT/o) {
 	    $text->scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
-	    next;			       	      
-	}				       	      
+	    next;
+	}
 
 	#blank line or empty record: ignore
 	if ($line =~ /$MULTAS_Null/o) {
@@ -184,7 +184,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -222,7 +222,7 @@ sub new {
 
 	    next;
 	}
-	
+
 	#default
 	$self->warn("unknown field: $line");
     }
@@ -261,7 +261,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -274,7 +274,7 @@ sub new {
     while (defined ($line = $text->next_line)) {
 
 	chomp $line; @tmp = split(//, $line);
-	
+
 	for ($i=0; $i<@tmp; $i++) {
 	    push @{$self->{'seq'}->[$i]}, $tmp[$i];
 	}

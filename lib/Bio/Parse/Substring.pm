@@ -100,7 +100,7 @@ sub reopen {
     }
     $self->_open;
     $self->_reset;
-    $self;	
+    $self;
 }
 
 sub reset {
@@ -113,7 +113,7 @@ sub reset {
 	$self->_open;
     }
     $self->_reset(@_);
-    $self;	
+    $self;
 }
 
 sub _seek {

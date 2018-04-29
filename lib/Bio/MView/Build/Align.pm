@@ -42,7 +42,7 @@ sub use_row {
 
 	#look at row number
 	return 1  if $nid eq $pat;      #major
-	
+
 	#look at identifier
 	return 1  if $sid eq $pat;      #exact match
 	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
@@ -59,7 +59,7 @@ sub use_row {
 
 	#look at row number
 	return 0  if $nid eq $pat;      #major
-	
+
 	#look at identifier
 	return 0  if $sid eq $pat;      #exact match
 	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)

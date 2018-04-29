@@ -43,7 +43,7 @@ my %VERSIONS = (
 	       );
 
 my $NULL        = '^\s*$';#for emacs';
-    
+
 my $FASTA_START = '^\s*\S+\s*[,:]\s+\d+\s+(?:aa|nt)';
 
 my $ENTRY_START = "(?:"
@@ -71,116 +71,116 @@ my $ENTRY_END = "(?:"
 
 my $HEADER_START = "(?:"
     . $Bio::Parse::Format::FASTA1::HEADER_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::HEADER_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::HEADER_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::HEADER_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::HEADER_START
-    . ")";		      
-my $HEADER_END = "(?:"    
+    . ")";
+my $HEADER_END = "(?:"
     . $Bio::Parse::Format::FASTA1::HEADER_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::HEADER_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::HEADER_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::HEADER_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::HEADER_END
     . ")";
 
 my $RANK_START = "(?:"
     . $Bio::Parse::Format::FASTA1::RANK_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::RANK_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::RANK_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::RANK_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::RANK_START
-    . ")";		      
-my $RANK_END = "(?:"   
+    . ")";
+my $RANK_END = "(?:"
     . $Bio::Parse::Format::FASTA1::RANK_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::RANK_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::RANK_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::RANK_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::RANK_END
     . ")";
 
 my $MATCH_START = "(?:"
     . $Bio::Parse::Format::FASTA1::MATCH_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::MATCH_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::MATCH_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::MATCH_START
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::MATCH_START
     . ")";
 my $MATCH_END = "(?:"
     . $Bio::Parse::Format::FASTA1::MATCH_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA2::MATCH_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3::MATCH_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::MATCH_END
-    . "|"		      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::MATCH_END
     . ")";
 
 my $SUM_START = "(?:"
     . $Bio::Parse::Format::FASTA1::SUM_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA2::SUM_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3::SUM_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::SUM_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::SUM_START
     . ")";
 my $SUM_END = "(?:"
     . $Bio::Parse::Format::FASTA1::SUM_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA2::SUM_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3::SUM_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::SUM_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::SUM_END
     . ")";
 
 my $ALN_START = "(?:"
     . $Bio::Parse::Format::FASTA1::ALN_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA2::ALN_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3::ALN_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::ALN_START
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::ALN_START
     . ")";
 my $ALN_END = "(?:"
     . $Bio::Parse::Format::FASTA1::ALN_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA2::ALN_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3::ALN_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::FASTA3X::ALN_END
-    . "|"			      
+    . "|"
     . $Bio::Parse::Format::GCG_FASTA2::ALN_END
     . ")";
 
@@ -195,7 +195,7 @@ my $TRAILER_START = "(?:"
     . "|"
     . $Bio::Parse::Format::GCG_FASTA2::TRAILER_START
     . ")";
-my $TRAILER_END = "(?:"   
+my $TRAILER_END = "(?:"
     . $Bio::Parse::Format::FASTA1::TRAILER_END
     . "|"
     . $Bio::Parse::Format::FASTA2::TRAILER_END
@@ -255,7 +255,7 @@ sub get_entry {
 	} elsif ($offset < 0) {
 	    next;
 	}
-	
+
 	#escape iteration if we've hit the alignment section
 	next  if $line =~ /$ALN_START/;
 
@@ -272,7 +272,7 @@ sub get_entry {
 	    $prog = $1;
 	    next;
 	}
-	
+
 	#try to determine version from header
 	if ($line =~ /^\s*version\s+(\d)\./) {
 	    $version = $1;   #eg, version 3.4
@@ -281,7 +281,7 @@ sub get_entry {
 	} elsif ($line =~ /^\s*v(\d+)\.\d+\S\d+/) {
 	    $version = $1;
 	}
-	
+
 	#otherwise... stderr header was missing... look at stdout part
 	#warn ">>$line";
 
@@ -313,7 +313,7 @@ sub get_entry {
 	    $version = 2           unless defined $version;
 	    next;
 	}
-	
+
 	if ($line =~ /LALIGN finds/) {
 	    #matches FASTA2/LALIGN with stderr
 	    $prog    = 'LALIGN'    unless defined $prog;
@@ -361,7 +361,7 @@ sub get_entry {
 	die "get_entry() top-level FASTA parser could not determine program/version\n";
     }
 
-    unless (exists $VERSIONS{$version} and 
+    unless (exists $VERSIONS{$version} and
 	    grep(/^$prog$/i, @{$VERSIONS{$version}}) > 0) {
 	die "get_entry() parser for program '$prog' version '$version' not implemented\n";
     }
@@ -402,7 +402,7 @@ sub get_entry {
 
     $self;
 }
-	    
+
 #Parse one entry: generic for all FASTA[12]
 #(FASTA3 $MATCH_START definition conflicts)
 sub new {
@@ -413,7 +413,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -425,27 +425,27 @@ sub new {
 	    next;
 	}
 
-	#Rank lines		       	      
+	#Rank lines
 	if ($line =~ /$RANK_START/o) {
 	    $text->scan_until($RANK_END, 'RANK');
-	    next;			       	      
-	}				       	      
-	
-	#Hit lines		       	      
+	    next;
+	}
+
+	#Hit lines
 	if ($line =~ /$MATCH_START/o) {
 	    $text->scan_until($MATCH_END, 'MATCH');
-	    next;			       	      
+	    next;
 	}
 
 	#Trailer lines
 	if ($line =~ /$TRAILER_START/o) {
 	    $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
-	    next;			       	      
+	    next;
 	}
-	
+
 	#end of FASTA job
 	next    if $line =~ /$ENTRY_END/o;
-	
+
 	#blank line or empty record: ignore
 	next    if $line =~ /$NULL/o;
 
@@ -537,14 +537,14 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self, 0, undef);
 
     $line = $text->scan_lines(0);
 
     $self->{'trailer'} = $line;
-    
+
     $self;
 }
 
@@ -572,7 +572,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -589,7 +589,7 @@ sub new {
 	    $text->scan_until($ALN_END, 'ALN');
 	    next;
 	}
-	
+
 	#blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
@@ -815,7 +815,7 @@ sub new {
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
-    
+
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Record_Stream($self);
 
@@ -901,7 +901,7 @@ sub new {
     #query/sbjct orientations
     my ($query_orient, $qorient) = $self->get_query_orient($qinfo);
     my ($sbjct_orient, $sorient) = $self->get_sbjct_orient($sinfo);
-    
+
     #query/sbjct recomputed start/stop
     my ($query_start, $query_stop) =
 	$self->get_start_stop('qry', $qorient, $qinfo, $self->query_base);
@@ -929,7 +929,7 @@ sub new {
     #query_trailer
     $query =~ /(\s*)$/;
     my $query_trailer = length $1;
-    
+
     #sbjct_leader
     $sbjct =~ /^(\s*)/;
     my $sbjct_leader = length $1;
@@ -937,7 +937,7 @@ sub new {
     #sbjct_trailer
     $sbjct =~ /(\s*)$/;
     my $sbjct_trailer = length $1;
-    
+
     $self->{'query'} = $query;
     $self->{'align'} = $align;
     $self->{'sbjct'} = $sbjct;
@@ -1043,7 +1043,7 @@ sub get_start_stop {
 
     my $delta1 = abs($x - $b) - $gc1;
     my $delta2 = abs($y - $c) - $gc2;
-    
+
     if ($x < $b) {
 	$delta1 = -$delta1;
     }
@@ -1052,7 +1052,7 @@ sub get_start_stop {
     }
 
     my ($start, $stop, $shift) = (0, 0, 0);
-    
+
     #extrapolate endpoints from the ruler numbers by the above deltas:
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
