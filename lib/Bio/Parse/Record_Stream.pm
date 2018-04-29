@@ -6,7 +6,6 @@ use strict;
 package Bio::Parse::Record_Stream;
 
 use Bio::Parse::Substring;
-use Bio::Parse::Message;
 
 use vars qw(@ISA);
 
@@ -14,10 +13,14 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    my $self = {};
     my ($entry, $depth,  $text, $offset, $bytes) = (@_, 0);
-    $self->{'entry'}  = $entry;
-    $self->{'depth'}  = $depth;
+
+    my $self = {};
+    bless $self, $type;
+
+    $self->{'entry'} = $entry;
+    $self->{'depth'} = $depth;
+
     if (defined $text and ref $text) {
 	#use supplied text and positions (or defaults thereof)
 	$self->{'text'}   = new Bio::Parse::Substring($text);
@@ -29,72 +32,22 @@ sub new {
 	$self->{'offset'} = $entry->{'offset'};
 	$self->{'bytes'}  = $entry->{'bytes'};
     }
-    bless $self, $type;
-    $self->reset;
-}
 
-sub DESTROY {
-    #warn "DESTROY $_[0]\n";
-    map { $_[0]->{$_} = undef } keys %{$_[0]};
+    $self->reset;
+
+    $self;
 }
 
 sub get_offset { $_[0]->{'cursor'} - $_[0]->{'length'} }
 sub get_bytes  { $_[0]->{'length'} }
 
-sub reset {
-    $_[0]->{'cursor'} = $_[0]->{'offset'};
-    $_[0]->{'limit'}  = $_[0]->{'offset'} + $_[0]->{'bytes'};
-    $_[0]->{'line'}   = '';
-    $_[0]->{'length'} = 0;
-    #warn "INITIAL=(c=$_[0]->{'cursor'} l=$_[0]->{'limit'})\n";
-    $_[0];
-}
-
-sub backup {
-    my $self = shift;
-    $self->{'cursor'} -= $self->{'length'};
-    $self->{'line'}    = '';
-    $self->{'length'}  = 0;
-}
-
 #return the remaining unprocessed stream without altering the cursor
 sub inspect_stream {
-    return ''  if $_[0]->{'cursor'} >= $_[0]->{'limit'};
-    $_[0]->{'text'}->substr($_[0]->{'cursor'},
-			    $_[0]->{'limit'} - $_[0]->{'cursor'} + 1);
-}
-
-#read next line of text into self.line and return 1 on success; otherwise set
-#self.line to undef and return 0
-sub _next_line {
     my $self = shift;
-
-    #warn "_next_line: $self->{'cursor'} / $self->{'limit'}\n";
-
-    my $line = \$self->{'line'};
-
-    $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
-
-    #ignore 'depth' leading characters
-    my $ptr = $self->{'cursor'} + $self->{'depth'};
-
-    #read the line
-    $$line = $self->{'text'}->getline($ptr);
-
-    return 0  unless defined $$line;
-
-    #how many bytes were actually read?
-    my $bytes = $self->{'text'}->bytesread;
-
-    if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
-	$bytes = $self->{'limit'} - $ptr;
-	$$line = substr($$line, 0, $bytes);
-    }
-
-    $self->{'length'}  = $self->{'depth'} + $bytes;
-    $self->{'cursor'} += $self->{'length'};
-
-    return 1;
+    return ''  if $self->{'cursor'} >= $self->{'limit'};
+    return $self->{'text'}->substr(
+        $self->{'cursor'}, $self->{'limit'} - $self->{'cursor'} + 1
+    );
 }
 
 #return next line of text or undef if the text stream is done; chomp line if
@@ -271,6 +224,63 @@ sub scan_nest {
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
 
     return $record;
+}
+
+###########################################################################
+# private methods
+###########################################################################
+sub DESTROY {
+    #warn "DESTROY $_[0]\n";
+    map { $_[0]->{$_} = undef } keys %{$_[0]};
+}
+
+sub reset {
+    my $self = shift;
+    $self->{'cursor'} = $self->{'offset'};
+    $self->{'limit'}  = $self->{'offset'} + $self->{'bytes'};
+    $self->{'line'}   = '';
+    $self->{'length'} = 0;
+    #warn "INITIAL=(c=$self->{'cursor'} l=$self->{'limit'})\n";
+}
+
+sub backup {
+    my $self = shift;
+    $self->{'cursor'} -= $self->{'length'};
+    $self->{'line'}    = '';
+    $self->{'length'}  = 0;
+}
+
+#read next line of text into self.line and return 1 on success; otherwise set
+#self.line to undef and return 0
+sub _next_line {
+    my $self = shift;
+
+    #warn "_next_line: $self->{'cursor'} / $self->{'limit'}\n";
+
+    my $line = \$self->{'line'};
+
+    $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
+
+    #ignore 'depth' leading characters
+    my $ptr = $self->{'cursor'} + $self->{'depth'};
+
+    #read the line
+    $$line = $self->{'text'}->getline($ptr);
+
+    return 0  unless defined $$line;
+
+    #how many bytes were actually read?
+    my $bytes = $self->{'text'}->bytesread;
+
+    if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
+	$bytes = $self->{'limit'} - $ptr;
+	$$line = substr($$line, 0, $bytes);
+    }
+
+    $self->{'length'}  = $self->{'depth'} + $bytes;
+    $self->{'cursor'} += $self->{'length'};
+
+    return 1;
 }
 
 ###########################################################################

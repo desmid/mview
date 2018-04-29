@@ -22,14 +22,13 @@ my $IGNORE_ATTR = "text|offset|bytes|index|parent|record_by_posn|record_by_type|
 #program exits. Therefore, the top-level Record of a Record tree should call
 #the free() method when the caller has finished with it a record, to allow
 #normal garbage collection at run-time.
-sub new {
-    shift;                 #discard system supplied type
-    my ($type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
+
+sub new { #discard system supplied type
+    my ($ignore, $type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
 
     my $self = {};
-    bless $self, $type;    #use type specified by caller
+    bless $self, $type;
 
-    #warn "NEW $self (@_)\n";
     #warn $text->substr(), "\n";
 
     $self->{'text'}           = $text;
@@ -48,63 +47,11 @@ sub new {
 
     #absolute hierarchical key for indexing/reporting
     $self->{'absolute_key'}  = '';
-    $self->{'absolute_key'}  = $parent->{'absolute_key'}. $KEY_DELIM
-	if defined $parent;
+    $self->{'absolute_key'}  = $parent->{'absolute_key'}. $KEY_DELIM  if
+        defined $parent;
     $self->{'absolute_key'} .= $self->{'relative_key'};
 
     $self;
-}
-
-#sub DESTROY { warn "DESTROY $_[0]\n" }
-
-#Explicitly call this when finished with a Record to ensure indirect
-#circular references through 'parent' and 'record_by_*' fields are
-#broken by resetting the 'parent' field. Likewise, set the shared 'text'
-#field to undefined. Without this, the Record hierarchy is never garbaged until
-#after the program exits! The caller can supply a list of subrecord types, in
-#which case only those will be marked for destruction, not this Record.
-sub free {
-    my $self = shift;
-    my ($type, $rec);
-
-    #warn "FREE $self (@_)\n";
-
-    if (@_) {
-	#only free these subrecord types
-	foreach $type (@_) {
-	    if (exists $self->{'record_by_type'}->{$type}) {
-		foreach $rec (@{$self->{'record_by_type'}->{$type}}) {
-                    $self->free_record($rec);
-		}
-	    }
-	}
-	return $self;
-    }
-
-    #free every subrecord
-    foreach $rec (@{$self->{'record_by_posn'}}) {
-        $self->free_record($rec);
-    }
-
-    #free our records
-    $self->{'parent'} = undef;
-    $self->{'record_by_type'} = undef;
-    $self->{'record_by_posn'} = undef;
-    $self->{'text'} = undef;
-
-    return $self;
-}
-
-#Given a record tuple reference, remove and recursively free any instantiated
-#parse object; returns the tuple reference.
-sub free_record {
-    my ($self, $rec) = @_;
-    return $rec  unless @$rec > 3;
-    #warn "free_record: [", join(", ", @$rec), "]\n";
-    $rec->[3]->free;           #recurse
-    my $ob = splice @$rec, 3;  #excise parse object
-    undef $ob;                 #remove parse object
-    $rec;
 }
 
 #Given a triple (key, offset, bytecount), store these as an anonymous array
@@ -123,35 +70,7 @@ sub pop_record {
     my $self = shift;
     my $rec = pop @{$self->{'record_by_posn'}};
     pop @{$self->{'record_by_type'}->{$rec->[0]}};
-    $self->free_record($rec);
-}
-
-#Given a triple (key, offset, bytecount) in $rec, extract the record
-#string, generate an object subclassed from $class, store this in $rec
-#after the existing triple, and return the object.
-sub add_object {
-    my ($self, $rec) = @_;
-    my ($class, $ob);
-    $class = ref($self) . '::' . $rec->[0];
-    #warn "ADD_OBJECT($class)\n";
-    $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
-    push @$rec, $ob;
-    $ob;
-}
-
-sub get_offset   { $_[0]->{'offset'} }
-sub get_bytes    { $_[0]->{'bytes'} }
-sub get_pos      { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
-sub get_class    { ref($_[0]) }
-sub get_index    { $_[0]->{'index'} }
-sub relative_key { $_[0]->{'relative_key'} }
-sub absolute_key { $_[0]->{'absolute_key'} }
-
-sub get_object {
-    my ($self, $rec) = @_;
-    #warn "get_object($rec = [@$rec])\n";
-    $self->add_object($rec)  unless defined $rec->[3];
-    $rec->[3];
+    return $self->free_record($rec);
 }
 
 sub get_parent {
@@ -170,40 +89,15 @@ sub get_parent {
 sub get_record {
     my ($self, $type, $index) = (@_, 0);
     my $rec = $self->{'record_by_type'}->{$type}->[$index];
-    $self->get_object($rec);
-}
-
-sub get_type {
-    my @id = split('::', ref($_[0]));
-    pop @id;
-}
-
-sub get_record_number {
-    my ($self, $parent) = (@_, undef);
-    my ($i, $type);
-    if (defined $parent) {
-	$type   = $self->get_type;
-	for ($i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
-	    if ($parent->{'record_by_type'}->{$type}->[$i]->[1] ==
-		$self->{'offset'}) {
-		return $i+1;
-	    }
-	}
-    }
-    #there is no record number
-    return 0;
+    return $self->get_object($rec);
 }
 
 sub push_indices {
     my ($self, @indices) = @_;
     push @{$self->{'indices'}}, @indices;
-    $self;
 }
 
-#Return list of indices.
-sub get_indices {
-    @{$_[0]->{'indices'}}
-}
+sub get_indices { @{$_[0]->{'indices'}} }
 
 #Return list of attributes of Record, excepting housekeeping ones.
 sub list_attrs {
@@ -212,12 +106,7 @@ sub list_attrs {
     foreach $key (grep !/^($IGNORE_ATTR)$/o , keys %$self) {
 	push @attr, $key;
     }
-    @attr;
-}
-
-#Return list of record types in Record
-sub list_record_types {
-    sort keys %{$_[0]->{'record_by_type'}};
+    return @attr;
 }
 
 sub test_args {
@@ -234,11 +123,9 @@ sub test_records {
     my $self = shift;
     local $_;
     foreach (@_) {
-	unless (exists $self->{'record_by_type'}->{$_}) {
-	    $self->warn("corrupt or missing '$_' record\n")
-	}
+        $self->warn("corrupt or missing '$_' record\n")
+            unless exists $self->{'record_by_type'}->{$_};
     }
-    $self;
 }
 
 sub pack_hash {
@@ -265,7 +152,7 @@ sub pack_hash {
 		      $rec->[2],
 		     ));
     }
-    $val;
+    return $val;
 }
 
 sub unpack_hash {
@@ -333,6 +220,169 @@ sub print {
 
 sub print_data {}  #override to add fields in children
 
+#extract a substring with offset and bytecount from the 'text' attribute,
+#defaulting to the entire string
+sub substr {
+    my $self = shift;
+    my ($offset, $bytes) = (@_, $self->{'offset'}, $self->{'bytes'});
+
+    #warn "Record::substr(@_)\n";
+
+    if (! defined $self->{'text'}) {
+	$self->die("substr() $self text field undefined");
+    }
+
+    ## substr(${$self->{'text'}}, $offset, $bytes);
+    return $self->{'text'}->substr($offset, $bytes);
+}
+
+#Given a record key for this entry, parse corresponding records and return
+#an array of the parsed objects or the first object if called in a scalar
+#context. If called with no argument or just '*' parse everything at this
+#level.
+sub parse {
+    my ($self, $key) = (@_, '*');
+    my (@list, @keys, $rec) = ();
+
+    #warn "parse($key)\n";
+
+    if ($key eq '*') {
+	@keys = keys %{$self->{'record_by_type'}};
+    } else {
+	push @keys, $key;
+    }
+
+    foreach $key (@keys) {
+        #warn "parse: $key\n";
+	foreach $rec ($self->key_range($key)) {
+            push @list, $self->get_object($rec);
+	}
+    }
+
+    return @list    if wantarray;
+    return $list[0] if @list;
+    return undef;  #no data
+}
+
+#Given a record key for this entry, count how many corresponding records
+#exist and return an array of counts or the first count if called in a
+#scalar context. If called with no argument or just '*' count everything.
+sub count {
+    my ($self, $key) = (@_, '*');
+    my (@list, @keys) = ();
+
+    if ($key eq '*') {
+	@keys = sort keys %{$self->{'record_by_type'}};
+    } else {
+	push @keys, $key;
+    }
+
+    foreach $key (@keys) {
+
+	#is there a record instance for this type?
+	if (exists $self->{'record_by_type'}->{$key}) {
+	    push @list, scalar @{$self->{'record_by_type'}->{$key}};
+	} else {
+	    push @list, 0;
+	}
+    }
+
+    return @list    if wantarray;
+    return $list[0] if @list;
+    return 0;  #no data
+}
+
+#tidy up identifiers: strip leading "/:" or ">" substrings
+sub strip_leading_identifier_chars {
+    my $string = shift;
+    $string =~ s/^(\/:|>)//;
+    return $string;
+}
+
+#Returns $text less newlines while attempting to assemble hyphenated words
+#and excess white space split over multiple lines correctly.
+sub strip_english_newlines {
+    my $text = shift;
+
+    #multiple hyphens look like 'SO4--' or long dashes - word break with space
+    $text =~ s/(--)\s*\n+\s*/$1 /sg;
+
+    #single hyphens look like hyphenated words - join at the hyphen
+    $text =~ s/(-)\s*\n+\s*/$1/sg;
+
+    #remaining newlines - word break with space
+    $text =~ s/\s*\n+\s*/ /sg;
+
+    #skip trailing white space added after last newline was removed
+    $text =~ s/\s+$//s;
+
+    return $text;
+}
+
+sub strip_leading_space {
+    my $text = shift;
+    $text =~ s/^[ \t]+//;
+    return $text;
+}
+
+sub strip_trailing_space {
+    my $text = shift;
+    $text =~ s/[ \t]+$//;
+    return $text;
+}
+
+sub strip_trailing_junk {
+    my $text = shift;
+    $text =~ s/[;:|,.-]+$//;  #default trailing PDB chain is often '_'
+    return $text;
+}
+
+sub clean_identifier {
+    my $text = shift;
+    $text = strip_leading_identifier_chars($text);
+    $text = strip_trailing_junk($text);
+    return $text;
+}
+
+###########################################################################
+# private methods
+###########################################################################
+#sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub get_pos   { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
+sub get_class { ref $_[0] }
+
+sub relative_key { $_[0]->{'relative_key'} }
+sub absolute_key { $_[0]->{'absolute_key'} }
+
+sub get_object {
+    my ($self, $rec) = @_;
+    #warn "get_object($rec = [@$rec])\n";
+    $self->add_object($rec)  unless defined $rec->[3];
+    return $rec->[3];
+}
+
+sub get_type {
+    my @id = split('::', ref($_[0]));
+    return pop @id;
+}
+
+sub get_record_number {
+    my ($self, $parent) = (@_, undef);
+    my ($i, $type);
+    if (defined $parent) {
+	$type   = $self->get_type;
+	for ($i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
+	    if ($parent->{'record_by_type'}->{$type}->[$i]->[1] ==
+		$self->{'offset'}) {
+		return $i+1;
+	    }
+	}
+    }
+    #there is no record number
+    return 0;
+}
+
 sub print_records_by_posn {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x ($indent+2);
@@ -367,20 +417,67 @@ sub print_records_by_type {
     }
 }
 
-#extract a substring with offset and bytecount from the 'text' attribute,
-#defaulting to the entire string
-sub substr {
+#Given a triple (key, offset, bytecount) in $rec, extract the record
+#string, generate an object subclassed from $class, store this in $rec
+#after the existing triple, and return the object.
+sub add_object {
+    my ($self, $rec) = @_;
+    my ($class, $ob);
+    $class = ref($self) . '::' . $rec->[0];
+    #warn "ADD_OBJECT($class)\n";
+    $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
+    push @$rec, $ob;
+    return $ob;
+}
+
+#Explicitly call this when finished with a Record to ensure indirect
+#circular references through 'parent' and 'record_by_*' fields are
+#broken by resetting the 'parent' field. Likewise, set the shared 'text'
+#field to undefined. Without this, the Record hierarchy is never garbaged until
+#after the program exits! The caller can supply a list of subrecord types, in
+#which case only those will be marked for destruction, not this Record.
+sub free {
     my $self = shift;
-    my ($offset, $bytes) = (@_, $self->{'offset'}, $self->{'bytes'});
+    my ($type, $rec);
 
-    #warn "Record::substr(@_)\n";
+    #warn "FREE $self (@_)\n";
 
-    if (! defined $self->{'text'}) {
-	$self->die("substr() $self text field undefined");
+    if (@_) {
+	#only free these subrecord types
+	foreach $type (@_) {
+	    if (exists $self->{'record_by_type'}->{$type}) {
+		foreach $rec (@{$self->{'record_by_type'}->{$type}}) {
+                    $self->free_record($rec);
+		}
+	    }
+	}
+	return $self;
     }
 
-    ## substr(${$self->{'text'}}, $offset, $bytes);
-    $self->{'text'}->substr($offset, $bytes);
+    #free every subrecord
+    foreach $rec (@{$self->{'record_by_posn'}}) {
+        $self->free_record($rec);
+    }
+
+    #free our records
+    $self->{'parent'} = undef;
+    $self->{'record_by_type'} = undef;
+    $self->{'record_by_posn'} = undef;
+    $self->{'text'} = undef;
+
+    return $self;
+}
+
+#Given a record tuple reference, remove and recursively free any instantiated
+#parse object; returns the tuple reference.
+sub free_record {
+    my ($self, $rec) = @_;
+    return $rec  unless @$rec > 3;
+    #warn "free_record: [", join(", ", @$rec), "]\n";
+    $rec->[3]->free;           #recurse
+    my $ob = splice @$rec, 3;  #excise parse object
+    undef $ob;                 #remove parse object
+    return $rec;
 }
 
 #Given a record key for this entry, return an array of corresponding record
@@ -416,34 +513,6 @@ sub string {
     return @list    if wantarray;
     return $list[0] if @list;
     return '';  #no data
-}
-
-#Given a record key for this entry, parse corresponding records and return
-#an array of the parsed objects or the first object if called in a scalar
-#context. If called with no argument or just '*' parse everything at this
-#level.
-sub parse {
-    my ($self, $key) = (@_, '*');
-    my (@list, @keys, $rec) = ();
-
-    #warn "parse($key)\n";
-
-    if ($key eq '*') {
-	@keys = keys %{$self->{'record_by_type'}};
-    } else {
-	push @keys, $key;
-    }
-
-    foreach $key (@keys) {
-        #warn "parse: $key\n";
-	foreach $rec ($self->key_range($key)) {
-            push @list, $self->get_object($rec);
-	}
-    }
-
-    return @list    if wantarray;
-    return $list[0] if @list;
-    return undef;  #no data
 }
 
 #Split a key string of forms 'key' or 'key[N]' or 'key[M..N]' and return
@@ -490,87 +559,7 @@ sub key_range {
 	@rec = @{$self->{'record_by_type'}->{$key}};
     }
 
-    @rec;
-}
-
-#Given a record key for this entry, count how many corresponding records
-#exist and return an array of counts or the first count if called in a
-#scalar context. If called with no argument or just '*' count everything.
-sub count {
-    my ($self, $key) = (@_, '*');
-    my (@list, @keys) = ();
-
-    if ($key eq '*') {
-	@keys = sort keys %{$self->{'record_by_type'}};
-    } else {
-	push @keys, $key;
-    }
-
-    foreach $key (@keys) {
-
-	#is there a record instance for this type?
-	if (exists $self->{'record_by_type'}->{$key}) {
-	    push @list, scalar @{$self->{'record_by_type'}->{$key}};
-	} else {
-	    push @list, 0;
-	}
-    }
-
-    return @list    if wantarray;
-    return $list[0] if @list;
-    return 0;  #no data
-}
-
-#tidy up identifiers: strip leading "/:" or ">" substrings
-sub strip_leading_identifier_chars {
-    my $string = shift;
-    $string =~ s/^(\/:|>)//;
-    $string;
-}
-
-#Returns $text less newlines while attempting to assemble hyphenated words
-#and excess white space split over multiple lines correctly.
-sub strip_english_newlines {
-    my $text = shift;
-
-    #multiple hyphens look like 'SO4--' or long dashes - word break with space
-    $text =~ s/(--)\s*\n+\s*/$1 /sg;
-
-    #single hyphens look like hyphenated words - join at the hyphen
-    $text =~ s/(-)\s*\n+\s*/$1/sg;
-
-    #remaining newlines - word break with space
-    $text =~ s/\s*\n+\s*/ /sg;
-
-    #skip trailing white space added after last newline was removed
-    $text =~ s/\s+$//s;
-
-    $text;
-}
-
-sub strip_leading_space {
-    my $text = shift;
-    $text =~ s/^[ \t]+//;
-    $text;
-}
-
-sub strip_trailing_space {
-    my $text = shift;
-    $text =~ s/[ \t]+$//;
-    $text;
-}
-
-sub strip_trailing_junk {
-    my $text = shift;
-    $text =~ s/[;:|,.-]+$//;  #default trailing PDB chain is often '_'
-    $text;
-}
-
-sub clean_identifier {
-    my $text = shift;
-    $text = strip_leading_identifier_chars($text);
-    $text = strip_trailing_junk($text);
-    return $text;
+    return @rec;
 }
 
 #warn with error string: override Message::warn() to a) be quiet
