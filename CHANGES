@@ -9,7 +9,8 @@ New features:
 
 - Added pass-through of extra 'blast -outfmt 7' sbjct fields (staxid,
   ssciname, scomname, sblastname, sskingdom, staxids, sscinames, scomnames,
-  sblastnames, sskingdoms). Requested by Mathias Walter (issue #14).
+  sblastnames, sskingdoms). These can be switched off using new label
+  control option '-label8'. Requested by Mathias Walter (issue #14).
 
 Bug fixes:
 
