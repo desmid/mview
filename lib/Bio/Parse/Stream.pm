@@ -42,7 +42,9 @@ sub get_entry {
 
     my $parser = "Bio::Parse::Format::$self->{'format'}::get_entry";
 
-    $parser = &{$parser}($self);
+    $parser = &$parser($self);
+
+    use strict 'refs';
 
     return undef  unless $parser;
 
