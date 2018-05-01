@@ -11,6 +11,7 @@ use Bio::MView::Option::Arguments;
 use Bio::MView::Color::ColorMap;
 use Bio::MView::Build::Base;
 use Bio::MView::Convert;
+use Bio::Parse::Stream;
 
 sub new {
     my $type = shift;
