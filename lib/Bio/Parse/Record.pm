@@ -73,6 +73,9 @@ sub pop_record {
     return $self->free_record($rec);
 }
 
+#return record string length
+sub get_size { $_[0]->{'bytes'} }
+
 sub get_parent {
     my ($self, $depth) = (@_, 1);
     $depth = -$depth  if $depth < 0;  #positive

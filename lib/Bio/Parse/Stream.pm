@@ -46,7 +46,7 @@ sub get_entry {
 
     return undef  unless $parser;
 
-    $self->{'offset'} += $parser->{'bytes'};  #parsed this many bytes
+    $self->{'offset'} += $parser->get_size;  #parsed this many bytes
 
     return $parser;
 }
