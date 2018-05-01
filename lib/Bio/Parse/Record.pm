@@ -95,13 +95,6 @@ sub get_record {
     return $self->get_object($rec);
 }
 
-sub push_indices {
-    my ($self, @indices) = @_;
-    push @{$self->{'indices'}}, @indices;
-}
-
-sub get_indices { @{$_[0]->{'indices'}} }
-
 #Return list of attributes of Record, excepting housekeeping ones.
 sub list_attrs {
     my $self = shift;
@@ -155,7 +148,7 @@ sub print {
     printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
         $self->{'parent'} : 'undef';
     printf "%sKey:    %s   Indices: [%s]\n", $x,
-        $self->relative_key, join(',', $self->get_indices);
+        $self->relative_key, join(',', @{$_[0]->{'indices'}});
 
     #print records in order of appearance in parent Record
     printf "%s  Subrecords by posn:\n", $x;
@@ -178,7 +171,8 @@ sub print {
     $self->print_data($indent);
 }
 
-sub print_data {}  #override to add fields in children
+#subclass overrides to add fields
+sub print_data {}
 
 #extract a substring with offset and bytecount from the 'text' attribute,
 #defaulting to the entire string
