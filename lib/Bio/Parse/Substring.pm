@@ -18,28 +18,25 @@ $DEBUG = 0;
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $DEBUG;
+    #warn "${type}::new:\n"  if $DEBUG;
     Bio::Parse::Message::die($type, "new(@_): invalid argument list")
 	if @_ < 1;
     return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                 #filename
 }
 
-#sub DESTROY { warn "DESTROY $_[0]\n" }
+sub open        {}
+sub close       {}
+sub reset       {}
 
-sub close       {$_[0]}
-sub open        {$_[0]}
-sub reopen      {$_[0]}
-
-sub get_file    { '' }
-sub get_length  { $_[0]->{'extent'} }
-sub get_base    { $_[0]->{'base'} }
 sub startofline { $_[0]->{'lastoffset'} }
 sub bytesread   { $_[0]->{'thisoffset'} - $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
+#sub DESTROY { warn "DESTROY $_[0]\n" }
+
 ###########################################################################
-# Random access a file
+# Random access a file converting any DOS CRLF line endings on the fly
 
 package Bio::Parse::Substring::File;
 
@@ -58,7 +55,7 @@ $ERROR = 4;
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $Bio::Parse::Substring::DEBUG;
+    #warn "${type}::new\n"  if $Bio::Parse::Substring::DEBUG;
     my ($file, $base) = (@_, 0);
     my $self = {};
     bless $self, $type;
@@ -68,90 +65,49 @@ sub new {
     $self->{'state'}      = $CLOSE;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
-    $self->{'fh'} = -1;
+    $self->{'crlf'}       = undef;
+    $self->{'fh'}         = -1;
 
-    $self->_open;
+    $self->open;
 
-    #find file extent
-    #$self->{'fh'}->seek(0, SEEK_END);
     $self->{'extent'} = (stat $self->{'fh'})[7];
 
     $self;
 }
 
-sub get_file {$_[0]->{'file'}}
-
-sub close {
-    #warn "close()\n"  if $Bio::Parse::Substring::DEBUG;
-    $_[0]->_close;
-}
-
 sub open {
-    #warn "open()\n"  if $Bio::Parse::Substring::DEBUG;
-    $_[0]->reopen(@_);
-}
-
-sub reopen {
     my $self = shift;
-    #warn "reopen()\n"  if $Bio::Parse::Substring::DEBUG;
-    if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
-	$self->_close;
-    }
-    $self->_open;
-    $self->_reset;
+    #warn "File::open:\n"  if $Bio::Parse::Substring::DEBUG;
+    $self->reset($self->{'base'});
 }
 
 sub reset {
-    my $self = shift;
-    #warn "reset(@_)\n"  if $Bio::Parse::Substring::DEBUG;
-    if ($self->{'state'} & $ERROR) {
-	$self->_close;
-	$self->_open;
-    } elsif ($self->{'state'} & $CLOSE) {
-	$self->_open;
+    my ($self, $offset) = @_;
+    #warn "File::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
+    if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
+	$self->close;
     }
-    $self->_reset(@_);
+    $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
+    $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
+    $self->{'state'} = $OPEN;
+    $self->_init($offset);
 }
 
-sub _seek {
-    my ($self, $new) = @_;
-    my $delta = $new - $self->{'thisoffset'};
-    #warn "seek: entry: $delta\n"  if $Bio::Parse::Substring::DEBUG;
-    return 1  unless $delta;
-    return seek($self->{'fh'}, $delta, SEEK_CUR);
-}
-
-sub _reset {
+sub close {
     my $self = shift;
-    my ($offset) = (@_, $self->{'base'});
-    #warn "_reset(@_)\n"  if $Bio::Parse::Substring::DEBUG;
-    $self->{'fh'}->seek($offset, SEEK_SET);
-    $self->{'lastoffset'} = $offset;
-    $self->{'thisoffset'} = $offset;
-}
-
-sub _close {
-    my $self = shift;
-    warn "_close()\n"  if $Bio::Parse::Substring::DEBUG;
+    #warn "File::close:\n"  if $Bio::Parse::Substring::DEBUG;
     return $self  if $self->{'state'} & $CLOSE;
     $self->{'fh'}->close;
     $self->{'fh'} = -1;
     $self->{'state'} = $CLOSE;
-}
-
-sub _open {
-    my $self = shift;
-    #warn "_open()\n"  if $Bio::Parse::Substring::DEBUG;
-    $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
-    $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
-    $self->{'state'} = $OPEN;
-    $self->{'lastoffset'} = $self->{'base'};
-    $self->{'thisoffset'} = $self->{'base'};
+    $self->{'lastoffset'} = undef;
+    $self->{'thisoffset'} = undef;
+    $self->{'crlf'}       = undef;
 }
 
 sub substr {
     my $self = shift;
-    #warn "substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
+    #warn "File::substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     if ($self->{'state'} & $CLOSE) {
 	$self->die("substr: can't read on closed file '$self->{'file'}'");
     }
@@ -164,15 +120,15 @@ sub substr {
         $self->{'thisoffset'} = $offset + $c;
     }
 
-    #convert any CRLF if file came from DOS/Windows
-    $buff =~ s/\015\012/\012/go;
+    #strip multiple CR if file from DOS
+    $buff =~ s/\015\012/\012/go  if $self->{'crlf'};
 
     return $buff;
 }
 
 sub getline {
     my $self = shift;
-    #warn "getline(@_)\n"  if $Bio::Parse::Substring::DEBUG;
+    #warn "File::getline(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     my ($offset) = (@_, $self->{'thisoffset'});
 
     $self->{'lastoffset'} = $offset;
@@ -183,22 +139,51 @@ sub getline {
 
     return undef  unless defined $line;
 
-    my $bytes = length($line);
+    my $bytes = length $line;
 
     $self->{'thisoffset'} = $offset + $bytes;
-    #warn "getline:  $self->{'lastoffset'}, $self->{'thisoffset'}\n";
+    #warn "File::getline:  $self->{'lastoffset'}, $self->{'thisoffset'}\n";
 
-    #convert terminal CRLF if file came from DOS/Windows
-    CORE::substr($line, $bytes-2, 1, '')  if
-        CORE::substr($line, $bytes-2, 2) eq "\015\012";
+    #strip terminal CR if file from DOS
+    CORE::substr($line, $bytes-2, 1, '')  if $self->{'crlf'};
 
-    #warn "getline: [$line]\n";
+    #warn "File::getline: [$line]\n";
 
     return $line;
 }
 
 ###########################################################################
-# Random access a string in memory
+# private methods
+###########################################################################
+sub _init {
+    my ($self, $offset) = @_;
+    #warn "File::_init($offset):\n"  if $Bio::Parse::Substring::DEBUG;
+    my $line = readline($self->{'fh'});
+    $self->{'crlf'} = $self->_test_crlf(\$line);
+    #seek absolute to desired offset
+    $self->{'fh'}->seek($offset, SEEK_SET);
+    $self->{'lastoffset'} = $offset;
+    $self->{'thisoffset'} = $offset;
+}
+
+#detect CRLF in non-native DOS file on UNIX
+sub _test_crlf {
+    my ($self, $buff) = @_;
+    my $test = index($$buff, "\r\n") > -1;
+    #warn "File::_test_crlf: [$$buff] --> @{[$test > 0 ? '1' : '0']}\n";
+    return $test;
+}
+
+sub _seek {
+    my ($self, $new) = @_;
+    my $delta = $new - $self->{'thisoffset'};
+    #warn "File::seek: delta= $delta\n"  if $Bio::Parse::Substring::DEBUG;
+    return 1  unless $delta;
+    return seek($self->{'fh'}, $delta, SEEK_CUR);
+}
+
+###########################################################################
+# Random access a string in memory assuming any DOS CRLF already converted
 
 package Bio::Parse::Substring::String;
 
@@ -210,38 +195,54 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    #warn "${type}::new()\n"  if $Bio::Parse::Substring::DEBUG;
+    #warn "${type}::new:\n"  if $Bio::Parse::Substring::DEBUG;
     my $self = {};
+    bless $self, $type;
+
     ($self->{'text'}, $self->{'base'}) = (@_, 0);
-    $self->{'extent'} = length ${$self->{'text'}};
+
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
-    bless $self, $type;
+    $self->{'extent'}     = length ${$self->{'text'}};
+
+    $self->open;
+
+    $self;
+}
+
+sub open {
+    my $self = shift;
+    #warn "String::open:\n"  if $Bio::Parse::Substring::DEBUG;
+    $self->reset($self->{'base'});
+}
+
+sub close {
+    my $self = shift;
+    #warn "String::close:\n"  if $Bio::Parse::Substring::DEBUG;
+    $self->{'lastoffset'} = undef;
+    $self->{'thisoffset'} = undef;
 }
 
 sub reset {
-    my $self = shift;
-    my ($offset) = (@_, $self->{'base'});
-    #warn "reset(@_)\n"  if $Bio::Parse::Substring::DEBUG;
+    my ($self, $offset) = @_;
+    #warn "String::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
+    #set desired start
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
 }
 
 sub substr {
     my $self = shift;
+    #warn "String::substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     my ($offset, $bytes) = (@_, $self->{'base'},
 			    $self->{'extent'}-$self->{'base'});
 
-    my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
-
-    #convert any CRLF if file came from DOS/Windows
-    $buff =~ s/\015\012/\012/go;
-
-    return $buff;
+    return CORE::substr(${$self->{'text'}}, $offset, $bytes);
 }
 
 sub getline {
     my $self = shift;
+    #warn "String::getline(@_)\n"  if $Bio::Parse::Substring::DEBUG;
     my ($offset) = (@_, $self->{'thisoffset'});
 
     $self->{'lastoffset'} = $offset;
@@ -251,25 +252,18 @@ sub getline {
     my $i = index(${$self->{'text'}}, "\n", $offset);
     my $line;
 
-    #warn "LOOK: $offset, $i\n";
-
-    if ($i > -1) {  #read line upto and including eol
-        $line = CORE::substr(${$self->{'text'}}, $offset, $i-$offset+1);
-    } else {  #read until eot
+    if ($i < 0) {
+        #read remaining text, if any, until end of string
         $line = CORE::substr(${$self->{'text'}}, $offset);
+        return undef  unless defined $line;
+    } else {
+        #read line upto and including eol; cannot be undef
+        $line = CORE::substr(${$self->{'text'}}, $offset, $i - $offset + 1);
     }
 
-    return undef  unless defined $line;
+    $self->{'thisoffset'} = $offset + length $line;
 
-    my $bytes = length($line);
-
-    $self->{'thisoffset'} = $offset + $bytes;
-
-    #convert terminal CRLF if file came from DOS/Windows
-    CORE::substr($line, $bytes-2, 1, '')  if
-        CORE::substr($line, $bytes-2, 2) eq "\015\012";
-
-    #warn "getline: [$line]\n";
+    #warn "String::getline: [$line]\n";
 
     return $line;
 }
