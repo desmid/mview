@@ -11,23 +11,13 @@ use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
 
-@EXPORT = qw(
-    $RX_Uint
-    $RX_Sint
-    $RX_Ureal
-    $RX_Sreal
-    );
-
-use vars qw(
-    $RX_Uint
-    $RX_Sint
-    $RX_Ureal
-    $RX_Sreal
-    );
-
 ###########################################################################
 #integers
 ###########################################################################
+
+use vars qw($RX_Uint $RX_Sint);
+
+push @EXPORT, qw($RX_Uint $RX_Sint);
 
 #unsigned
 $RX_Uint  = '\+?\d+';
@@ -38,6 +28,10 @@ $RX_Sint  = '[+-]?\d+';
 ###########################################################################
 #floats
 ###########################################################################
+
+use vars qw($RX_Ureal $RX_Sreal);
+
+push @EXPORT, qw($RX_Ureal $RX_Sreal);
 
 #unsigned
 $RX_Ureal = '\+?(?:\d+\.\d+|\d+\.|\d+|\.\d+)?(?:[eE][+-]?\d+)?';
