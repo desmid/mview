@@ -1,14 +1,15 @@
-# -*- perl -*-
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2018 Nigel P. Brown
+
+use strict;
 
 ###########################################################################
 package Bio::Parse::Stream;
 
-use vars qw(@ISA);
-use Bio::Parse::Message;
 use Bio::Parse::Record;
 use Bio::Parse::Substring;
-use strict;
+use Bio::Parse::Message;
+
+use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Message);
 
@@ -16,6 +17,7 @@ use strict;
 sub new {
     my $type = shift;
     my ($file, $format) = @_;
+
     my $self = {};
     bless $self, $type;
 
@@ -30,10 +32,6 @@ sub new {
     $self;
 }
 
-sub get_file   { $_[0]->{'file'} }
-sub get_format { $_[0]->{'format'} }
-sub get_length { $_[0]->{'text'}->get_length }
-
 sub get_entry {
     my $self = shift;
     #warn "Stream::get_entry: offset= $self->{'offset'}\n";
@@ -42,23 +40,28 @@ sub get_entry {
 
     no strict 'refs';
 
-    my $pv = &{"Bio::Parse::Format::$self->{'format'}::get_entry"}($self);
-    return undef  unless $pv;
+    my $parser = "Bio::Parse::Format::$self->{'format'}::get_entry";
 
-    $self->{'offset'} += $pv->{'bytes'};  #parsed this many bytes
+    $parser = &{$parser}($self);
 
-    $pv;
-}
+    return undef  unless $parser;
 
-sub print {
-    my $self = shift;
-    $self->examine(qw(file format));
+    $self->{'offset'} += $parser->{'bytes'};  #parsed this many bytes
+
+    return $parser;
 }
 
 sub close { $_[0]->{'text'}->close }
 
+###########################################################################
+# private methods
+###########################################################################
 sub DESTROY { $_[0]->close }
 
+###########################################################################
+# debug methods
+###########################################################################
+sub print { $_[0]->examine(qw(file format)) }
 
 ###########################################################################
 1;
