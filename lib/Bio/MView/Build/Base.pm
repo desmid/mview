@@ -41,19 +41,6 @@ sub new {
 #override if children have a query sequence (children of Build::Search)
 sub is_search { 0 }
 
-#return 1 if topn rows already generated, 0 otherwise; ignore if if filtering
-#on identity; it is assumed the query is implicitly accepted anyway by the
-#parser
-sub topn_done {
-    my ($self, $num) = @_;
-    return 0  if $PAR->get('maxident') != 100;
-    return 1  if $PAR->get('topn') > 0 and $num > $PAR->get('topn');
-    return 0;
-}
-
-#return 1 is row should be ignored by row rank or identifier
-sub skip_row { my $self = shift; return ! $self->use_row(@_) }
-
 sub get_entry { $_[0]->{'entry'} }
 
 sub get_ref_row { $_[0]->{'ref_row'} }
@@ -150,6 +137,19 @@ sub subheader {''}
 ######################################################################
 # protected methods
 ######################################################################
+#return 1 is row should be ignored by row rank or identifier
+sub skip_row { my $self = shift; return ! $self->use_row(@_) }
+
+#return 1 if topn rows already generated, 0 otherwise; ignore if if filtering
+#on identity; it is assumed the query is implicitly accepted anyway by the
+#parser
+sub topn_done {
+    my ($self, $num) = @_;
+    return 0  if $PAR->get('maxident') != 100;
+    return 1  if $PAR->get('topn') > 0 and $num > $PAR->get('topn');
+    return 0;
+}
+
 #subclass overrides: if children need to do something during creation
 sub initialise { $_[0]->{scheduler} = new Bio::MView::Build::Scheduler }
 
