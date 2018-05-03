@@ -40,7 +40,7 @@ sub length { return $_[0]->{'length'} }
 sub reset_display {
     my ($self, $refobj) = @_;
 
-    my @labels = ['', '', '', '', '', '', '', ''];
+    my @labels = ();
 
     @labels = $refobj->display_column_labels  if defined $refobj;
     #warn "labels: [@{[join(',', @labels)]}]\n";

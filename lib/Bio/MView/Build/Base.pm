@@ -44,7 +44,10 @@ sub is_search { 0 }
 sub get_entry { $_[0]->{'entry'} }
 
 sub get_ref_row { $_[0]->{'ref_row'} }
-sub get_ref_uid { $_[0]->{'ref_row'}->uid }
+
+sub get_ref_uid {
+    return defined $_[0]->{'ref_row'} ? $_[0]->{'ref_row'}->uid : undef
+}
 
 sub uid2row   { $_[0]->{uid2row}->{$_[1]} }
 sub index2row { $_[0]->{index2row}->[$_[1]] }
@@ -309,7 +312,7 @@ sub build_base_alignment {
     }
 
     #filter alignment based on %identity to reference
-    $aln = $aln->prune_identities($self->{'ref_row'}->uid,
+    $aln = $aln->prune_identities($self->get_ref_uid,
                                   $PAR->get('pcid'),
                                   $PAR->get('minident'),
                                   $PAR->get('maxident'),
