@@ -201,43 +201,6 @@ sub get_range {
 #subclass overrides
 sub rebless_alignment {}
 
-#subclass overrides: remove query and hit columns at gaps in the query
-#sequence and downcase the bounding hit symbols in the hit sequence thus
-#affected.
-sub strip_query_gaps {
-    my ($self, $query, $sbjct) = @_;
-
-    #warn "sqg(in  q)=[$$query]\n";
-    #warn "sqg(in  h)=[$$sbjct]\n";
-
-    #no gaps in query
-    return    if index($$query, '-') < 0;
-
-    #iterate over query frag symbols
-    while ( (my $i = index($$query, '-')) >= 0 ) {
-
-	#downcase preceding symbol in hit
-	if (defined substr($$query, $i-1, 1)) {
-	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
-	}
-
-	#consume gap symbols in query and hit
-	while (substr($$query, $i, 1) eq '-') {
-	    substr($$query, $i, 1) = "";
-	    substr($$sbjct, $i, 1) = "";
-	}
-
-	#downcase succeeding symbol in hit
-	if (defined substr($$query, $i, 1)) {
-	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
-	}
-
-	#warn "sqg(out q)=[$$query]\n";
-	#warn "sqg(out h)=[$$sbjct]\n";
-    }
-    $self;
-}
-
 ######################################################################
 # private methods
 ######################################################################
