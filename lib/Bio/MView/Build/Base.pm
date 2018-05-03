@@ -253,57 +253,50 @@ sub build_indices {
 
     $self->{'uid2row'}  = {};
     $self->{'keep_uid'} = {};
-    $self->{'hide_uid'} = {};
     $self->{'nops_uid'} = {};
+    $self->{'hide_uid'} = {};
 
     #index the row objects by unique 'uid' for fast lookup
     foreach my $i (@{$self->{'index2row'}}) {
 	$self->{'uid2row'}->{$i->uid} = $i;
     }
 
-    #get the reference row handle, if any
-    if (my @id = $self->map_id($PAR->get('ref_id'))) {
-	$self->{'ref_row'} = $id[0];
+    #make all skiplist rows invisible
+    $self->set_uid_fields($PAR->get('skiplist'), 'hide_uid');
+
+    #make all keeplist rows visible again, partially overriding previous
+    $self->set_uid_fields($PAR->get('keeplist'), 'keep_uid', 'hide_uid');
+
+    #save any reference row and put it on the keeplist as well
+    my $refid = $PAR->get('ref_id');
+    if (my @refid = $self->map_id($refid)) {
+	$self->{'ref_row'} = $refid[0];  #save the reference row
+        $self->set_uid_fields([$refid], 'keep_uid');
     }
 
-    #make all skiplist rows invisible; this has to be done because some
-    #may not really have been discarded at all, eg., reference row
-    foreach my $i (@{$PAR->get('skiplist')}) {
-	my @id = $self->map_id($i);
-	foreach my $r (@id) {
-	    $self->{'hide_uid'}->{$r->uid} = 1;         #invisible
-	}
-    }
-
-    #hash the keeplist and make all keeplist rows visible again
-    foreach my $i (@{$PAR->get('keeplist')}) {
-	my @id = $self->map_id($i);
-	foreach my $r (@id) {
-	    $self->{'keep_uid'}->{$r->uid} = 1;
-	    delete $self->{'hide_uid'}->{$r->uid}  if
-		exists $self->{'hide_uid'}->{$r->uid};  #visible
-	}
-    }
-
-    #hash the reference row on the keeplist. don't override
-    #any previous invisibility set by discard list.
-    $self->{'keep_uid'}->{$self->{'ref_row'}->uid} = 1
-	if defined $self->{'ref_row'};
-
-    #hash the nopslist: the 'uid' key is used so that the
-    #underlying Align class can recognise rows; don't override any previous
-    #visibility set by discard list
-    foreach my $i (@{$PAR->get('nopslist')}) {
-	my @id = $self->map_id($i);
-	foreach my $r (@id) {
-	    $self->{'nops_uid'}->{$r->uid} = 1;
-	}
-    }
+    #save the nopslist
+    $self->set_uid_fields($PAR->get('nopslist'), 'nops_uid');
 
     #warn "ref:  ",$self->{'ref_row'}->uid, "\n" if defined $self->{'ref_row'};
     #warn "keep: [", join(",", sort keys %{$self->{'keep_uid'}}), "]\n";
     #warn "nops: [", join(",", sort keys %{$self->{'nops_uid'}}), "]\n";
     #warn "hide: [", join(",", sort keys %{$self->{'hide_uid'}}), "]\n";
+}
+
+#iterate over idlist, setting self.finsert for each id; if optional fdelete is
+#present remove corresponding self.fdelete element
+sub set_uid_fields {
+    my ($self, $idlist, $finsert, $fdelete) = @_;
+    foreach my $id (@$idlist) {
+	my @ids = $self->map_id($id);
+	foreach my $r (@ids) {
+            my $uid = $r->uid;
+	    $self->{$finsert}->{$uid} = 1;
+            if (defined $fdelete and exists $self->{$fdelete}->{$uid}) {
+                delete $self->{$fdelete}->{$uid};
+            }
+        }
+    }
 }
 
 sub build_base_alignment {
