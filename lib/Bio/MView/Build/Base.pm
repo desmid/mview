@@ -54,29 +54,10 @@ sub topn_done {
 #return 1 is row should be ignored by row rank or identifier
 sub skip_row { my $self = shift; return ! $self->use_row(@_) }
 
-sub get_entry { return $_[0]->{'entry'} }
+sub get_entry { $_[0]->{'entry'} }
 
-sub get_row_from_id {
-    my ($self, $id) = @_;
-    if (defined $id) {
-	my @id = $self->map_id($id);
-	return undef   unless @id;
-	return $id[0]  unless wantarray;
-	return @id;
-    }
-    return undef;
-}
-
-sub get_uid_from_id {
-    my ($self, $id) = @_;
-    if (defined $id) {
-	my @id = $self->map_id($id);
-	return undef        unless @id;
-	return $id[0]->uid  unless wantarray;
-	return map { $_->uid } @id;
-    }
-    return undef;
-}
+sub get_ref_row { $_[0]->{'ref_row'} }
+sub get_ref_uid { $_[0]->{'ref_row'}->uid }
 
 sub uid2row   { $_[0]->{uid2row}->{$_[1]} }
 sub index2row { $_[0]->{index2row}->[$_[1]] }

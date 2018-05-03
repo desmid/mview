@@ -210,41 +210,41 @@ sub assemble_headers {
 sub add_alignment_display {
     my ($self, $bld, $aln, $dis, $acount) = @_;
 
-    my $refobj = $bld->get_row_from_id($PAR->get('ref_id'));
-    my $refid  = $bld->get_uid_from_id($PAR->get('ref_id'));
-
     my $headers = $self->assemble_headers($bld, $aln, $acount);
 
     #vmstat("display panel constructor");
-    my $pan = $dis->new_panel($headers, $aln->init_display);
+    my $panel = $dis->new_panel($headers, $aln->init_display);
     #vmstat("display panel constructor DONE");
+
+    my $refobj = $bld->get_ref_row;
+    my $refuid = $bld->get_ref_uid;
 
     #attach a ruler? (may include header text)
     if ($PAR->get('ruler')) {
         my $tmp = $aln->build_ruler($refobj);
-	$tmp->append_display($pan);
+	$tmp->append_display($panel);
         #vmstat("ruler added");
     }
 
     #attach the alignment
     if ($PAR->get('alignment')) {
-        $aln->set_color_scheme($refid);
-	$aln->append_display($pan, $self->gc_flag);
+        $aln->set_color_scheme($refuid);
+	$aln->append_display($panel, $self->gc_flag);
         #vmstat("alignment added");
     }
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
 	my $tmp = $aln->build_conservation_row;
-	$tmp->append_display($pan);
+	$tmp->append_display($panel);
         #vmstat("conservation added");
     }
 
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
 	my $tmp = $aln->build_consensus_rows;
-        $tmp->set_consensus_color_scheme($aln, $refid);
-	$tmp->append_display($pan);
+        $tmp->set_consensus_color_scheme($aln, $refuid);
+	$tmp->append_display($panel);
         #vmstat("consensus added");
     }
 
