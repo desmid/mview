@@ -139,13 +139,10 @@ sub header {
     my $s = '';
 
     if (defined $self->{'ref_row'}) {
-	$s .= "Reference sequence ";
-	if ($self->{'ref_row'}->num !~ /^\s*$/) {
-	    $s .= "(" . $self->{'ref_row'}->num . ")";
-	} else {
-	    $s .= "(query)";
-	}
-	$s .= ": " . $self->{'ref_row'}->cid . "\n";
+        my $name = $self->{'ref_row'}->num;
+        my $cid  = $self->{'ref_row'}->cid;
+        $name = "query"  if $name eq '';
+	$s .= "Reference sequence ($name): $cid\n";
     }
     if (0 < $minident and $maxident < 100) {
 	$s .= "Identity limits: $minident-$maxident%";
