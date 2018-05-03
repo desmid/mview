@@ -73,9 +73,9 @@ sub use_row {
 
 #override
 sub map_id {
-    my ($self, $ref) = @_;
-    $ref = 1  if $ref eq '0' or $ref =~ /query/i;
-    return $self->SUPER::map_id($ref);
+    my ($self, $id) = @_;
+    $id = 1  if $id eq '0' or $id =~ /query/i;
+    return $self->SUPER::map_id($id);
 }
 
 ###########################################################################

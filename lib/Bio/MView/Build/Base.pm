@@ -27,7 +27,7 @@ sub new {
     $self->{'topn'}      = undef;   #actual number of rows to show
     $self->{'aligned'}   = undef;   #treat input as aligned
     $self->{'keep_uid'}  = undef;   #hash 'keeplist' by Row->uid
-    $self->{'nops_uid'}  = undef;   #hash 'nopslist'  by Row->uid
+    $self->{'nops_uid'}  = undef;   #hash 'nopslist' by Row->uid
     $self->{'hide_uid'}  = undef;   #hash merge 'disc/keep/nops/' by Row->uid
 
     $self->initialise;
@@ -187,67 +187,11 @@ sub test_if_aligned { die "$_[0] use_row: virtual method called\n" }
 #subclass overrides: map an identifier supplied as {0..N|query|M.N} to
 #a list of row objects in $self->{'index2row'}
 sub map_id {
-    my ($self, $ref) = @_;
-    my ($i, @rowref) = ();
-
-    #warn "map_id($ref)\n";
-
+    my ($self, $id) = @_;
+    my @rowref = ();
+    #warn "map_id($id)\n";
     foreach my $row (@{$self->{'index2row'}}) {
-
-	#major row number = query
-	if ($ref =~ /^0$/) {
-	    if ($row->num eq '' or $row->num eq $ref) {
-		push @rowref, $row;
-	    }
-	    next;
-	}
-
-	#major row number
-	if ($ref =~ /^\d+$/) {
-	    #exact match
-	    if ($row->num eq $ref) {
-		push @rowref, $row;
-		next;
-	    }
-	    #match to major.minor prefix
-	    if ($row->num =~ /^$ref\./) {
-		push @rowref, $row;
-		next;
-	    }
-	    next;
-	}
-
-	#major.minor row number
-	if ($ref =~ /^\d+\.\d+$/) {
-	    if ($row->num eq $ref) {
-		push @rowref, $row;
-	    }
-	    next;
-	}
-
-	#string identifier
-	if ($ref eq $row->rid or $ref eq $row->cid) {
-	    push @rowref, $row;
-	    next;
-	}
-
-	#regex inside // pair, applied case-insensitive
-	if ($ref =~ /^\/.*\/$/) {
-	    my $r = $ref;
-	    $r =~ s/^\///; $r =~ s/\/$//;
-	    if ($row->cid =~ /$r/i) {
-		#warn "map_id: /$r/ @{[$row->cid]}\n";
-		push @rowref, $row;
-	    }
-	    next;
-	}
-
-	#wildcard
-	if ($ref =~ /^\*$/ or $ref =~ /^all$/i) {
-	    push @rowref, $row;
-	    next;
-	}
-
+        push @rowref, $row  if $row->matches_id($id);
     }
     #warn "${self}::map_id (@rowref)\n";
     return @rowref;
@@ -284,7 +228,6 @@ sub rebless_alignment {}
 #affected.
 sub strip_query_gaps {
     my ($self, $query, $sbjct) = @_;
-    my $i;
 
     #warn "sqg(in  q)=[$$query]\n";
     #warn "sqg(in  h)=[$$sbjct]\n";
@@ -293,7 +236,7 @@ sub strip_query_gaps {
     return    if index($$query, '-') < 0;
 
     #iterate over query frag symbols
-    while ( ($i = index($$query, '-')) >= 0 ) {
+    while ( (my $i = index($$query, '-')) >= 0 ) {
 
 	#downcase preceding symbol in hit
 	if (defined substr($$query, $i-1, 1)) {

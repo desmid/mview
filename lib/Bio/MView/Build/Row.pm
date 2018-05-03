@@ -162,6 +162,46 @@ sub assemble {
     $self->{'seq'}->set_gap($gap);
 }
 
+#return 1 if supplied id matches own id, 0 otherwise
+sub matches_id {
+    my ($self, $id) = @_;
+
+    #id is zero indicating query
+    if ($id =~ /^0$/) {
+        return 1  if $self->{'num'} eq '' or $self->{'num'} eq '0';
+        return 0;
+    }
+
+    #id is major row number only
+    if ($id =~ /^\d+$/) {
+        return 1  if $self->{'num'} eq $id;       #match major
+        return 1  if $self->{'num'} =~ /^$id\./;  #match major.minor prefix
+        return 0;
+    }
+
+    #id is major.minor row number pair
+    if ($id =~ /^\d+\.\d+$/) {
+        return 1  if $self->{'num'} eq $id;
+        return 0;
+    }
+
+    #id is string identifier
+    return 1  if $id eq $self->{'rid'} or $id eq $self->{'cid'};
+
+    #id is regex inside // pair, case-insensitive
+    if ($id =~ /^\/.*\/$/) {
+        my $r = $id; $r =~ s/^\///; $r =~ s/\/$//;
+        return 1  if $self->{'cid'} =~ /$r/i;
+        return 0;
+    }
+
+    #id is wildcard
+    return 1  if $id =~ /^\*$/ or $id =~ /^all$/i;
+
+    #no match
+    return 0;
+}
+
 ######################################################################
 # private methods
 ######################################################################
