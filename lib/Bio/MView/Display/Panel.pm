@@ -249,8 +249,8 @@ sub render_chunk {
         for (my $i=8; $i < @$labelwidths; $i++) {
             if ($par->{'labelflags'}->[$i] and $labelwidths->[$i]) {
                 $par->{'dev'}->render_hspace($HSPACE);
-                $par->{'dev'}->render_annotation($labelwidths->[$i],
-                                                 $o->label($i));
+                $par->{'dev'}->render_text_left($labelwidths->[$i],
+                                                $o->label($i));
             }
         }
 

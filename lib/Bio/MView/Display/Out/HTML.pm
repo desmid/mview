@@ -41,12 +41,9 @@ sub process_segment {
 #overrides
 sub render_identifier {
     my ($self, $w, $s, $url) = @_;
-    if (defined $url and $url) {
-        $self->write("<A HREF=\"$url\">$s</A>");
-    } else {
-        $self->write($s);
-    }
-    $self->write(' ' x ($w - length($s)));
+    my $rpad = ' ' x ($w - length $s);
+    $s = "<A HREF=\"$url\">$s</A>"  if defined $url and $url;
+    $self->write($s, $rpad);
 }
 
 #overrides
@@ -60,9 +57,8 @@ sub render_position {
 #overrides
 sub render_sequence {
     my ($self, $s, $bold) = @_;
-    $self->write("<STRONG>")   if $bold;
+    $s = "<STRONG>$s</STRONG>"  if $bold;
     $self->write($s);
-    $self->write("</STRONG>")  if $bold;
 }
 
 #overrides

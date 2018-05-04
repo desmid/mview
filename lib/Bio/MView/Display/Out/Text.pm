@@ -53,18 +53,19 @@ sub render_rownum {
 #subclass overrides
 sub render_identifier {
     my ($self, $w, $s) = @_;
-    $self->write($self->format_label($LJUST, $w, $s));
+    $self->render_text_left($w, $s);
 }
+
 #subclass overrides
 sub render_description {
     my ($self, $w, $s) = @_;
-    $self->write($self->format_label($LJUST, $w, $s));
+    $self->render_text_left($w, $s);
 }
 
 #subclass overrides
 sub render_annotation {
     my ($self, $w, $s) = @_;
-    $self->write($self->format_label($RJUST, $w, $s));
+    $self->render_text_right($w, $s);
 }
 
 #subclass overrides
@@ -83,6 +84,18 @@ sub render_sequence {
 sub render_hspace {
     my ($self, $w) = @_;
     $self->write(' ' x $w);
+}
+
+#subclass overrides
+sub render_text_left {
+    my ($self, $w, $s) = @_;
+    $self->write($self->format_label($LJUST, $w, $s));
+}
+
+#subclass overrides
+sub render_text_right {
+    my ($self, $w, $s) = @_;
+    $self->write($self->format_label($RJUST, $w, $s));
 }
 
 #subclass overrides: any undef will be rendered as newline
