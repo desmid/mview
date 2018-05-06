@@ -19,7 +19,8 @@ sub next_segment {
     my ($self, $par, $chunksize) = @_;
     #warn "${self}::next_segment\n";
 
-    return undef  if $self->{'cursor'} > $self->{'length'};
+    return undef  if $self->{'cursor'} > $self->{'length'};  #done
+    return []     unless $par->{'sequences'};                #sequences off
 
     #current real position
     my $pos1 = $self->{'start'} + $self->{'cursor'} - 1;

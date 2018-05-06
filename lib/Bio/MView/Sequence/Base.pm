@@ -143,9 +143,12 @@ sub sequence {
 #     return $claim;
 # }
 
-#return actual string length; includes special characters
-sub length { $_[0]->trulen }
-#sub length { $_[0]->lablen }
+#return sequence length; if sequences are not saved return the length based on
+#the labelling; includes special characters
+sub length {
+    return $_[0]->trulen  if $_[0]->{'save'};
+    return $_[0]->lablen;
+}
 
 #return pure sequence string length; excludes special characters
 sub seqlen { CORE::length $_[0]->sequence }

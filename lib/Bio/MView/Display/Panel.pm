@@ -162,7 +162,8 @@ sub update_fieldwidths {
 sub get_chunk_size {
     my $self = shift;
     my $chunk = $self->{'par'}->{'width'};
-    $chunk = $self->{'length'}  if $chunk < 1;  #full width
+    return $self->{'length'}  if $chunk < 1;                     #full width
+    return $self->{'length'}  if !$self->{'par'}->{'sequences'}; #sequences off
     return $chunk;
 }
 

@@ -1,4 +1,4 @@
-; -*- mode: Text; eval: (set-fill-column 75); -*- 
+; -*- mode: Text; eval: (set-fill-column 75); -*-
 
 Version 1.64.rc
 
@@ -20,7 +20,7 @@ Bug fixes:
 
 Other:
 
-- Speed improvement.
+- Various speed improvements.
 - Complete rewrite of display mechanism.
 - Ongoing refactoring.
 
@@ -292,12 +292,12 @@ Version 1.53  2013-08-21
 Version 1.52  2011-01-20
   Fasta parsing extended to handle versions 34,35,36 as requested by
   Shiraz Shah. Only tested for fasta itself on protein sequences and not
-  for other members of the fasta suite. 
+  for other members of the fasta suite.
   Bug fixes suggested by Rob Sheridan/Chris Sander:
   SRS.pm did not truncate trailing garbage on identifiers correctly.
   EBI SRS wgetz URL templates updated.
   HSSP.pm parser now refers to uniprot instead of swiss in identifiers.
-  
+
 
 Version 1.51.1  2009-10-24
   HSSP output no longer produces the chain discontinuity symbol '!' in
@@ -425,7 +425,7 @@ Version 1.47  21-4-02
      gkutish at asrr.arsusda.gov.
   o  Colormap now uses a palette of colors by name, run with -listcolors to
      see the extended syntax. Backwards compatible with previous versions.
-  o  Input sequences having sequence identifiers that start with a hash 
+  o  Input sequences having sequence identifiers that start with a hash
      character '#' will be treated as special rows for coloring
      purposes. The user can supply corresponding colormaps using '-colorfile
      FILENAME'. For example, if the input alignment contains a line
@@ -478,17 +478,17 @@ Version 1.41.5
 
 31-8-99   o Modified BLAST2 parser to recognise ungapped (blastall -g F) output
             (requested by tdeboer@hgmp.mrc.ac.uk). Note, the default
-	    behaviour of MView when processing BLAST2 output is to display
-	    only the first sequence fragment found, which is reasonable for
-	    gapped output. If you want to use BLAST2 ungapped output and see
-	    the HSPs merged (the default behaviour of MView with old BLAST1
-	    output) use the '-hsp all' option. Likewise to see all HSPs
-	    separately use '-hsp discrete'.
+            behaviour of MView when processing BLAST2 output is to display
+            only the first sequence fragment found, which is reasonable for
+            gapped output. If you want to use BLAST2 ungapped output and see
+            the HSPs merged (the default behaviour of MView with old BLAST1
+            output) use the '-hsp all' option. Likewise to see all HSPs
+            separately use '-hsp discrete'.
           o Modified BLAST2 BLAST[NX] parsers to recognise strand and frame
             orientation fields added in (or before?) BLAST2.0.9.
           o Modified FASTA3 parsers for multi-line descriptions
             (fasta... -L) output.
-          
+
 
 Version 1.41.4
 
@@ -526,9 +526,9 @@ Version 1.41.1
 
 Version 1.41
 
-15-4-99   o Condensed CSS HTML output so loading pages should be faster. 
+15-4-99   o Condensed CSS HTML output so loading pages should be faster.
           o Added limited experimental support for GCG 9.1 versions of BLAST
-            and FASTA suites: known to work for: blastp (1.4.8), fasta (2). 
+            and FASTA suites: known to work for: blastp (1.4.8), fasta (2).
           o Added support for fasta (3.2) with strand orientations.
           o Changed -disc/-keep policy again! List precedence is:
               -keep > -disc
@@ -585,8 +585,8 @@ Version 1.40.2
 
 Version 1.40.1
 
-18-2-99   Added explicit CORE::{warn,die} for perl 5.005. Default alignment 
-          color '-symcolor' set to #222222 (dark grey) instead of #000000 
+18-2-99   Added explicit CORE::{warn,die} for perl 5.005. Default alignment
+          color '-symcolor' set to #222222 (dark grey) instead of #000000
           (black).
 
 
@@ -641,7 +641,7 @@ Version 1.39.1
 
 Version 1.39
 
-11-11-98  Added -con_gaps option to control use of gaps in consensus 
+11-11-98  Added -con_gaps option to control use of gaps in consensus
           calculation (suggested by J.Stoye@dkfz-heidelberg.de). The
           default behaviour is equivalent to '-con_gaps on' which computes
           consensus colours and consensus lines counting gaps. This often
@@ -695,7 +695,7 @@ Version 1.37
           (score, expect, etc) for search programs in BLAST/FASTA
           suites. Added -minopt to for FASTA filtering (was -minscore, but
           this was ambiguous). Added -range M:N option giving limited
-          output sequence number range control from command line. 
+          output sequence number range control from command line.
           Bug fixes: Ordering of HSPs in reverse complemented query strands
           was wrong for blastn (series 1.4). Better memory usage. Rulers
           now decrement for reverse oriented query sequences (BLASTN, etc).
@@ -722,16 +722,16 @@ Version 1.36
           or identity calculations added through -nop (no process) option.
           Complete removal of explicit rows and ranges of rows through -disc
           (discard) option. Same ability to handle row ranges (eg., 10..15)
-          added to existing -keep (force retention of rows despite other 
+          added to existing -keep (force retention of rows despite other
           filters) option. New PIR format parser added (-in option). New
           output formats PIR and MSF added (-out option). The MSF output
           does not presenty; compute checksums, so this may cause a problem
-          for those programs that are fussy about this. 
+          for those programs that are fussy about this.
 
           MAJOR PERFORMANCE changes:
           The memory footprint has been massively reduced for large alignments
           through closure or several memory leaks concerning (lack of) garbage
-          collection of circular references in perl. The input file is no 
+          collection of circular references in perl. The input file is no
           longer read into memory for parsing, but is read on demand using
           seek(), which also saves memory.
 
@@ -797,9 +797,9 @@ Version 1.31
 
 Version 1.30
 
-17-3-98   Added user control of coloring. Setting maxident is no longer 
+17-3-98   Added user control of coloring. Setting maxident is no longer
           overridden by topn: -maxident 75 -topn 10 now gives the top 10
-          hits with maximum identity of 75%. Formerly, it gave the maximum 
+          hits with maximum identity of 75%. Formerly, it gave the maximum
           75% identity hits of the top 10.
 
 
@@ -818,7 +818,7 @@ Version 1.28  Experimental - not released.
 
 Version 1.27.3
 
-6-3-98    Removed old PSI-BLAST parser (PBlastp.pm). Added NCBI BLAST2 parser 
+6-3-98    Removed old PSI-BLAST parser (PBlastp.pm). Added NCBI BLAST2 parser
           (Blast2.pm), which parses both new NCBI BLAST2 and PSI-BLAST formats.
           Added -minbits filtering to mview command line for use with these.
 
@@ -859,11 +859,11 @@ Version 1.25
 
 Version 1.24.2
 
-20-1-98   Fixed bug in colouring when an excised gap region was lowercased - 
+20-1-98   Fixed bug in colouring when an excised gap region was lowercased -
           identical residues weren't being coloured.
 
 
-Version 1.24 
+Version 1.24
 
 
 Log started.
