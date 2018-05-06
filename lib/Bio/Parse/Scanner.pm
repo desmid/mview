@@ -262,18 +262,16 @@ sub _next_line {
     $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
 
     #ignore 'depth' leading characters
-    my $ptr = $self->{'cursor'} + $self->{'depth'};
+    my $offset = $self->{'cursor'} + $self->{'depth'};
 
     #read the line
-    $$line = $self->{'text'}->getline($ptr);
+    my $bytes = $self->{'text'}->getline($line, $offset);
 
-    return 0  unless defined $$line;
+    return 0  unless $bytes;
 
-    #how many bytes were actually read?
-    my $bytes = $self->{'text'}->bytesread;
-
+    #truncate to within this delimited record
     if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
-	$bytes = $self->{'limit'} - $ptr;
+	$bytes = $self->{'limit'} - $offset;
 	$$line = substr($$line, 0, $bytes);
     }
 

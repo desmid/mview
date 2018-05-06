@@ -82,7 +82,7 @@ sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    while (defined ($line = $parent->{'text'}->getline)) {
+    while ($parent->{'text'}->getline(\$line)) {
 
 	#start of entry
 	if ($line =~ /$HSSP_START/o and $offset < 0) {

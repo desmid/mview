@@ -221,7 +221,7 @@ sub get_entry {
     my $GCG = 0;
     my $start = '';
 
-    while (defined ($line = $parent->{'text'}->getline)) {
+    while ($parent->{'text'}->getline(\$line)) {
 
 	#warn "($offset) >>$line";
 

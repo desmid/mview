@@ -153,7 +153,7 @@ sub get_entry {
 
     my $type = 'Bio::Parse::Format::BLAST';
 
-    while (defined ($line = $parent->{'text'}->getline)) {
+    while ($parent->{'text'}->getline(\$line)) {
 
         #start of entry
         if ($line =~ /$ENTRY_START/o and $offset < 0) {
