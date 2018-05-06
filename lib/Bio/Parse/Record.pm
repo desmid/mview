@@ -106,13 +106,11 @@ sub list_attrs {
 }
 
 sub test_args {
-    my $self = shift;
-    my $lineref = shift;
-    my $i; foreach $i (@_) {
-	next  if $i ne '';
-        chomp $$lineref;
-	$self->warn("incomplete match of line: $$lineref");
-    }
+    my ($self, $line) = (shift, shift);
+    my $bad = 0; map { $bad++  if $_ eq '' } @_;
+    return  unless $bad;
+    $line = $$line; chomp $line;
+    $self->warn("incomplete match of line: '$line'");
 }
 
 sub test_records {
@@ -142,7 +140,6 @@ sub fmt {
 
 sub print {
     my ($self, $indent) = (@_, 0);
-    my ($tmp, $r, $i, $rec) = ('');
     my $x = ' ' x $indent;
     printf "%sClass:  %s\n", $x, $self;
     printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
@@ -161,8 +158,8 @@ sub print {
     printf "%s  Miscellaneous:\n", $x;
     printf "$x%20s -> %d\n",   'index', $self->{'index'};
     printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
+    my $tmp = '';
     if (defined $self->{'text'}) {
-	## $tmp   = substr(${$self->{'text'}}, $self->{'offset'}, 30);
 	$tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
         ($tmp) = split("\n", $tmp);
     }
@@ -323,15 +320,11 @@ sub get_type {
 
 sub get_record_number {
     my ($self, $parent) = (@_, undef);
-    my ($i, $type);
-    if (defined $parent) {
-	$type   = $self->get_type;
-	for ($i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
-	    if ($parent->{'record_by_type'}->{$type}->[$i]->[1] ==
-		$self->{'offset'}) {
-		return $i+1;
-	    }
-	}
+    return 0  unless defined $parent;
+    my $type = $self->get_type;
+    for (my $i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
+        my $rec = $parent->{'record_by_type'}->{$type}->[$i];
+        return $i+1  if $rec->[1] == $self->{'offset'};
     }
     #there is no record number
     return 0;
@@ -340,14 +333,14 @@ sub get_record_number {
 sub print_records_by_posn {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x ($indent+2);
-    my ($rec, %count);
-    foreach $rec (@{$self->{'record_by_posn'}}) {
+    my %count;
+    foreach my $rec (@{$self->{'record_by_posn'}}) {
 	if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
 	    printf "$x%20s -> [%s]\n",
-	    $rec->[0] . '/' . ++$count{$rec->[0]}, join(", ", @$rec);
+                $rec->[0] . '/' . ++$count{$rec->[0]}, join(", ", @$rec);
 	} else {
 	    printf "$x%20s -> [%s]\n",
-	    $rec->[0],                             join(", ", @$rec);
+                $rec->[0],                             join(", ", @$rec);
 	}
     }
 }
@@ -355,18 +348,18 @@ sub print_records_by_posn {
 sub print_records_by_type {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x ($indent+2);
-    my ($key, $rec, $i);
-    foreach $key (sort keys %{$self->{'record_by_type'}}) {
+    foreach my $key (sort keys %{$self->{'record_by_type'}}) {
+        my $rec;
 	if (@{$self->{'record_by_type'}->{$key}} > 1) {
-	    for ($i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
+	    for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
 		$rec = $self->{'record_by_type'}->{$key}->[$i];
 		printf "$x%20s -> [%s]\n",
-		$rec->[0] . '/' . ($i+1),          join(", ", @$rec);
+                    $rec->[0] . '/' . ($i+1),          join(", ", @$rec);
 	    }
  	} else {
 	    $rec = $self->{'record_by_type'}->{$key}->[0];
 	    printf "$x%20s -> [%s]\n",
-	    $rec->[0],                             join(", ", @$rec);
+                $rec->[0],                             join(", ", @$rec);
 	}
     }
 }
@@ -392,15 +385,13 @@ sub add_object {
 #which case only those will be marked for destruction, not this Record.
 sub free {
     my $self = shift;
-    my ($type, $rec);
-
     #warn "FREE $self (@_)\n";
 
     if (@_) {
 	#only free these subrecord types
-	foreach $type (@_) {
+	foreach my $type (@_) {
 	    if (exists $self->{'record_by_type'}->{$type}) {
-		foreach $rec (@{$self->{'record_by_type'}->{$type}}) {
+		foreach my $rec (@{$self->{'record_by_type'}->{$type}}) {
                     $self->free_record($rec);
 		}
 	    }
@@ -409,7 +400,7 @@ sub free {
     }
 
     #free every subrecord
-    foreach $rec (@{$self->{'record_by_posn'}}) {
+    foreach my $rec (@{$self->{'record_by_posn'}}) {
         $self->free_record($rec);
     }
 
@@ -440,7 +431,7 @@ sub free_record {
 #with no argument return the whole database entry string as a scalar.
 sub string {
     my ($self, $key) = (@_, undef);
-    my (@list, @keys, $rec) = ();
+    my (@list, @keys) = ();
 
     #warn "string($key)\n";
 
@@ -453,7 +444,7 @@ sub string {
     }
 
     foreach $key (@keys) {
-	foreach $rec ($self->key_range($key)) {
+	foreach my $rec ($self->key_range($key)) {
 	    if (defined $rec->[3]) {
 		#print "STRING() calling child\n";
 		push @list, $rec->[3]->string;
@@ -479,7 +470,7 @@ sub key_range {
     if ($key =~ /(\S+)\s*\[\s*(\d+)\s*\]/) {
 	($key, $lo, $hi) = ($1, $2, $2);
     }
-    if ($key =~ /(\S+)\s*\[\s*(\d+)\s*\.\.\s*(\d+)\s*\]/) {
+    elsif ($key =~ /(\S+)\s*\[\s*(\d+)\s*\.\.\s*(\d+)\s*\]/) {
 	if ($2 < $3) {
 	    ($key, $lo, $hi) = ($1, $2, $3);
 	} else {
