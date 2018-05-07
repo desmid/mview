@@ -32,14 +32,15 @@ sub new {
 	$self->{'offset'} = $entry->{'offset'};
 	$self->{'bytes'}  = $entry->{'bytes'};
     }
+    $self->{'limit'}      = $self->{'offset'} + $self->{'bytes'};
 
     $self->reset;
 
     $self;
 }
 
-sub get_offset { $_[0]->{'cursor'} - $_[0]->{'length'} }
-sub get_bytes  { $_[0]->{'length'} }
+sub get_offset { $_[0]->{'linestart'} }
+sub get_bytes  { $_[0]->{'cursor'} - $_[0]->{'linestart'} }
 
 #return the remaining unprocessed stream without altering the cursor
 sub inspect_stream {
@@ -54,12 +55,12 @@ sub inspect_stream {
 #optional argument is non-zero.
 sub next_line {
     my ($self, $chomp) = (@_, 0);
-
     #warn "next_line(chomp=$chomp)\n";
 
     return undef  unless $self->_next_line;
 
     my $line = \$self->{'line'};
+
     chomp $$line  if $chomp;
 
     return $$line;
@@ -70,12 +71,11 @@ sub next_line {
 #Assumes _next_line() called just previously.
 sub scan_lines {
     my ($self, $count, $key) = (@_, 0);
-
     #warn "scan_lines() looking at ($count) lines\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     if ($count < 1) {  #scan everything
 	while ($self->_next_line) {
@@ -100,12 +100,11 @@ sub scan_lines {
 #_next_line() called just previously.
 sub scan_while {
     my ($self, $pattern, $key) = (@_, 0);
-
     #warn "scan_while() looking at /$pattern/\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     while ($self->_next_line) {
 	if ($$line !~ /$pattern/) {
@@ -126,12 +125,11 @@ sub scan_while {
 #_next_line() called just previously. Consumed record EXCLUDES matched line.
 sub scan_until {
     my ($self, $pattern, $key) = (@_, 0);
-
     #warn "scan_until() looking until /$pattern/\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     while ($self->_next_line) {
 	if ($$line =~ /$pattern/) {
@@ -152,12 +150,11 @@ sub scan_until {
 #_next_line() called just previously. Consumed record INCLUDES matched line.
 sub scan_until_inclusive {
     my ($self, $pattern, $key) = (@_, 0);
-
     #warn "scan_until_inclusive() looking until /$pattern/\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     while ($self->_next_line) {
 	$record .= $$line;
@@ -176,12 +173,11 @@ sub scan_until_inclusive {
 #Skips initial $skipcount instances of $pattern.
 sub scan_skipping_until {
     my ($self, $pattern, $skip, $key) = (@_, 0);
-
     #warn "scan_skipping_until() looking until /$pattern/\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     while ($self->_next_line) {
 	if ($$line =~ /$pattern/) {
@@ -205,12 +201,11 @@ sub scan_skipping_until {
 #previously.
 sub scan_nest {
     my ($self, $nest, $key) = (@_, 0);
-
     #warn "scan_nest() looking at nest depth $nest\n";
 
     my $line   = \$self->{'line'};
+    my $offset = $self->{'linestart'};
     my $record = $$line;
-    my $offset = $self->{'cursor'} - $self->{'length'};
 
     while ($self->_next_line) {
 	if ($$line !~ /^(\s{$nest}|$)/) {
@@ -236,47 +231,46 @@ sub DESTROY {
 
 sub reset {
     my $self = shift;
-    $self->{'cursor'} = $self->{'offset'};
-    $self->{'limit'}  = $self->{'offset'} + $self->{'bytes'};
-    $self->{'line'}   = '';
-    $self->{'length'} = 0;
+    $self->{'cursor'}    = $self->{'offset'};
+    $self->{'linestart'} = $self->{'offset'};
+    $self->{'line'}      = '';
     #warn "INITIAL=(c=$self->{'cursor'} l=$self->{'limit'})\n";
 }
 
 sub backup {
     my $self = shift;
-    $self->{'cursor'} -= $self->{'length'};
-    $self->{'line'}    = '';
-    $self->{'length'}  = 0;
+    $self->{'cursor'} = $self->{'linestart'};
+    $self->{'line'}   = '';
 }
 
 #read next line of text into self.line and return 1 on success; otherwise set
 #self.line to undef and return 0
 sub _next_line {
     my $self = shift;
-
     #warn "_next_line: $self->{'cursor'} / $self->{'limit'}\n";
 
     my $line = \$self->{'line'};
 
     $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
 
-    #ignore 'depth' leading characters
-    my $offset = $self->{'cursor'} + $self->{'depth'};
-
     #read the line
-    my $bytes = $self->{'text'}->getline($line, $offset);
+    my $bytes = $self->{'text'}->getline($line, $self->{'cursor'});
 
     return 0  unless $bytes;
 
-    #truncate to within this delimited record
     if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
-	$bytes = $self->{'limit'} - $offset;
-	$$line = substr($$line, 0, $bytes);
+        #truncate to within this delimited record
+	$bytes = $self->{'limit'} - $self->{'cursor'};
+        #also ignore leading depth
+	$$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
+    } elsif ($self->{'depth'} > 0) {
+        #just ignore leading depth
+	$$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
     }
 
-    $self->{'length'}  = $self->{'depth'} + $bytes;
-    $self->{'cursor'} += $self->{'length'};
+    #advance cursor
+    $self->{'linestart'} = $self->{'cursor'};
+    $self->{'cursor'}   += $bytes;
 
     return 1;
 }
