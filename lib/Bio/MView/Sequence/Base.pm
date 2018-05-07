@@ -85,8 +85,9 @@ sub new {
     $self->{'lo'}     = 0;      #absolute start of string
     $self->{'hi'}     = 0;      #absolute end of string
 
-    $self->{'pfxlen'} = 0;      #length of non-sequence prefix
-    $self->{'sfxlen'} = 0;      #length of non-sequence suffix
+    $self->{'pfxlen'} = 0;      #count of prefix padding
+    $self->{'sfxlen'} = 0;      #count of suffix padding
+    $self->{'seqlen'} = 0;      #count of sequence chars
 
     $self->{'reflo'}  = 0;      #first position of sequence data
     $self->{'refhi'}  = 0;      #last  position of sequence data
@@ -134,27 +135,11 @@ sub sequence {
     $s;
 }
 
-# sub length {
-#     my $self = shift;
-#     my $claim = $self->lablen;
-#     my $true = $self->trulen;
-#     warn "$self: length: true: $true  claim: $claim\n";
-#     warn "T= [@{[$self->string]}]\n";
-#     return $claim;
-# }
+#return full sequence length; includes special characters: gaps, padding, frameshifts
+sub length { $_[0]->lablen }
 
-#return sequence length; if sequences are not saved return the length based on
-#the labelling; includes special characters
-sub length {
-    return $_[0]->trulen  if $_[0]->{'save'};
-    return $_[0]->lablen;
-}
-
-#return pure sequence string length; excludes special characters
-sub seqlen { CORE::length $_[0]->sequence }
-
-#return actual string length ; includes special characters
-sub trulen { CORE::length $_[0]->string }
+#return pure sequence length; excludes special characters
+sub seqlen { $_[0]->{'seqlen'} }
 
 #return string length claimed by sequence labels; includes special characters
 sub lablen {
@@ -413,6 +398,7 @@ sub _populate_sequence_array {
 
         #write the character
         $self->{'seq'}->{$p} = $c;
+        $self->{'seqlen'}++  if $c ne $Mark_Fs1 and $c ne $Mark_Fs2;
     }
 
     if ($HARDFASTA and $len != $hi-$lo+1 and $self->{'fs'} < 1) {
