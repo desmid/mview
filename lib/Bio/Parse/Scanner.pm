@@ -59,11 +59,9 @@ sub next_line {
 
     return undef  unless $self->_next_line;
 
-    my $line = \$self->{'line'};
+    chomp $self->{'line'}  if $chomp;
 
-    chomp $$line  if $chomp;
-
-    return $$line;
+    return $self->{'line'};
 }
 
 #Read $count lines or all lines until (EOF or end-of-string) if $count==0.
@@ -87,7 +85,7 @@ sub scan_lines {
 	    $record .= $$line;
 	}
     }
-    #no $self->backup as we've read exactly the right amount
+    #no backup as we've read exactly the right amount
     my $bytes = $self->{'cursor'} - $offset;
 
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
@@ -107,8 +105,9 @@ sub scan_while {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line !~ /$pattern/) {
-            $self->backup;
+	if ($$line !~ /$pattern/) {  #backup
+            $self->{'cursor'} = $self->{'linestart'};
+            $$line = '';
             last;
         }
         $record .= $$line;
@@ -132,8 +131,9 @@ sub scan_until {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line =~ /$pattern/) {
-	    $self->backup;
+	if ($$line =~ /$pattern/) {  #backup
+            $self->{'cursor'} = $self->{'linestart'};
+            $$line = '';
 	    last;
 	}
 	$record .= $$line;
@@ -181,8 +181,9 @@ sub scan_skipping_until {
 
     while ($self->_next_line) {
 	if ($$line =~ /$pattern/) {
-	    if ($skip-- < 1) {
-	        $self->backup;
+	    if ($skip-- < 1) {  #backup
+                $self->{'cursor'} = $self->{'linestart'};
+                $$line = '';
 	        last;
             }
 	}
@@ -208,8 +209,9 @@ sub scan_nest {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line !~ /^(\s{$nest}|$)/) {
-            $self->backup;
+	if ($$line !~ /^(\s{$nest}|$)/) {  #backup
+            $self->{'cursor'} = $self->{'linestart'};
+            $$line = '';
             last;
         }
         $record .= $$line;
@@ -235,12 +237,6 @@ sub reset {
     $self->{'linestart'} = $self->{'offset'};
     $self->{'line'}      = '';
     #warn "INITIAL=(c=$self->{'cursor'} l=$self->{'limit'})\n";
-}
-
-sub backup {
-    my $self = shift;
-    $self->{'cursor'} = $self->{'linestart'};
-    $self->{'line'}   = '';
 }
 
 #read next line of text into self.line and return 1 on success; otherwise set
