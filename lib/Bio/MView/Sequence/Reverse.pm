@@ -29,6 +29,18 @@ sub raw {
 }
 
 #overrides
+sub char_at {
+    my ($self, $col) = @_;
+
+    my $p = $self->{'hi'} - $col + 1;
+    return undef  unless exists $self->{'seq'}->{$p};
+
+    my $c = $self->{'seq'}->{$p};
+    return undef  if $c eq $Bio::MView::Sequence::Mark_Fs1 or $c eq $Bio::MView::Sequence::Mark_Fs2;
+    return $c;
+}
+
+#overrides
 sub col {
     my ($self, $col) = @_;
 

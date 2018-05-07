@@ -223,6 +223,9 @@ sub is_gap          { $_[1] eq $Mark_Pad or $_[1] eq $Mark_Gap }
 sub raw { die "$_[0]::raw: virtual function called\n" }
 
 #subclass overrides
+sub char_at { die "$_[0]::char_at: virtual function called\n" }
+
+#subclass overrides
 sub col { die "$_[0]::col: virtual function called\n" }
 
 #subclass overrides
