@@ -60,12 +60,9 @@ sub set_identity {
 
 sub get_identity { return $_[0]->get_label(5) }
 
-# Compute the percent coverage of a row with respect to a reference row.
-#
-# \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
-#      {\mathrm{length~of~ungapped~reference~row}}
-# \times 100
-#
+# Compute the percent coverage of a row with respect to a reference row as:
+#   number~of~residues~in~row~aligned~with~reference~row /
+#   length~of~ungapped~reference~row
 sub compute_coverage_wrt {
     #warn "Bio::MView::Align::Sequence::compute_coverage_wrt(@_)\n";
     my ($self, $othr) = @_;
@@ -76,42 +73,33 @@ sub compute_coverage_wrt {
     die "${self}::compute_coverage_wrt: length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my ($sc, $oc) = (0, 0);
-    my $end = $self->length +1;
+    my $hit = $self->{'string'};
+    my $ref = $othr->{'string'};
+    my $end = $self->length + 1;
+
+    my ($hitlen, $reflen) = (0, 0);
 
     for (my $i=1; $i<$end; $i++) {
 
-	my $c2 = $othr->{'string'}->raw($i);
-
 	#reference must be a sequence character
-	next  unless $self->{'string'}->is_char($c2);
+        my $c = $ref->char_at($i);
+        next  unless defined $c;
+	$reflen++;
 
-	my $c1 = $self->{'string'}->raw($i);
-
-	#count sequence characters
-	$sc++  if $self->{'string'}->is_char($c1);
-	$oc++  if $self->{'string'}->is_char($c2);
+        $c = $hit->char_at($i);
+	$hitlen++  if defined $c;
     }
 
     #compute percent coverage
-    return 100.0 * $sc/$oc  if $oc > 0;
+    return 100.0 * $hitlen/$reflen  if $reflen > 0;
     return 0;
 }
 
-#Compute percent identity to a reference row.
-#Normalisation depends on the mode argument:
-#  'reference' divides by the reference sequence length,
-#  'aligned' divides by the aligned region length (like blast),
-#  'hit' divides by the hit sequence.
-#The last is the same as 'aligned' for blast, but different for
-#multiple alignments like clustal.
-#
-# Default (mode: 'aligned'):
-#
-# \frac{\mathrm{number~of~identical~residues}}
-#      {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
-# \times 100
-#
+#Compute percent identity to a reference row; normalisation depends on the
+#mode argument:
+#- 'reference' divides by the total reference sequence length
+#- 'hit'       divides by the total hit sequence length
+#- 'aligned'   divides by the aligned hit region length
 sub compute_identity_to {
     #warn "Bio::MView::Align::Sequence::compute_identity_to(@_)\n";
     my ($self, $othr, $mode) = (@_, 'aligned');
@@ -122,47 +110,22 @@ sub compute_identity_to {
     die "${self}::compute_identity_to: length mismatch\n"
 	unless $self->length == $othr->length;
 
-    my ($sum, $len) = (0, 0);
-    my $end = $self->length +1;
+    my $hit = $self->{'string'};
+    my $ref = $othr->{'string'};
+    my $end = $self->length + 1;
 
-    for (my $i=1; $i<$end; $i++) {
-	my $cnt = 0;
-
-	my $c1 = $self->{'string'}->raw($i);
-	my $c2 = $othr->{'string'}->raw($i);
-
-	#at least one must be a sequence character
-	$cnt++  if $self->{'string'}->is_char($c1);
-	$cnt++  if $self->{'string'}->is_char($c2);
-	next  if $cnt < 1;
-
-        #standardize case
-        $c1 = uc $c1; $c2 = uc $c2;
-
-	#ignore terminal gaps in the *first* sequence
-	$len++  unless $self->{'string'}->is_terminal_gap($c1);
-
-        #ignore unknown character: contributes to length only
-        next  if $c1 eq 'X' or $c2 eq 'X';
-
-	$sum++  if $c1 eq $c2;
-	#warn "[$i] $c1 $c2 : $cnt => $sum / $len\n";
-    }
-
-    #normalise identities
-    my $norm = 0;
     if ($mode eq 'aligned') {
-	$norm = $len;
-    } elsif ($mode eq 'reference') {
-	$norm = $othr->seqlen;
-    } elsif ($mode eq 'hit') {
-	$norm = $self->seqlen;
+        return $self->compute_identity_to_region($hit, $ref, $end);
     }
-    #warn "normalization mode: $mode, value= $norm\n";
-    #warn "identity $self->{'uid'} = $sum/$norm\n";
-
-    return ($sum = 100 * ($sum + 0.0) / $norm)  if $norm > 0;
-    return 0;
+    if ($mode eq 'reference') {
+        #note order of arguments
+        return $self->compute_identity_to_seq($hit, $ref, $end);
+    }
+    if ($mode eq 'hit') {
+        #note reversed order of arguments
+        return $self->compute_identity_to_seq($ref, $hit, $end);
+    }
+    die "${self}::compute_identity_to: unknown mode '$mode'\n";
 }
 
 ######################################################################
@@ -178,6 +141,72 @@ sub reset_display {
 
 #override
 sub length { return $_[0]->{'string'}->length }
+
+sub compute_identity_to_region {
+    my ($self, $hit, $ref, $end) = @_;
+
+    my $ids = 0;  #identities count
+    my $len = 0;  #region length
+    my $test = $hit;
+
+    for (my $i=1; $i<$end; $i++) {
+
+        my $hitsym = $hit->raw($i);
+        my $refsym = $ref->raw($i);
+
+        #ignore pure gaps: at least one sequence character
+        my $chars = 0;
+        $chars++  if $test->is_char($hitsym);
+        $chars++  if $test->is_char($refsym);
+        next  unless $chars > 0;
+
+        #length of HIT sequence in aligned region: excludes terminal gaps
+        $len++  unless $test->is_terminal_gap($hitsym);
+
+        $hitsym = uc $hitsym; $refsym = uc $refsym;  #standardize case
+
+        #unknown character: contributes to length only
+        next  if $hitsym eq 'X' or $refsym eq 'X';
+
+        #count identities
+        $ids++  if $hitsym eq $refsym;
+    }
+
+    return 100.0 * $ids / $len  if $len > 0;
+    return 0;
+}
+
+sub compute_identity_to_seq {
+    my ($self, $hit, $ref, $end) = @_;
+
+    my $ids = 0;  #identities count
+    my $test = $hit;
+
+    for (my $i=1; $i<$end; $i++) {
+
+        my $hitsym = $hit->raw($i);
+        my $refsym = $ref->raw($i);
+
+        #ignore pure gaps: at least one sequence character
+        my $chars = 0;
+        $chars++  if $test->is_char($hitsym);
+        $chars++  if $test->is_char($refsym);
+        next  unless $chars > 0;
+
+        $hitsym = uc $hitsym; $refsym = uc $refsym;  #standardize case
+
+        #unknown character: contributes to length only
+        next  if $hitsym eq 'X' or $refsym eq 'X';
+
+        #count identities
+        $ids++  if $hitsym eq $refsym;
+    }
+
+    my $len = $ref->seqlen;  #supplied 'ref' sequence
+
+    return 100.0 * $ids / $len  if $len > 0;
+    return 0;
+}
 
 ######################################################################
 # debug
