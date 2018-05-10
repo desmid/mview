@@ -165,6 +165,9 @@ sub use_row { die "$_[0] use_row: virtual method called\n" }
 #subclass overrides: must be overridden
 sub test_if_aligned { die "$_[0] use_row: virtual method called\n" }
 
+#subclass overrides
+sub parse { die "$_[0] parse: virtual method called\n" }
+
 #subclass overrides: map an identifier supplied as {0..N|query|M.N} to
 #a list of row objects in $self->{'index2row'}
 sub map_id {
@@ -201,8 +204,8 @@ sub get_range {
     return $row->range;  #default
 }
 
-#subclass overrides
-sub rebless_alignment {}
+#subclass overrides: child can return specialised alignment class
+sub make_alignment { shift; return new Bio::MView::Align::Alignment(@_) }
 
 ######################################################################
 # private methods
@@ -238,9 +241,7 @@ sub build_block {
     $self->build_indices;
     $self->build_rows($lo, $hi);
 
-    my $aln = new Bio::MView::Align::Alignment($self, undef);
-
-    $self->rebless_alignment($aln);  #allow child to change type
+    my $aln = $self->make_alignment($self, undef);
 
     $aln = $self->build_base_alignment($aln);
 

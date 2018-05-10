@@ -56,9 +56,8 @@ sub parse {
 }
 
 #override
-sub rebless_alignment {
-    my ($self, $aln) = @_;
-    bless $aln, 'Bio::MView::Build::Format::JNETZ::Align';
+sub make_alignment {
+    shift; return new Bio::MView::Build::Format::JNETZ::Align(@_);
 }
 
 #construct a header string describing this alignment
