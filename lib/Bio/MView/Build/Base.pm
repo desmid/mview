@@ -78,16 +78,13 @@ sub next_align {
     #finished?
     return undef  unless defined $self->{'index2row'};
 
-    #for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-    #    warn "[$i]  ", $self->index2row($i)->num, " ",
-    #	      $self->index2row($i)->cid, "\n";
-    #}
+    #$self->dump_index2row;
 
     #this block empty?
     return 0  unless @{$self->{'index2row'}};
 
-    $self->{'align'} = $self->build_block;
-    #vmstat("Build->next(build_block) done");
+    $self->{'align'} = $self->build_align;
+    #vmstat("Build->next(build_align) done");
 
     #maybe more data but this alignment empty? (identity filtered)
     return 0  unless defined $self->{'align'};
@@ -221,7 +218,9 @@ sub outfmt_supported {
     return 0;
 }
 
-sub build_block {
+#build and return an alignment object using stored rows or undef if no
+#alignment data
+sub build_align {
     my $self = shift;
 
     my ($lo, $hi) = $self->get_range($self->{'index2row'}->[0]);
@@ -379,14 +378,14 @@ sub build_mview_alignment {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-sub dump_index2row {
-    my $self = shift;
-    for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
-        warn "$i:  ", $self->index2row($i)->num, " ",
-            $self->index2row($i)->cid, " [",
-            $self->index2row($i)->seq, "]\n";
-    }
-}
+# sub dump_index2row {
+#     my $self = shift;
+#     for (my $i=0; $i < @{$self->{'index2row'}}; $i++) {
+#         warn "$i:  ", $self->index2row($i)->num, " ",
+#             $self->index2row($i)->cid, " [",
+#             $self->index2row($i)->seq, "]\n";
+#     }
+# }
 
 ###########################################################################
 1;
