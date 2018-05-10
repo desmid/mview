@@ -27,19 +27,25 @@ program that should run cross-platform.
 
 ### Download
 
-The [latest release](https://github.com/desmid/mview "MView at GitHub") of the
-software on GitHub can be downloaded by clicking on the 'releases' tab then
-selecting a version and archive format (zip or tar.gz).
-
-A snapshot of the (possibly unstable) development code can be downloaded using
-the 'Download ZIP' button on the main page.
-
-Tarballs and bzip2 archives of releases can also be found at the older
-[SourceForge archive](http://sourceforge.net/projects/bio-mview/ "MView at
-SourceForge").
+- The [current release](
+  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.63/
+  "MView current release on SourceForge") can be downloaded from SourceForge
+  as a gzip or bzip2 compressed tar archive.
+- A set of [previous releases](
+  https://sourceforge.net/projects/bio-mview/files/bio-mview/ "MView older
+  releases on SourceForge") and also historical [download statistics](
+  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2020-01-01
+  "MView download statistics") can also be found on SourceForge.
+- The [latest code](https://github.com/desmid/mview "MView source") can be
+  downloaded direct from GitHub by clicking the green "Clone or download"
+  button and following the instructions to either clone the git repository or
+  download a ZIP archive.
 
 
 ### Install
+
+Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
+follow. For Windows the procedure is similar.
 
 1. Save the archive to your software area, e.g., `/usr/local`, then uncompress
    and extract it:
