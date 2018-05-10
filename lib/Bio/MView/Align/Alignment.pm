@@ -23,15 +23,16 @@ sub new {
 
     $self->{'build'}     = $build;   #calling Build object
     $self->{'parent'}    = $parent;  #identifier of parent sequence
-    $self->{'uid2index'} = {};       #hash of identifiers giving row numbers
-    $self->{'index2row'} = [];       #list of aligned rows, from zero
+    $self->{'uid2index'} = undef;    #hash of identifiers giving row numbers
+    $self->{'index2row'} = undef;    #list of aligned rows, from zero
     $self->{'length'}    = 0;        #alignment width
     $self->{'tally'}     = {};       #column tallies for consensus
 
     #warn "Align.aligned: @{[$build->is_aligned]}\n";
     #warn "Align.parent:  @{[defined $parent ? $parent : 'undef']}\n";
 
-    $self->append(@_);
+    $self->reset_indices;
+    $self->append_seq(@_);
 
     $self;
 }
@@ -39,53 +40,18 @@ sub new {
 ######################################################################
 # public methods
 ######################################################################
-#sequence factory
-sub make_sequence {
-    my ($self, $row) = @_;
-
-    my $rid = $row->rid;
-    my $uid = $row->uid;
-    my $sob = $row->sob;
-
-    my $subtype = '';
-    $subtype = 'special'  if $rid =~ /^\#/; #leading hash: special row
-
-    #warn "make_sequence: $rid => @{[$subtype ne '' ? $subtype : \"''\"]}\n";
-
-    if ($subtype eq '') {
-        return new Bio::MView::Align::Sequence($uid, $sob);
-    }
-
-    if ($subtype ne '') {
-        return new Bio::MView::Align::Special($uid, $sob);
-    }
-
-    die "${self}::make_sequence: unknown type '$subtype'\n";
-}
-
-sub append {
-    my $self = shift;
-    foreach my $obj (@_) {
-        my $i = @{$self->{'index2row'}};  #number of rows so far
-        #warn "append: [$i]\t@{[$obj->uid]}\t@{[$obj->string]}\n";
-
-        if ($i < 1) {  #empty
-            $self->{'length'} = $obj->length;
-            $self->{'parent'} = $obj  unless defined $self->{'parent'};
-        }
-
-        if ($self->is_aligned and $obj->length != $self->{'length'}) {
-            die "${self}::append: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
-        }
-
-        $self->{'uid2index'}->{$obj->uid} = $i;
-        $self->{'index2row'}->[$i] = $obj;
-    }
-}
-
 sub size { return scalar @{$_[0]->{'index2row'}} }
 
 sub length { return $_[0]->{'length'} }
+
+#make a Sequence from the given Build::Row(s) and append to the alignment
+sub append_rows {
+    my $self = shift;
+    foreach my $brow (@_) {
+        my $arow = $self->make_sequence($brow);
+        $self->append_seq($arow);
+    }
+}
 
 sub uid2row {
     return undef  unless exists $_[0]->{'uid2index'}->{$_[1]};
@@ -265,12 +231,12 @@ sub prune_identities {
     $max = 100  if $max > 100;
 
     #trivial cases
-    return $self  unless defined $refid;
+    return  unless defined $refid;
 
     my $ref = $self->uid2row($refid);  #the reference row
-    return $self  unless defined $ref;
+    return  unless defined $ref;
 
-    return $self  unless $min > 0 or $max < 100;
+    return  unless $min > 0 or $max < 100;
 
     #still work if limits are back to front
     ($min, $max) = swap($min, $max)  if $min > $max;
@@ -297,8 +263,8 @@ sub prune_identities {
         push @obj, $row;
     }
 
-    return new Bio::MView::Align::Alignment($self->{'build'},
-                                            $self->{'parent'}, @obj);
+    $self->reset_indices;
+    $self->append_seq(@obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
@@ -449,11 +415,63 @@ sub conservation {
 }
 
 ######################################################################
+# protected methods
+######################################################################
+#subclass overrides: sequence factory
+sub make_sequence {
+    my ($self, $row) = @_;
+
+    my $rid = $row->rid;
+    my $uid = $row->uid;
+    my $sob = $row->sob;
+
+    my $subtype = '';
+    $subtype = 'special'  if $rid =~ /^\#/; #leading hash: special row
+
+    #warn "make_sequence: $rid => @{[$subtype ne '' ? $subtype : \"''\"]}\n";
+
+    if ($subtype eq '') {
+        return new Bio::MView::Align::Sequence($uid, $sob);
+    }
+
+    if ($subtype ne '') {
+        return new Bio::MView::Align::Special($uid, $sob);
+    }
+
+    die "${self}::make_sequence: unknown type '$subtype'\n";
+}
+
+######################################################################
 # private methods
 ######################################################################
 sub is_aligned { return $_[0]->{'build'}->is_aligned }
 sub is_hidden  { return $_[0]->{'build'}->is_hidden($_[1]) }
 sub is_nop     { return $_[0]->{'build'}->is_nop($_[1]) }
+
+sub reset_indices {
+    $_[0]->{'uid2index'} = {};
+    $_[0]->{'index2row'} = [];
+}
+
+sub append_seq {
+    my $self = shift;
+    foreach my $obj (@_) {
+        my $i = @{$self->{'index2row'}};  #number of rows so far
+        #warn "append_seq: [$i]\t@{[$obj->uid]}\t@{[$obj->string]}\n";
+
+        if ($i < 1) {  #empty
+            $self->{'length'} = $obj->length;
+            $self->{'parent'} = $obj  unless defined $self->{'parent'};
+        }
+
+        if ($self->is_aligned and $obj->length != $self->{'length'}) {
+            die "${self}::append_seq: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
+        }
+
+        $self->{'uid2index'}->{$obj->uid} = $i;
+        $self->{'index2row'}->[$i] = $obj;
+    }
+}
 
 #return list of visible rows as row objects, for output
 sub visible_rows {

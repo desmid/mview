@@ -243,7 +243,7 @@ sub build_block {
 
     my $aln = $self->make_alignment($self, undef);
 
-    $aln = $self->build_base_alignment($aln);
+    $self->build_base_alignment($aln);
 
     return undef  unless $aln->size > 0;
 
@@ -307,18 +307,15 @@ sub build_base_alignment {
     my ($self, $aln) = @_;
 
     #make and insert each sequence into the alignment
-    foreach my $row (@{$self->{'index2row'}}) {
-        my $arow = $aln->make_sequence($row);
-        $aln->append($arow);
-    }
+    $aln->append_rows(@{$self->{'index2row'}});
 
     #filter alignment based on %identity to reference
-    $aln = $aln->prune_identities($self->get_ref_uid,
-                                  $PAR->get('pcid'),
-                                  $PAR->get('minident'),
-                                  $PAR->get('maxident'),
-                                  $self->{'topn'},
-                                  $self->{'keep_uid'});
+    $aln->prune_identities($self->get_ref_uid,
+                           $PAR->get('pcid'),
+                           $PAR->get('minident'),
+                           $PAR->get('maxident'),
+                           $self->{'topn'},
+                           $self->{'keep_uid'});
 
     my $sequences = $PAR->get('sequences');
     my $noinserts = !$PAR->get('keepinserts');
@@ -345,8 +342,6 @@ sub build_base_alignment {
 
     #foreach my $r ($aln->all_ids) { $aln->uid2row($r)->seqobj->dump }
     #warn "Alignment width: ", $aln->length;
-
-    return $aln;
 }
 
 sub build_mview_alignment {
