@@ -43,6 +43,12 @@ Outputs:
 
 - HTML, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated).
 
+The tool is used in molecular biology and biomedical research for data
+analyses and as a component in various bioinformatics web services. Research
+papers citing MView are indexed on `Google Scholar`_.
+
+.. _Google Scholar:  https://scholar.google.com/citations?user=4ughzM0AAAAJ&hl=en
+
 
 Documentation
 ^^^^^^^^^^^^^
@@ -58,18 +64,20 @@ Documentation
 Download
 ^^^^^^^^
 
-The `latest release`_ of the software on GitHub can be downloaded by clicking
-on the 'releases' tab then selecting a version and archive format (zip or
-tar.gz).
+The `current release`_ can be downloaded from SourceForge as a gzip or bzip2
+compressed tar archive.
 
-A snapshot of the (possibly unstable) development code can be downloaded using
-the 'Download ZIP' button on the main page.
+Older `releases`_ and historical `download statistics`_ can also be found on
+SourceForge.
 
-Tarballs and bzip2 archives of releases can also be found at the older
-`SourceForge archive`_.
+The `latest code`_ can be downloaded direct from GitHub by clicking the green
+"Clone or download" button and following the instructions to either clone the
+git repository or download a ZIP archive.
 
-.. _latest release:       https://github.com/desmid/mview
-.. _SourceForge archive:  http://sourceforge.net/projects/bio-mview/
+.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.63/
+.. _releases:             https://sourceforge.net/projects/bio-mview/files/bio-mview/
+.. _download statistics:  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2025-01-01
+.. _latest code:          https://github.com/desmid/mview
 
 
 Found a bug?

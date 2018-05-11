@@ -1,8 +1,14 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
-Version 1.64.rc
+Version 1.64  2018-05-14
+
+Input formats:
+
+- Tested with BLAST 2.8.0+ (alpha version)
 
 New features:
+
+- Speed improvement.
 
 - Added '-sequences on|off' option to disable processing and output of
   sequences for faster analysis. Requested by Mathias Walter (issue #13).
@@ -20,7 +26,6 @@ Bug fixes:
 
 Other:
 
-- Various speed improvements.
 - Complete rewrite of display mechanism.
 - Ongoing refactoring.
 

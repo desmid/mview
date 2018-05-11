@@ -14,9 +14,18 @@ Outputs:
 
 - HTML, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated).
 
-Full documentation can be found in the on-line
+The tool is used in molecular biology and biomedical research for data
+analyses and as a component in various bioinformatics web services. Research
+papers citing MView are indexed on [Google
+Scholar](https://scholar.google.com/citations?user=4ughzM0AAAAJ&hl=en "MView
+citations").
+
+
+### Manual
+
+Full documentation can be found in the
 [manual](https://desmid.github.io/mview/ "MView manual"), a copy of which is
-also included with the code.
+bundled with the code.
 
 
 ### Requirements
@@ -31,10 +40,10 @@ program that should run cross-platform.
   https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.63/
   "MView current release on SourceForge") can be downloaded from SourceForge
   as a gzip or bzip2 compressed tar archive.
-- A set of [previous releases](
+- Older [releases](
   https://sourceforge.net/projects/bio-mview/files/bio-mview/ "MView older
-  releases on SourceForge") and also historical [download statistics](
-  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2020-01-01
+  releases on SourceForge") and historical [download statistics](
+  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2025-01-01
   "MView download statistics") can also be found on SourceForge.
 - The [latest code](https://github.com/desmid/mview "MView source") can be
   downloaded direct from GitHub by clicking the green "Clone or download"
@@ -45,7 +54,7 @@ program that should run cross-platform.
 ### Install
 
 Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
-follow. For Windows the procedure is similar.
+follow. The procedure is similar for Windows.
 
 1. Save the archive to your software area, e.g., `/usr/local`, then uncompress
    and extract it:
@@ -109,4 +118,5 @@ members of the former Sander group at EBI. Useful suggestions relating to the
 EBI sequence database search services have come from R. Lopez, W. Li and
 H. McWilliam at EBI. Many other people have suggested new features and
 reported bugs; I hope I have acknowledged them in the change log and apologise
-if I have missed anyone out.
+if I have missed anyone out. Finally, thank you to everyone who has cited
+MView in their publications.

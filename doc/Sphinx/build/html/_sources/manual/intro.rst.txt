@@ -15,8 +15,18 @@ Outputs:
 
 - HTML markup, FASTA, CLUSTAL, MSF, PIR, RDB (tab-separated values).
 
-Full documentation can be found in the on-line `manual`_, a copy of which is
-also included with the code.
+The tool is used in molecular biology and biomedical research for data
+analyses and as a component in various bioinformatics web services. Research
+papers citing MView are indexed on `Google Scholar`_.
+
+.. _Google Scholar:  https://scholar.google.com/citations?user=4ughzM0AAAAJ&hl=en
+
+
+Manual
+^^^^^^
+
+Full documentation can be found in the `manual`_, a copy of which is bundled
+with the code.
 
 .. _manual:  https://desmid.github.io/mview/
 
@@ -31,22 +41,27 @@ program that should run cross-platform.
 Download
 ^^^^^^^^
 
-The `latest release`_ of the software on GitHub can be downloaded by clicking
-on the 'releases' tab then selecting a version and archive format (zip or
-tar.gz).
+The `current release`_ can be downloaded from SourceForge as a gzip or bzip2
+compressed tar archive.
 
-A snapshot of the (possibly unstable) development code can be downloaded using
-the 'Download ZIP' button on the main page.
+Older `releases`_ and historical `download statistics`_ can also be found on
+SourceForge.
 
-Tarballs and bzip2 archives of releases can also be found at the older
-`SourceForge archive`_.
+The `latest code`_ can be downloaded direct from GitHub by clicking the green
+"Clone or download" button and following the instructions to either clone the
+git repository or download a ZIP archive.
 
-.. _latest release:       https://github.com/desmid/mview
-.. _SourceForge archive:  http://sourceforge.net/projects/bio-mview/
+.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.63/
+.. _releases:             https://sourceforge.net/projects/bio-mview/files/bio-mview/
+.. _download statistics:  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2025-01-01
+.. _latest code:          https://github.com/desmid/mview
 
 
 Install
 ^^^^^^^
+
+Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
+follow. The procedure is similar for Windows.
 
 1. Save the archive to your software area, e.g., ``/usr/local``, then uncompress
    and extract it::
@@ -116,9 +131,10 @@ Acknowledgements
 
 People who contributed early code or suggestions include C. Leroy and other
 members of the former Sander group at EBI. Useful suggestions relating to the
-EBI sequence database search services have come from R. Lopez, W. Li
-and H. McWilliam at EBI. Many other people have suggested new features and
+EBI sequence database search services have come from R. Lopez, W. Li and
+H. McWilliam at EBI. Many other people have suggested new features and
 reported bugs; I hope I have acknowledged them in the change log and apologise
-if I have missed anyone out.
+if I have missed anyone out. Finally, thank you to everyone who has cited
+MView in their publications.
 
 .. END
