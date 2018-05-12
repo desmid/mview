@@ -73,7 +73,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#clustal-aln">CLUSTAL/aln</a></li>
-<li><a class="reference internal" href="#hssp">HSSP</a></li>
+<li><a class="reference internal" href="#hssp-maxhom">HSSP/Maxhom</a></li>
 <li><a class="reference internal" href="#maf">MAF</a></li>
 <li><a class="reference internal" href="#fasta">FASTA</a></li>
 <li><a class="reference internal" href="#msf">MSF</a></li>
@@ -134,39 +134,95 @@ produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="13%" />
-<col width="74%" />
-<col width="14%" />
+<col width="15%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.2.25+</th>
+<th class="head">2.2.28+</th>
+<th class="head">2.2.31+</th>
+<th class="head">2.3.0+</th>
+<th class="head">2.4.0+</th>
+<th class="head">2.5.0+</th>
+<th class="head">2.6.0+</th>
+<th class="head">2.7.1+</th>
+<th class="head">2.8.0+</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>2.2.25+, 2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>2.2.25+, 2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>psiblast</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -176,39 +232,87 @@ produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="71%" />
-<col width="15%" />
+<col width="17%" />
+<col width="12%" />
+<col width="12%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.2.28+</th>
+<th class="head">2.2.31+</th>
+<th class="head">2.3.0+</th>
+<th class="head">2.4.0+</th>
+<th class="head">2.5.0+</th>
+<th class="head">2.6.0+</th>
+<th class="head">2.7.1+</th>
+<th class="head">2.8.0+</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>psiblast</cite></td>
-<td>2.2.28+, 2.2.31+, 2.3.0+, 2.4.0+, 2.5.0+, 2.6.0+, 2.7.1+</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -269,43 +373,43 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="50%" />
+<col width="25%" />
+<col width="25%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.2.5</th>
+<th class="head">2.2.6</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>2.2.5, 2.2.6</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>psiblast</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>phiblast</cite></td>
-<td>2.2.6</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -318,44 +422,89 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="15%" />
-<col width="68%" />
-<col width="17%" />
+<col width="21%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="13%" />
+<col width="13%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.0.2</th>
+<th class="head">2.0.4</th>
+<th class="head">2.0.5</th>
+<th class="head">2.0.6</th>
+<th class="head">2.0.9</th>
+<th class="head">2.0.10</th>
+<th class="head">2.0.14</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>2.0.4, 2.0.5,        2.0.9, 2.0.10</td>
+<td>.</td>
 <td>ok</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>2.0.4, 2.0.5,        2.0.9,        2.0.14</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>2.0.5,        2.0.9</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>2.0.5,               2.0.10</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
+<td>.</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>2.0.5</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><cite>psiblast</cite></td>
-<td>2.0.2, 2.0.4, 2.0.5, 2.0.6,        2.0.10</td>
 <td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
 </tr>
 <tr class="row-even"><td><cite>phiblast</cite></td>
-<td>2.0.9</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
+<td>.</td>
+<td>.</td>
 </tr>
 </tbody>
 </table>
@@ -367,35 +516,35 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="50%" />
+<col width="25%" />
+<col width="25%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">1.4.7</th>
+<th class="head">1.4.9</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>1.4.7, 1.4.9</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>1.4.9</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>1.4.9</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>1.4.9</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>1.4.9</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -413,35 +562,42 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="38%" />
+<col width="25%" />
+<col width="25%" />
+<col width="13%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.0a13</th>
+<th class="head">2.0a19</th>
+<th class="head">2.0</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>blastp</cite></td>
-<td>2.0a13, 2.0a19, 2.0</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>blastn</cite></td>
-<td>2.0a19, 2.0</td>
+<td>.</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>blastx</cite></td>
-<td>2.0a19, 2.0</td>
+<td>.</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tblastn</cite></td>
-<td>2.0a19, 2.0</td>
+<td>.</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tblastx</cite></td>
-<td>2.0a19, 2.0</td>
+<td>.</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -459,72 +615,168 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="12%" />
-<col width="74%" />
-<col width="13%" />
+<col width="16%" />
+<col width="8%" />
+<col width="10%" />
+<col width="11%" />
+<col width="10%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">36.07</th>
+<th class="head">36.3.3</th>
+<th class="head">35.3.5a</th>
+<th class="head">36.3.6</th>
+<th class="head">36.3.7b</th>
+<th class="head">36.3.8e</th>
+<th class="head">36.3.8f</th>
+<th class="head">36.3.8g</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta</cite></td>
-<td>36.07, 36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>ok</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>fastx</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>fasty</cite></td>
-<td>36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tfastx</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>tfasty</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>ssearch</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>ggsearch</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>glsearch</cite></td>
-<td>36.3.3,          36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>fastm</cite></td>
-<td>35.3.5a, 36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 <tr class="row-odd"><td><cite>fasts</cite></td>
-<td>36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 <tr class="row-even"><td><cite>fastf</cite></td>
-<td>36.3.6, 36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 <tr class="row-odd"><td><cite>tfastm</cite></td>
-<td>36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 <tr class="row-even"><td><cite>tfasts</cite></td>
-<td>36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 <tr class="row-odd"><td><cite>tfastf</cite></td>
-<td>36.3.7b, 36.3.8e, 36.3.8f, 36.3.8g</td>
-<td>experimental</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
+<td>expt</td>
 </tr>
 </tbody>
 </table>
@@ -536,35 +788,28 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="67%" />
+<col width="33%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">35.04</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta</cite></td>
-<td>35.04</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>tfastx</cite></td>
-<td>35.04</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>ssearch</cite></td>
-<td>35.04</td>
 <td>ok</td>
 </tr>
 <tr class="row-odd"><td><cite>ggsearch</cite></td>
-<td>35.04</td>
 <td>ok</td>
 </tr>
 <tr class="row-even"><td><cite>glsearch</cite></td>
-<td>35.04</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -577,19 +822,16 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="59%" />
+<col width="41%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">34.26.5</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta34</cite></td>
-<td>34.26.5</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -602,48 +844,125 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="13%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">3.0t76</th>
+<th class="head">3.0t82</th>
+<th class="head">3.1t07</th>
+<th class="head">3.2t01</th>
+<th class="head">3.2t05</th>
+<th class="head">3.2t07</th>
+<th class="head">3.2t05</th>
+<th class="head">3.2t07</th>
+<th class="head">3.3t01</th>
+<th class="head">3.3t07</th>
+<th class="head">3.4t23</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta</cite></td>
-<td>3.0t76, 3.1t07, 3.2t01, 3.2t05, 3.2t07</td>
-<td>&nbsp;</td>
-</tr>
-<tr class="row-odd"><td></td>
-<td>3.2t05, 3.2t07, 3.3t01, 3.3t07, 3.4t23</td>
+<td>ok</td>
+<td>.</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
-<tr class="row-even"><td><cite>fastx</cite></td>
-<td>3.4t23</td>
+<tr class="row-odd"><td><cite>fastx</cite></td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
 </tr>
-<tr class="row-odd"><td><cite>fasty</cite></td>
-<td>3.4t23</td>
+<tr class="row-even"><td><cite>fasty</cite></td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
 </tr>
-<tr class="row-even"><td><cite>tfasta</cite></td>
-<td>3.4t23</td>
+<tr class="row-odd"><td><cite>tfasta</cite></td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
 </tr>
-<tr class="row-odd"><td><cite>tfastx</cite></td>
-<td>3.0t82, 3.4t23</td>
+<tr class="row-even"><td><cite>tfastx</cite></td>
+<td>.</td>
+<td>ok</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
 </tr>
-<tr class="row-even"><td><cite>tfasty</cite></td>
-<td>3.4t23</td>
+<tr class="row-odd"><td><cite>tfasty</cite></td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
 </tr>
-<tr class="row-odd"><td><cite>tfastxy</cite></td>
-<td>3.1t07</td>
+<tr class="row-even"><td><cite>tfastxy</cite></td>
+<td>.</td>
+<td>.</td>
 <td>ok</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
 </tr>
 </tbody>
 </table>
@@ -655,23 +974,23 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
+<col width="50%" />
 <col width="20%" />
+<col width="30%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">2.0u</th>
+<th class="head">2.0u63</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta</cite></td>
-<td>2.0u</td>
 <td>ok</td>
+<td>.</td>
 </tr>
 <tr class="row-odd"><td><cite>tfastx</cite></td>
-<td>2.0u63</td>
+<td>.</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -684,19 +1003,16 @@ including the final iteration when run using the default output format. Using
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="63%" />
+<col width="38%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">1.6c24</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>fasta</cite></td>
-<td>1.6c24</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -713,46 +1029,49 @@ format.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="38%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+<col width="13%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">1.60</th>
+<th class="head">1.70</th>
+<th class="head">1.83</th>
+<th class="head">2.1</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>CLUSTAL</cite></td>
-<td>1.60, 1.70, 1.83, 2.1</td>
+<td>ok</td>
+<td>ok</td>
+<td>ok</td>
 <td>ok</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </div>
-<div class="section" id="hssp">
-<h2>HSSP<a class="headerlink" href="#hssp" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hssp-maxhom">
+<h2>HSSP/Maxhom<a class="headerlink" href="#hssp-maxhom" title="Permalink to this headline">¶</a></h2>
 <p>The HSSP multiple sequence alignment format is produced by the MaxHom protein
 sequence and structure homology alignment program.</p>
 <p>MView option: <code class="docutils literal"><span class="pre">-in</span> <span class="pre">hssp</span></code></p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="62%" />
-<col width="20%" />
+<col width="47%" />
+<col width="53%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Program</th>
-<th class="head">Tested</th>
-<th class="head">Status</th>
+<th class="head">1.0 1991</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>HSSP</cite></td>
-<td>1.0 1991</td>
 <td>ok</td>
 </tr>
 </tbody>
@@ -856,7 +1175,7 @@ maintained:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 29 Apr 2018.
+      Last updated on 12 May 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
