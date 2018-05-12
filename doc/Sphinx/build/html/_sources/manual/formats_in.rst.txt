@@ -59,8 +59,8 @@ The main `-outfmt 7` fields or columns recognised by MView are:
 - `qframe` to report the query frame;
 - `sframe` to report the sbjct frame.
 
-When running blast with tabular output, field specifiers suitable for input to
-MView are:
+When running blast with tabular output, minimal field specifiers suitable for
+input to MView are:
 
     `blastp   -outfmt '7 std qseq sseq stitle'`
 
@@ -217,6 +217,9 @@ MView option: ``-in uvfasta``
  `tfastf`   .     .      .       .      expt    expt    expt    expt
  ========== ===== ====== ======= ====== ======= ======= ======= =======
 
+where 'expt' indicates that MView parses and processes the format, but the
+results may not be particularly useful, hence 'experimental'.
+ 
 
 FASTA series 35
 ---------------
@@ -300,7 +303,7 @@ format.
 MView option: ``-in clustal``
 
  ========= ==== ==== ==== ===
- Program   1.60 1.70 1.83 2.1
+ Version   1.60 1.70 1.83 2.1
  ========= ==== ==== ==== ===
  `CLUSTAL` ok   ok   ok   ok
  ========= ==== ==== ==== ===
@@ -315,7 +318,7 @@ sequence and structure homology alignment program.
 MView option: ``-in hssp``
 
  ======= ========
- Program 1.0 1991
+ Version 1.0 1991
  ======= ========
  `HSSP`  ok
  ======= ========

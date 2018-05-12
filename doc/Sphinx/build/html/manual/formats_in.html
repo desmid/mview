@@ -326,8 +326,8 @@ produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</
 <li><cite>qframe</cite> to report the query frame;</li>
 <li><cite>sframe</cite> to report the sbjct frame.</li>
 </ul>
-<p>When running blast with tabular output, field specifiers suitable for input to
-MView are:</p>
+<p>When running blast with tabular output, minimal field specifiers suitable for
+input to MView are:</p>
 <blockquote>
 <div><p><cite>blastp   -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
 <p><cite>blastn   -outfmt &#8216;7 std qseq sseq stitle&#8217;</cite></p>
@@ -781,6 +781,8 @@ including the final iteration when run using the default output format. Using
 </tbody>
 </table>
 </div></blockquote>
+<p>where &#8216;expt&#8217; indicates that MView parses and processes the format, but the
+results may not be particularly useful, hence &#8216;experimental&#8217;.</p>
 </div>
 <div class="section" id="fasta-series-35">
 <h3>FASTA series 35<a class="headerlink" href="#fasta-series-35" title="Permalink to this headline">¶</a></h3>
@@ -1036,7 +1038,7 @@ format.</p>
 <col width="13%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">Program</th>
+<tr class="row-odd"><th class="head">Version</th>
 <th class="head">1.60</th>
 <th class="head">1.70</th>
 <th class="head">1.83</th>
@@ -1066,7 +1068,7 @@ sequence and structure homology alignment program.</p>
 <col width="53%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">Program</th>
+<tr class="row-odd"><th class="head">Version</th>
 <th class="head">1.0 1991</th>
 </tr>
 </thead>
