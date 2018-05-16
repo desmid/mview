@@ -2,7 +2,7 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    manual/manual
    manual/formats_in
