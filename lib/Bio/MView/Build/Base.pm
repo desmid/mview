@@ -329,7 +329,7 @@ sub build_base_alignment {
 
         #copy computed data into build row objects
         foreach my $row (@{$self->{'index2row'}}) {
-            next  if exists $self->{'hide_uid'}->{$row->uid};
+            next  if $self->is_hidden($row->uid);
 
             my $arow = $aln->uid2row($row->uid);
             next  unless defined $arow;
@@ -347,7 +347,7 @@ sub build_mview_alignment {
     my ($self, $aln) = @_;
 
     foreach my $row (@{$self->{'index2row'}}) {
-	next  if exists $self->{'hide_uid'}->{$row->uid};
+        next  if $self->is_hidden($row->uid);
 
 	my $arow = $aln->uid2row($row->uid);
 	next  unless defined $arow;
