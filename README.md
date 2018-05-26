@@ -31,7 +31,7 @@ bundled with the code.
 ### Requirements
 
 MView is implemented in Perl, version 5 as a self-contained command line
-program that should run cross-platform. 
+program that should run cross-platform.
 
 
 ### Download
@@ -116,7 +116,6 @@ protected under the GNU General Public License, version 2.
 People who contributed early code or suggestions include C. Leroy and other
 members of the former Sander group at EBI. Useful suggestions relating to the
 EBI sequence database search services have come from R. Lopez, W. Li and
-H. McWilliam at EBI. Many other people have suggested new features and
-reported bugs; I hope I have acknowledged them in the change log and apologise
-if I have missed anyone out. Finally, thank you to everyone who has cited
-MView in their publications.
+H. McWilliam at EBI. Thanks to the many other people who have suggested new
+features and reported bugs. Finally, thank you to everyone who has cited MView
+in their publications.
