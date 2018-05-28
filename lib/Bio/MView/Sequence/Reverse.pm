@@ -14,6 +14,9 @@ use vars qw(@ISA);
 #overrides
 sub is_forwards {0}
 
+#overrides: called once this orientation is known
+sub insert { my $self = shift; $self->_insert(@_) }
+
 #overrides
 sub raw {
     my ($self, $col) = @_;

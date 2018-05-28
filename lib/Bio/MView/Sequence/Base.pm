@@ -122,7 +122,7 @@ sub string {
     $s =~ s/$Mark_Spc/$_[0]->{'text_spc'}/g;
     $s =~ s/$Mark_Fs1/$_[0]->{'text_fs1'}/g;
     $s =~ s/$Mark_Fs2/$_[0]->{'text_fs2'}/g;
-    $s;
+    return $s;
 }
 
 sub sequence {
@@ -132,7 +132,7 @@ sub sequence {
     $s =~ s/$Mark_Spc//og;
     $s =~ s/$Mark_Fs1//og;
     $s =~ s/$Mark_Fs2//og;
-    $s;
+    return $s;
 }
 
 #return full sequence length; includes special characters: gaps, padding, frameshifts
@@ -231,10 +231,11 @@ sub col { die "$_[0]::col: virtual function called\n" }
 #subclass overrides
 sub is_forwards { die "$_[0]::is_forwards: virtual function called\n" }
 
+#subclass overrides: called with unknown orientation
 sub insert {
     my $self = shift;
-    my $forward = 1;
     #get direction from first fragment range longer than 1
+    my $forward = 1;  #default to forward sequence
     foreach my $frag (@_) {
         $forward = 1, last  if $frag->[1] < $frag->[2];
         $forward = 0, last  if $frag->[1] > $frag->[2];
@@ -401,7 +402,8 @@ sub _populate_sequence_array {
 
         #write the character
         $self->{'seq'}->{$p} = $c;
-        $self->{'seqlen'}++  if $c ne $Mark_Fs1 and $c ne $Mark_Fs2;
+        $self->{'seqlen'}++  if $c ne $Mark_Pad and $c ne $Mark_Gap and
+            $c ne $Mark_Spc and $c ne $Mark_Fs1 and $c ne $Mark_Fs2;
     }
 
     if ($HARDFASTA and $len != $hi-$lo+1 and $self->{'fs'} < 1) {
