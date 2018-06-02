@@ -11,8 +11,6 @@
 #   blastp, blastn, blastx, tblastn, tblastx
 #
 ###########################################################################
-use lib '/home/brown/HOME/work/MView/dev/lib';
-
 package Bio::MView::Build::Format::BLAST0;
 
 use Bio::MView::Option::Parameters;  #for $PAR
