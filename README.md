@@ -86,6 +86,14 @@ follow. The procedure is similar for Windows.
    just edited) is on your `PATH` and rehash or login again.
 
 
+### Testing
+
+Each release of MView is regression tested against hundreds of sample data
+inputs for all the sequence database search and alignment formats and versions
+thereof that are supported, together with known edge cases. This is well over
+0.5GB of material, so it's not currently available externally.
+
+
 ### Found a bug?
 
 Please open an issue on the MView [issue tracker](https://github.com/desmid/mview/issues "issue tracker") or send an email to `biomview@gmail.com`.
