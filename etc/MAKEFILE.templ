@@ -37,8 +37,6 @@ NEW_LIBS  = /path/to/mview/lib
 OLD_PERL  = /usr/bin/perl
 NEW_PERL  = /usr/bin/perl
 
-COPYRIGHT = $(HOME)/etc/COPYRIGHT.templ
-
 SPHINX_HTML  = doc/Sphinx/build/html
 GH_PAGES_DIR = gh-pages
 
@@ -62,12 +60,10 @@ DEST_DIR_PERM = 0755
 DEST_FIL_PERM = 0444
 DEST_EXE_PERM = 0755
 
-#fix: perl path, perl library path, copyright notice
+#fix: perl path, perl library path
 FIX_STRINGS = $(SED) \
 	-e "s;^\#!$(OLD_PERL).*;\#!$(NEW_PERL);" \
-	-e "s;$(OLD_LIBS);$(NEW_LIBS);g" \
-	-e "/^\# *Copyright/r $(COPYRIGHT)" \
-	-e "/^\# *Copyright/d"
+	-e "s;$(OLD_LIBS);$(NEW_LIBS);g"
 
 MAKEFLAGS = --no-print-directory
 
@@ -159,24 +155,6 @@ _lines:	force
 	@for i in . $(DIRS); do [ $$i = . ] && continue; \
 	    $(MAKE) -C $$i $@; \
 	done
-
-#make a datestamped tarball
-tar: force
-	@cd $(OLD_ROOT); d=`/bin/date +%Y_%m_%d_%H%M`; $(TAR) cvzf - \
-	CVS \
-	MView/CVS \
-	MView/CHANGES \
-	MView/COPYING \
-	MView/INSTALL \
-	MView/Makefile \
-	MView/plain.dat \
-	MView/bin/CVS \
-	MView/bin/Makefile \
-	MView/bin/mview \
-	MView/etc \
-	MView/html \
-	MView/lib \
-	> mview-$$d.tgz
 
 force:
 

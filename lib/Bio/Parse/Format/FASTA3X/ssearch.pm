@@ -1,5 +1,7 @@
-# -*- perl -*-
 # Copyright (C) 2011-2015 Nigel P. Brown
+
+# This file is part of MView. 
+# MView is released under license GPLv2, or any later version.
 
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::ssearch;

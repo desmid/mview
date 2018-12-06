@@ -1,5 +1,8 @@
 # Copyright (C) 2015-2018 Nigel P. Brown
 
+# This file is part of MView. 
+# MView is released under license GPLv2, or any later version.
+
 ###########################################################################
 #
 # NCBI BLAST 1.4, WashU BLAST 2.0

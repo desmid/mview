@@ -1,5 +1,8 @@
 # Copyright (C) 1996-2018 Nigel P. Brown
 
+# This file is part of MView. 
+# MView is released under license GPLv2, or any later version.
+
 ###########################################################################
 #
 # FASTA 3
