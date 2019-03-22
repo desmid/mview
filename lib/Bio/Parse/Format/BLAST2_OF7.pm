@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018 Nigel P. Brown
+# Copyright (C) 2015-2019 Nigel P. Brown
 
 # This file is part of MView. 
 # MView is released under license GPLv2, or any later version.
@@ -268,7 +268,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid arguments (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -318,7 +318,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid arguments (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -410,7 +410,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid arguments (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -436,7 +436,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid argument list (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -566,7 +566,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid argument list (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -605,7 +605,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid argument list (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -647,7 +647,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Message::die($type, "new() invalid argument list (@_)");
+        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
