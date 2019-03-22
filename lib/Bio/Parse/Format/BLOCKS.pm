@@ -38,16 +38,16 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($line =~ /$BLOCKS_START/o and $offset < 0) {
+        #start of entry
+        if ($line =~ /$BLOCKS_START/o and $offset < 0) {
             $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+            next;
+        }
 
-	#end of entry
-	#if ($line =~ /$BLOCKS_END/o) {
-	#    last;
-	#}
+        #end of entry
+        #if ($line =~ /$BLOCKS_END/o) {
+        #    last;
+        #}
     }
     return 0   if $offset < 0;
 
@@ -60,8 +60,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -71,29 +71,29 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#HEADER
-	if ($line =~ /$BLOCKS_HEADER/o) {
-	    $text->scan_until($BLOCKS_HEADERend, 'HEADER');
-	    next;
-	}
+        #HEADER
+        if ($line =~ /$BLOCKS_HEADER/o) {
+            $text->scan_until($BLOCKS_HEADERend, 'HEADER');
+            next;
+        }
 
-	#BLOCK lines
-	if ($line =~ /$BLOCKS_BLOCK/o) {
-	    $text->scan_until($BLOCKS_BLOCKend, 'BLOCK');
-	    next;
-	}
+        #BLOCK lines
+        if ($line =~ /$BLOCKS_BLOCK/o) {
+            $text->scan_until($BLOCKS_BLOCKend, 'BLOCK');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$BLOCKS_Null/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$BLOCKS_Null/o;
 
-	#ignore any other line!
-	next;
+        #ignore any other line!
+        next;
 
-	#terminal line: ignore
-	#next  if $line =~ /$BLOCKS_END/o;
+        #terminal line: ignore
+        #next  if $line =~ /$BLOCKS_END/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self->test_records(qw(BLOCK));
@@ -112,8 +112,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -123,18 +123,18 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#header line
-	if ($line =~ /^(BL\d+):\s+(\S+)?/o) {
-	    $self->{'ac'} = $1;
-	    $self->{'id'} = (defined $2 ? $2 : '');
-	}
+        #header line
+        if ($line =~ /^(BL\d+):\s+(\S+)?/o) {
+            $self->{'ac'} = $1;
+            $self->{'id'} = (defined $2 ? $2 : '');
+        }
 
-	#default: ignore
-	next;
+        #default: ignore
+        next;
     }
 
     $self->warn("missing block accession number/identifier")
-	unless defined $self->{'ac'};
+        unless defined $self->{'ac'};
 
     $self;#->examine;
 }
@@ -150,8 +150,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -166,43 +166,43 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /^Block\s+(BL\d+\S*)/) {
-	    $self->{'ac'} = $1;
-	    next;
-	}
+        if ($line =~ /^Block\s+(BL\d+\S*)/) {
+            $self->{'ac'} = $1;
+            next;
+        }
 
-	if ($line =~ /^ID\s{3}(.*)/) {
-	    $self->{'id'} = $1;
-	    next;
-	}
+        if ($line =~ /^ID\s{3}(.*)/) {
+            $self->{'id'} = $1;
+            next;
+        }
 
-	if ($line =~ /^AC\s{3}(\S+);\s+(.*)/) {
-	    $self->warn("accession number mismatch ($1 cf. $self->{'ac'})")
-		unless $self->{'ac'} and $self->{'ac'} eq $1;
-	    next;
-	}
+        if ($line =~ /^AC\s{3}(\S+);\s+(.*)/) {
+            $self->warn("accession number mismatch ($1 cf. $self->{'ac'})")
+                unless $self->{'ac'} and $self->{'ac'} eq $1;
+            next;
+        }
 
-	if ($line =~ /^DE\s{3}(.*)/) {
-	    #allow multiline, just in case
-	    $self->{'de'} .= $1;
-	    next;
-	}
+        if ($line =~ /^DE\s{3}(.*)/) {
+            #allow multiline, just in case
+            $self->{'de'} .= $1;
+            next;
+        }
 
-	if ($line =~ /^BL\s{3}(.*)/) {
-	    $self->{'bl'} = $1;
-	    next;
-	}
+        if ($line =~ /^BL\s{3}(.*)/) {
+            $self->{'bl'} = $1;
+            next;
+        }
 
-	if ($line =~ /^\s*(\S+)\s*\(\s*(\d+)\)\s(\S+)\s+(\d+)/) {
-	    push @{$self->{'block'}}, [ $1, $2, $3, $4 ];
-	    next;
-	}
+        if ($line =~ /^\s*(\S+)\s*\(\s*(\d+)\)\s(\S+)\s+(\d+)/) {
+            push @{$self->{'block'}}, [ $1, $2, $3, $4 ];
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$BLOCKS_Null/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$BLOCKS_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self->warn("missing block data") if $self->{'ac'} eq '';
@@ -220,7 +220,7 @@ sub print_data {
     printf "$x%20s -> %s\n", 'de', $self->{'de'};
     printf "$x%20s -> %s\n", 'bl', $self->{'bl'};
     for (my $i=0; $i < @{$self->{'block'}}; $i++) {
-	print "$x$i => [@{$self->{'block'}->[$i]}]\n";
+        print "$x$i => [@{$self->{'block'}->[$i]}]\n";
     }
 }
 

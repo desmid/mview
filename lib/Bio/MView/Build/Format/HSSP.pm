@@ -87,44 +87,44 @@ sub parse {
     $align = $self->{'entry'}->parse(qw(ALIGNMENT));
 
     push @hit, new Bio::MView::Build::Row::HSSP
-	(
-	 '',
-	 $head->{'pdbid'},
-	 $head->{'header'},
+        (
+         '',
+         $head->{'pdbid'},
+         $head->{'header'},
          { 'chain' => $self->chain }
-	);
+        );
     $hit[$#hit]->add_frag($align->get_query($self->chain));
 
     #extract cumulative scores and identifiers from the ranking and
     #corresponding sequences from the already parsed alignment.
     foreach $match (@{$prot->{'ranking'}}) {
 
-	$rank++;
+        $rank++;
 
-	if ($match->{'id'} =~ /\|/) {
-	    #looks like a genequiz generated HSSP file
-	    $id = $match->{'id'};
-	} elsif ($match->{'accnum'}) {
-	    #looks like a uniprot derived HSSP file
-	    $id = "uniprot|$match->{'accnum'}|$match->{'id'}";
-	} else {
-	    #give up
-	    $id = $match->{'id'};
-	}
+        if ($match->{'id'} =~ /\|/) {
+            #looks like a genequiz generated HSSP file
+            $id = $match->{'id'};
+        } elsif ($match->{'accnum'}) {
+            #looks like a uniprot derived HSSP file
+            $id = "uniprot|$match->{'accnum'}|$match->{'id'}";
+        } else {
+            #give up
+            $id = $match->{'id'};
+        }
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $id);
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	$seq = $align->get_sequence($rank, $self->chain);
+        $seq = $align->get_sequence($rank, $self->chain);
 
-	#skip empty alignments (aligned to different chain)
-	next  if $seq =~ /^\s+$/;
+        #skip empty alignments (aligned to different chain)
+        next  if $seq =~ /^\s+$/;
 
-	$seq =~ tr/ /-/;    #replace spaces with hyphens
+        $seq =~ tr/ /-/;    #replace spaces with hyphens
 
-	push @hit, new Bio::MView::Build::Row::HSSP(
+        push @hit, new Bio::MView::Build::Row::HSSP(
             $rank,
             $id,
             $match->{'protein'},

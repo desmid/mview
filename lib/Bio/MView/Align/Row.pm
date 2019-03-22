@@ -35,18 +35,18 @@ sub is_special   { 0 }  #subclass overrides
 sub set_display {
     my $self = shift;
     while (@_) {
-	my ($key, $val) = (shift, shift);
+        my ($key, $val) = (shift, shift);
         my $ref = ref $val;
 
-	#shallow copy referenced data
-	if ($ref eq 'HASH') {
+        #shallow copy referenced data
+        if ($ref eq 'HASH') {
             $self->{'display'}->{$key} = { %$val };
             next;
-	}
+        }
         if ($ref eq 'ARRAY') {
-	    $self->{'display'}->{$key} = [ @$val ];
+            $self->{'display'}->{$key} = [ @$val ];
             next;
-	}
+        }
 
         #labels hack
         if ($key =~ /^label(\d+)$/) {

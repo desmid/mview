@@ -29,10 +29,10 @@ use strict;
 
 use vars qw(@ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
             $WARNING_START
             $WARNING_END
@@ -59,20 +59,20 @@ use vars qw(@ISA
 
             $SCORE_START
             $SCORE_END
-	   );
+           );
 
 @ISA   = qw(Bio::Parse::Format::BLAST);
 
 @VERSIONS = (
-	     '2' => [
-		     'BLASTP',
-		     'BLASTN',
-		     'BLASTX',
-		     'TBLASTN',
-		     'TBLASTX',
-		     'PSIBLAST',
-		    ],
-	    );
+             '2' => [
+                     'BLASTP',
+                     'BLASTN',
+                     'BLASTX',
+                     'TBLASTN',
+                     'TBLASTX',
+                     'PSIBLAST',
+                    ],
+            );
 
 my $NULL = '^\s*$';
 
@@ -107,7 +107,7 @@ $MATCH_START      = '^>';
 $MATCH_END        = "^(?:$MATCH_START|$WARNING_START|$SEARCH_END)";
 
 $RANK_START       = "^(?:\\s+High\\s+E|\\s+Score\\s+E)";
-$RANK_MATCH	  = "^(?:$NULL|\\s+High|\\s+Score|\\s*Sequences|\\s*CONVERGED| *No hits found|[^>].*$RX_Uint\\s+$RX_Ureal|$Bio::Parse::Format::BLAST::GCG_JUNK)";
+$RANK_MATCH       = "^(?:$NULL|\\s+High|\\s+Score|\\s*Sequences|\\s*CONVERGED| *No hits found|[^>].*$RX_Uint\\s+$RX_Ureal|$Bio::Parse::Format::BLAST::GCG_JUNK)";
 $RANK_END         = "(?:$MATCH_START|$SEARCH_END)";  #ignore warnings
 $RANK_NONE        = '^\s*\*\*\* NONE';
 
@@ -121,8 +121,8 @@ $SCORE_END        = "^(?:$SCORE_START|$MATCH_END)";
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -132,17 +132,17 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$NULL/o;
 
-	#Header lines
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #Header lines
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#Search lines
-	if ($line =~ /$SEARCH_START/o) {
+        #Search lines
+        if ($line =~ /$SEARCH_START/o) {
             if ($line =~ /^Searching/o) {  #BLAST2
                 $text->scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
                 next;
@@ -153,20 +153,20 @@ sub new {
             }
             #keywords 'Searching' or 'Results' stripped by web server
             $text->scan_until($SEARCH_END, 'SEARCH');
-	    next;
-	}
+            next;
+        }
 
-	#Parameter lines
-	if ($line =~ /$PARAMETERS_START/o) {
-	    $text->scan_until($PARAMETERS_END, 'PARAMETERS');
-	    next;
-	}
+        #Parameter lines
+        if ($line =~ /$PARAMETERS_START/o) {
+            $text->scan_until($PARAMETERS_END, 'PARAMETERS');
+            next;
+        }
 
-	#WARNINGS ISSUED line: ignore
-	next    if $line =~ /$WARNINGS_START/o;
+        #WARNINGS ISSUED line: ignore
+        next    if $line =~ /$WARNINGS_START/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;
@@ -198,8 +198,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -210,13 +210,13 @@ sub new {
     while (defined ($line = $text->next_line(1))) {
         #warn "[$line]\n";
 
-	#query line: update HEADER if needed (for psiblast at least)
-	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
-	    #no test - either field may be missing
-	    my $query   = $1  if defined $1;
-	    my $summary = $2  if defined $2;
+        #query line: update HEADER if needed (for psiblast at least)
+        if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
+            #no test - either field may be missing
+            my $query   = $1  if defined $1;
+            my $summary = $2  if defined $2;
 
-	    #strip leading unix path stuff
+            #strip leading unix path stuff
             $query =~ s/.*\/([^\/]+)$/$1/;
 
             my $header = $self->get_parent(1)->get_record('HEADER');
@@ -224,25 +224,25 @@ sub new {
             $header->{'summary'} = $summary  if $header->{'summary'} eq '';
         }
 
-	#Rank lines
-	if ($line =~ /$Bio::Parse::Format::BLAST2::RANK_START/o) {
-	    $text->scan_until($Bio::Parse::Format::BLAST2::RANK_END, 'RANK');
-	    next;
-	}
+        #Rank lines
+        if ($line =~ /$Bio::Parse::Format::BLAST2::RANK_START/o) {
+            $text->scan_until($Bio::Parse::Format::BLAST2::RANK_END, 'RANK');
+            next;
+        }
 
-	#Hit lines
-	if ($line =~ /$Bio::Parse::Format::BLAST2::MATCH_START/o) {
-	    $text->scan_until($Bio::Parse::Format::BLAST2::MATCH_END, 'MATCH');
-	    next;
-	}
+        #Hit lines
+        if ($line =~ /$Bio::Parse::Format::BLAST2::MATCH_START/o) {
+            $text->scan_until($Bio::Parse::Format::BLAST2::MATCH_END, 'MATCH');
+            next;
+        }
 
-	#WARNING lines
-	if ($line =~ /$Bio::Parse::Format::BLAST2::WARNING_START/o) {
-	    $text->scan_until($Bio::Parse::Format::BLAST2::WARNING_END, 'WARNING');
-	    next;
-	}
+        #WARNING lines
+        if ($line =~ /$Bio::Parse::Format::BLAST2::WARNING_START/o) {
+            $text->scan_until($Bio::Parse::Format::BLAST2::WARNING_END, 'WARNING');
+            next;
+        }
 
-	#default: ignore any other text in SEARCH block
+        #default: ignore any other text in SEARCH block
     }
 
     $self;#->examine;
@@ -260,8 +260,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -277,69 +277,69 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	next    if $line =~ /^Sequences used in model and found again:/o;
-	next    if $line =~ /^Sequences not found previously or not previously below threshold:/o;
-	next    if $line =~ /^CONVERGED!/o;
-	next    if $line =~ /^Significant /o;    #PHI-BLAST
+        next    if $line =~ /^Sequences used in model and found again:/o;
+        next    if $line =~ /^Sequences not found previously or not previously below threshold:/o;
+        next    if $line =~ /^CONVERGED!/o;
+        next    if $line =~ /^Significant /o;    #PHI-BLAST
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
-	#GCG annotation: ignore
+        #GCG annotation: ignore
         next    if $line =~ /$Bio::Parse::Format::BLAST::GCG_JUNK/o;
 
-	#NCBI web server HTML text-only output: ignore
-	next    if $line =~ /^\s*-+\s*$/o;        #dashed line
-	next    if $line =~ /^\s+Alignments/o;    #text
+        #NCBI web server HTML text-only output: ignore
+        next    if $line =~ /^\s*-+\s*$/o;        #dashed line
+        next    if $line =~ /^\s+Alignments/o;    #text
 
-	#empty ranking: done
+        #empty ranking: done
         last    if $line =~ /$Bio::Parse::Format::BLAST2::RANK_NONE/o;
 
-	my $tmp = {};
+        my $tmp = {};
 
-	#examine suffix
-	if ($line =~ /
+        #examine suffix
+        if ($line =~ /
             \s+
-	    ($RX_Ureal)                #bits
-	    \s+
-	    ($RX_Ureal)                #E value
+            ($RX_Ureal)                #bits
+            \s+
+            ($RX_Ureal)                #E value
             (?:\s+($RX_Uint))?         #N (ungapped blast only)
-	    \s*$
-	    /xo) {
+            \s*$
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2);
+            $self->test_args(\$line, $1, $2);
 
-	    $tmp->{'bits'}   = $1;
-	    $tmp->{'expect'} = Bio::Parse::Format::BLAST2::fix_expect($2);
-	    $tmp->{'n'}      = (defined $3 ? $3 : 0);
+            $tmp->{'bits'}   = $1;
+            $tmp->{'expect'} = Bio::Parse::Format::BLAST2::fix_expect($2);
+            $tmp->{'n'}      = (defined $3 ? $3 : 0);
 
-	    #examine prefix
-	    if ($` =~ /^\s*
-		(\S+)                  #id
-		\s*
-		\!?                    #GCG junk
-		\s*
-		(.*)?                  #summary
-		/xo) {
+            #examine prefix
+            if ($` =~ /^\s*
+                (\S+)                  #id
+                \s*
+                \!?                    #GCG junk
+                \s*
+                (.*)?                  #summary
+                /xo) {
 
-		$self->test_args(\$line, $1);    #ignore $2
+                $self->test_args(\$line, $1);    #ignore $2
 
-		$tmp->{'id'} =
-		    Bio::Parse::Record::clean_identifier($1);
-		$tmp->{'summary'} =
-		    Bio::Parse::Record::strip_trailing_space($2);
+                $tmp->{'id'} =
+                    Bio::Parse::Record::clean_identifier($1);
+                $tmp->{'summary'} =
+                    Bio::Parse::Record::strip_trailing_space($2);
 
-	    } else {
-		$self->warn("unknown field: $line");
-	    }
+            } else {
+                $self->warn("unknown field: $line");
+            }
 
-	    push @{$self->{'hit'}}, $tmp;
+            push @{$self->{'hit'}}, $tmp;
 
             next;
-	}
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -372,8 +372,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -385,64 +385,64 @@ sub new {
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Score\s*=\s*
-	($RX_Ureal)                 #bits
-	\s+bits\s+
-	\(($RX_Ureal)\),            #score
-	\s+
-	Expect(?:\((\d+)\))?\s*=\s*
-	($RX_Ureal)                 #expectation
-	/xo) {
+        Score\s*=\s*
+        ($RX_Ureal)                 #bits
+        \s+bits\s+
+        \(($RX_Ureal)\),            #score
+        \s+
+        Expect(?:\((\d+)\))?\s*=\s*
+        ($RX_Ureal)                 #expectation
+        /xo) {
 
-	$self->test_args(\$line, $1, $2, $4);
+        $self->test_args(\$line, $1, $2, $4);
 
-	(
-	 $self->{'bits'},
-	 $self->{'score'},
-	 $self->{'n'},              #substitute 1 unless $3
-	 $self->{'expect'},
-	) = ($1, $2, defined $3?$3:1, Bio::Parse::Format::BLAST2::fix_expect($4));
+        (
+         $self->{'bits'},
+         $self->{'score'},
+         $self->{'n'},              #substitute 1 unless $3
+         $self->{'expect'},
+        ) = ($1, $2, defined $3?$3:1, Bio::Parse::Format::BLAST2::fix_expect($4));
 
     } else {
-	$self->warn("expecting 'Score' line: $line");
+        $self->warn("expecting 'Score' line: $line");
     }
 
     #Identities line
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Identities\s*=\s*
-	(\d+\/\d+)                  #identities fraction
-	\s+
-	\((\d+)%\)                  #identities percentage
-	(?:                         #not present in (some?) BLASTN 2.0.9
-	,\s+
-	Positives\s*=\s*
-	(\d+\/\d+)                  #positives fraction
-	\s+
-	\((\d+)%\)                  #positives percentage
-	(?:,\s*			    #not always present
-	 Gaps\s*=\s*
-	 (\d+\/\d+)                 #gaps fraction
-	 \s+
-	 \((\d+)%\)                 #gaps percentage
-	)?
-	)?
-	/xo) {
+        Identities\s*=\s*
+        (\d+\/\d+)                  #identities fraction
+        \s+
+        \((\d+)%\)                  #identities percentage
+        (?:                         #not present in (some?) BLASTN 2.0.9
+        ,\s+
+        Positives\s*=\s*
+        (\d+\/\d+)                  #positives fraction
+        \s+
+        \((\d+)%\)                  #positives percentage
+        (?:,\s*                     #not always present
+         Gaps\s*=\s*
+         (\d+\/\d+)                 #gaps fraction
+         \s+
+         \((\d+)%\)                 #gaps percentage
+        )?
+        )?
+        /xo) {
 
-	$self->test_args(\$line, $1, $2);
+        $self->test_args(\$line, $1, $2);
 
-	(
-	 $self->{'id_fraction'},
-	 $self->{'id_percent'},
-	 $self->{'pos_fraction'},
-	 $self->{'pos_percent'},
-	 $self->{'gap_fraction'},
-	 $self->{'gap_percent'},
-	) = ($1, $2, defined $3?$3:'', defined $4?$4:0, defined $5?$5:'', defined $6?$6:0);
+        (
+         $self->{'id_fraction'},
+         $self->{'id_percent'},
+         $self->{'pos_fraction'},
+         $self->{'pos_percent'},
+         $self->{'gap_fraction'},
+         $self->{'gap_percent'},
+        ) = ($1, $2, defined $3?$3:'', defined $4?$4:0, defined $5?$5:'', defined $6?$6:0);
 
     } else {
-	$self->warn("expecting 'Identities' line: $line");
+        $self->warn("expecting 'Identities' line: $line");
     }
 
     #optional (Strand=|Frame=) line: handled in subclasses

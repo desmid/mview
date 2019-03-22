@@ -17,45 +17,45 @@ use Bio::Parse::Format::FASTA2::lalign;
 use strict;
 
 use vars qw(
-	    @ISA
+            @ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $NULL
+            $NULL
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
-	    $HEADER_START
-	    $HEADER_END
+            $HEADER_START
+            $HEADER_END
 
-	    $RANK_START
-	    $RANK_END
+            $RANK_START
+            $RANK_END
 
-	    $TRAILER_START
-	    $TRAILER_END
+            $TRAILER_START
+            $TRAILER_END
 
-	    $MATCH_START
-	    $MATCH_END
+            $MATCH_START
+            $MATCH_END
 
-	    $SUM_START
-	    $SUM_END
+            $SUM_START
+            $SUM_END
 
-	    $ALN_START
-	    $ALN_END
+            $ALN_START
+            $ALN_END
 );
 
 @ISA   = qw(Bio::Parse::Format::FASTA);
 
 @VERSIONS = (
-	     '2' => [
-		     'FASTA',
-		     'TFASTX',
-		     'ALIGN',
-		     'LALIGN',
-		     'SSEARCH',
-		    ],
-	    );
+             '2' => [
+                     'FASTA',
+                     'TFASTX',
+                     'ALIGN',
+                     'LALIGN',
+                     'SSEARCH',
+                    ],
+            );
 
 $NULL  = '^\s*$';#for emacs';
 
@@ -111,8 +111,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -125,46 +125,46 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /^\s*(version\s+(\S+).*)/) {
-	    $self->{'full_version'} = $1;
-	    $self->{'version'}      = $2;
-	    next;
-	}
+        if ($line =~ /^\s*(version\s+(\S+).*)/) {
+            $self->{'full_version'} = $1;
+            $self->{'version'}      = $2;
+            next;
+        }
 
-	if ($line =~ /^\s*v((\d+(?:\.\d+)?)\s*\S+.*)/) {
-	    $self->{'full_version'} = $1;
-	    $self->{'version'}      = $2;
-	    next;
-	}
+        if ($line =~ /^\s*v((\d+(?:\.\d+)?)\s*\S+.*)/) {
+            $self->{'full_version'} = $1;
+            $self->{'version'}      = $2;
+            next;
+        }
 
-	if ($line =~ /^\s*>?(\S+).*\:\s+(\d+)\s+(?:aa|nt)/) {
-	    if ($self->{'queryfile'} eq '') {
-		$self->{'queryfile'} = $1;
-		$self->{'queryfile'} =~ s/,$//;
-	    } else {
-		$self->test_args(\$line, $1);
-		$self->{'query'} = Bio::Parse::Record::clean_identifier($1);
-	    }
-	    $self->{'length'} = $2;
-	    next;
-	}
+        if ($line =~ /^\s*>?(\S+).*\:\s+(\d+)\s+(?:aa|nt)/) {
+            if ($self->{'queryfile'} eq '') {
+                $self->{'queryfile'} = $1;
+                $self->{'queryfile'} =~ s/,$//;
+            } else {
+                $self->test_args(\$line, $1);
+                $self->{'query'} = Bio::Parse::Record::clean_identifier($1);
+            }
+            $self->{'length'} = $2;
+            next;
+        }
 
-	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
-	    $self->test_args(\$line, $1,$2);
-	    (
-	     $self->{'residues'},
-	     $self->{'sequences'},
-	    ) = ($1, $2);
-	    next;
-	}
+        if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
+            $self->test_args(\$line, $1,$2);
+            (
+             $self->{'residues'},
+             $self->{'sequences'},
+            ) = ($1, $2);
+            next;
+        }
 
-	#ignore any other text
+        #ignore any other text
     }
 
     if (! defined $self->{'full_version'} ) {
-	#can't determine version: hardwire one!
-	$self->{'full_version'} = 'looks like FASTA 2';
-	$self->{'version'}      = '2.1';
+        #can't determine version: hardwire one!
+        $self->{'full_version'} = 'looks like FASTA 2';
+        $self->{'version'}      = '2.1';
         $self->warn("unknown FASTA version - using $self->{'version'}");    }
 
     $self;

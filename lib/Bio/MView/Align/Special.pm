@@ -57,12 +57,12 @@ sub get_special_colormap_for_id {
     my ($self, $kw, $id) = @_;
     my ($size, $map) = (0, undef);
     foreach my $m ($COLORMAP->colormap_names) {
-	if ($id =~ /\#$m(|:|:.*)$/i) {
-	    if (length($&) > $size) {
-		$size = length($&);
+        if ($id =~ /\#$m(|:|:.*)$/i) {
+            if (length($&) > $size) {
+                $size = length($&);
                 $map = $m;
-	    }
-	}
+            }
+        }
     }
     return $map;
 }

@@ -157,7 +157,7 @@ sub mview {
 
         warn "$PROG: processing '$file'\n"  if verbose_echo_file($par);
 
-	#try to choose a format if one wasn't specified
+        #try to choose a format if one wasn't specified
         if ($check_format) {
             my $format = Bio::MView::Manager::check_input_file($file);
             warn("$PROG: can't determine format\n"), next
@@ -167,17 +167,17 @@ sub mview {
             $par->{'infmt'} = $format;
         }
 
-	unless ($mgr->parse($file, $par->{'infmt'})) {
-	    warn "$PROG: can't parse file '$file'\n";
-	}
+        unless ($mgr->parse($file, $par->{'infmt'})) {
+            warn "$PROG: can't parse file '$file'\n";
+        }
         #vmstat("mview: Manager.parse file '$file' done");
     }
     #vmstat("mview: Manager.parse all files done");
 
     #saved output until end?
     if (want_in_register($par) and want_mview_layout($par)) {
-	$dis->render;
-	#vmstat("mview: in register render done");
+        $dis->render;
+        #vmstat("mview: in register render done");
     }
     return $mgr->get_alignment_count;
 }
@@ -262,13 +262,13 @@ sub echo_argv {
     $data =~ s/\-+v[a-z]*[=\s]+\S+\s*//g;
     my $s = '';
     if (want_html($par)) {
-	$s .= "<H4>command line:</H4>\n<CODE>";
-	$s .= "$PROG @$data";
-	$s .= "</CODE>\n<H4>produced:</H4>\n";
+        $s .= "<H4>command line:</H4>\n<CODE>";
+        $s .= "$PROG @$data";
+        $s .= "</CODE>\n<H4>produced:</H4>\n";
     } else {
-	$s .= "command line:\n";
-	$s .= "$PROG @$data\n";
-	$s .= "produced:\n\n";
+        $s .= "command line:\n";
+        $s .= "$PROG @$data\n";
+        $s .= "produced:\n\n";
     }
     return $s
 }

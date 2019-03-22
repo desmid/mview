@@ -16,7 +16,7 @@ sub examine {
     print "Class $self\n";
     foreach $key (@keys) {
         printf "%16s => %s\n", $key,
-	    defined $self->{$key} ? $self->{$key} : '';
+            defined $self->{$key} ? $self->{$key} : '';
     }
     $self;
 }

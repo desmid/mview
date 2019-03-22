@@ -28,27 +28,27 @@ use strict;
 
 use vars qw(@ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
-	    $HEADER_START
-	    $HEADER_END
-	   );
+            $HEADER_START
+            $HEADER_END
+           );
 
 @ISA = qw(Bio::Parse::Format::BLAST);
 
 @VERSIONS = (
-	     '2of7' => [
+             '2of7' => [
                      'BLASTP',
                      'BLASTN',
-		     'BLASTX',
-		     'TBLASTN',
-		     'TBLASTX',
-		     'PSIBLAST',
-		    ],
-	    );
+                     'BLASTX',
+                     'TBLASTN',
+                     'TBLASTX',
+                     'PSIBLAST',
+                   ],
+            );
 
 # BLAST -outfmt 7 HEADER format is:
 #
@@ -267,8 +267,8 @@ sub strip_id {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -278,20 +278,20 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$NULL/o;
 
-	#HEADER block
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #HEADER block
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#SEARCH block
-	if ($line =~ /$SEARCH_START/o) {
-	    $text->scan_until($SEARCH_END, 'SEARCH');
-	    next;
-	}
+        #SEARCH block
+        if ($line =~ /$SEARCH_START/o) {
+            $text->scan_until($SEARCH_END, 'SEARCH');
+            next;
+        }
 
         #stop at psiblast convergence message
         last  if $line =~ /^Search has CONVERGED/;
@@ -299,8 +299,8 @@ sub new {
         #stop before terminal comment
         last  if $line =~ /$ENTRY_END/;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;
@@ -317,8 +317,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -338,15 +338,15 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	#blast version info
-	if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
-	    $self->test_args(\$line, $1, $2);
-	    (
-	     $self->{'full_version'},
-	     $self->{'version'},
-	    ) = ($1, $2);
-	    next;
-	}
+        #blast version info
+        if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
+            $self->test_args(\$line, $1, $2);
+            (
+             $self->{'full_version'},
+             $self->{'version'},
+            ) = ($1, $2);
+            next;
+        }
 
         if ($line =~ /^# Query:\s+(.*)/o) {
             $self->{'query'} = $1;
@@ -364,8 +364,8 @@ sub new {
         next  if $line =~ /^# Database:/o;
         next  if $line =~ /^# \d+ hits found/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -435,8 +435,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -520,14 +520,14 @@ sub new {
             next;
         }
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$NULL/o;
 
         #psiblast convergence message: ignore
         next  if $line =~ /^Search has CONVERGED/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     #warn "RANK(counts): [@{[scalar @$counts]}] [@{$counts}]\n";
 
@@ -546,11 +546,11 @@ sub print_data {
     my $x = ' ' x $indent;
     printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
-	foreach my $field (sort keys %$hit) {
+        foreach my $field (sort keys %$hit) {
             my $val = $hit->{$field};
             $val = $self->fmt_hash($val)  if $field eq 'extra';
             printf "$x%20s -> %s\n", $field, $val;
-	}
+        }
     }
 }
 
@@ -565,8 +565,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -586,8 +586,8 @@ sub new {
             next;
         }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;
@@ -604,8 +604,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -646,8 +646,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);

@@ -22,10 +22,10 @@ use Bio::Parse::Format::BLAST2;
 use Bio::Parse::Format::BLAST2_OF7;
 
 my %VERSIONS = (
-		@Bio::Parse::Format::BLAST1::VERSIONS,
-		@Bio::Parse::Format::BLAST2::VERSIONS,
-		@Bio::Parse::Format::BLAST2_OF7::VERSIONS,
-	       );
+                @Bio::Parse::Format::BLAST1::VERSIONS,
+                @Bio::Parse::Format::BLAST2::VERSIONS,
+                @Bio::Parse::Format::BLAST2_OF7::VERSIONS,
+               );
 
 my $NULL = '^\s*$';;
 
@@ -163,30 +163,30 @@ sub get_entry {
             #fall through for version tests
         }
 
-	#end of entry
-	last  if $line =~ /$ENTRY_END/o;
+        #end of entry
+        last  if $line =~ /$ENTRY_END/o;
 
-	#escape iteration if we've found the BLAST type previously
-	next  if defined $SAVEPROG and defined $SAVEVERSION;
+        #escape iteration if we've found the BLAST type previously
+        next  if defined $SAVEPROG and defined $SAVEVERSION;
 
-	if ($line =~ /$HEADER_START\s+(\d+)/o) {
+        if ($line =~ /$HEADER_START\s+(\d+)/o) {
 
-	    #read major version
-	    $SAVEVERSION = $1;
+            #read major version
+            $SAVEVERSION = $1;
 
-	    #reassess version
-	    if ($line =~ /WashU/o) {
-		#WashU series is almost identical to NCBI BLAST1
-		$SAVEVERSION = 1;
-	    }
+            #reassess version
+            if ($line =~ /WashU/o) {
+                #WashU series is almost identical to NCBI BLAST1
+                $SAVEVERSION = 1;
+            }
 
-	    #read program name and determine output format
-	    $line =~ /^(\#)?\s*(\S+)/o;
-	    $SAVEPROG = uc $2;
+            #read program name and determine output format
+            $line =~ /^(\#)?\s*(\S+)/o;
+            $SAVEPROG = uc $2;
             $SAVEFMT = defined $1 ? '_OF7' : '';
 
-	    next;
-	}
+            next;
+        }
 
     }
     return 0  if $offset < 0;
@@ -194,12 +194,12 @@ sub get_entry {
     $bytes = $parent->{'text'}->tell - $offset;
 
     unless (defined $SAVEPROG and defined $SAVEVERSION) {
-	die "get_entry() top-level BLAST parser could not determine program/version\n";
+        die "get_entry() top-level BLAST parser could not determine program/version\n";
     }
 
     unless (exists $VERSIONS{$SAVEVERSION} and
-	    grep(/^$SAVEPROG$/i, @{$VERSIONS{$SAVEVERSION}}) > 0) {
-	die "get_entry() parser for program '$SAVEPROG' version '$SAVEVERSION' not implemented\n";
+            grep(/^$SAVEPROG$/i, @{$VERSIONS{$SAVEVERSION}}) > 0) {
+        die "get_entry() parser for program '$SAVEPROG' version '$SAVEVERSION' not implemented\n";
     }
 
     #BLAST+ PSIBLAST handled by BLASTP parser
@@ -232,8 +232,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -248,33 +248,33 @@ sub new {
 
     while (defined($line = $text->next_line)) {
 
-	#blast version info
-	if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
+        #blast version info
+        if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
 
-	    $self->test_args(\$line, $1, $2);
+            $self->test_args(\$line, $1, $2);
 
-	    (
-	     $self->{'full_version'},
-	     $self->{'version'},
-	    ) = ($1, $2);
+            (
+             $self->{'full_version'},
+             $self->{'version'},
+            ) = ($1, $2);
 
-	    next;
-	}
+            next;
+        }
 
-	#query line
-	if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
+        #query line
+        if ($line =~ /^Query=\s+(\S+)?\s*[,;]?\s*(.*)/o) {
 
-	    #no test - either field may be missing
-	    $self->{'query'}   = $1  if defined $1;
-	    $self->{'summary'} = $2  if defined $2;
+            #no test - either field may be missing
+            $self->{'query'}   = $1  if defined $1;
+            $self->{'summary'} = $2  if defined $2;
 
-	    #strip leading unix path stuff
+            #strip leading unix path stuff
             $self->{'query'} =~ s/.*\/([^\/]+)$/$1/;
 
-	    next;
-	}
+            next;
+        }
 
-	#ignore any other text
+        #ignore any other text
     }
     $self;
 }
@@ -303,9 +303,9 @@ sub print_data {
     my $x = ' ' x $indent;
     printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
-	foreach my $field (sort keys %$hit) {
-	    printf "$x%20s -> %s\n", $field,  $hit->{$field};
-	}
+        foreach my $field (sort keys %$hit) {
+            printf "$x%20s -> %s\n", $field,  $hit->{$field};
+        }
     }
 }
 
@@ -320,8 +320,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -334,23 +334,23 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#identifier lines
-	if ($line =~ /$MATCH_START/o) {
-	    $text->scan_until($SCORE_START, 'SUM');
-	    next;
-	}
+        #identifier lines
+        if ($line =~ /$MATCH_START/o) {
+            $text->scan_until($SCORE_START, 'SUM');
+            next;
+        }
 
-	#scored alignments
-	if ($line =~ /$SCORE_START/o) {
-	    $text->scan_until($SCORE_END, 'ALN');
-	    next;
-	}
+        #scored alignments
+        if ($line =~ /$SCORE_START/o) {
+            $text->scan_until($SCORE_END, 'ALN');
+            next;
+        }
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -359,8 +359,8 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (sort keys %{$self->{'orient'}}) {
-	printf("$x%20s -> %s\n",
-	       "orient $i", scalar @{$self->{'orient'}->{$i}});
+        printf("$x%20s -> %s\n",
+               "orient $i", scalar @{$self->{'orient'}->{$i}});
     }
 }
 
@@ -376,8 +376,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -388,22 +388,22 @@ sub new {
     $line = $text->scan_lines(0);
 
     if ($line =~ /^\s*
-	>?\s*
-	([^\s]+)                            #id
-	\s+
-	(.*)                                #description
-	\s*
-	Length\s*=\s*($RX_Uint)             #length
-	/xso) {
+        >?\s*
+        ([^\s]+)                            #id
+        \s+
+        (.*)                                #description
+        \s*
+        Length\s*=\s*($RX_Uint)             #length
+        /xso) {
 
-	$self->test_args(\$line, $1, $3);    #ignore $2
+        $self->test_args(\$line, $1, $3);    #ignore $2
 
-	(
-	 $self->{'id'},
-	 $self->{'desc'},
-	 $self->{'length'},
-	) = (Bio::Parse::Record::clean_identifier($1),
-	     Bio::Parse::Record::strip_english_newlines($2), $3);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+        ) = (Bio::Parse::Record::clean_identifier($1),
+             Bio::Parse::Record::strip_english_newlines($2), $3);
     }
     $self;
 }
@@ -438,158 +438,158 @@ sub parse_alignment {
     #alignment lines
     while (defined ($line = $text->next_line(1))) {
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
-	#ignore this line (BLASTN)
-	next    if $line =~ /^\s*(?:Plus|Minus) Strand/o;
+        #ignore this line (BLASTN)
+        next    if $line =~ /^\s*(?:Plus|Minus) Strand/o;
 
-	#first compute sequence indent depth
-	if ($line =~ /^(\s*Query\:?\s+(\d+)\s*)/o) {
-	    $depth = length($1);
-	}
+        #first compute sequence indent depth
+        if ($line =~ /^(\s*Query\:?\s+(\d+)\s*)/o) {
+            $depth = length($1);
+        }
 
-	@tmp = ();
+        @tmp = ();
 
-	#Query line
-	if ($line =~ /^\s*
-	    Query\:?
-	    \s+
-	    (\d+)		#start
-	    \s*
-	    ([^\d\s]+)?         #sequence
-	    \s+
-	    (\d+)?		#stop
-	    /xo) {
+        #Query line
+        if ($line =~ /^\s*
+            Query\:?
+            \s+
+            (\d+)                #start
+            \s*
+            ([^\d\s]+)?         #sequence
+            \s+
+            (\d+)?                #stop
+            /xo) {
 
-	    #$self->test_args(\$line, $1, $2, $3);
-	    $self->test_args(\$line, $1);
+            #$self->test_args(\$line, $1, $2, $3);
+            $self->test_args(\$line, $1);
 
-	    if (defined $2 and defined $3) {
-		#normal
-		if ($query_start) {
-		    $query_stop = $3;
-		} else {
-		    ($query_start, $query_stop) = ($1, $3);
-		}
-		$tmp[0] = $2;
+            if (defined $2 and defined $3) {
+                #normal
+                if ($query_start) {
+                    $query_stop = $3;
+                } else {
+                    ($query_start, $query_stop) = ($1, $3);
+                }
+                $tmp[0] = $2;
 
-	    } else {
-		if (! defined $3) {
-		    #work around bug in psiblast/BLASTP 2.2.9 [May-01-2004]
-		    #which introduces white space into the alignment,
-		    #sometimes with no sequence at all, and sometimes no
-		    #trailing position.
-		    ($query_start, $query_stop) = ($1, $1);
-		}
-		if (! defined $2) {
-		    $tmp[0] = '';
-		} else {
-		    $tmp[0] = $2;
-		}
-	    }
-	    #fall through
+            } else {
+                if (! defined $3) {
+                    #work around bug in psiblast/BLASTP 2.2.9 [May-01-2004]
+                    #which introduces white space into the alignment,
+                    #sometimes with no sequence at all, and sometimes no
+                    #trailing position.
+                    ($query_start, $query_stop) = ($1, $1);
+                }
+                if (! defined $2) {
+                    $tmp[0] = '';
+                } else {
+                    $tmp[0] = $2;
+                }
+            }
+            #fall through
 
-	} else {
-	    $self->warn("expecting 'Query' line: [$line]");
-	    next;
-	}
+        } else {
+            $self->warn("expecting 'Query' line: [$line]");
+            next;
+        }
 
-	#force read of match line, but note:
-	#PHI-BLAST has an extra line - ignore for the time being
-	$line = $text->next_line(1);
-	$line = $text->next_line(1)  if $line =~ /^pattern/o;
+        #force read of match line, but note:
+        #PHI-BLAST has an extra line - ignore for the time being
+        $line = $text->next_line(1);
+        $line = $text->next_line(1)  if $line =~ /^pattern/o;
 
-	#alignment line
-	$tmp[1] = '';
-	$tmp[1] = substr($line, $depth)  if length($line) > $depth;
+        #alignment line
+        $tmp[1] = '';
+        $tmp[1] = substr($line, $depth)  if length($line) > $depth;
 
-	#force read of Sbjct line
-	$line = $text->next_line;
+        #force read of Sbjct line
+        $line = $text->next_line;
 
-	#Sbjct line
-	if ($line =~ /^\s*
-	    Sbjct\:?
-	    \s+
-	    (\d+)               #start
-	    \s*
-	    ([^\d\s]+)?		#sequence
-	    \s+
-	    (\d+)?	        #stop
-	    /xo) {
+        #Sbjct line
+        if ($line =~ /^\s*
+            Sbjct\:?
+            \s+
+            (\d+)               #start
+            \s*
+            ([^\d\s]+)?         #sequence
+            \s+
+            (\d+)?              #stop
+            /xo) {
 
-	    #$self->test_args(\$line, $1, $2, $3);
-	    $self->test_args(\$line, $1);
+            #$self->test_args(\$line, $1, $2, $3);
+            $self->test_args(\$line, $1);
 
-	    if (defined $2 and defined $3) {
-		#normal
-		if ($sbjct_start) {
-		    $sbjct_stop = $3;
-		} else {
-		    ($sbjct_start, $sbjct_stop) = ($1, $3);
-		}
-		$tmp[2] = $2;
+            if (defined $2 and defined $3) {
+                #normal
+                if ($sbjct_start) {
+                    $sbjct_stop = $3;
+                } else {
+                    ($sbjct_start, $sbjct_stop) = ($1, $3);
+                }
+                $tmp[2] = $2;
 
-	    } else {
-		if (! defined $3) {
-		    #work around bug in psiblast/BLASTP 2.2.9 [May-01-2004]
-		    #which introduces white space into the alignment,
-		    #sometimes with no sequence at all, and sometimes no
-		    #trailing position.
-		    ($sbjct_start, $sbjct_stop) = ($1, $1);
-		}
-		if (! defined $2) {
-		    $tmp[2] = '';
-		} else {
-		    $tmp[2] = $2;
-		}
-	    }
-	    #fall through
+            } else {
+                if (! defined $3) {
+                    #work around bug in psiblast/BLASTP 2.2.9 [May-01-2004]
+                    #which introduces white space into the alignment,
+                    #sometimes with no sequence at all, and sometimes no
+                    #trailing position.
+                    ($sbjct_start, $sbjct_stop) = ($1, $1);
+                }
+                if (! defined $2) {
+                    $tmp[2] = '';
+                } else {
+                    $tmp[2] = $2;
+                }
+            }
+            #fall through
 
-	} else {
-	    $self->warn("expecting 'Sbjct' line: [$line]");
-	    next;
-	}
+        } else {
+            $self->warn("expecting 'Sbjct' line: [$line]");
+            next;
+        }
 
-	#query/match/sbjct lines
-	#warn "|$tmp[0]|\n|$tmp[1]|\n|$tmp[2]|\n";
-	$len = max(length($tmp[0]), length($tmp[2]));
-	if (length $tmp[0] < $len) {
-	    $tmp[0] .= ' ' x ($len-length $tmp[0]);
-	}
-	if (length $tmp[1] < $len) {
-	    $tmp[1] .= ' ' x ($len-length $tmp[1]);
-	}
-	if (length $tmp[2] < $len) {
-	    $tmp[2] .= ' ' x ($len-length $tmp[2]);
-	}
+        #query/match/sbjct lines
+        #warn "|$tmp[0]|\n|$tmp[1]|\n|$tmp[2]|\n";
+        $len = max(length($tmp[0]), length($tmp[2]));
+        if (length $tmp[0] < $len) {
+            $tmp[0] .= ' ' x ($len-length $tmp[0]);
+        }
+        if (length $tmp[1] < $len) {
+            $tmp[1] .= ' ' x ($len-length $tmp[1]);
+        }
+        if (length $tmp[2] < $len) {
+            $tmp[2] .= ' ' x ($len-length $tmp[2]);
+        }
 
-	#work around bug in psiblast/BLASTP 2.2.9 [May-01-2004] with
-	#white space sequence padding problem.
-	my $qlen = length($tmp[0]);
-	my $alen = length($tmp[1]);
-	if ($alen > $qlen) {
-	    #warn "before[$tmp[1]]\n";
-	    $tmp[1] = substr($tmp[1], 0, $qlen);
-	    #warn "after [$tmp[1]]\n";
-	}
+        #work around bug in psiblast/BLASTP 2.2.9 [May-01-2004] with
+        #white space sequence padding problem.
+        my $qlen = length($tmp[0]);
+        my $alen = length($tmp[1]);
+        if ($alen > $qlen) {
+            #warn "before[$tmp[1]]\n";
+            $tmp[1] = substr($tmp[1], 0, $qlen);
+            #warn "after [$tmp[1]]\n";
+        }
 
-	#append sequence strings
-	$query .= $tmp[0];
-	$align .= $tmp[1];
-	$sbjct .= $tmp[2];
+        #append sequence strings
+        $query .= $tmp[0];
+        $align .= $tmp[1];
+        $sbjct .= $tmp[2];
     }
 
     if (length($query) != length($align) or length($query) != length($sbjct)) {
-	#warn "Q: ", length($query), "\n";
-	#warn "A: ", length($align), "\n";
-	#warn "S: ", length($sbjct), "\n";
-	$self->warn("unequal Query/Align/Sbjct lengths:\n$query\n$align\n$sbjct\n");
+        #warn "Q: ", length($query), "\n";
+        #warn "A: ", length($align), "\n";
+        #warn "S: ", length($sbjct), "\n";
+        $self->warn("unequal Query/Align/Sbjct lengths:\n$query\n$align\n$sbjct\n");
     }
 
-    $self->{'query'} 	    = $query;
-    $self->{'align'} 	    = $align;
-    $self->{'sbjct'} 	    = $sbjct;
+    $self->{'query'}        = $query;
+    $self->{'align'}        = $align;
+    $self->{'sbjct'}        = $sbjct;
     $self->{'query_start'}  = $query_start;
     $self->{'query_stop'}   = $query_stop;
     $self->{'sbjct_start'}  = $sbjct_start;
@@ -629,8 +629,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -662,8 +662,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -695,8 +695,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);

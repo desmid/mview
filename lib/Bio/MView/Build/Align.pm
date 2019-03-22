@@ -39,35 +39,35 @@ sub use_row {
     #first, check explicit keeplist and reference row
     foreach $pat (@{$self->{'keeplist'}}, $PAR->get('ref_id')) {
 
-	#Align subclass only
-	return 1  if $pat eq '0'     and $num == 1;
-	return 1  if $pat eq 'query' and $num == 1;
+        #Align subclass only
+        return 1  if $pat eq '0'     and $num == 1;
+        return 1  if $pat eq 'query' and $num == 1;
 
-	#look at row number
-	return 1  if $nid eq $pat;      #major
+        #look at row number
+        return 1  if $nid eq $pat;      #major
 
-	#look at identifier
-	return 1  if $sid eq $pat;      #exact match
-	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
-	    return 1  if $sid =~ /$1/i;
-	}
+        #look at identifier
+        return 1  if $sid eq $pat;      #exact match
+        if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
+            return 1  if $sid =~ /$1/i;
+        }
     }
 
     #second, check skiplist and reference row
     foreach $pat (@{$self->{'skiplist'}}, $PAR->get('ref_id')) {
 
-	#Align subclass only
-	return 0  if $pat eq '0'     and $num == 1;
-	return 0  if $pat eq 'query' and $num == 1;
+        #Align subclass only
+        return 0  if $pat eq '0'     and $num == 1;
+        return 0  if $pat eq 'query' and $num == 1;
 
-	#look at row number
-	return 0  if $nid eq $pat;      #major
+        #look at row number
+        return 0  if $nid eq $pat;      #major
 
-	#look at identifier
-	return 0  if $sid eq $pat;      #exact match
-	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
-	    return 0  if $sid =~ /$1/i;
-	}
+        #look at identifier
+        return 0  if $sid eq $pat;      #exact match
+        if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
+            return 0  if $sid =~ /$1/i;
+        }
     }
 
     #assume implicit membership of keeplist

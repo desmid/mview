@@ -24,16 +24,16 @@ sub parse {
 
     foreach $id (@{$self->{'entry'}->parse(qw(ALIGNMENT))->{'id'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $id);
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
+        $seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::CLUSTAL($rank, $id, '', $seq);
+        push @hit, new Bio::MView::Build::Row::CLUSTAL($rank, $id, '', $seq);
     }
     #map { $_->dump } @hit;
 

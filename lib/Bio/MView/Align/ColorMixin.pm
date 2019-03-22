@@ -29,18 +29,18 @@ sub color_none {
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
-	$c = $self->{'string'}->raw($i);
+        $c = $self->{'string'}->raw($i);
 
-	#warn "[$i]= $c\n";
+        #warn "[$i]= $c\n";
 
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
+        #white space: no color
+        next  if $self->{'string'}->is_space($c);
 
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap or frameshift: gapcolour
+        if ($self->{'string'}->is_non_char($c)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
         push @$color, $i, 'color' => $kw->{'symcolor'};
     }
@@ -57,18 +57,18 @@ sub color_by_find_block {
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
-	$c = $self->{'string'}->raw($i);
+        $c = $self->{'string'}->raw($i);
 
-	#warn "[$i]= $c\n";
+        #warn "[$i]= $c\n";
 
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
+        #white space: no color
+        next  if $self->{'string'}->is_space($c);
 
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap or frameshift: gapcolour
+        if ($self->{'string'}->is_non_char($c)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
         if (exists $block->{$i}) {
             #use symbol color/wildcard colour
@@ -94,21 +94,21 @@ sub color_by_type {
 
     for (my $i=1; $i<$end; $i++) {
 
-	my $c = $self->{'string'}->raw($i);
+        my $c = $self->{'string'}->raw($i);
 
-	#warn "[$i]= $c\n";
+        #warn "[$i]= $c\n";
 
-	#white space: no color
-	next  if $self->{'string'}->is_space($c);
+        #white space: no color
+        next  if $self->{'string'}->is_space($c);
 
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($c)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap: gapcolour
+        if ($self->{'string'}->is_non_char($c)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
-	#use symbol color/wildcard colour
-	my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
+        #use symbol color/wildcard colour
+        my @tmp = $self->get_color($c, $kw->{'aln_colormap'});
 
         push @$color,
             $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
@@ -182,7 +182,7 @@ sub color_by_identity_body {
     return  unless defined $othr;
 
     die "${self}::color_by_identity: length mismatch\n"
-	unless $self->length == $othr->length;
+        unless $self->length == $othr->length;
 
     my ($color, $end) = ($self->{'display'}->{'range'}, $self->length+1);
 
@@ -190,19 +190,19 @@ sub color_by_identity_body {
 
     for (my $i=1; $i<$end; $i++) {
 
-	my $c1 = $self->{'string'}->raw($i);
+        my $c1 = $self->{'string'}->raw($i);
         my $c2 = $othr->{'string'}->raw($i);
 
-	#warn "[$i]= $c1 <=> $c2\n";
+        #warn "[$i]= $c1 <=> $c2\n";
 
-	#white space: no color
-	next  if $self->{'string'}->is_space($c1);
+        #white space: no color
+        next  if $self->{'string'}->is_space($c1);
 
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($c1)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap or frameshift: gapcolour
+        if ($self->{'string'}->is_non_char($c1)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
         my @tmp = ();
 

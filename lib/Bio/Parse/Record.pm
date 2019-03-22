@@ -103,7 +103,7 @@ sub list_attrs {
     my $self = shift;
     my ($key, @attr);
     foreach $key (grep !/^($IGNORE_ATTR)$/o , keys %$self) {
-	push @attr, $key;
+        push @attr, $key;
     }
     return @attr;
 }
@@ -163,7 +163,7 @@ sub print {
     printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
     my $tmp = '';
     if (defined $self->{'text'}) {
-	$tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
+        $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
         ($tmp) = split("\n", $tmp);
     }
     printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
@@ -183,7 +183,7 @@ sub substr {
     #warn "Record::substr(@_)\n";
 
     if (! defined $self->{'text'}) {
-	$self->die("substr() $self text field undefined");
+        $self->die("substr() $self text field undefined");
     }
 
     ## substr(${$self->{'text'}}, $offset, $bytes);
@@ -201,16 +201,16 @@ sub parse {
     #warn "parse($key)\n";
 
     if ($key eq '*') {
-	@keys = keys %{$self->{'record_by_type'}};
+        @keys = keys %{$self->{'record_by_type'}};
     } else {
-	push @keys, $key;
+        push @keys, $key;
     }
 
     foreach $key (@keys) {
         #warn "parse: $key\n";
-	foreach $rec ($self->key_range($key)) {
+        foreach $rec ($self->key_range($key)) {
             push @list, $self->get_object($rec);
-	}
+        }
     }
 
     return @list    if wantarray;
@@ -226,19 +226,19 @@ sub count {
     my (@list, @keys) = ();
 
     if ($key eq '*') {
-	@keys = sort keys %{$self->{'record_by_type'}};
+        @keys = sort keys %{$self->{'record_by_type'}};
     } else {
-	push @keys, $key;
+        push @keys, $key;
     }
 
     foreach $key (@keys) {
 
-	#is there a record instance for this type?
-	if (exists $self->{'record_by_type'}->{$key}) {
-	    push @list, scalar @{$self->{'record_by_type'}->{$key}};
-	} else {
-	    push @list, 0;
-	}
+        #is there a record instance for this type?
+        if (exists $self->{'record_by_type'}->{$key}) {
+            push @list, scalar @{$self->{'record_by_type'}->{$key}};
+        } else {
+            push @list, 0;
+        }
     }
 
     return @list    if wantarray;
@@ -338,13 +338,13 @@ sub print_records_by_posn {
     my $x = ' ' x ($indent+2);
     my %count;
     foreach my $rec (@{$self->{'record_by_posn'}}) {
-	if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
-	    printf "$x%20s -> [%s]\n",
+        if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
+            printf "$x%20s -> [%s]\n",
                 $rec->[0] . '/' . ++$count{$rec->[0]}, join(", ", @$rec);
-	} else {
-	    printf "$x%20s -> [%s]\n",
+        } else {
+            printf "$x%20s -> [%s]\n",
                 $rec->[0],                             join(", ", @$rec);
-	}
+        }
     }
 }
 
@@ -353,17 +353,17 @@ sub print_records_by_type {
     my $x = ' ' x ($indent+2);
     foreach my $key (sort keys %{$self->{'record_by_type'}}) {
         my $rec;
-	if (@{$self->{'record_by_type'}->{$key}} > 1) {
-	    for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
-		$rec = $self->{'record_by_type'}->{$key}->[$i];
-		printf "$x%20s -> [%s]\n",
+        if (@{$self->{'record_by_type'}->{$key}} > 1) {
+            for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
+                $rec = $self->{'record_by_type'}->{$key}->[$i];
+                printf "$x%20s -> [%s]\n",
                     $rec->[0] . '/' . ($i+1),          join(", ", @$rec);
-	    }
- 	} else {
-	    $rec = $self->{'record_by_type'}->{$key}->[0];
-	    printf "$x%20s -> [%s]\n",
+            }
+        } else {
+            $rec = $self->{'record_by_type'}->{$key}->[0];
+            printf "$x%20s -> [%s]\n",
                 $rec->[0],                             join(", ", @$rec);
-	}
+        }
     }
 }
 
@@ -391,15 +391,15 @@ sub free {
     #warn "FREE $self (@_)\n";
 
     if (@_) {
-	#only free these subrecord types
-	foreach my $type (@_) {
-	    if (exists $self->{'record_by_type'}->{$type}) {
-		foreach my $rec (@{$self->{'record_by_type'}->{$type}}) {
+        #only free these subrecord types
+        foreach my $type (@_) {
+            if (exists $self->{'record_by_type'}->{$type}) {
+                foreach my $rec (@{$self->{'record_by_type'}->{$type}}) {
                     $self->free_record($rec);
-		}
-	    }
-	}
-	return $self;
+                }
+            }
+        }
+        return $self;
     }
 
     #free every subrecord
@@ -439,23 +439,23 @@ sub string {
     #warn "string($key)\n";
 
     if (! defined $key) {
-	return $self->substr($self->{'offset'}, $self->{'bytes'});
+        return $self->substr($self->{'offset'}, $self->{'bytes'});
     }
 
     if ($key eq '*') {
-	@keys = keys %{$self->{'record_by_type'}};
+        @keys = keys %{$self->{'record_by_type'}};
     }
 
     foreach $key (@keys) {
-	foreach my $rec ($self->key_range($key)) {
-	    if (defined $rec->[3]) {
-		#print "STRING() calling child\n";
-		push @list, $rec->[3]->string;
-	    } else {
-		#print "STRING() calling substr [$rec->[1], $rec->[2]]\n";
-		push @list, $self->substr($rec->[1], $rec->[2]);
-	    }
-	}
+        foreach my $rec ($self->key_range($key)) {
+            if (defined $rec->[3]) {
+                #print "STRING() calling child\n";
+                push @list, $rec->[3]->string;
+            } else {
+                #print "STRING() calling substr [$rec->[1], $rec->[2]]\n";
+                push @list, $self->substr($rec->[1], $rec->[2]);
+            }
+        }
     }
 
     return @list    if wantarray;
@@ -471,14 +471,14 @@ sub key_range {
     my ($lo, $hi, @rec) = (undef, undef);
 
     if ($key =~ /(\S+)\s*\[\s*(\d+)\s*\]/) {
-	($key, $lo, $hi) = ($1, $2, $2);
+        ($key, $lo, $hi) = ($1, $2, $2);
     }
     elsif ($key =~ /(\S+)\s*\[\s*(\d+)\s*\.\.\s*(\d+)\s*\]/) {
-	if ($2 < $3) {
-	    ($key, $lo, $hi) = ($1, $2, $3);
-	} else {
-	    ($key, $lo, $hi) = ($1, $3, $2);
-	}
+        if ($2 < $3) {
+            ($key, $lo, $hi) = ($1, $2, $3);
+        } else {
+            ($key, $lo, $hi) = ($1, $3, $2);
+        }
     }
 
     #does the key map to a record type?
@@ -487,24 +487,24 @@ sub key_range {
     #was a range requested?
     if (defined $lo) {
 
-	$lo--; $hi--;    #convert to internal 0-based indices
+        $lo--; $hi--;    #convert to internal 0-based indices
 
-	#want range?
-	if ($lo != $hi) {
-	    #adjust range to fit available records?
-	    $lo = 0
-		unless defined $self->{'record_by_type'}->{$key}[$lo];
-	    $hi = $#{$self->{'record_by_type'}->{$key}}
-	        unless defined $self->{'record_by_type'}->{$key}[$hi];
+        #want range?
+        if ($lo != $hi) {
+            #adjust range to fit available records?
+            $lo = 0
+                unless defined $self->{'record_by_type'}->{$key}[$lo];
+            $hi = $#{$self->{'record_by_type'}->{$key}}
+                unless defined $self->{'record_by_type'}->{$key}[$hi];
         } else {
-	    #ignore non-existent single index
-	    return unless $lo > -1 and defined $self->{'record_by_type'}->{$key}[$lo];
-	}
-	#get the slice
-	@rec = @{$self->{'record_by_type'}->{$key}}[$lo..$hi];
+            #ignore non-existent single index
+            return unless $lo > -1 and defined $self->{'record_by_type'}->{$key}[$lo];
+        }
+        #get the slice
+        @rec = @{$self->{'record_by_type'}->{$key}}[$lo..$hi];
     } else {
-	#just get'em all
-	@rec = @{$self->{'record_by_type'}->{$key}};
+        #just get'em all
+        @rec = @{$self->{'record_by_type'}->{$key}};
     }
 
     return @rec;

@@ -55,22 +55,22 @@ my $HARDFASTA = 0;  #relax length rules for UV. FASTA input
 # Forwards query:
 
 # column  12345
-# +query  23456 (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 2,6, 0,0)
-# +hit    -23-- (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 3,4, 1,2)
+# +query  23456 (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 2,6, 0,0)
+# +hit    -23-- (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 3,4, 1,2)
 #
 # column  12345
-# +query  23456 (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 2,6, 0,0)
-# -hit    -32-- (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 3,4, 1,2)
+# +query  23456 (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 2,6, 0,0)
+# -hit    -32-- (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 3,4, 1,2)
 #
 # Reverse query:
 #
 # column  12345
-# -query  65432 (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 6,2, 0,0)
-# +hit    -23-- (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 5,4, 1,2)
+# -query  65432 (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 6,2, 0,0)
+# +hit    -23-- (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 5,4, 1,2)
 #
 # column  12345
-# -query  65432 (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 6,2, 0,0)
-# -hit    -32-- (lo,hi,	reflo,refhi, pfxlen,sfxlen) = (2,6, 5,4, 1,2)
+# -query  65432 (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 6,2, 0,0)
+# -hit    -32-- (lo,hi, reflo,refhi, pfxlen,sfxlen) = (2,6, 5,4, 1,2)
 #
 
 ###########################################################################
@@ -213,7 +213,7 @@ sub make_reverse {
 
 sub is_char {
     $_[1] ne $Mark_Pad and $_[1] ne $Mark_Gap and $_[1] ne $Mark_Spc
-	and $_[1] ne $Mark_Fs1 and $_[1] ne $Mark_Fs2;
+        and $_[1] ne $Mark_Fs1 and $_[1] ne $Mark_Fs2;
 }
 sub is_non_char     { ! $_[0]->is_char($_[1]) }
 sub is_space        { $_[1] eq $Mark_Spc }
@@ -269,26 +269,26 @@ sub findall {
     my $end = scalar @$blocks;
 
     for (my $blocknum=0; $blocknum<$end; $blocknum++) {
-	#warn "findall: $blocknum, $blocks->[$blocknum]\n";
-	my $blockid = chr($ordA + $blocknum % $mapsize);
-	my $pattern = $blocks->[$blocknum];
+        #warn "findall: $blocknum, $blocks->[$blocknum]\n";
+        my $blockid = chr($ordA + $blocknum % $mapsize);
+        my $pattern = $blocks->[$blocknum];
 
-	for (my ($i,$j) = (0,0); $j<$seqlen; $i++, $j++) {
-	    while ($gapped[$i] eq $gapchar) {
-		$i++;  #sync gapped/ungapped string indices
-	    }
-	    my $s = substr($sequence, $j);
-	    if ($s =~ /^($pattern)/i) {  #case insensitive
-		my @match = split(//, $1);
-		#warn "\nfindall: $i,$j [@match] $s\n";
-		for (my ($k,$l) = ($i,0); $l<@match; $k++, $l++) {
-		    while ($gapped[$k] eq $gapchar) {
-			$k++;  #absorb gaps
-		    }
-		    push @$list, [$blockid, $k+1];
-		}
-	    }
-	}
+        for (my ($i,$j) = (0,0); $j<$seqlen; $i++, $j++) {
+            while ($gapped[$i] eq $gapchar) {
+                $i++;  #sync gapped/ungapped string indices
+            }
+            my $s = substr($sequence, $j);
+            if ($s =~ /^($pattern)/i) {  #case insensitive
+                my @match = split(//, $1);
+                #warn "\nfindall: $i,$j [@match] $s\n";
+                for (my ($k,$l) = ($i,0); $l<@match; $k++, $l++) {
+                    while ($gapped[$k] eq $gapchar) {
+                        $k++;  #absorb gaps
+                    }
+                    push @$list, [$blockid, $k+1];
+                }
+            }
+        }
     }
     return $list;
 }

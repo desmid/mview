@@ -36,8 +36,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -53,51 +53,51 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
-	#GCG annotation: ignore
+        #GCG annotation: ignore
         next    if $line =~ /$Bio::Parse::Format::BLAST::GCG_JUNK/o;
 
-	#empty ranking: done
+        #empty ranking: done
         last    if $line =~ /$RANK_NONE/o;
 
-	#excise variable length description and append it
-	my $tmp = substr($line, 0, $RANK_CUT);
-	if ($tmp =~ /^\s*([^\s]+)(.*)/o) {
-	    $line = $1 . substr($line, $RANK_CUT) . $2;
-	}
+        #excise variable length description and append it
+        my $tmp = substr($line, 0, $RANK_CUT);
+        if ($tmp =~ /^\s*([^\s]+)(.*)/o) {
+            $line = $1 . substr($line, $RANK_CUT) . $2;
+        }
 
-	if ($line =~ /\s*
-	    ([^\s]+)                          #id
-	    \s+
-	    ($RX_Uint)                        #score
-	    \s+
-	    ($RX_Ureal)                       #p-value
-	    \s+
-	    ($RX_Uint)                        #n fragments
-	    \s*
-	    \!?                               #GCG junk
-	    \s*
-	    (.*)                              #summary
-	    /xo) {
+        if ($line =~ /\s*
+            ([^\s]+)                          #id
+            \s+
+            ($RX_Uint)                        #score
+            \s+
+            ($RX_Ureal)                       #p-value
+            \s+
+            ($RX_Uint)                        #n fragments
+            \s*
+            \!?                               #GCG junk
+            \s*
+            (.*)                              #summary
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2, $3, $4); #ignore $5
+            $self->test_args(\$line, $1, $2, $3, $4); #ignore $5
 
-	    push @{$self->{'hit'}},
-	    {
-	     'id'      => Bio::Parse::Record::clean_identifier($1),
-	     'score'   => $2,
-	     'p'       => $3,
-	     'n'       => $4,
-	     'summary' => Bio::Parse::Record::strip_trailing_space($5),
-	    };
+            push @{$self->{'hit'}},
+            {
+             'id'      => Bio::Parse::Record::clean_identifier($1),
+             'score'   => $2,
+             'p'       => $3,
+             'n'       => $4,
+             'summary' => Bio::Parse::Record::strip_trailing_space($5),
+            };
 
-	    next;
-	}
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -130,8 +130,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -143,61 +143,61 @@ sub new {
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Score\s*=\s*
-	($RX_Uint)                           #score
-	\s+
-	\(($RX_Ureal)\s+bits\),              #bits
-	\s+
-	Expect\s*=\s*
-	($RX_Ureal),                         #expectation
-	\s+
-	(?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
-	($RX_Ureal)                          #p-value
-	/xo) {
+        Score\s*=\s*
+        ($RX_Uint)                           #score
+        \s+
+        \(($RX_Ureal)\s+bits\),              #bits
+        \s+
+        Expect\s*=\s*
+        ($RX_Ureal),                         #expectation
+        \s+
+        (?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
+        ($RX_Ureal)                          #p-value
+        /xo) {
 
-	$self->test_args(\$line, $1, $2, $3, $5);
+        $self->test_args(\$line, $1, $2, $3, $5);
 
-	(
-	 $self->{'score'},
-	 $self->{'bits'},
-	 $self->{'expect'},
-	 $self->{'n'},                       #substitute 1 unless $4
-	 $self->{'p'},
-	) = ($1, $2, $3, defined $4?$4:1, $5);
+        (
+         $self->{'score'},
+         $self->{'bits'},
+         $self->{'expect'},
+         $self->{'n'},                       #substitute 1 unless $4
+         $self->{'p'},
+        ) = ($1, $2, $3, defined $4?$4:1, $5);
     }
     else {
-	$self->warn("expecting 'Score' line: $line");
+        $self->warn("expecting 'Score' line: $line");
     }
 
     #Identities line
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Identities\s*=\s*
-	(\d+\/\d+)                           #identities fraction
-	\s+
-	\((\d+)%\),                          #identities percentage
-	\s+
-	Positives\s*=\s*
-	(\d+\/\d+)                           #positives fraction
-	\s+
-	\((\d+)%\)                           #positives percentage
-	/xo) {
+        Identities\s*=\s*
+        (\d+\/\d+)                           #identities fraction
+        \s+
+        \((\d+)%\),                          #identities percentage
+        \s+
+        Positives\s*=\s*
+        (\d+\/\d+)                           #positives fraction
+        \s+
+        \((\d+)%\)                           #positives percentage
+        /xo) {
 
-	$self->test_args(\$line, $1, $2, $3, $4);
+        $self->test_args(\$line, $1, $2, $3, $4);
 
-	(
-	 $self->{'id_fraction'},
-	 $self->{'id_percent'},
-	 $self->{'pos_fraction'},
-	 $self->{'pos_percent'},
-	) = ($1, $2, $3, $4);
+        (
+         $self->{'id_fraction'},
+         $self->{'id_percent'},
+         $self->{'pos_fraction'},
+         $self->{'pos_percent'},
+        ) = ($1, $2, $3, $4);
 
-	#record query orientation in MATCH list (always +)
-	push @{$parent->{'orient'}->{'+'}}, $self;
+        #record query orientation in MATCH list (always +)
+        push @{$parent->{'orient'}->{'+'}}, $self;
 
     } else {
-	$self->warn("expecting 'Identities' line: $line");
+        $self->warn("expecting 'Identities' line: $line");
     }
 
     $self->parse_alignment($text);

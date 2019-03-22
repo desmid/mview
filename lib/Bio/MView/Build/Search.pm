@@ -151,49 +151,49 @@ sub use_row {
     #first, check explicit keeplist and reference row
     foreach my $pat (@{$PAR->get('keeplist')}, $PAR->get('ref_id')) {
 
-	#Search subclass only
-	return 1  if $pat eq '0'     and $num == 0;
-	return 1  if $pat eq 'query' and $num == 0;
+        #Search subclass only
+        return 1  if $pat eq '0'     and $num == 0;
+        return 1  if $pat eq 'query' and $num == 0;
 
-	#look at row number
-	return 1  if $nid eq $pat;      #major OR major.minor
-	if ($nid =~ /^\d+$/ and $pat =~ /^(\d+)\./) {
-	    #major matched by major.*
-	    return 1  if $nid eq $1;
-	} elsif ($pat =~ /^\d+$/ and $nid =~ /^(\d+)\./) {
-	    #major.* matched by major
-	    return 1  if $1 eq $pat;
-	}
+        #look at row number
+        return 1  if $nid eq $pat;      #major OR major.minor
+        if ($nid =~ /^\d+$/ and $pat =~ /^(\d+)\./) {
+            #major matched by major.*
+            return 1  if $nid eq $1;
+        } elsif ($pat =~ /^\d+$/ and $nid =~ /^(\d+)\./) {
+            #major.* matched by major
+            return 1  if $1 eq $pat;
+        }
 
-	#look at identifier
-	return 1  if $sid eq $pat;      #exact match
-	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
-	    return 1  if $sid =~ /$1/i;
-	}
+        #look at identifier
+        return 1  if $sid eq $pat;      #exact match
+        if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
+            return 1  if $sid =~ /$1/i;
+        }
     }
 
     #second, check skiplist and reference row
     foreach my $pat (@{$PAR->get('skiplist')}, $PAR->get('ref_id')) {
 
-	#Search subclass only
-	return 0  if $pat eq '0'     and $num == 0;
-	return 0  if $pat eq 'query' and $num == 0;
+        #Search subclass only
+        return 0  if $pat eq '0'     and $num == 0;
+        return 0  if $pat eq 'query' and $num == 0;
 
-	#look at row number
-	return 0  if $nid eq $pat;      #major OR major.minor
-	if ($nid =~ /^\d+$/ and $pat =~ /^(\d+)\./) {
-	    #major matched by major.*
-	    return 0  if $nid eq $1;
-	} elsif ($pat =~ /^\d+$/ and $nid =~ /^(\d+)\./) {
-	    #major.* matched by major
-	    return 0  if $1 eq $pat;
-	}
+        #look at row number
+        return 0  if $nid eq $pat;      #major OR major.minor
+        if ($nid =~ /^\d+$/ and $pat =~ /^(\d+)\./) {
+            #major matched by major.*
+            return 0  if $nid eq $1;
+        } elsif ($pat =~ /^\d+$/ and $nid =~ /^(\d+)\./) {
+            #major.* matched by major
+            return 0  if $1 eq $pat;
+        }
 
-	#look at identifier
-	return 0  if $sid eq $pat;      #exact match
-	if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
-	    return 0  if $sid =~ /$1/i;
-	}
+        #look at identifier
+        return 0  if $sid eq $pat;      #exact match
+        if ($pat =~ /^\/(.*)\/$/) {     #regex match (case insensitive)
+            return 0  if $sid =~ /$1/i;
+        }
     }
 
     #assume implicit membership of keeplist
@@ -222,24 +222,24 @@ sub strip_query_gaps {
     #iterate over query frag symbols
     while ( (my $i = index($$query, '-')) >= 0 ) {
 
-	#downcase preceding symbol in hit
-	if (defined substr($$query, $i-1, 1)) {
-	    substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
-	}
+        #downcase preceding symbol in hit
+        if (defined substr($$query, $i-1, 1)) {
+            substr($$sbjct, $i-1, 1) = lc substr($$sbjct, $i-1, 1);
+        }
 
-	#consume gap symbols in query and hit
-	while (substr($$query, $i, 1) eq '-') {
-	    substr($$query, $i, 1) = "";
-	    substr($$sbjct, $i, 1) = "";
-	}
+        #consume gap symbols in query and hit
+        while (substr($$query, $i, 1) eq '-') {
+            substr($$query, $i, 1) = "";
+            substr($$sbjct, $i, 1) = "";
+        }
 
-	#downcase succeeding symbol in hit
-	if (defined substr($$query, $i, 1)) {
-	    substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
-	}
+        #downcase succeeding symbol in hit
+        if (defined substr($$query, $i, 1)) {
+            substr($$sbjct, $i, 1) = lc substr($$sbjct, $i, 1);
+        }
 
-	#warn "sqg(out q)=[$$query]\n";
-	#warn "sqg(out h)=[$$sbjct]\n";
+        #warn "sqg(out q)=[$$query]\n";
+        #warn "sqg(out h)=[$$sbjct]\n";
     }
     $self;
 }
@@ -320,9 +320,9 @@ sub _discard_empty_ranges {
     my $hit = $self->{list};
     for (my $i=1; $i<@$hit; $i++) {
         #warn "hit[$i]= $hit->[$i]->{'cid'} [", scalar @{$hit->[$i]->{'frag'}},"]\n";
-	if (@{$hit->[$i]->{'frag'}} < 1) {
-	    splice(@$hit, $i--, 1);
-	}
+        if (@{$hit->[$i]->{'frag'}} < 1) {
+            splice(@$hit, $i--, 1);
+        }
     }
     pop @$hit  unless @$hit > 1;
     $self;

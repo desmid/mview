@@ -23,7 +23,7 @@ sub new {
     my $type = shift;
     #warn "${type}::new:\n"  if $DEBUG;
     Bio::Parse::Message::die($type, "new(@_): invalid argument list")
-	if @_ < 1;
+        if @_ < 1;
     return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                 #filename
 }
@@ -87,7 +87,7 @@ sub reset {
     my ($self, $offset) = @_;
     #warn "File::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
     if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
-	$self->close;
+        $self->close;
     }
     $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
     $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
@@ -112,7 +112,7 @@ sub substr {
     #warn "File::substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
 
     if ($self->{'state'} & $CLOSE) {
-	$self->die("substr: can't read on closed file '$self->{'file'}'");
+        $self->die("substr: can't read on closed file '$self->{'file'}'");
     }
 
     my ($offset, $bytes) = @_;

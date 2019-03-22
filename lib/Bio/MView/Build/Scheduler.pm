@@ -198,7 +198,7 @@ sub _get_todo {
 
     #extact legitimate items in correct order
     foreach my $i (@$range) {
-	push @items, $i  if exists $tmp{$i};
+        push @items, $i  if exists $tmp{$i};
     }
     warn "Scheduler::_get_todo:  exit: items [@$range] todo [@items]\n"
         if $DEBUG > 2;

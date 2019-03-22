@@ -46,16 +46,16 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($line =~ /$MULTAS_START/o and $offset < 0) {
+        #start of entry
+        if ($line =~ /$MULTAS_START/o and $offset < 0) {
             $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+            next;
+        }
 
-	#end of entry
-	#if ($line =~ /$MULTAS_END/o) {
-	#    last;
-	#}
+        #end of entry
+        #if ($line =~ /$MULTAS_END/o) {
+        #    last;
+        #}
     }
     return 0   if $offset < 0;
 
@@ -68,8 +68,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -79,24 +79,24 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#BLOCK lines
-	if ($line =~ /$MULTAS_BLOCK/o) {
-	    $text->scan_until($MULTAS_BLOCKend, 'BLOCK');
-	    next;
-	}
+        #BLOCK lines
+        if ($line =~ /$MULTAS_BLOCK/o) {
+            $text->scan_until($MULTAS_BLOCKend, 'BLOCK');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	if ($line =~ /$MULTAS_Null/o) {
-	    next;
-	}
+        #blank line or empty record: ignore
+        if ($line =~ /$MULTAS_Null/o) {
+            next;
+        }
 
-	#terminal line: ignore
-	#if ($line =~ /$MULTAS_END/o) {
-	#    next;
-	#}
+        #terminal line: ignore
+        #if ($line =~ /$MULTAS_END/o) {
+        #    next;
+        #}
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self->test_records(qw(BLOCK));
@@ -115,8 +115,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -126,37 +126,37 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#BLOCK number
-	if ($line =~ /$MULTAS_BLOCK\s+(\d+)/) {
-	    $self->{'number'} = $1;
-	    next;
-	}
+        #BLOCK number
+        if ($line =~ /$MULTAS_BLOCK\s+(\d+)/) {
+            $self->{'number'} = $1;
+            next;
+        }
 
-	#LIST lines
-	if ($line =~ /$MULTAS_LIST/o) {
-	    $text->scan_while($MULTAS_LISTmid, 'LIST');
-	    next;
-	}
+        #LIST lines
+        if ($line =~ /$MULTAS_LIST/o) {
+            $text->scan_while($MULTAS_LISTmid, 'LIST');
+            next;
+        }
 
-#	#LIST lines
-#	if ($line =~ /$MULTAS_LIST/o) {
-#	    $text->scan_until($MULTAS_LISTend, 'LIST');
-#	    next;
-#	}
+#       #LIST lines
+#       if ($line =~ /$MULTAS_LIST/o) {
+#           $text->scan_until($MULTAS_LISTend, 'LIST');
+#           next;
+#       }
 
-	#ALIGNMENT lines
-	if ($line =~ /$MULTAS_ALIGNMENT/o) {
-	    $text->scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$MULTAS_ALIGNMENT/o) {
+            $text->scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	if ($line =~ /$MULTAS_Null/o) {
-	    next;
-	}
+        #blank line or empty record: ignore
+        if ($line =~ /$MULTAS_Null/o) {
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self->test_records(qw(LIST ALIGNMENT));
@@ -181,8 +181,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -196,41 +196,41 @@ sub new {
     #ranked search hits
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /\s*(\d+)\s+seqs/) {
-	    $self->{'count'} = $1;
-	    next;
-	}
+        if ($line =~ /\s*(\d+)\s+seqs/) {
+            $self->{'count'} = $1;
+            next;
+        }
 
-	if ($line =~ /\s*
-	    ((?:SEED|USER))              #source of sequence
-	    #\s*>>\s*
-	    \s*>+\s*
-	    ([^=]+)                      #identifier
-	    \s*=\s*
-	    (.*)                         #description
-	    /xo) {
+        if ($line =~ /\s*
+            ((?:SEED|USER))              #source of sequence
+            #\s*>>\s*
+            \s*>+\s*
+            ([^=]+)                      #identifier
+            \s*=\s*
+            (.*)                         #description
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2, $3);
+            $self->test_args(\$line, $1, $2, $3);
 
-	    push @{$self->{'hit'}},
-	    {
-	     'type'    => $1,
-	     'id'      => $2,
-	     'desc'    => $3,
-	    };
+            push @{$self->{'hit'}},
+            {
+             'type'    => $1,
+             'id'      => $2,
+             'desc'    => $3,
+            };
 
-	    #strip leading, trailing, internal white space
-	    $self->{'hit'}->[$#{$self->{'hit'}}]->{'id'} =~ s/\s//g;
+            #strip leading, trailing, internal white space
+            $self->{'hit'}->[$#{$self->{'hit'}}]->{'id'} =~ s/\s//g;
 
-	    next;
-	}
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     if ($self->{'count'} != @{$self->{'hit'}}) {
-	$self->warn("stated ($self->{'count'}) and parsed (@{[scalar @{$self->{'hit'}}]}) sequence count mismatch");
+        $self->warn("stated ($self->{'count'}) and parsed (@{[scalar @{$self->{'hit'}}]}) sequence count mismatch");
     }
 
     $self;
@@ -241,9 +241,9 @@ sub print_data {
     my $x = ' ' x $indent;
     printf "$x%20s -> %d\n", 'count', $self->{'count'};
     foreach my $hit (@{$self->{'hit'}}) {
-	foreach my $field (sort keys %$hit) {
-	    printf "$x%20s -> '%s'\n", $field,  $hit->{$field};
-	}
+        foreach my $field (sort keys %$hit) {
+            printf "$x%20s -> '%s'\n", $field,  $hit->{$field};
+        }
     }
 }
 
@@ -258,8 +258,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -275,11 +275,11 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	chomp $line; @tmp = split(//, $line);
+        chomp $line; @tmp = split(//, $line);
 
-	for ($i=0; $i<@tmp; $i++) {
-	    push @{$self->{'seq'}->[$i]}, $tmp[$i];
-	}
+        for ($i=0; $i<@tmp; $i++) {
+            push @{$self->{'seq'}->[$i]}, $tmp[$i];
+        }
     }
 
     $self->{'length'} = @{$self->{'seq'}->[0]};
@@ -287,10 +287,10 @@ sub new {
 
     #check alignments all same length, then make string
     foreach $i (@{$self->{'seq'}}) {
-	if (@$i != $self->{'length'}) {
-	    $self->warn("alignment lengths differ");
-	}
-	$i = join('', @$i);
+        if (@$i != $self->{'length'}) {
+            $self->warn("alignment lengths differ");
+        }
+        $i = join('', @$i);
     }
 
     $self;
@@ -302,7 +302,7 @@ sub print_data {
     printf "$x%20s -> %d\n", 'count',  $self->{'count'};
     printf "$x%20s -> %d\n", 'length', $self->{'length'};
     for (my $i=0; $i<@{$self->{'seq'}}; $i++) {
-	printf("$x%20s[%d] -> '%s'\n", 'seq', $i+1, $self->{'seq'}->[$i]);
+        printf("$x%20s[%d] -> '%s'\n", 'seq', $i+1, $self->{'seq'}->[$i]);
     }
 }
 

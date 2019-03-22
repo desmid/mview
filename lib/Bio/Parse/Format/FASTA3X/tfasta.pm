@@ -34,8 +34,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -46,53 +46,53 @@ sub new {
     #ranked search hits
     while (defined ($line = $text->next_line)) {
 
-	next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 
-	if($line =~ /^
-	   \s*
-	   (\S+)                #id
-	   \s+
+        if($line =~ /^
+           \s*
+           (\S+)                #id
+           \s+
            (.*)                 #desc (may be empty)
-	   \s+
+           \s+
            \(\s*(\d+)\)         #aa
-	   \s+
-	   \[(\S)\]             #frame
-	   \s+
-	   (\d+)                #initn
-	   \s+
+           \s+
+           \[(\S)\]             #frame
+           \s+
+           (\d+)                #initn
+           \s+
            (\d+)                #opt
            \s+
            (\S+)                #bits
            \s+
-	   (\S+)                #E(205044)
-	   \s*
-	   $/xo) {
+           (\S+)                #E(205044)
+           \s*
+           $/xo) {
 
 
-	    $self->test_args(\$line, $1, $3,$4, $5,$6,$7,$8); #not $2
+            $self->test_args(\$line, $1, $3,$4, $5,$6,$7,$8); #not $2
 
-	    push(@{$self->{'hit'}},
-		 {
-		  'id'     => Bio::Parse::Record::clean_identifier($1),
-		  'desc'   => $2,
-		  'length' => $3,
-		  'frame'  => Bio::Parse::Format::FASTA::parse_frame($4),
-		  'orient' => Bio::Parse::Format::FASTA::parse_orient($4),
-		  'initn'  => $5,
-		  'init1'  => 0,
-		  'opt'    => $6,
-		  'bits'   => $7,
-		  'zscore' => 0,
-		  'expect' => $8,
-		 });
-	    next;
-	}
+            push(@{$self->{'hit'}},
+                 {
+                  'id'     => Bio::Parse::Record::clean_identifier($1),
+                  'desc'   => $2,
+                  'length' => $3,
+                  'frame'  => Bio::Parse::Format::FASTA::parse_frame($4),
+                  'orient' => Bio::Parse::Format::FASTA::parse_orient($4),
+                  'initn'  => $5,
+                  'init1'  => 0,
+                  'opt'    => $6,
+                  'bits'   => $7,
+                  'zscore' => 0,
+                  'expect' => $8,
+                 });
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -126,8 +126,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -137,101 +137,101 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	next  if $line =~ /^\s*$/;
+        next  if $line =~ /^\s*$/;
 
-	if ($line =~ /^>+/) {
-	    $record = $line;       #process this later
-	    next;
-	}
-
-	if ($line =~ /^
-	    Frame\:\s*(\S+)        #frame [fr]
-	    \s+
-	    initn\:\s*(\S+)        #initn
-	    \s+
-	    init1\:\s*(\S+)        #init1
-	    \s+
-	    opt\:\s*(\S+)          #opt
-	    \s+
-	    Z-score\:\s*(\S+)      #z
-	    \s+
-	    bits\:\s*(\S+)         #bits
-	    \s+
-	    E\((?:.*)\)\:\s*(\S+)  #E
-	    \s*
-	    $/xo) {
-
-	    $self->test_args(\$line,$1,$2,$3,$4,$5,$6,$7);
-
-	    (
-	     $self->{'frame'},
-	     $self->{'orient'},
-	     $self->{'initn'},
-	     $self->{'init1'},
-	     $self->{'opt'},
-	     $self->{'zscore'},
-	     $self->{'bits'},
-	     $self->{'expect'},
-	    ) = (
-		Bio::Parse::Format::FASTA::parse_frame($1),
-		Bio::Parse::Format::FASTA::parse_orient($1),
-		$2, $3, $4, $5, $6, $7,
-	    );
-	    next;
-	}
-
-	if ($line =~ /^
-            (?:banded|trans.\s+)?
-	    (?:Smith-Waterman\s+score:\s*(\S+);)?    #sw score
-	    \s*(\S+)%\s+identity                     #percent identity
-	    \s+\((\S+)%\s+similar\)                  #percent similar
-	    \s+in\s+(\d+)                            #overlap length
-	    \s+(?:aa|nt)\s+overlap
-	    \s*
-	    (?:\s+\((\S+)\))                         #sequence ranges
-	    /xo) {
-
-	    $self->test_args(\$line,$2,$3);
-
-	    (
-	     $self->{'score'},
-	     $self->{'id_percent'},
-	     $self->{'similar_percent'},
-	     $self->{'overlap'},
-	     $self->{'ranges'},
-	    ) = (defined $1?$1:0,$2,$3,$4,defined $5?$5:'');
-	    next;
+        if ($line =~ /^>+/) {
+            $record = $line;       #process this later
+            next;
         }
 
-	#should only get here for multiline descriptions
-	if (defined $self->{'initn'}) {
-	    $self->warn("unknown field: $line");
-	    next;
-	}
+        if ($line =~ /^
+            Frame\:\s*(\S+)        #frame [fr]
+            \s+
+            initn\:\s*(\S+)        #initn
+            \s+
+            init1\:\s*(\S+)        #init1
+            \s+
+            opt\:\s*(\S+)          #opt
+            \s+
+            Z-score\:\s*(\S+)      #z
+            \s+
+            bits\:\s*(\S+)         #bits
+            \s+
+            E\((?:.*)\)\:\s*(\S+)  #E
+            \s*
+            $/xo) {
 
-	#accumulate multiline descriptions (fasta... -L)
-	$record .= ' ' . $line;
+            $self->test_args(\$line,$1,$2,$3,$4,$5,$6,$7);
+
+            (
+             $self->{'frame'},
+             $self->{'orient'},
+             $self->{'initn'},
+             $self->{'init1'},
+             $self->{'opt'},
+             $self->{'zscore'},
+             $self->{'bits'},
+             $self->{'expect'},
+            ) = (
+                Bio::Parse::Format::FASTA::parse_frame($1),
+                Bio::Parse::Format::FASTA::parse_orient($1),
+                $2, $3, $4, $5, $6, $7,
+            );
+            next;
+        }
+
+        if ($line =~ /^
+            (?:banded|trans.\s+)?
+            (?:Smith-Waterman\s+score:\s*(\S+);)?    #sw score
+            \s*(\S+)%\s+identity                     #percent identity
+            \s+\((\S+)%\s+similar\)                  #percent similar
+            \s+in\s+(\d+)                            #overlap length
+            \s+(?:aa|nt)\s+overlap
+            \s*
+            (?:\s+\((\S+)\))                         #sequence ranges
+            /xo) {
+
+            $self->test_args(\$line,$2,$3);
+
+            (
+             $self->{'score'},
+             $self->{'id_percent'},
+             $self->{'similar_percent'},
+             $self->{'overlap'},
+             $self->{'ranges'},
+            ) = (defined $1?$1:0,$2,$3,$4,defined $5?$5:'');
+            next;
+        }
+
+        #should only get here for multiline descriptions
+        if (defined $self->{'initn'}) {
+            $self->warn("unknown field: $line");
+            next;
+        }
+
+        #accumulate multiline descriptions (fasta... -L)
+        $record .= ' ' . $line;
     }
 
     #now split out the description
     if ($record =~ /^
-	>+
-	(\S+)                      #id
-	\s+
-	(.*)                       #description
-	\s+
-	\(\s*(\d+)\s*(?:aa|nt)\)   #length
-	\s*
-	$/xo) {
+        >+
+        (\S+)                      #id
+        \s+
+        (.*)                       #description
+        \s+
+        \(\s*(\d+)\s*(?:aa|nt)\)   #length
+        \s*
+        $/xo) {
 
-	$self->test_args(\$record, $1, $2, $3);
+        $self->test_args(\$record, $1, $2, $3);
 
-	(
-	 $self->{'id'},
-	 $self->{'desc'},
-	 $self->{'length'},
-	) = (Bio::Parse::Record::clean_identifier($1),
-	     Bio::Parse::Record::strip_english_newlines($2), $3);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+        ) = (Bio::Parse::Record::clean_identifier($1),
+             Bio::Parse::Record::strip_english_newlines($2), $3);
 
     } elsif ($record =~ /^>--/) {  #alternative alignment
         my $sib = $self->get_sibling(0);
@@ -249,7 +249,7 @@ sub new {
         );
 
     } else {
-	$self->warn("unknown field: $record");
+        $self->warn("unknown field: $record");
     }
     $self;
 }

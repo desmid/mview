@@ -85,27 +85,27 @@ sub check_informat_extension {
     my ($file, $ext, $mode) = @_;
     local $_;
     foreach ($ext) {  #switch
-	return 'CLUSTAL'  if $_ =~ /^aln/i;
-	return 'CLUSTAL'  if $_ =~ /^clu/i;
-	return 'HSSP'     if $_ =~ /^hss/i;
-	return 'JNETZ'    if $_ =~ /^jnt/i;
-	return 'JNETZ'    if $_ =~ /^jne/i;
-	return 'MAF'      if $_ =~ /^maf/i;
-	return 'MIPS'     if $_ =~ /^mip/i;
-	return 'MSF'      if $_ =~ /^msf/i;
-	return 'MULTAS'   if $_ =~ /^mul/i;
-	return 'PIR'      if $_ =~ /^pir/i;
-	return 'Plain'    if $_ =~ /^txt/i;
-	return 'Plain'    if $_ =~ /^pla/i;
-	return 'Plain'    if $_ =~ /^pln/i;
-	return 'BLAST'    if $_ =~ /^bla/i;
-	return 'BLAST'    if $_ =~ /^tbl/i;
-	return 'BLAST'    if $_ =~ /^phi/i;
-	return 'BLAST'    if $_ =~ /^psi/i;
-	return 'FASTA'    if $_ =~ /^tfa/i;
-	return 'FASTA'    if $_ =~ /^ggs/i;
-	return 'FASTA'    if $_ =~ /^gls/i;
-	return 'FASTA'    if $_ =~ /^ss/i;
+        return 'CLUSTAL'  if $_ =~ /^aln/i;
+        return 'CLUSTAL'  if $_ =~ /^clu/i;
+        return 'HSSP'     if $_ =~ /^hss/i;
+        return 'JNETZ'    if $_ =~ /^jnt/i;
+        return 'JNETZ'    if $_ =~ /^jne/i;
+        return 'MAF'      if $_ =~ /^maf/i;
+        return 'MIPS'     if $_ =~ /^mip/i;
+        return 'MSF'      if $_ =~ /^msf/i;
+        return 'MULTAS'   if $_ =~ /^mul/i;
+        return 'PIR'      if $_ =~ /^pir/i;
+        return 'Plain'    if $_ =~ /^txt/i;
+        return 'Plain'    if $_ =~ /^pla/i;
+        return 'Plain'    if $_ =~ /^pln/i;
+        return 'BLAST'    if $_ =~ /^bla/i;
+        return 'BLAST'    if $_ =~ /^tbl/i;
+        return 'BLAST'    if $_ =~ /^phi/i;
+        return 'BLAST'    if $_ =~ /^psi/i;
+        return 'FASTA'    if $_ =~ /^tfa/i;
+        return 'FASTA'    if $_ =~ /^ggs/i;
+        return 'FASTA'    if $_ =~ /^gls/i;
+        return 'FASTA'    if $_ =~ /^ss/i;
     }
     if ($ext =~ /^fa/i) {
         return test_file_contains_pearson_or_fasta($file, $mode);

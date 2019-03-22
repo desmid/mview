@@ -75,21 +75,21 @@ sub parse {
     $align = $self->{'parsed'}->parse(qw(ALIGNMENT));
 
     if ($list->{'count'} != $align->{'count'}) {
-	die "${self}::parser() different alignment and identifier counts\n";
+        die "${self}::parser() different alignment and identifier counts\n";
     }
 
     for ($rank=0; $rank < $list->{'count'}; $rank++) {
 
-	$id   = $list->{'hit'}->[$rank]->{'id'};
-	$desc = $list->{'hit'}->[$rank]->{'desc'};
-	$seq  = $align->{'seq'}->[$rank];
+        $id   = $list->{'hit'}->[$rank]->{'id'};
+        $desc = $list->{'hit'}->[$rank]->{'desc'};
+        $seq  = $align->{'seq'}->[$rank];
 
         last  if $self->topn_done($rank+1);
         next  if $self->skip_row($rank+1, $rank+1, $id);
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Row::MULTAS($rank+1, $id, $desc,
+        push @hit, new Bio::MView::Build::Row::MULTAS($rank+1, $id, $desc,
                                                       $seq);
     }
     #map { $_->dump } @hit;

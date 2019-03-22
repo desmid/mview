@@ -32,15 +32,15 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
- 	if ($line =~ /$CLUSTAL_START/o and $offset < 0) {
-	    $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+        #start of entry
+        if ($line =~ /$CLUSTAL_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            next;
+        }
 
-	#consume rest of stream
+        #consume rest of stream
         if ($line =~ /$CLUSTAL_END/o) {
-	    last;
+            last;
         }
     }
     return 0   if $offset < 0;
@@ -54,8 +54,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -65,25 +65,25 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#HEADER lines
-	if ($line =~ /$CLUSTAL_HEADER/o) {
-	    $text->scan_until($CLUSTAL_HEADERend, 'HEADER');
-	    next;
-	}
+        #HEADER lines
+        if ($line =~ /$CLUSTAL_HEADER/o) {
+            $text->scan_until($CLUSTAL_HEADERend, 'HEADER');
+            next;
+        }
 
-	#consume data
+        #consume data
 
-	#ALIGNMENT lines
-	if ($line =~ /$CLUSTAL_ALIGNMENT/o) {
-	    $text->scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$CLUSTAL_ALIGNMENT/o) {
+            $text->scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$CLUSTAL_Null/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$CLUSTAL_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -99,8 +99,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -115,43 +115,43 @@ sub new {
     #consume Name lines
     while (defined ($line = $text->next_line)) {
 
-	#first part of CLUSTAL line
-	if ($line =~ /^
-	    \s*
-	    CLUSTAL
-	    \s+
-	    (([^\(\s]+)    #major version, eg., W
-	    \s*
-	    \((\S+)\))     #minor version, eg., 1.70
-	    /xo) {
+        #first part of CLUSTAL line
+        if ($line =~ /^
+            \s*
+            CLUSTAL
+            \s+
+            (([^\(\s]+)    #major version, eg., W
+            \s*
+            \((\S+)\))     #minor version, eg., 1.70
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2, $3);
-	    (
-	     $self->{'version'},
-	     $self->{'major'},
-	     $self->{'minor'},
-	    ) = ($1, $2, $3);
+            $self->test_args(\$line, $1, $2, $3);
+            (
+             $self->{'version'},
+             $self->{'major'},
+             $self->{'minor'},
+            ) = ($1, $2, $3);
 
-	}
+        }
 
-	#first part of T-COFFEE line
-	if ($line =~ /^
-	    \s*
-	    CLUSTAL\sFORMAT\sfor\s((T-COFFEE)
-	    \s+
-	    Version_(\S+)),     #version number, eg., 1.37
-	    /xo) {
+        #first part of T-COFFEE line
+        if ($line =~ /^
+            \s*
+            CLUSTAL\sFORMAT\sfor\s((T-COFFEE)
+            \s+
+            Version_(\S+)),     #version number, eg., 1.37
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2, $3);
-	    (
-	     $self->{'version'},
-	     $self->{'major'},
-	     $self->{'minor'},
-	    ) = ($1, $2, $3);
+            $self->test_args(\$line, $1, $2, $3);
+            (
+             $self->{'version'},
+             $self->{'major'},
+             $self->{'minor'},
+            ) = ($1, $2, $3);
 
-	}
+        }
 
-	#ignore any other text
+        #ignore any other text
     }
 
     $self;
@@ -176,8 +176,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $id, $line, $record);
@@ -196,44 +196,44 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	no strict;
+        no strict;
 
-	chomp $line;
+        chomp $line;
 
-	#match symbols, but only if expected
-	if ($off and $line !~ /[^*:. ]/) {
-	    $line = substr($line, $off);
-	    $self->{'match'} .= $line;
-	    $off = 0;
-	    next;
-	}
+        #match symbols, but only if expected
+        if ($off and $line !~ /[^*:. ]/) {
+            $line = substr($line, $off);
+            $self->{'match'} .= $line;
+            $off = 0;
+            next;
+        }
 
-	#id/sequence (/optional number)
-	if ($line =~ /^\s*(\S+)\s+(\S+)(?:\s+\d+)?$/o) {
-	    $self->test_args(\$line, $1, $2);
-	    push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
-	    $self->{'seq'}->{$1} .= $2;
-	    $off = length($line) - length($2);
-	    next;
-	}
+        #id/sequence (/optional number)
+        if ($line =~ /^\s*(\S+)\s+(\S+)(?:\s+\d+)?$/o) {
+            $self->test_args(\$line, $1, $2);
+            push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
+            $self->{'seq'}->{$1} .= $2;
+            $off = length($line) - length($2);
+            next;
+        }
 
-	next    if $line =~ /$CLUSTAL_Null/o;
+        next    if $line =~ /$CLUSTAL_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     #line length check (ignore 'match' as this may be missing)
     if (defined $self->{'id'}->[0]) {
-	$off = length $self->{'seq'}->{$self->{'id'}->[0]};
-	foreach $id (keys %{$self->{'seq'}}) {
-	    $line = $self->{'seq'}->{$id};
-	    my $len = length $line;
-	    #warn "$off, $len, $id\n";
-	    if ($len != $off) {
-		$self->die("length mismatch for '$id' (expect $off, saw $len):\noffending sequence: [$line]\n");
-	    }
-	}
+        $off = length $self->{'seq'}->{$self->{'id'}->[0]};
+        foreach $id (keys %{$self->{'seq'}}) {
+            $line = $self->{'seq'}->{$id};
+            my $len = length $line;
+            #warn "$off, $len, $id\n";
+            if ($len != $off) {
+                $self->die("length mismatch for '$id' (expect $off, saw $len):\noffending sequence: [$line]\n");
+            }
+        }
     }
 
     $self;
@@ -243,7 +243,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (@{$self->{'id'}}) {
-	printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
     printf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
 }

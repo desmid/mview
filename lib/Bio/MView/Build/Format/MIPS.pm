@@ -24,17 +24,17 @@ sub parse {
 
     foreach $id (@{$self->{'entry'}->parse(qw(NAME))->{'order'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $id);
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	$des = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id};
-	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
+        $des = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id};
+        $seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::MIPS($rank, $id, $des, $seq);
+        push @hit, new Bio::MView::Build::Row::MIPS($rank, $id, $des, $seq);
     }
     #map { $_->dump } @hit;
 

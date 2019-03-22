@@ -65,8 +65,8 @@ sub uid2row {
 sub all_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
-	push @tmp, $r->uid;
+        next  unless defined $r;
+        push @tmp, $r->uid;
     }
     return @tmp;
 }
@@ -75,10 +75,10 @@ sub all_ids {
 sub visible_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->uid);
-	next  if $_[0]->is_nop($r->uid);
-	push @tmp, $r->uid;
+        next  unless defined $r;
+        next  if $_[0]->is_hidden($r->uid);
+        next  if $_[0]->is_nop($r->uid);
+        push @tmp, $r->uid;
     }
     return @tmp;
 }
@@ -93,7 +93,7 @@ sub set_identity {
 
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->set_identity($ref, $mode);
+        $r->set_identity($ref, $mode);
     }
 }
 
@@ -107,7 +107,7 @@ sub set_coverage {
 
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->set_coverage($ref);
+        $r->set_coverage($ref);
     }
 }
 
@@ -201,27 +201,27 @@ sub append_display {
     #warn "append_display($dis, $gc_flag)\n";
 
     for (my $i=0; $i<@{$self->{'index2row'}}; $i++) {
-	my $r = $self->{'index2row'}->[$i];
+        my $r = $self->{'index2row'}->[$i];
 
-	next  unless defined $r;
-	next  if $self->is_hidden($r->uid);  #but let nops through
+        next  unless defined $r;
+        next  if $self->is_hidden($r->uid);  #but let nops through
 
-	#append the row data structure to the Display object
-	$dis->append($r->get_display);
+        #append the row data structure to the Display object
+        $dis->append($r->get_display);
 
-	#optional garbage collection
-	$self->do_gc($i)  if $gc_flag;
+        #optional garbage collection
+        $self->do_gc($i)  if $gc_flag;
     }
 }
 
 sub do_gc {
     my ($self, $i) = @_;
     if (defined $i) {  #just one
-	$self->{'index2row'}->[$i] = undef;
-	return;
+        $self->{'index2row'}->[$i] = undef;
+        return;
     }
     for (my $i=0; $i<@{$self->{'index2row'}}; $i++) { #all
-	$self->{'index2row'}->[$i] = undef;
+        $self->{'index2row'}->[$i] = undef;
     }
 }
 
@@ -247,20 +247,20 @@ sub prune_identities {
     my @obj = ();
 
     foreach my $row (@{$self->{'index2row'}}) {
-	next  unless defined $row;
+        next  unless defined $row;
 
-	#enforce limit on number of rows
-	last  if $topn > 0 and @obj == $topn;
+        #enforce limit on number of rows
+        last  if $topn > 0 and @obj == $topn;
 
         #keep this row regardless of percent identity
-	if (exists $keep->{$row->uid}) {
+        if (exists $keep->{$row->uid}) {
             push @obj, $row;
-	    next;
-	}
+            next;
+        }
 
         my $pcid = $row->compute_identity_to($ref, $mode);
 
-	#percent identity outside cutoff?
+        #percent identity outside cutoff?
         next  if $pcid < $min or $pcid > $max;
 
         push @obj, $row;
@@ -347,71 +347,71 @@ sub conservation {
     #warn "conservation: from=$from, to=$to, depth=$depth\n";
 
     my $initcons = sub {
-	my $values = shift;
-	my $dict = {};
-	for my $group (@$values) { $dict->{$group} = 0 }
-	$dict;
+        my $values = shift;
+        my $dict = {};
+        for my $group (@$values) { $dict->{$group} = 0 }
+        $dict;
     };
 
     my $addcons = sub {
-	my ($dict, $char) = @_;
-	for my $group (keys %$dict) {
-	    $dict->{$group}++  if index($group, $char) > -1;
-	}
-	$dict;
+        my ($dict, $char) = @_;
+        for my $group (keys %$dict) {
+            $dict->{$group}++  if index($group, $char) > -1;
+        }
+        $dict;
     };
 
     my $testcons = sub {
-	my ($dict, $max) = @_;
-	for my $group (keys %$dict) {
-	    return 1  if $dict->{$group} == $max;
-	}
-	return 0;
+        my ($dict, $max) = @_;
+        for my $group (keys %$dict) {
+            return 1  if $dict->{$group} == $max;
+        }
+        return 0;
     };
 
     my $printcons = sub {
-	my ($j, $dict, $name, $stm) = (@_, \*STDOUT);
-	print "$j, $name\n";
-	for my $group (sort keys %$dict) {
-	    printf $stm "%-6s => %d\n", $group, $dict->{$group};
-	}
-	print "\n\n";
+        my ($j, $dict, $name, $stm) = (@_, \*STDOUT);
+        print "$j, $name\n";
+        for my $group (sort keys %$dict) {
+            printf $stm "%-6s => %d\n", $group, $dict->{$group};
+        }
+        print "\n\n";
     };
 
     #iterate over alignment columns
     for (my $j=$from; $j<=$to; $j++) {
 
-	last  if $j > $refseq->length;
+        last  if $j > $refseq->length;
 
-	my $strong  = &$initcons($CONS_STRONG);
-	my $weak    = &$initcons($CONS_WEAK);
-	my $refchar = $refseq->raw($j);
-	my $same    = 0;
+        my $strong  = &$initcons($CONS_STRONG);
+        my $weak    = &$initcons($CONS_WEAK);
+        my $refchar = $refseq->raw($j);
+        my $same    = 0;
 
-	#iterate over sequence list
-	for (my $i=0; $i<@$ids; $i++) {
-	    my $thischar = uc $self->uid2row($ids->[$i])->seqobj->raw($j);
-	    #warn "[$j][$i] $refchar, $thischar, $ids->[$i]\n";
-	    next  if $self->is_nop($ids->[$i]);
-	    $same++   if $thischar eq $refchar;
-	    &$addcons($strong, $thischar);
-	    &$addcons($weak, $thischar);
-	}
-	#&$printcons($j, $strong, 'strong');
-	#&$printcons($j, $weak, 'weak');
+        #iterate over sequence list
+        for (my $i=0; $i<@$ids; $i++) {
+            my $thischar = uc $self->uid2row($ids->[$i])->seqobj->raw($j);
+            #warn "[$j][$i] $refchar, $thischar, $ids->[$i]\n";
+            next  if $self->is_nop($ids->[$i]);
+            $same++   if $thischar eq $refchar;
+            &$addcons($strong, $thischar);
+            &$addcons($weak, $thischar);
+        }
+        #&$printcons($j, $strong, 'strong');
+        #&$printcons($j, $weak, 'weak');
 
-	#warn "$same, $depth, [@{[$PAR->get('ref_id')]}], $refchar, ", $refseq->is_char($refchar), "\n";
-	if ($depth > 0) {
-	    if ($same == $depth and $refseq->is_char($refchar)) {
-		$s .= '*';
-		next;
-	    }
-	    if ($moltype eq 'aa') {
-		$s .= ':', next  if &$testcons($strong, $depth);
-		$s .= '.', next  if &$testcons($weak, $depth);
-	    }
-	}
-	$s .= ' ';
+        #warn "$same, $depth, [@{[$PAR->get('ref_id')]}], $refchar, ", $refseq->is_char($refchar), "\n";
+        if ($depth > 0) {
+            if ($same == $depth and $refseq->is_char($refchar)) {
+                $s .= '*';
+                next;
+            }
+            if ($moltype eq 'aa') {
+                $s .= ':', next  if &$testcons($strong, $depth);
+                $s .= '.', next  if &$testcons($weak, $depth);
+            }
+        }
+        $s .= ' ';
     }
     #warn "@{[length($s)]} [$s]\n";
     return \$s;
@@ -480,10 +480,10 @@ sub append_seq {
 sub visible_rows {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
-	next  if $_[0]->is_hidden($r->uid);
-	next  if $_[0]->is_nop($r->uid);
-	push @tmp, $r;
+        next  unless defined $r;
+        next  if $_[0]->is_hidden($r->uid);
+        next  if $_[0]->is_nop($r->uid);
+        push @tmp, $r;
     }
     return @tmp;
 }
@@ -493,11 +493,11 @@ sub visible_rows {
 sub visible_computable_ids {
     my @tmp = ();
     foreach my $r (@{$_[0]->{'index2row'}}) {
-	next  unless defined $r;
+        next  unless defined $r;
         next  unless $r->is_sequence;
-	next  if $_[0]->is_hidden($r->uid);
-	next  if $_[0]->is_nop($r->uid);
-	push @tmp, $r->uid;
+        next  if $_[0]->is_hidden($r->uid);
+        next  if $_[0]->is_nop($r->uid);
+        push @tmp, $r->uid;
     }
     return @tmp;
 }
@@ -513,19 +513,19 @@ sub color_header {
     my $s = '';
 
     if ($mode eq 'any') {
-	$s .= "Colored by: property";
+        $s .= "Colored by: property";
     }
     elsif ($mode eq 'identity' and defined $ref_id) {
-	$s .= "Colored by: identity";
+        $s .= "Colored by: identity";
     }
     elsif ($mode eq 'mismatch' and defined $ref_id) {
-	$s .= "Colored by: mismatch";
+        $s .= "Colored by: mismatch";
     }
     elsif ($mode eq 'consensus') {
-	$s .= "Colored by: consensus/$threshold\%";
+        $s .= "Colored by: consensus/$threshold\%";
     }
     elsif ($mode eq 'group') {
-	$s .= "Colored by: consensus group/$threshold\%";
+        $s .= "Colored by: consensus group/$threshold\%";
     }
 
     #append any find pattern colouring
@@ -543,7 +543,7 @@ sub color_special {
     my ($self, $kw) = @_;
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_special;
-	$r->color_special($kw);
+        $r->color_special($kw);
     }
 }
 
@@ -552,7 +552,7 @@ sub color_none {
     my ($self, $kw) = @_;
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->color_none($kw);
+        $r->color_none($kw);
     }
 }
 
@@ -561,7 +561,7 @@ sub color_by_type {
     my ($self, $kw) = @_;
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence or $r->is_consensus;
-	$r->color_by_type($kw);
+        $r->color_by_type($kw);
     }
 }
 
@@ -574,7 +574,7 @@ sub color_by_identity {
 
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->color_by_identity($kw, $ref);
+        $r->color_by_identity($kw, $ref);
     }
 }
 
@@ -587,7 +587,7 @@ sub color_by_mismatch {
 
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->color_by_mismatch($kw, $ref);
+        $r->color_by_mismatch($kw, $ref);
     }
 }
 
@@ -601,12 +601,12 @@ sub color_by_consensus_sequence {
     my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $kw->{'aln_groupmap'},
-					       $kw->{'aln_threshold'},
-					       $kw->{'aln_ignore'});
+                                               $kw->{'aln_groupmap'},
+                                               $kw->{'aln_threshold'},
+                                               $kw->{'aln_ignore'});
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$con->color_by_consensus_sequence($kw, $r);
+        $con->color_by_consensus_sequence($kw, $r);
     }
 }
 
@@ -620,12 +620,12 @@ sub color_by_consensus_group {
     my $to   = $from + $self->length - 1;
 
     my $con = new Bio::MView::Align::Consensus($from, $to, $tally,
-					       $kw->{'aln_groupmap'},
-					       $kw->{'aln_threshold'},
-					       $kw->{'aln_ignore'});
+                                               $kw->{'aln_groupmap'},
+                                               $kw->{'aln_threshold'},
+                                               $kw->{'aln_ignore'});
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$con->color_by_consensus_group($kw, $r);
+        $con->color_by_consensus_group($kw, $r);
     }
 }
 
@@ -634,7 +634,7 @@ sub color_by_find_block {
     my ($self, $kw) = @_;
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_sequence;
-	$r->color_by_find_block($kw);
+        $r->color_by_find_block($kw);
     }
 }
 
@@ -647,7 +647,7 @@ sub color_consensus_by_identity {
 
     foreach my $r ($self->visible_rows) {
         next  unless $r->is_consensus;
-	$r->color_by_identity($kw, $ref);
+        $r->color_by_identity($kw, $ref);
     }
 }
 
@@ -667,18 +667,18 @@ sub compute_tallies {
     #iterate over columns
     for (my $c=1; $c <= $self->{'length'}; $c++) {
 
-	my $column = [];
+        my $column = [];
 
-	#iterate over rows
+        #iterate over rows
         foreach my $r ($self->visible_rows) {
             next  unless $r->is_sequence;
-	    push @$column, $r->{'string'}->raw($c);
-	}
+            push @$column, $r->{'string'}->raw($c);
+        }
 
-	#warn "compute_tallies: @$column\n";
+        #warn "compute_tallies: @$column\n";
 
-	push @{$self->{'tally'}->{$key}},
-	    Bio::MView::GroupMap::tally_column($gname, $column, $gaps);
+        push @{$self->{'tally'}->{$key}},
+            Bio::MView::GroupMap::tally_column($gname, $column, $gaps);
     }
 
     return $self->{'tally'}->{$key};
@@ -691,10 +691,10 @@ sub compute_tallies {
 
 sub dump {
     sub _format {
-	my ($self, $k, $v) = @_;
-	$v = 'undef' unless defined $v;
-	$v = "'$v'" if $v =~ /^\s*$/;
-	return sprintf("  %-15s => %s\n", $k, $v)
+        my ($self, $k, $v) = @_;
+        $v = 'undef' unless defined $v;
+        $v = "'$v'" if $v =~ /^\s*$/;
+        return sprintf("  %-15s => %s\n", $k, $v)
     }
     my $self = shift;
     warn "$self\n";

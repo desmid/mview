@@ -14,56 +14,56 @@ use Bio::Parse::Format::FASTA;
 use strict;
 
 use vars qw(
-	    @ISA
+            @ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $NULL
+            $NULL
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
-	    $HEADER_START
-	    $HEADER_END
+            $HEADER_START
+            $HEADER_END
 
-	    $RANK_START
-	    $RANK_END
+            $RANK_START
+            $RANK_END
 
-	    $TRAILER_START
-	    $TRAILER_END
+            $TRAILER_START
+            $TRAILER_END
 
-	    $MATCH_START
-	    $MATCH_END
+            $MATCH_START
+            $MATCH_END
 
-	    $SUM_START
-	    $SUM_END
+            $SUM_START
+            $SUM_END
 
-	    $ALN_START
-	    $ALN_END
+            $ALN_START
+            $ALN_END
 );
 
 @ISA   = qw(Bio::Parse::Format::FASTA);
 
 @VERSIONS = (
-	     '3X' => [
-		     'FASTA',
-		     'FASTX',
-		     'FASTY',
-		     'TFASTA',
-		     'TFASTX',
-		     'TFASTY',
-		     'TFASTXY',
-		     'SSEARCH',
-		     'GGSEARCH',
-		     'GLSEARCH',
-		     'FASTM',
-		     'FASTS',
-		     'FASTF',
-		     'TFASTM',
-		     'TFASTS',
-		     'TFASTF',
-		    ],
-	    );
+             '3X' => [
+                     'FASTA',
+                     'FASTX',
+                     'FASTY',
+                     'TFASTA',
+                     'TFASTX',
+                     'TFASTY',
+                     'TFASTXY',
+                     'SSEARCH',
+                     'GGSEARCH',
+                     'GLSEARCH',
+                     'FASTM',
+                     'FASTS',
+                     'FASTF',
+                     'TFASTM',
+                     'TFASTS',
+                     'TFASTF',
+                    ],
+            );
 
 $NULL  = '^\s*$';#for emacs';
 
@@ -129,8 +129,8 @@ $ALN_END       = $MATCH_END;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -140,38 +140,38 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#Header lines
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #Header lines
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#Rank lines
-	if ($line =~ /$RANK_START/o) {
-	    $text->scan_until($RANK_END, 'RANK');
-	    next;
-	}
+        #Rank lines
+        if ($line =~ /$RANK_START/o) {
+            $text->scan_until($RANK_END, 'RANK');
+            next;
+        }
 
-	#Hit lines
-	if ($line =~ /$MATCH_START/o) {
-	    $text->scan_until($MATCH_END, 'MATCH');
-	    next;
-	}
+        #Hit lines
+        if ($line =~ /$MATCH_START/o) {
+            $text->scan_until($MATCH_END, 'MATCH');
+            next;
+        }
 
-	#Trailer lines
-	if ($line =~ /$TRAILER_START/o) {
-	    $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
-	    next;
-	}
+        #Trailer lines
+        if ($line =~ /$TRAILER_START/o) {
+            $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
+            next;
+        }
 
-	#end of FASTA job
-	next    if $line =~ /$ENTRY_END/o;
+        #end of FASTA job
+        next    if $line =~ /$ENTRY_END/o;
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -187,8 +187,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -201,45 +201,45 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /^\s*(version\s+(\S+).*)/) {
-	    $self->{'full_version'} = $1;
-	    $self->{'version'}      = $2;
-	    next;
-	}
+        if ($line =~ /^\s*(version\s+(\S+).*)/) {
+            $self->{'full_version'} = $1;
+            $self->{'version'}      = $2;
+            next;
+        }
 
-	if ($line =~ /^\s*Query library\s+(\S+)/o) {
-	    $self->test_args(\$line, $1);
-	    $self->{'queryfile'} = $1;
-	    $self->{'queryfile'} =~ s/,$//;
-	    next;
-	}
+        if ($line =~ /^\s*Query library\s+(\S+)/o) {
+            $self->test_args(\$line, $1);
+            $self->{'queryfile'} = $1;
+            $self->{'queryfile'} =~ s/,$//;
+            next;
+        }
 
-	if ($line =~ /^\s*\d+>+(\S+).*-\s+(\d+)\s+(?:aa|nt)/) {
-	    $self->test_args(\$line, $1, $2);
-	    (
-	     $self->{'query'},
-	     $self->{'length'},
-	    ) = (Bio::Parse::Record::clean_identifier($1),
-		 $2);
-	    next;
-	}
+        if ($line =~ /^\s*\d+>+(\S+).*-\s+(\d+)\s+(?:aa|nt)/) {
+            $self->test_args(\$line, $1, $2);
+            (
+             $self->{'query'},
+             $self->{'length'},
+            ) = (Bio::Parse::Record::clean_identifier($1),
+                 $2);
+            next;
+        }
 
-	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
-	    $self->test_args(\$line, $1,$2);
-	    (
-	     $self->{'residues'},
-	     $self->{'sequences'},
-	    ) = ($1, $2);
-	    next;
-	}
+        if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
+            $self->test_args(\$line, $1,$2);
+            (
+             $self->{'residues'},
+             $self->{'sequences'},
+            ) = ($1, $2);
+            next;
+        }
 
-	#ignore any other text
+        #ignore any other text
     }
 
     if (! defined $self->{'full_version'} ) {
-	#can't determine version: hardwire one!
-	$self->{'full_version'} = 'looks like FASTA 3X';
-	$self->{'version'}      = '3X';
+        #can't determine version: hardwire one!
+        $self->{'full_version'} = 'looks like FASTA 3X';
+        $self->{'version'}      = '3X';
     }
 
     $self;

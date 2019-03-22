@@ -58,8 +58,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid argument list (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid argument list (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -71,65 +71,65 @@ sub new {
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Score\s*=\s*
-	($RX_Uint)                           #score
-	\s+
-	\(($RX_Ureal)\s+bits\),              #bits
-	\s+
-	Expect\s*=\s*
-	($RX_Ureal),                         #expectation
-	\s+
-	(?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
-	($RX_Ureal)                          #p-value
-	/xo) {
+        Score\s*=\s*
+        ($RX_Uint)                           #score
+        \s+
+        \(($RX_Ureal)\s+bits\),              #bits
+        \s+
+        Expect\s*=\s*
+        ($RX_Ureal),                         #expectation
+        \s+
+        (?:Sum\sP\((\d+)\)|P)\s*=\s*         #number of frags
+        ($RX_Ureal)                          #p-value
+        /xo) {
 
-	$self->test_args(\$line, $1, $2, $3, $5);
+        $self->test_args(\$line, $1, $2, $3, $5);
 
-	(
-	 $self->{'score'},
-	 $self->{'bits'},
-	 $self->{'expect'},
-	 $self->{'n'},                       #substitute 1 unless $4
-	 $self->{'p'},
-	) = ($1, $2, $3, defined $4?$4:1, $5);
+        (
+         $self->{'score'},
+         $self->{'bits'},
+         $self->{'expect'},
+         $self->{'n'},                       #substitute 1 unless $4
+         $self->{'p'},
+        ) = ($1, $2, $3, defined $4?$4:1, $5);
     }
     else {
-	$self->warn("expecting 'Score' line: $line");
+        $self->warn("expecting 'Score' line: $line");
     }
 
     #Identities line
     $line = $text->next_line;
 
     if ($line =~ /^\s*
-	Identities\s*=\s*
-	(\d+\/\d+)                           #identities fraction
-	\s+
-	\((\d+)%\),                          #identities percentage
-	\s+
-	Positives\s*=\s*
-	(\d+\/\d+)                           #positives fraction
-	\s+
-	\((\d+)%\)                           #positives percentage
-	,\s+Frame\s*=\s*
-	([+-])                               #frame sign
-	(\d+)                                #frame number
-	/xo) {
+        Identities\s*=\s*
+        (\d+\/\d+)                           #identities fraction
+        \s+
+        \((\d+)%\),                          #identities percentage
+        \s+
+        Positives\s*=\s*
+        (\d+\/\d+)                           #positives fraction
+        \s+
+        \((\d+)%\)                           #positives percentage
+        ,\s+Frame\s*=\s*
+        ([+-])                               #frame sign
+        (\d+)                                #frame number
+        /xo) {
 
-	$self->test_args(\$line, $1, $2, $3, $4, $5, $6);
+        $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
 
-	(
-	 $self->{'id_fraction'},
-	 $self->{'id_percent'},
-	 $self->{'pos_fraction'},
-	 $self->{'pos_percent'},
-	 $self->{'sbjct_frame'},
-	) = ($1, $2, $3, $4, $5 . $6);
+        (
+         $self->{'id_fraction'},
+         $self->{'id_percent'},
+         $self->{'pos_fraction'},
+         $self->{'pos_percent'},
+         $self->{'sbjct_frame'},
+        ) = ($1, $2, $3, $4, $5 . $6);
 
-	#record sbjct orientation in MATCH list
-	push @{$parent->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
+        #record sbjct orientation in MATCH list
+        push @{$parent->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
 
     } else {
-	$self->warn("expecting 'Identities' line: $line");
+        $self->warn("expecting 'Identities' line: $line");
     }
 
     $self->parse_alignment($text);

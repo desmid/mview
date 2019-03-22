@@ -28,7 +28,7 @@ sub new {
     $self = $self->SUPER::new(@_);
     #assume the query identifier is the same as the query filename
     if ($self->{query} eq '' and $self->{queryfile} ne '') {
-	$self->{query} = $self->{queryfile};
+        $self->{query} = $self->{queryfile};
     }
     return $self;
 }
@@ -46,8 +46,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -58,47 +58,47 @@ sub new {
     #ranked search hits
     while (defined ($line = $text->next_line)) {
 
-	next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 
-	if($line =~ /^
-	   \s*
-	   ([^\s]+)                #id
-	   \s+
-	   (.*)                    #description: possibly empty
-	   \s+
-	   \(\s*(\S+)\)            #hit sequence length
-	   \s*
-	   (?:\[(\S)\])?           #frame
-	   \s*
-	   ($RX_Sint)              #n-w score
-	   \s+
-	   (\S+)                   #bits
-	   \s+
-	   (\S+)                   #E-value
-	   \s*
-	   $/xo) {
+        if($line =~ /^
+           \s*
+           ([^\s]+)                #id
+           \s+
+           (.*)                    #description: possibly empty
+           \s+
+           \(\s*(\S+)\)            #hit sequence length
+           \s*
+           (?:\[(\S)\])?           #frame
+           \s*
+           ($RX_Sint)              #n-w score
+           \s+
+           (\S+)                   #bits
+           \s+
+           (\S+)                   #E-value
+           \s*
+           $/xo) {
 
-	    $self->test_args(\$line, $1, $3, $5,$6,$7);
+            $self->test_args(\$line, $1, $3, $5,$6,$7);
 
-	    push(@{$self->{'hit'}},
-		 {
-		  'id'      => Bio::Parse::Record::clean_identifier($1),
-		  'desc'    => $2,
-		  #ignore $3
-		  'frame'   => Bio::Parse::Format::FASTA::parse_frame($4),
-		  'orient'  => Bio::Parse::Format::FASTA::parse_orient($4),
-		  'score'   => $5,
-		  'bits'    => $6,
-		  'expect'  => $7,
-		 });
-	    next;
-	}
+            push(@{$self->{'hit'}},
+                 {
+                  'id'      => Bio::Parse::Record::clean_identifier($1),
+                  'desc'    => $2,
+                  #ignore $3
+                  'frame'   => Bio::Parse::Format::FASTA::parse_frame($4),
+                  'orient'  => Bio::Parse::Format::FASTA::parse_orient($4),
+                  'score'   => $5,
+                  'bits'    => $6,
+                  'expect'  => $7,
+                 });
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$Bio::Parse::Format::FASTA3X::NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -132,8 +132,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -144,22 +144,22 @@ sub new {
     my $lines = $text->scan_until_inclusive('^\s*global/global');
 
     if ($lines =~ /^
-	>*
-	(\S+)                      	  #id
-	\s+
-	(.*)                       	  #description: possibly empty
-	\s+
-	\(\s*(\d+)\s*(?:aa|nt)\)   	  #length
-	\s*
+        >*
+        (\S+)                             #id
+        \s+
+        (.*)                              #description: possibly empty
+        \s+
+        \(\s*(\d+)\s*(?:aa|nt)\)          #length
+        \s*
         (rev-comp)?                       #frame
         \s+
-        n-w\s+opt:\s*($RX_Sint)        	  #n-w opt
+        n-w\s+opt:\s*($RX_Sint)           #n-w opt
         \s+
-        Z-score:\s*(\S+)           	  #Z-score
+        Z-score:\s*(\S+)                  #Z-score
         \s+
-        bits:\s*(\S+)              	  #bits
+        bits:\s*(\S+)                     #bits
         \s+
-        E\((?:\d+)?\):\s*(\S+)         	  #expect
+        E\((?:\d+)?\):\s*(\S+)            #expect
         \s+
         global\/global\s+\(N-W\)\s+score:\s*($RX_Sint);  #n-w score (same as opt?)
         \s+
@@ -171,33 +171,33 @@ sub new {
         \s+
         \((\S+)\)                         #alignment ranges
         \s*
-	$/xso) {
+        $/xso) {
 
-	$self->test_args(\$line, $1, $3, $5,$6,$7,$8,$9,$10,$11,$12,$13);
+        $self->test_args(\$line, $1, $3, $5,$6,$7,$8,$9,$10,$11,$12,$13);
 
-	(
-	 $self->{'id'},
-	 $self->{'desc'},
-	 $self->{'length'},
-	 $self->{'frame'},
-	 $self->{'orient'},
-	 $self->{'opt'},
-	 $self->{'zscore'},
-	 $self->{'bits'},
-	 $self->{'expect'},
-	 $self->{'score'},
-	 $self->{'id_percent'},
-	 $self->{'sim_percent'},
-	 $self->{'overlap'},
-	 $self->{'ranges'},
-	) = (
-	    Bio::Parse::Record::clean_identifier($1),
-	    Bio::Parse::Record::strip_english_newlines($2),
-	    $3,
-	    Bio::Parse::Format::FASTA::parse_frame($4),
-	    Bio::Parse::Format::FASTA::parse_orient($4),
-	    $5, $6, $7, $8, $9, $10, $11, $12, $13,
-	);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'length'},
+         $self->{'frame'},
+         $self->{'orient'},
+         $self->{'opt'},
+         $self->{'zscore'},
+         $self->{'bits'},
+         $self->{'expect'},
+         $self->{'score'},
+         $self->{'id_percent'},
+         $self->{'sim_percent'},
+         $self->{'overlap'},
+         $self->{'ranges'},
+        ) = (
+            Bio::Parse::Record::clean_identifier($1),
+            Bio::Parse::Record::strip_english_newlines($2),
+            $3,
+            Bio::Parse::Format::FASTA::parse_frame($4),
+            Bio::Parse::Format::FASTA::parse_orient($4),
+            $5, $6, $7, $8, $9, $10, $11, $12, $13,
+        );
 
     } elsif ($lines =~ /^>--/) {  #alternative alignment
         my $sib = $self->get_sibling(0);
@@ -215,7 +215,7 @@ sub new {
         );
 
     } else {
-	$self->warn("unknown field: $lines");
+        $self->warn("unknown field: $lines");
     }
 
     $self;

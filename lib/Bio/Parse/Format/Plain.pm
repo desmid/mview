@@ -37,15 +37,15 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
- 	if ($line =~ /$Plain_START/o and $offset < 0) {
-	    $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+        #start of entry
+        if ($line =~ /$Plain_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            next;
+        }
 
-	#end of entry
+        #end of entry
         if ($line =~ /$Plain_END/o and ! $offset < 0) {
-	    last;
+            last;
         }
     }
     return 0   if $offset < 0;
@@ -59,8 +59,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -70,22 +70,22 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#consume data
+        #consume data
 
-	#comment: ignore
-	next    if $line =~ /$Plain_Comment/o;
+        #comment: ignore
+        next    if $line =~ /$Plain_Comment/o;
 
-	#ALIGNMENT lines
-	if ($line =~ /$Plain_ALIGNMENT/o) {
-	    $text->scan_until($Plain_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$Plain_ALIGNMENT/o) {
+            $text->scan_until($Plain_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$Plain_Null/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$Plain_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -101,8 +101,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -121,30 +121,30 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	chomp $line;
+        chomp $line;
 
-	#id/sequence
-	if ($line =~ /^\s*(\S+)\s+(\S+)\s*$/o) {
-	    $self->test_args(\$line, $1, $2);
-	    push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
-	    $self->{'seq'}->{$1} .= $2;
-	    $off = length($line) - length($2);
-	    next;
-	}
+        #id/sequence
+        if ($line =~ /^\s*(\S+)\s+(\S+)\s*$/o) {
+            $self->test_args(\$line, $1, $2);
+            push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
+            $self->{'seq'}->{$1} .= $2;
+            $off = length($line) - length($2);
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     #line length check (ignore 'match' as this may be missing)
     if (defined $self->{'id'}->[0]) {
-	$off = length $self->{'seq'}->{$self->{'id'}->[0]};
-	foreach $line (keys %{$self->{'seq'}}) {
-	    $line = $self->{'seq'}->{$line};
-	    if (length $line != $off) {
-		$self->die("unequal line lengths (expect $off, got @{[length $line]})\n");
-	    }
-	}
+        $off = length $self->{'seq'}->{$self->{'id'}->[0]};
+        foreach $line (keys %{$self->{'seq'}}) {
+            $line = $self->{'seq'}->{$line};
+            if (length $line != $off) {
+                $self->die("unequal line lengths (expect $off, got @{[length $line]})\n");
+            }
+        }
     }
 
     $self;
@@ -154,7 +154,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (@{$self->{'id'}}) {
-	printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
     printf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
 }

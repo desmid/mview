@@ -64,75 +64,75 @@ sub load_groupmaps {
     while (<$stream>) {
         my $mapignore;
 
-	#comments, blank lines
-	if (/^\s*\#/ or /^\s*$/) {
-	    next  if $state ne 'map';
-	    $de .= $_;
-	    next;
-	}
+        #comments, blank lines
+        if (/^\s*\#/ or /^\s*$/) {
+            next  if $state ne 'map';
+            $de .= $_;
+            next;
+        }
 
         chomp;
 
-	#group [name]
-	if (/^\s*\[\s*(\S+)\s*\]/) {
-	    $state = 'map';
-	    $map = uc $1;
-	    if (exists $GroupMap->{$map} and !$override) {
-		$mapignore = 1;  #just for duration of this map
-	    } else {
-		$mapignore = 0;
-	    }
-	    $de = '';
-	    next;
-	}
+        #group [name]
+        if (/^\s*\[\s*(\S+)\s*\]/) {
+            $state = 'map';
+            $map = uc $1;
+            if (exists $GroupMap->{$map} and !$override) {
+                $mapignore = 1;  #just for duration of this map
+            } else {
+                $mapignore = 0;
+            }
+            $de = '';
+            next;
+        }
 
-	die "load_groupmaps: groupname undefined\n"  unless defined $map;
+        die "load_groupmaps: groupname undefined\n"  unless defined $map;
 
-	next  if $mapignore;  #forget it if we're not allowing overrides
+        next  if $mapignore;  #forget it if we're not allowing overrides
 
-	#save map description?
-	$GroupMap->{$map}->[3] = $de  if $state eq 'map';
+        #save map description?
+        $GroupMap->{$map}->[3] = $de  if $state eq 'map';
 
-	#Group_Any symbol (literal in regexp)
-	if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
-	    $state = 'symbol';
-	    make_group($map, $Group_Any, $1, '') or
+        #Group_Any symbol (literal in regexp)
+        if (/^\s*\.\s*=>\s*(\S+|\'[^\']+\')/) {
+            $state = 'symbol';
+            make_group($map, $Group_Any, $1, '') or
                 die "load_groupmaps: bad format in line '$_'\n";
             next;
-	}
+        }
 
-	#general class membership
-	if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')\s*\{\s*(.*)\s*\}/) {
-	    $state = 'symbol';
-	    make_group($map, $1, $2, $3) or
+        #general class membership
+        if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')\s*\{\s*(.*)\s*\}/) {
+            $state = 'symbol';
+            make_group($map, $1, $2, $3) or
                 die "load_groupmaps: bad format in line '$_'\n";
-	    next;
-	}
+            next;
+        }
 
-	#trivial class self-membership: different symbol
-	if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')/) {
-	    $state = 'symbol';
-	    make_group($map, $1, $2, $1) or
+        #trivial class self-membership: different symbol
+        if (/^\s*(\S+)\s*=>\s*(\S+|\'[^\']+\')/) {
+            $state = 'symbol';
+            make_group($map, $1, $2, $1) or
                 die "load_groupmaps: bad format in line '$_'\n";
-	    next;
-	}
+            next;
+        }
 
-	#trivial class self-membership: same symbol
-	if (/^\s*(\S+)/) {
-	    $state = 'symbol';
-	    make_group($map, $1, $1, $1) or
+        #trivial class self-membership: same symbol
+        if (/^\s*(\S+)/) {
+            $state = 'symbol';
+            make_group($map, $1, $1, $1) or
                 die "load_groupmaps: bad format in line '$_'\n";
-	    next;
-	}
+            next;
+        }
 
-	#default
-	die "load_groupmaps: bad format in line '$_'\n";
+        #default
+        die "load_groupmaps: bad format in line '$_'\n";
     }
     close $stream;
 
     #set default symbol for each groupmap
     foreach my $map (keys %$GroupMap) {
-	make_group($map, $Group_Any, $Default_Group_Any, '')
+        make_group($map, $Group_Any, $Default_Group_Any, '')
             unless exists $GroupMap->{$map}->[0]->{$Group_Any};
     }
 }
@@ -144,9 +144,9 @@ sub dump_groupmaps {
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Black\">",
-	"<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Comment\">",
-	"</SPAN>")  if $html;
+        "<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Black\">",
+        "<SPAN style=\"color:$Bio::MView::Color::ColorMap::Colour_Comment\">",
+        "</SPAN>")  if $html;
 
     $s .= "$c1#Consensus group listing - suitable for reloading.\n";
     $s .= "#Character matching is case-insensitive.\n";
@@ -156,31 +156,31 @@ sub dump_groupmaps {
     @_ = keys %$GroupMap  unless @_;
 
     foreach my $group (sort @_) {
-	$s .= "$c0\[$group]$c2\n";
-	$s .= "$c1$GroupMap->{$group}->[3]";
+        $s .= "$c0\[$group]$c2\n";
+        $s .= "$c1$GroupMap->{$group}->[3]";
         $s .= "#description =>  symbol  members$c2\n";
 
-	my $p = $GroupMap->{$group}->[0];
+        my $p = $GroupMap->{$group}->[0];
 
-	foreach my $class (sort keys %{$p}) {
+        foreach my $class (sort keys %{$p}) {
 
-	    next  if $class eq '';  #gap character
+            next  if $class eq '';  #gap character
 
             my $sym = $p->{$class}->[0];
 
-	    #wildcard
-	    if ($class eq $Group_Any) {
-		$sym = "'$sym'"  if $sym =~ /\s/;
-		$s .= sprintf "%-12s =>  %-6s\n", $class, $sym;
-		next;
-	    }
+            #wildcard
+            if ($class eq $Group_Any) {
+                $sym = "'$sym'"  if $sym =~ /\s/;
+                $s .= sprintf "%-12s =>  %-6s\n", $class, $sym;
+                next;
+            }
 
-	    #consensus symbol
-	    $sym = "'$sym'"  if $sym =~ /\s/;
-	    $s .= sprintf "%-12s =>  %-6s  { ", $class, $sym;
-	    $s .= join(", ", sort keys %{$p->{$class}->[1]}) . " }\n";
-	}
-	$s .= "\n";
+            #consensus symbol
+            $sym = "'$sym'"  if $sym =~ /\s/;
+            $s .= sprintf "%-12s =>  %-6s  { ", $class, $sym;
+            $s .= join(", ", sort keys %{$p->{$class}->[1]}) . " }\n";
+        }
+        $s .= "\n";
     }
 
     return $s;
@@ -206,28 +206,28 @@ sub tally_column {
 
     #select score normalization
     if ($gaps) {
-	#by total number of rows (sequence + non-sequence)
-	$depth = @$col;
+        #by total number of rows (sequence + non-sequence)
+        $depth = @$col;
     } else {
-	#by rows containing sequence in this column
-	$depth = 0;
-	map { $depth++  if Bio::MView::Sequence::is_char(0, $_) } @$col;
+        #by rows containing sequence in this column
+        $depth = 0;
+        map { $depth++  if Bio::MView::Sequence::is_char(0, $_) } @$col;
     }
     #warn "($group, [@$col], $gaps, $depth)\n";
 
     #empty column? use gap symbol
     if ($depth < 1) {
-	$score->{''} = 100;
-	return $score;
+        $score->{''} = 100;
+        return $score;
     }
 
     #tally class scores by column symbol (except gaps), which is upcased
     foreach my $class (keys %$group) {
-	foreach my $sym (@$col) {
-	    next  unless Bio::MView::Sequence::is_char(0, $sym) or $gaps;
-	    $score->{$class}++  if exists $group->{$class}->[1]->{uc $sym};
-	}
-	$score->{$class} = 100.0 * $score->{$class} / $depth;
+        foreach my $sym (@$col) {
+            next  unless Bio::MView::Sequence::is_char(0, $sym) or $gaps;
+            $score->{$class}++  if exists $group->{$class}->[1]->{uc $sym};
+        }
+        $score->{$class} = 100.0 * $score->{$class} / $depth;
     }
 
     return $score;
@@ -239,7 +239,7 @@ sub consensus {
     my ($tally, $gname, $threshold, $ignore) = @_;
 
     unless ($GROUPMAP->has_groupmap($gname)) {
-	die "consensus: unknown consensus group '$gname'\n";
+        die "consensus: unknown consensus group '$gname'\n";
     }
 
     my $group = $GROUPMAP->{'map'}->{$gname}->[0];
@@ -248,66 +248,66 @@ sub consensus {
     #iterate over all columns
     for (my $i=0; $i<@$tally; $i++) {
 
-	my ($score, $bstscore, $bstclass) = ($tally->[$i], 0, undef);
+        my ($score, $bstscore, $bstclass) = ($tally->[$i], 0, undef);
 
-	#iterate over all allowed subsets
-	foreach my $class (keys %$group) {
+        #iterate over all allowed subsets
+        foreach my $class (keys %$group) {
 
-	    next  if $class eq $Group_Any;  #wildcard
+            next  if $class eq $Group_Any;  #wildcard
 
-	    if ($class ne '') {
-		#non-gap classes: may want to ignore certain classes
-		next  if $ignore eq 'singleton' and $class eq $group->{$class}->[0];
+            if ($class ne '') {
+                #non-gap classes: may want to ignore certain classes
+                next  if $ignore eq 'singleton' and $class eq $group->{$class}->[0];
 
-		next  if $ignore eq 'class'     and $class ne $group->{$class}->[0];
-	    }
+                next  if $ignore eq 'class'     and $class ne $group->{$class}->[0];
+            }
 
-	    #choose smallest class exceeding threshold and highest
-	    #score percentage when same size
+            #choose smallest class exceeding threshold and highest
+            #score percentage when same size
 
-	    #warn "[$i] $class, $score->{$class}\n";
+            #warn "[$i] $class, $score->{$class}\n";
 
-	    if ($score->{$class} >= $threshold) {
+            if ($score->{$class} >= $threshold) {
 
-		#first pass
-		if (! defined $bstclass) {
-		    $bstclass = $class;
-		    $bstscore = $score->{$class};
-		    next;
-		}
+                #first pass
+                if (! defined $bstclass) {
+                    $bstclass = $class;
+                    $bstscore = $score->{$class};
+                    next;
+                }
 
-		#larger? this set should be rejected
-		if (keys %{$group->{$class}->[1]} >
-		    keys %{$group->{$bstclass}->[1]}) {
-		    next;
-		}
+                #larger? this set should be rejected
+                if (keys %{$group->{$class}->[1]} >
+                    keys %{$group->{$bstclass}->[1]}) {
+                    next;
+                }
 
-		#smaller? this set should be kept
-		if (keys %{$group->{$class}->[1]} <
-		    keys %{$group->{$bstclass}->[1]}) {
-		    $bstclass = $class;
-		    $bstscore = $score->{$class};
-		    next;
-		}
+                #smaller? this set should be kept
+                if (keys %{$group->{$class}->[1]} <
+                    keys %{$group->{$bstclass}->[1]}) {
+                    $bstclass = $class;
+                    $bstscore = $score->{$class};
+                    next;
+                }
 
-		#same size: new set has better score?
-		if ($score->{$class} > $bstscore) {
-		    $bstclass = $class;
-		    $bstscore = $score->{$class};
-		    next;
-		}
-	    }
-	}
+                #same size: new set has better score?
+                if ($score->{$class} > $bstscore) {
+                    $bstclass = $class;
+                    $bstscore = $score->{$class};
+                    next;
+                }
+            }
+        }
 
-	if (defined $bstclass) {
-	    if ($bstclass eq '' and $bstscore < 100) {
-		$bstclass = $Group_Any #some non-gaps
-	    }
-	} else {
-	    $bstclass = $Group_Any;  #wildcard
-	}
-	#warn "DECIDE [$i] '$bstclass' $bstscore [$group->{$bstclass}->[0]]\n";
-	$consensus .= $group->{$bstclass}->[0];
+        if (defined $bstclass) {
+            if ($bstclass eq '' and $bstscore < 100) {
+                $bstclass = $Group_Any #some non-gaps
+            }
+        } else {
+            $bstclass = $Group_Any;  #wildcard
+        }
+        #warn "DECIDE [$i] '$bstclass' $bstscore [$group->{$bstclass}->[0]]\n";
+        $consensus .= $group->{$bstclass}->[0];
     }
 
     return \$consensus;
@@ -359,14 +359,14 @@ sub make_group {
     foreach my $m (@$members) {
         next  unless defined $m;
 
-	#class  => member existence
-	$GroupMap->{$map}->[0]->{$class}->[1]->{$m} = 1;
+        #class  => member existence
+        $GroupMap->{$map}->[0]->{$class}->[1]->{$m} = 1;
 
-	#member => symbol existence
-	$GroupMap->{$map}->[1]->{$m}->{$sym} = 1;
+        #member => symbol existence
+        $GroupMap->{$map}->[1]->{$m}->{$sym} = 1;
 
-	#symbol => members
-	$GroupMap->{$map}->[2]->{$sym}->{$m} = 1;
+        #symbol => members
+        $GroupMap->{$map}->[2]->{$sym}->{$m} = 1;
     }
 
     return 1;  #ok
@@ -380,20 +380,20 @@ sub dump_group {
     my ($group, $class, $mem, $p);
     warn "Groups by class\n";
     foreach $group (@_) {
-	warn "[$group]\n";
-	$p = $GroupMap->{$group}->[0];
-	foreach $class (keys %{$p}) {
-	    warn "$class  =>  $p->{$class}->[0]  { ",
-		join(" ", keys %{$p->{$class}->[1]}), " }\n";
-	}
+        warn "[$group]\n";
+        $p = $GroupMap->{$group}->[0];
+        foreach $class (keys %{$p}) {
+            warn "$class  =>  $p->{$class}->[0]  { ",
+                join(" ", keys %{$p->{$class}->[1]}), " }\n";
+        }
     }
     warn "Groups by membership\n";
     foreach $group (@_) {
-	warn "[$group]\n";
-	$p = $GroupMap->{$group}->[1];
-	foreach $mem (keys %{$p}) {
-	    warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
-	}
+        warn "[$group]\n";
+        $p = $GroupMap->{$group}->[1];
+        foreach $mem (keys %{$p}) {
+            warn "$mem  =>  { ", join(" ", keys %{$p->{$mem}}), " }\n";
+        }
     }
 }
 

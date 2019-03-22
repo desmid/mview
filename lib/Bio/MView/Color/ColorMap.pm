@@ -96,64 +96,64 @@ sub load_colormaps {
     while (<$stream>) {
         my $mapignore;
 
-	#comments, blank lines
-	if (/^\s*\#/ or /^\s*$/) {
-	    next  if $state ne 'map';
-	    $de .= $_;
-	    next;
-	}
+        #comments, blank lines
+        if (/^\s*\#/ or /^\s*$/) {
+            next  if $state ne 'map';
+            $de .= $_;
+            next;
+        }
 
         chomp;
 
-	#map [name]
-	if (/^\s*\[\s*(\S+)\s*\]/) {
-	    $state = 'map';
-	    $map = uc $1;
-	    if (exists $ColorMap->{$map} and !$override) {
-		$mapignore = 1;  #just for duration of this map
-	    } else {
-		$mapignore = 0;
-	    }
-	    $de = '';
-	    next;
-	}
+        #map [name]
+        if (/^\s*\[\s*(\S+)\s*\]/) {
+            $state = 'map';
+            $map = uc $1;
+            if (exists $ColorMap->{$map} and !$override) {
+                $mapignore = 1;  #just for duration of this map
+            } else {
+                $mapignore = 0;
+            }
+            $de = '';
+            next;
+        }
 
-	#palette data: colorname: RGBcode
-	#colorname MUST begin with a letter
-	if (/^\s*colou?r\s+([a-z][-a-z0-9_]*)\s*:\s*(\#[0123456789ABCDEF]{6})/i) {
-	    $state = 'palette';
+        #palette data: colorname: RGBcode
+        #colorname MUST begin with a letter
+        if (/^\s*colou?r\s+([a-z][-a-z0-9_]*)\s*:\s*(\#[0123456789ABCDEF]{6})/i) {
+            $state = 'palette';
             my ($color, $rgb) = (lc $1, lc $2);
-	    if (! $Palette->has_color($color)) {
-		#warn "palette: $color => $rgb\n";
+            if (! $Palette->has_color($color)) {
+                #warn "palette: $color => $rgb\n";
                 $Palette->insert($color => $rgb);
-	    }
-	    next;
-	}
+            }
+            next;
+        }
 
-	die "load_colormaps: colormap name undefined\n"  unless defined $map;
+        die "load_colormaps: colormap name undefined\n"  unless defined $map;
 
-	next  if $mapignore;    #forget it if we're not allowing overrides
+        next  if $mapignore;    #forget it if we're not allowing overrides
 
-	#save map description?
-	$ColorMap->{$map}->{$MapText} = $de  if $state eq 'map';
+        #save map description?
+        $ColorMap->{$map}->{$MapText} = $de  if $state eq 'map';
 
-	#symbol[symbol] {->|=>} [palette_colorname|#RGB] any other text...
-	if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
-	    $state = 'symbol';
+        #symbol[symbol] {->|=>} [palette_colorname|#RGB] any other text...
+        if (/^\s*(\S)(\S)?\s*(->|=>)\s*(\S+)(?:\s+(.*))?/i) {
+            $state = 'symbol';
 
-	    my ($c1, $c2, $seethru, $color, $de) =
-		($1, $2, ($3 eq '->' ? 'T' : 'S'),
+            my ($c1, $c2, $seethru, $color, $de) =
+                ($1, $2, ($3 eq '->' ? 'T' : 'S'),
                  lc $4, (defined $5 ? $5 : ''));
 
-	    #only allow new colors in form of RGB codes
-	    if (! $Palette->has_color($color)) {
-		if ($color =~ /\#[0123456789ABCDEF]{6}/i) {
-		    #warn "new color: $color (transparency=$seethru)\n";
+            #only allow new colors in form of RGB codes
+            if (! $Palette->has_color($color)) {
+                if ($color =~ /\#[0123456789ABCDEF]{6}/i) {
+                    #warn "new color: $color (transparency=$seethru)\n";
                     $Palette->insert($color => lc $color);
-		} else {
-		    die "load_colormaps: undefined color in line '$_'\n";
-		}
-	    }
+                } else {
+                    die "load_colormaps: undefined color in line '$_'\n";
+                }
+            }
 
             #any explicit coloring
             $ColorMap->{$map}->{$c1} =
@@ -163,11 +163,11 @@ sub load_colormaps {
                 [ $Palette->get_index($color), $seethru, $de ]
                 if defined $c2;
 
-	    next;
-	}
+            next;
+        }
 
-	#default
-	die "load_colormaps: bad format in line '$_'\n";
+        #default
+        die "load_colormaps: bad format in line '$_'\n";
     }
 
     close $stream;
@@ -180,9 +180,9 @@ sub dump_colormaps {
     my ($s, $c0, $c1, $c2) = ('', '', '', '');
 
     ($c0, $c1, $c2) = (
-	"<SPAN style=\"color:$Colour_Black\">",
-	"<SPAN style=\"color:$Colour_Comment\">",
-	"</SPAN>")  if $html;
+        "<SPAN style=\"color:$Colour_Black\">",
+        "<SPAN style=\"color:$Colour_Comment\">",
+        "</SPAN>")  if $html;
 
     sub palette_row {
         my ($f1, $f2, $col, $rgb) = @_;
@@ -199,9 +199,9 @@ sub dump_colormaps {
     $s .= "$c1#Palette:\n\n#color                     : #RGB$c2\n";
 
     foreach my $color ($Palette->color_names) {
-	my ($rgb, $f1, $f2) = ($Palette->get_rgb($color), '', '');
-	($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
-	$s .= palette_row($f1, $f2, $color, $rgb);
+        my ($rgb, $f1, $f2) = ($Palette->get_rgb($color), '', '');
+        ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
+        $s .= palette_row($f1, $f2, $color, $rgb);
     }
 
     $s .= "\n\n$c1#Colormap listing - suitable for reloading.\n";
@@ -210,55 +210,55 @@ sub dump_colormaps {
     @_ = keys %$ColorMap  unless @_;
 
     foreach my $map (sort @_) {
-	my %p = %{$ColorMap->{$map}};  #copy colormap structure
+        my %p = %{$ColorMap->{$map}};  #copy colormap structure
 
-	$s .= "$c0\[$map]$c2\n";
-	$s .= "$c1$ColorMap->{$map}->{$MapText}";
-	$s .= "#symbols =>  color                #comment$c2\n";
+        $s .= "$c0\[$map]$c2\n";
+        $s .= "$c1$ColorMap->{$map}->{$MapText}";
+        $s .= "#symbols =>  color                #comment$c2\n";
 
-	foreach my $sym (sort keys %p) {
+        foreach my $sym (sort keys %p) {
 
-	    next  if $sym eq $MapText;
-	    next  unless exists $p{$sym} and defined $p{$sym};
+            next  if $sym eq $MapText;
+            next  unless exists $p{$sym} and defined $p{$sym};
 
             my $num = $p{$sym}->[0];
-	    my $col = $Palette->get_color($num);
-	    my $rgb = $Palette->get_rgb($col);
+            my $col = $Palette->get_color($num);
+            my $rgb = $Palette->get_rgb($col);
 
             #warn "CN: $num,$col,$rgb\n";
 
-	    my ($f1, $f2) = ('', '');
-	    ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
+            my ($f1, $f2) = ('', '');
+            ($f1, $f2) = ("<SPAN style=\"color:$rgb\">", "</SPAN>")  if $html;
 
-	    my ($usym, $lsym) = (uc $sym, lc $sym);
+            my ($usym, $lsym) = (uc $sym, lc $sym);
 
-	    #lower and upper case equal: not alphabetic
-	    if ($lsym eq $usym) {
+            #lower and upper case equal: not alphabetic
+            if ($lsym eq $usym) {
                 $s .= colormap_row(\%p, $sym, $f1, $f2, $sym, $col);
-	        next;
-	    }
+                next;
+            }
 
-	    #lower and upper case distinct: alphabetic, both defined
-	    if (exists $p{$lsym} and exists $p{$usym}) {
+            #lower and upper case distinct: alphabetic, both defined
+            if (exists $p{$lsym} and exists $p{$usym}) {
 
                 if ($p{$lsym}->[0] eq $p{$usym}->[0] and
                     $p{$lsym}->[1] eq $p{$usym}->[1]) {
 
-	            #common definition: merge them
+                    #common definition: merge them
                     $s .= colormap_row(\%p, $sym, $f1, $f2, $usym.$lsym, $col);
 
-	            $p{$usym} = $p{$lsym} = undef;  #seen them: forget
+                    $p{$usym} = $p{$lsym} = undef;  #seen them: forget
 
-	        } else {  #different definitions; write this one
+                } else {  #different definitions; write this one
                     $s .= colormap_row(\%p, $sym, $f1, $f2, $sym, $col);
-	        }
-	        next;
-	    }
+                }
+                next;
+            }
 
-	    #default: alphabetic, single symbol
+            #default: alphabetic, single symbol
             $s .= colormap_row(\%p, $sym, $f1, $f2, $sym, $col);
-	}
-	$s .= "\n";
+        }
+        $s .= "\n";
     }
 
     return $s;
@@ -281,22 +281,22 @@ sub dump_css1 {
     for (my $i=0; $i < $Palette->size; $i++) {
 
         my $color = $Palette->get_color($i);
-	my $rgb   = $Palette->get_rgb_at_index($i);
+        my $rgb   = $Palette->get_rgb_at_index($i);
 
         #SOLID: coloured background/monochrome foreground: flip foreground
         #between black/white depending on brightest green RGB component of
         #background.
-	my $bg = hex(substr($rgb, 1));
+        my $bg = hex(substr($rgb, 1));
         my $fg = (($bg >> 8) & 255) > 200 ? $Colour_Black : $Colour_White;
 
-	#solid: background + foreground
-	$s .= "SPAN.S$i \{background-color:$rgb;color:$fg} ";
+        #solid: background + foreground
+        $s .= "SPAN.S$i \{background-color:$rgb;color:$fg} ";
 
-	#transparent: no background + coloured foreground
-	$s .= "SPAN.T$i \{color:$rgb} ";
+        #transparent: no background + coloured foreground
+        $s .= "SPAN.T$i \{color:$rgb} ";
 
-	#comment
-	$s .= "/* $color */\n";
+        #comment
+        $s .= "/* $color */\n";
     }
 
     return $s;
@@ -360,7 +360,7 @@ sub get_colormap_length {
     my $len = scalar keys %{$self->{'map'}->{$map}};
     $len--  if defined $self->{'map'}->{$map}->{''};
     if ($len % 2 != 0) {
-	die "get_colormap_length: divide by two error\n"
+        die "get_colormap_length: divide by two error\n"
     }
     return $len / 2;
 }
@@ -440,12 +440,12 @@ color  clustal-black       :  #000000
 ###########################################################################
 # CLUSTALX printing colours (protein + nucleotide)
 ###########################################################################
-color  clustal-white-print 	:  #ffffff
-color  clustal-yellow-print	:  #ffff00
+color  clustal-white-print      :  #ffffff
+color  clustal-yellow-print     :  #ffff00
 color  clustal-violet-print     :  #6619e5
-color  clustal-red-print   	:  #e57f66
-color  clustal-blue-print  	:  #66e5e5
-color  clustal-purple-print	:  #b299e5
+color  clustal-red-print        :  #e57f66
+color  clustal-blue-print       :  #66e5e5
+color  clustal-purple-print     :  #b299e5
 color  clustal-black-print      :  #000000
 color  clustal-pink-print       :  #e57f7f #overrides #cc4ccc in colprint.xml
 color  clustal-cyan-print       :  #19b2b2

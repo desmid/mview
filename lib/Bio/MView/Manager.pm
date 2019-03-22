@@ -83,10 +83,10 @@ sub parse {
 
         while (defined (my $aln = $bld->next_align)) {
 
-	    if ($aln < 1) {
+            if ($aln < 1) {
                 #warn "parse: empty alignment\n";
-		next;
-	    }
+                next;
+            }
 
             $self->{'acount'}++;  #global aln count
 
@@ -103,7 +103,7 @@ sub parse {
             #vmstat("Manager: Align dropped");
         }
 
-	$bld = undef;  #gc
+        $bld = undef;  #gc
         #vmstat("Manager: Build dropped");
     }
 
@@ -225,36 +225,36 @@ sub add_alignment_display {
     #attach a ruler? (may include header text)
     if ($PAR->get('ruler')) {
         my $tmp = $aln->build_ruler($refobj);
-	$tmp->append_display($panel);
+        $tmp->append_display($panel);
         #vmstat("ruler added");
     }
 
     #attach the alignment
     if ($PAR->get('alignment')) {
         $aln->set_color_scheme($refuid);
-	$aln->append_display($panel, $self->gc_flag);
+        $aln->append_display($panel, $self->gc_flag);
         #vmstat("alignment added");
     }
 
     #attach conservation line?
     if ($PAR->get('conservation')) {
-	my $tmp = $aln->build_conservation_row;
-	$tmp->append_display($panel);
+        my $tmp = $aln->build_conservation_row;
+        $tmp->append_display($panel);
         #vmstat("conservation added");
     }
 
     #attach consensus alignments?
     if ($PAR->get('consensus')) {
-	my $tmp = $aln->build_consensus_rows;
+        my $tmp = $aln->build_consensus_rows;
         $tmp->set_consensus_color_scheme($aln, $refuid);
-	$tmp->append_display($panel);
+        $tmp->append_display($panel);
         #vmstat("consensus added");
     }
 
     #garbage collect if not already done piecemeal
     if (!$self->gc_flag) {
-	$aln->do_gc;
-	#vmstat("final garbage collect");
+        $aln->do_gc;
+        #vmstat("final garbage collect");
     }
 }
 

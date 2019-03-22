@@ -86,16 +86,16 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($line =~ /$HSSP_START/o and $offset < 0) {
-	    $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+        #start of entry
+        if ($line =~ /$HSSP_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            next;
+        }
 
-	#end of entry
-	if ($line =~ /$HSSP_END/o) {
-	    last;
-	}
+        #end of entry
+        if ($line =~ /$HSSP_END/o) {
+            last;
+        }
     }
     return 0   if $offset < 0;
 
@@ -108,8 +108,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -119,50 +119,50 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#HEADER lines
-	if ($line =~ /$HSSP_HEADER/o) {
-	    $text->scan_until($HSSP_HEADERend, 'HEADER');
-	    next;
-	}
+        #HEADER lines
+        if ($line =~ /$HSSP_HEADER/o) {
+            $text->scan_until($HSSP_HEADERend, 'HEADER');
+            next;
+        }
 
-	#consume data
+        #consume data
 
-	#PROTEIN lines
-	if ($line =~ /$HSSP_PROTEIN/o) {
-	    $text->scan_until($HSSP_PROTEINend, 'PROTEIN');
-	    next;
-	}
+        #PROTEIN lines
+        if ($line =~ /$HSSP_PROTEIN/o) {
+            $text->scan_until($HSSP_PROTEINend, 'PROTEIN');
+            next;
+        }
 
-	#ALIGNMENT lines
-	if ($line =~ /$HSSP_ALIGNMENT/o) {
-	    $text->scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$HSSP_ALIGNMENT/o) {
+            $text->scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#PROFILE lines
-	if ($line =~ /$HSSP_PROFILE/o) {
-	    $text->scan_until($HSSP_PROFILEend, 'PROFILE');
-	    next;
-	}
+        #PROFILE lines
+        if ($line =~ /$HSSP_PROFILE/o) {
+            $text->scan_until($HSSP_PROFILEend, 'PROFILE');
+            next;
+        }
 
-	#INSERTION lines
-	if ($line =~ /$HSSP_INSERTION/o) {
-	    $text->scan_until($HSSP_INSERTIONend, 'INSERTION');
-	    next;
-	}
+        #INSERTION lines
+        if ($line =~ /$HSSP_INSERTION/o) {
+            $text->scan_until($HSSP_INSERTIONend, 'INSERTION');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	if ($line =~ /$HSSP_Null/o) {
-	    next;
-	}
+        #blank line or empty record: ignore
+        if ($line =~ /$HSSP_Null/o) {
+            next;
+        }
 
-	#terminal line: ignore
-	if ($line =~ /$HSSP_END/o) {
-	    next;
-	}
+        #terminal line: ignore
+        if ($line =~ /$HSSP_END/o) {
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -178,8 +178,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -191,167 +191,167 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /^HSSP\s+(.*VERSION\s+(.*)\s*)/o) {
-	    $self->test_args(\$line, $1, $2);
-	    (
-	     $self->{'full_version'},
-	     $self->{'version'},
-	    ) = ($1, $2);
-	    chomp $self->{'full_version'};
-	    next;
-	}
+        if ($line =~ /^HSSP\s+(.*VERSION\s+(.*)\s*)/o) {
+            $self->test_args(\$line, $1, $2);
+            (
+             $self->{'full_version'},
+             $self->{'version'},
+            ) = ($1, $2);
+            chomp $self->{'full_version'};
+            next;
+        }
 
-	if ($line =~ /^PDBID\s+(.*)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'pdbid'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^PDBID\s+(.*)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'pdbid'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^DATE\s+file generated on\s+(\S+)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'date'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^DATE\s+file generated on\s+(\S+)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'date'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^SEQBASE\s+(.*)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'seqbase'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^SEQBASE\s+(.*)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'seqbase'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^PARAMETER/) {
-	    $line = $text->scan_while('^PARAMETER');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    chomp $line;
-	    $line = Bio::Parse::Record::strip_english_newlines($line);
-	    #fix typo in maxhom output
-	    $line =~ s/ :/: /g;
-	    #add fullstops and trim whitespace
-	    $line =~ s/([^:]+):\s*(\S+)\s*/$1: $2. /g;
-	    $self->{'parameter'} = $line;
-	    next;
-	}
+        if ($line =~ /^PARAMETER/) {
+            $line = $text->scan_while('^PARAMETER');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            chomp $line;
+            $line = Bio::Parse::Record::strip_english_newlines($line);
+            #fix typo in maxhom output
+            $line =~ s/ :/: /g;
+            #add fullstops and trim whitespace
+            $line =~ s/([^:]+):\s*(\S+)\s*/$1: $2. /g;
+            $self->{'parameter'} = $line;
+            next;
+        }
 
-	if ($line =~ /^THRESHOLD\s+(.*)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'threshold'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^THRESHOLD\s+(.*)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'threshold'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^REFERENCE\s+(.*)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'reference'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^REFERENCE\s+(.*)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'reference'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^CONTACT\s+(.*)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'contact'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^CONTACT\s+(.*)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'contact'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^AVAILABLE/) {
-	    $line = $text->scan_while('^AVAILABLE');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    $self->{'available'} = Bio::Parse::Record::strip_english_newlines($line);
-	    next;
-	}
+        if ($line =~ /^AVAILABLE/) {
+            $line = $text->scan_while('^AVAILABLE');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            $self->{'available'} = Bio::Parse::Record::strip_english_newlines($line);
+            next;
+        }
 
-	if ($line =~ /^HEADER/) {
-	    $line = $text->scan_while('^HEADER');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    $self->{'header'} = Bio::Parse::Record::strip_english_newlines($line);
-	    next;
-	}
+        if ($line =~ /^HEADER/) {
+            $line = $text->scan_while('^HEADER');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            $self->{'header'} = Bio::Parse::Record::strip_english_newlines($line);
+            next;
+        }
 
-	if ($line =~ /^COMPND\s+(.*)/) {
-	    $line = $text->scan_while('^COMPND');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    $self->{'compnd'} = Bio::Parse::Record::strip_english_newlines($line);
-	    next;
-	}
+        if ($line =~ /^COMPND\s+(.*)/) {
+            $line = $text->scan_while('^COMPND');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            $self->{'compnd'} = Bio::Parse::Record::strip_english_newlines($line);
+            next;
+        }
 
-	if ($line =~ /^SOURCE\s+(.*)/) {
-	    $line = $text->scan_while('^SOURCE');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    $self->{'source'} = Bio::Parse::Record::strip_english_newlines($line);
-	    next;
-	}
+        if ($line =~ /^SOURCE\s+(.*)/) {
+            $line = $text->scan_while('^SOURCE');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            $self->{'source'} = Bio::Parse::Record::strip_english_newlines($line);
+            next;
+        }
 
-	if ($line =~ /^AUTHOR\s+(.*)/) {
-	    $line = $text->scan_while('^AUTHOR');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    $self->{'author'} = Bio::Parse::Record::strip_english_newlines($line);
-	    next;
-	}
+        if ($line =~ /^AUTHOR\s+(.*)/) {
+            $line = $text->scan_while('^AUTHOR');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            $self->{'author'} = Bio::Parse::Record::strip_english_newlines($line);
+            next;
+        }
 
-	if ($line =~ /^SEQLENGTH\s+(\d+)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'seqlength'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^SEQLENGTH\s+(\d+)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'seqlength'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^NCHAIN\s+(\d+)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'nchain'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^NCHAIN\s+(\d+)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'nchain'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^KCHAIN\s+(\d+)\s+chain\(s\) used here\s*;\s*chain\(s\)\s*:\s*(.*)/) {
-	    $self->test_args(\$line, $1, $2);
-	    (
-	     $self->{'kchain'},
-	     $self->{'chainname'},
-	    ) = ($1, [ split(/,\s*/, $2) ]);
-	    next;
-	}
+        if ($line =~ /^KCHAIN\s+(\d+)\s+chain\(s\) used here\s*;\s*chain\(s\)\s*:\s*(.*)/) {
+            $self->test_args(\$line, $1, $2);
+            (
+             $self->{'kchain'},
+             $self->{'chainname'},
+            ) = ($1, [ split(/,\s*/, $2) ]);
+            next;
+        }
 
-	if ($line =~ /^NALIGN\s+(\d+)/) {
-	    $self->test_args(\$line, $1);
-	    (
-	     $self->{'nalign'},
-	    ) = ($1);
-	    next;
-	}
+        if ($line =~ /^NALIGN\s+(\d+)/) {
+            $self->test_args(\$line, $1);
+            (
+             $self->{'nalign'},
+            ) = ($1);
+            next;
+        }
 
-	if ($line =~ /^NOTATION\s+(.*)/) {
-	    $line = $text->scan_while('^NOTATION');
-	    $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-	    $line = $tmp->scan_lines(0);
-	    chomp $line;
-	    $self->{'notation'} = $line;
+        if ($line =~ /^NOTATION\s+(.*)/) {
+            $line = $text->scan_while('^NOTATION');
+            $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
+            $line = $tmp->scan_lines(0);
+            chomp $line;
+            $self->{'notation'} = $line;
 
-	    next;
-	}
+            next;
+        }
 
-	if ($line =~ /$HSSP_Null/) {
-	    next;
-	}
+        if ($line =~ /$HSSP_Null/) {
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -392,8 +392,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -414,80 +414,80 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	$part1 = substr($line, 0, $cut+1);
-	$part2 = substr($line, $cut);
+        $part1 = substr($line, 0, $cut+1);
+        $part2 = substr($line, $cut);
 
-	$data = {};
+        $data = {};
 
-	if ($part1 =~ /^
-	    \s*
-	    (\d+)           #NR.
-	    \s*:\s*
-	    (\S+)           #ID
-	    \s*
-	    (\S+)?          #STRID
-	    /xo) {
+        if ($part1 =~ /^
+            \s*
+            (\d+)           #NR.
+            \s*:\s*
+            (\S+)           #ID
+            \s*
+            (\S+)?          #STRID
+            /xo) {
 
-	    $self->test_args(\$line, $1, $2, "$3");
+            $self->test_args(\$line, $1, $2, "$3");
 
-	    (
-	     $data->{'nr'},
-	     $data->{'id'},
-	     $data->{'strid'},
-	    ) = ($1, $2, $3 eq 0 ? '' : $3);
+            (
+             $data->{'nr'},
+             $data->{'id'},
+             $data->{'strid'},
+            ) = ($1, $2, $3 eq 0 ? '' : $3);
 
-	    if ($part2 =~ /^
-		\s*
-		(\S+)       #%IDE
-		\s+
-		(\S+)       #%WSIM
-		\s+
-		(\S+)       #IFIR
-		\s+
-		(\S+)       #ILAS
-		\s+
-		(\S+)       #JFIR
-		\s+
-		(\S+)       #JLAS
-		\s+
-		(\S+)       #LALI
-		\s+
-		(\S+)       #NGAP
-		\s+
-		(\S+)       #LGAP
-		\s+
-		(\S+)       #LSEQ2
-		\s\s
-		(.{11})     #ACCNUM
-		(.*)?       #PROTEIN
-		/xo) {
+            if ($part2 =~ /^
+                \s*
+                (\S+)       #%IDE
+                \s+
+                (\S+)       #%WSIM
+                \s+
+                (\S+)       #IFIR
+                \s+
+                (\S+)       #ILAS
+                \s+
+                (\S+)       #JFIR
+                \s+
+                (\S+)       #JLAS
+                \s+
+                (\S+)       #LALI
+                \s+
+                (\S+)       #NGAP
+                \s+
+                (\S+)       #LGAP
+                \s+
+                (\S+)       #LSEQ2
+                \s\s
+                (.{11})     #ACCNUM
+                (.*)?       #PROTEIN
+                /xo) {
 
-		$self->test_args(\$line, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);
-		(
-		 $data->{'%ide'},
-		 $data->{'%wsim'},
-		 $data->{'ifir'},
-		 $data->{'ilas'},
-		 $data->{'jfir'},
-		 $data->{'jlas'},
-		 $data->{'lali'},
-		 $data->{'ngap'},
-		 $data->{'lgap'},
-		 $data->{'lseq2'},
-		 $data->{'protein'},
-		) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12);
+                $self->test_args(\$line, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);
+                (
+                 $data->{'%ide'},
+                 $data->{'%wsim'},
+                 $data->{'ifir'},
+                 $data->{'ilas'},
+                 $data->{'jfir'},
+                 $data->{'jlas'},
+                 $data->{'lali'},
+                 $data->{'ngap'},
+                 $data->{'lgap'},
+                 $data->{'lseq2'},
+                 $data->{'protein'},
+                ) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12);
 
-		$data->{'accnum'} = Bio::Parse::Record::strip_trailing_space($11);
+                $data->{'accnum'} = Bio::Parse::Record::strip_trailing_space($11);
 
-	    }
+            }
 
-	    push @{$self->{'ranking'}}, $data;
+            push @{$self->{'ranking'}}, $data;
 
-	    next;
-	}
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
 
@@ -498,19 +498,19 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     for (my $i=0; $i<@{$self->{'ranking'}}; $i++) {
-	printf "$x%20s -> %s\n", 'nr',      $self->{'ranking'}->[$i]->{'nr'};
-	printf "$x%20s -> %s\n", 'id',      $self->{'ranking'}->[$i]->{'id'};
-	printf "$x%20s -> %s\n", '%ide',    $self->{'ranking'}->[$i]->{'%ide'};
-	printf "$x%20s -> %s\n", '%wsim',   $self->{'ranking'}->[$i]->{'%wsim'};
-	printf "$x%20s -> %s\n", 'ifir',    $self->{'ranking'}->[$i]->{'ifir'};
-	printf "$x%20s -> %s\n", 'ilas',    $self->{'ranking'}->[$i]->{'ilas'};
-	printf "$x%20s -> %s\n", 'jfir',    $self->{'ranking'}->[$i]->{'jfir'};
-	printf "$x%20s -> %s\n", 'jlas',    $self->{'ranking'}->[$i]->{'jlas'};
-	printf "$x%20s -> %s\n", 'lali',    $self->{'ranking'}->[$i]->{'lali'};
-	printf "$x%20s -> %s\n", 'ngap',    $self->{'ranking'}->[$i]->{'ngap'};
-	printf "$x%20s -> %s\n", 'lgap',    $self->{'ranking'}->[$i]->{'lgap'};
-	printf "$x%20s -> %s\n", 'lseq2',   $self->{'ranking'}->[$i]->{'lseq2'};
-	printf "$x%20s -> %s\n", 'protein', $self->{'ranking'}->[$i]->{'protein'};
+        printf "$x%20s -> %s\n", 'nr',      $self->{'ranking'}->[$i]->{'nr'};
+        printf "$x%20s -> %s\n", 'id',      $self->{'ranking'}->[$i]->{'id'};
+        printf "$x%20s -> %s\n", '%ide',    $self->{'ranking'}->[$i]->{'%ide'};
+        printf "$x%20s -> %s\n", '%wsim',   $self->{'ranking'}->[$i]->{'%wsim'};
+        printf "$x%20s -> %s\n", 'ifir',    $self->{'ranking'}->[$i]->{'ifir'};
+        printf "$x%20s -> %s\n", 'ilas',    $self->{'ranking'}->[$i]->{'ilas'};
+        printf "$x%20s -> %s\n", 'jfir',    $self->{'ranking'}->[$i]->{'jfir'};
+        printf "$x%20s -> %s\n", 'jlas',    $self->{'ranking'}->[$i]->{'jlas'};
+        printf "$x%20s -> %s\n", 'lali',    $self->{'ranking'}->[$i]->{'lali'};
+        printf "$x%20s -> %s\n", 'ngap',    $self->{'ranking'}->[$i]->{'ngap'};
+        printf "$x%20s -> %s\n", 'lgap',    $self->{'ranking'}->[$i]->{'lgap'};
+        printf "$x%20s -> %s\n", 'lseq2',   $self->{'ranking'}->[$i]->{'lseq2'};
+        printf "$x%20s -> %s\n", 'protein', $self->{'ranking'}->[$i]->{'protein'};
     }
 }
 
@@ -521,15 +521,15 @@ sub get_record {
     my $i;
     my @tmp = ();
     if (@_) {
-	foreach $i (@_) {
-	    if (defined $self->{'ranking'}->[$i]) {
-		push @tmp, $self->{'ranking'}->[$i];
-	    }
-	}
+        foreach $i (@_) {
+            if (defined $self->{'ranking'}->[$i]) {
+                push @tmp, $self->{'ranking'}->[$i];
+            }
+        }
     } else {
-	for ($i=0; $i < @{$self->{'ranking'}}; $i++) {
-	    push @tmp, $self->{'ranking'}->[$i];
-	}
+        for ($i=0; $i < @{$self->{'ranking'}}; $i++) {
+            push @tmp, $self->{'ranking'}->[$i];
+        }
     }
     @tmp;
 }
@@ -545,8 +545,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -582,123 +582,123 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	if ($cut < length $line) {
-	    $part2 = substr($line, $cut);
-	} else {
-	    #warn length($line), "($cut) $line\n";
-	    $part2 = ' ' x ($hi-$lo+1);
-	}
+        if ($cut < length $line) {
+            $part2 = substr($line, $cut);
+        } else {
+            #warn length($line), "($cut) $line\n";
+            $part2 = ' ' x ($hi-$lo+1);
+        }
 
-	$data = {};
+        $data = {};
 
-	#chain discontinuity
-	if ($line =~ /^\s*(\d+)\s+!/) {
-	    (
-	     $data->{'seqno'},
-	     $data->{'pdbno'},
-	     $data->{'aa'},
-	     $data->{'structure'},
-	     $data->{'bp1'},
-	     $data->{'bp2'},
-	     $data->{'acc'},
-	     $data->{'nocc'},
-	     $data->{'var'},
-	    ) = ($1, '', '!', '!', 0, 0, 0, 0, 0);
+        #chain discontinuity
+        if ($line =~ /^\s*(\d+)\s+!/) {
+            (
+             $data->{'seqno'},
+             $data->{'pdbno'},
+             $data->{'aa'},
+             $data->{'structure'},
+             $data->{'bp1'},
+             $data->{'bp2'},
+             $data->{'acc'},
+             $data->{'nocc'},
+             $data->{'var'},
+            ) = ($1, '', '!', '!', 0, 0, 0, 0, 0);
 
-	    push @{$self->{'structure'}}, $data;
+            push @{$self->{'structure'}}, $data;
 
-	    for ($i=0; $i < $hi-$lo+1; $i++) {
-		push @{$self->{'alignment'}->[$lo+$i]}, '!';
-	    }
+            for ($i=0; $i < $hi-$lo+1; $i++) {
+                push @{$self->{'alignment'}->[$lo+$i]}, '!';
+            }
 
-	    next;
-	}
+            next;
+        }
 
-	#process the query structural information
-	if ($line =~ /^
-	    \s*
-	    (\d+)              #SeqNo
+        #process the query structural information
+        if ($line =~ /^
+            \s*
+            (\d+)              #SeqNo
             \s+
-	    (\d+\s.)?          #PDBNo, optional, eg. '16 A'
-	    \s*
-	    (.)                #AA
-	    \s\s               #exactly 2 spaces
-	    (.........)        #STRUCTURE (9 characters)
-	    (....)             #BP1
-	    (.....)            #BP2
-	    \s+
-	    (\d+)              #ACC
-	    \s+
-	    (\d+)              #NOCC
-	    \s+
-	    (\d+)              #VAR
-	    /xo) {
+            (\d+\s.)?          #PDBNo, optional, eg. '16 A'
+            \s*
+            (.)                #AA
+            \s\s               #exactly 2 spaces
+            (.........)        #STRUCTURE (9 characters)
+            (....)             #BP1
+            (.....)            #BP2
+            \s+
+            (\d+)              #ACC
+            \s+
+            (\d+)              #NOCC
+            \s+
+            (\d+)              #VAR
+            /xo) {
 
-	    if (defined $2) {
-		$self->test_args(\$line, $1, $2, $3, $4, $5, $6, $7, $8, $9);
-	    } else {
-		$self->test_args(\$line, $1, $3, $4, $5, $6, $7, $8, $9);
-	    }
+            if (defined $2) {
+                $self->test_args(\$line, $1, $2, $3, $4, $5, $6, $7, $8, $9);
+            } else {
+                $self->test_args(\$line, $1, $3, $4, $5, $6, $7, $8, $9);
+            }
 
-	    (
-	     $data->{'seqno'},
-	     $data->{'pdbno'},
-	     $data->{'aa'},
-	     $data->{'structure'},
-	     $data->{'bp1'},
-	     $data->{'bp2'},
-	     $data->{'acc'},
-	     $data->{'nocc'},
-	     $data->{'var'},
-	    ) = ($1, "$2", $3, $4, $5, $6, $7, $8, $9);
+            (
+             $data->{'seqno'},
+             $data->{'pdbno'},
+             $data->{'aa'},
+             $data->{'structure'},
+             $data->{'bp1'},
+             $data->{'bp2'},
+             $data->{'acc'},
+             $data->{'nocc'},
+             $data->{'var'},
+            ) = ($1, "$2", $3, $4, $5, $6, $7, $8, $9);
 
 
-	    if ($data->{'pdbno'} =~ /^\s*$/) {
-		#missing PDBNo data
-		$data->{'pdbno'} = '0  ';
-		$chain2 = ' ';
-	    } else {
-		#PDBNo is composite, eg., '16 A'
-		$data->{'pdbno'} =~ /(.)$/;
-		$chain2 = $1;
-	    }
+            if ($data->{'pdbno'} =~ /^\s*$/) {
+                #missing PDBNo data
+                $data->{'pdbno'} = '0  ';
+                $chain2 = ' ';
+            } else {
+                #PDBNo is composite, eg., '16 A'
+                $data->{'pdbno'} =~ /(.)$/;
+                $chain2 = $1;
+            }
 
-	    push @{$self->{'structure'}}, $data;
+            push @{$self->{'structure'}}, $data;
 
-	    if ($chain2 eq $chain1) {
-		#extend this chain
-		$self->{'chain_hash'}->{$chain2}->[1] = $data->{'seqno'};
-	    } else {
-		#begin new chain
-		#warn "|$chain1,$chain2|\n";
-		$self->{'chain_hash'}->{$chain2}->[0] = $data->{'seqno'};
-		$self->{'chain_hash'}->{$chain2}->[1] = $data->{'seqno'};
-		push @{$self->{'chain_list'}}, $chain2;
-		$chain1 = $chain2;
-		$chaincount++;
-	    }
+            if ($chain2 eq $chain1) {
+                #extend this chain
+                $self->{'chain_hash'}->{$chain2}->[1] = $data->{'seqno'};
+            } else {
+                #begin new chain
+                #warn "|$chain1,$chain2|\n";
+                $self->{'chain_hash'}->{$chain2}->[0] = $data->{'seqno'};
+                $self->{'chain_hash'}->{$chain2}->[1] = $data->{'seqno'};
+                push @{$self->{'chain_list'}}, $chain2;
+                $chain1 = $chain2;
+                $chaincount++;
+            }
 
 # no point testing this, as maxhom miscalculates $hi sometimes.
 #
-#	    #process the alignments in $part2
-#	    if (length $part2 > $hi-$lo+1) {
-#		$self->warn("alignment columns exceed expected range: @{[length($part2)]} cf. @{[$hi-$lo+1]}");
-#	    }
-	    $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
-	    $data = [ split '', $part2 ];
+#           #process the alignments in $part2
+#           if (length $part2 > $hi-$lo+1) {
+#                $self->warn("alignment columns exceed expected range: @{[length($part2)]} cf. @{[$hi-$lo+1]}");
+#           }
+            $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
+            $data = [ split '', $part2 ];
 
-	    for ($i=0; $i < $hi-$lo+1; $i++) {
-		push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
-	    }
+            for ($i=0; $i < $hi-$lo+1; $i++) {
+                push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
+            }
 
-	    next;
-	}
+            next;
+        }
 
-	last    if $line =~ /$HSSP_ALIGNMENT/o;
-	last    if $line =~ /$HSSP_ALIGNMENTend/o;
+        last    if $line =~ /$HSSP_ALIGNMENT/o;
+        last    if $line =~ /$HSSP_ALIGNMENTend/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
 
     }
 
@@ -716,61 +716,61 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	if ($cut < length $line) {
-	    $part2 = substr($line, $cut);
-	} else {
-	    #warn length($line), "($cut) $line\n";
-	    $part2 = ' ' x ($hi-$lo+1);
-	}
+        if ($cut < length $line) {
+            $part2 = substr($line, $cut);
+        } else {
+            #warn length($line), "($cut) $line\n";
+            $part2 = ' ' x ($hi-$lo+1);
+        }
 
-	$data = {};
+        $data = {};
 
-	if ($line =~ /^
-	    \s*
-	    (\d+)              #SeqNo
-	    /xo) {
+        if ($line =~ /^
+            \s*
+            (\d+)              #SeqNo
+            /xo) {
 
 # no point testing this, as maxhom miscalculates $hi sometimes.
 #
-#	    #process the alignments in $part2
-#	    if (length $part2 > $hi-$lo+1) {
-#		$self->warn("alignment columns exceed expected range: @{[length($part2)]} cf. @{[$hi-$lo+1]}");
-#	    }
-	    $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
-	    $data = [ split '', $part2 ];
+#           #process the alignments in $part2
+#           if (length $part2 > $hi-$lo+1) {
+#                $self->warn("alignment columns exceed expected range: @{[length($part2)]} cf. @{[$hi-$lo+1]}");
+#           }
+            $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
+            $data = [ split '', $part2 ];
 
-	    for ($i=0; $i < $hi-$lo+1; $i++) {
-		push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
-	    }
+            for ($i=0; $i < $hi-$lo+1; $i++) {
+                push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
+            }
 
-	    next;
-	}
+            next;
+        }
 
-	#chain discontinuity
-	if ($line =~ /^\s*(\d+)\s+!/) {
+        #chain discontinuity
+        if ($line =~ /^\s*(\d+)\s+!/) {
 
-	    for ($i=0; $i < $hi-$lo+1; $i++) {
-		push @{$self->{'alignment'}->[$lo+$i]}, '!';
-	    }
+            for ($i=0; $i < $hi-$lo+1; $i++) {
+                push @{$self->{'alignment'}->[$lo+$i]}, '!';
+            }
 
-	    next;
-	}
+            next;
+        }
 
-	if ($line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/) {
+        if ($line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/) {
 
-	    ($lo, $hi) = ($1, $2);
+            ($lo, $hi) = ($1, $2);
 
-	    #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
-	    $line  = $text->next_line;
-	    $cut   = index($line, '..');
+            #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
+            $line  = $text->next_line;
+            $cut   = index($line, '..');
 
-	    next;
-	}
+            next;
+        }
 
-	last    if $line =~ /$HSSP_ALIGNMENTend/o;
+        last    if $line =~ /$HSSP_ALIGNMENTend/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;
@@ -783,22 +783,22 @@ sub print_data {
     printf "$x%20s -> '%s'\n", 'dssp',   $self->get_dssp();
     #structure data [position]
     foreach my $i ($self->get_record) {
-	printf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
-	printf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
-	printf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
-	printf "$x  %20s -> '%s'\n", 'structure',  $i->{'structure'};
-	printf "$x  %20s -> '%s'\n", 'bp1',        $i->{'bp1'};
-	printf "$x  %20s -> '%s'\n", 'bp2',        $i->{'bp2'};
-	printf "$x  %20s -> %s\n",   'acc',        $i->{'acc'};
-	printf "$x  %20s -> %s\n",   'nocc',       $i->{'nocc'};
-	printf "$x  %20s -> %s\n",   'var',        $i->{'var'};
+        printf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
+        printf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
+        printf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
+        printf "$x  %20s -> '%s'\n", 'structure',  $i->{'structure'};
+        printf "$x  %20s -> '%s'\n", 'bp1',        $i->{'bp1'};
+        printf "$x  %20s -> '%s'\n", 'bp2',        $i->{'bp2'};
+        printf "$x  %20s -> %s\n",   'acc',        $i->{'acc'};
+        printf "$x  %20s -> %s\n",   'nocc',       $i->{'nocc'};
+        printf "$x  %20s -> %s\n",   'var',        $i->{'var'};
     }
     #alignments[chain][rank]
     foreach my $j ($self->get_chains) {
-	printf "$x%20s -> '%s'\n", "chain[$j]",  $self->get_query($j);
-	for (my $i=1; $i<@{$self->{'alignment'}}; $i++) {
-	    printf "$x%20s -> '%s'\n", "alignment[$j][$i]", $self->get_sequence($i, $j);
-	}
+        printf "$x%20s -> '%s'\n", "chain[$j]",  $self->get_query($j);
+        for (my $i=1; $i<@{$self->{'alignment'}}; $i++) {
+            printf "$x%20s -> '%s'\n", "alignment[$j][$i]", $self->get_sequence($i, $j);
+        }
     }
 }
 
@@ -814,15 +814,15 @@ sub get_record {
     my $i;
     my @tmp = ();
     if (@_) {
-	foreach $i (@_) {
-	    if (defined $self->{'structure'}->[$i]) {
-		push @tmp, $self->{'structure'}->[$i];
-	    }
-	}
+        foreach $i (@_) {
+            if (defined $self->{'structure'}->[$i]) {
+                push @tmp, $self->{'structure'}->[$i];
+            }
+        }
     } else {
-	for ($i=0; $i < @{$self->{'structure'}}; $i++) {
-	    push @tmp, $self->{'structure'}->[$i];
-	}
+        for ($i=0; $i < @{$self->{'structure'}}; $i++) {
+            push @tmp, $self->{'structure'}->[$i];
+        }
     }
     @tmp;
 }
@@ -835,20 +835,20 @@ sub get_query {
 
     #chainname supplied?
     if (@_) {
-	if (exists $self->{'chain_hash'}->{$_[0]}) {
-	    $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
-	    $hi = $self->{'chain_hash'}->{$_[0]}->[1];
-	} else {
-	    $self->warn("unknown chain: '$_[0]'");
-	    return '';
-	}
+        if (exists $self->{'chain_hash'}->{$_[0]}) {
+            $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
+            $hi = $self->{'chain_hash'}->{$_[0]}->[1];
+        } else {
+            $self->warn("unknown chain: '$_[0]'");
+            return '';
+        }
     } else {
-	$lo = 0;
-	$hi = scalar @{$self->{'structure'}};
+        $lo = 0;
+        $hi = scalar @{$self->{'structure'}};
     }
 
     for ($i=$lo; $i < $hi; $i++) {
-	$s .= $self->{'structure'}->[$i]->{'aa'};
+        $s .= $self->{'structure'}->[$i]->{'aa'};
     }
     $s;
 }
@@ -861,20 +861,20 @@ sub get_dssp {
 
     #chainname supplied?
     if (@_) {
-	if (exists $self->{'chain_hash'}->{$_[0]}) {
-	    $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
-	    $hi = $self->{'chain_hash'}->{$_[0]}->[1];
-	} else {
-	    $self->warn("unknown chain: '$_[0]'");
-	    return '';
-	}
+        if (exists $self->{'chain_hash'}->{$_[0]}) {
+            $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
+            $hi = $self->{'chain_hash'}->{$_[0]}->[1];
+        } else {
+            $self->warn("unknown chain: '$_[0]'");
+            return '';
+        }
     } else {
-	$lo = 0;
-	$hi = scalar @{$self->{'structure'}};
+        $lo = 0;
+        $hi = scalar @{$self->{'structure'}};
     }
 
     for ($i=$lo; $i < $hi; $i++) {
-	$s .= substr($self->{'structure'}->[$i]->{'structure'}, 0, 1);
+        $s .= substr($self->{'structure'}->[$i]->{'structure'}, 0, 1);
     }
     $s;
 }
@@ -887,29 +887,29 @@ sub get_sequence {
 
     #chainname supplied?
     if (@_) {
-	if (exists $self->{'chain_hash'}->{$_[0]}) {
-	    $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
-	    $hi = $self->{'chain_hash'}->{$_[0]}->[1];
-	} else {
-	    $self->warn("unknown chain: '$_[0]'");
-	    return '';
-	}
+        if (exists $self->{'chain_hash'}->{$_[0]}) {
+            $lo = $self->{'chain_hash'}->{$_[0]}->[0]-1;
+            $hi = $self->{'chain_hash'}->{$_[0]}->[1];
+        } else {
+            $self->warn("unknown chain: '$_[0]'");
+            return '';
+        }
     } else {
-	$lo = 0;
-	$hi = scalar @{$self->{'structure'}};
+        $lo = 0;
+        $hi = scalar @{$self->{'structure'}};
     }
 
     for ($i=$lo; $i < $hi; $i++) {
-	my $c = $self->{'alignment'}->[$seqno]->[$i];
-	if ($c eq '!') { #discontinuity
-	    if ($i > 0 and $self->{'alignment'}->[$seqno]->[$i-1] eq ' ') {
-		$c = ' ';
-	    } elsif ($i < $hi-1 and
-		     $self->{'alignment'}->[$seqno]->[$i+1] eq ' ') {
-		$c = ' ';
-	    }
-	}
-	$s .= $c;
+        my $c = $self->{'alignment'}->[$seqno]->[$i];
+        if ($c eq '!') { #discontinuity
+            if ($i > 0 and $self->{'alignment'}->[$seqno]->[$i-1] eq ' ') {
+                $c = ' ';
+            } elsif ($i < $hi-1 and
+                     $self->{'alignment'}->[$seqno]->[$i+1] eq ' ') {
+                $c = ' ';
+            }
+        }
+        $s .= $c;
     }
     $s;
 }

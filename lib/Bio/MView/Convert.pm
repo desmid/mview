@@ -55,7 +55,7 @@ sub plain_row {
 
     my $head = sub {
         my $s = $self->row_number($row) . $row->cid;
-	return sprintf("%-${idw}s", substr($s, 0, $idw));
+        return sprintf("%-${idw}s", substr($s, 0, $idw));
     };
 
     return &$head . " " . $row->seq . "\n";
@@ -80,24 +80,24 @@ sub pearson_row {
     my ($self, $row) = @_;
 
     my $head = sub {
-	return ">" . $self->row_number($row) . $row->cid;
+        return ">" . $self->row_number($row) . $row->cid;
     };
 
     my $desc = sub {
         my $s = $row->row_as_string($ROW_DATA_DELIM, ['num', 'cid', 'seq']);
-	return ($s)  if $s ne '';
+        return ($s)  if $s ne '';
         return ();
     };
 
     my $sequence = sub {
-	my $seq = $row->seq;
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$PEARSON_SEQ_WIDTH) {
-	    $s .= substr($seq, $i, $PEARSON_SEQ_WIDTH) . "\n";
-	}
+        my $seq = $row->seq;
+        my $len = length($seq);
+        my $s = '';
+        for (my $i=0; $i<$len; $i+=$PEARSON_SEQ_WIDTH) {
+            $s .= substr($seq, $i, $PEARSON_SEQ_WIDTH) . "\n";
+        }
         $s .= "\n"  unless $s =~ /\n$/;
-	return $s;
+        return $s;
     };
 
     return join($ROW_DATA_DELIM, (&$head, &$desc)) . "\n" . &$sequence;
@@ -121,27 +121,27 @@ sub pir_row {
     my ($self, $row) = @_;
 
     my $head = sub {
-	my $s = $self->{'moltype'} eq 'aa' ? ">P1;" : ">XX;";
+        my $s = $self->{'moltype'} eq 'aa' ? ">P1;" : ">XX;";
         $s .= $self->row_number($row) . $row->cid . "\n";
         return $s;
     };
 
     my $desc = sub {
         my $s = $row->row_as_string($ROW_DATA_DELIM, ['num', 'cid', 'seq']);
-	return '.'  if $s eq '';
-	return $s;
+        return '.'  if $s eq '';
+        return $s;
     };
 
     my $sequence = sub {
-	my $seq = $row->seq;
-	my $len = length($seq);
-	my $s = '';
-	for (my $i=0; $i<$len; $i+=$PIR_SEQ_WIDTH) {
-	    $s .= "\n" . substr($seq, $i, $PIR_SEQ_WIDTH);
-	}
-	$s .= "\n"    if length($s) % ($PIR_SEQ_WIDTH+1) < 1 and $s ne '';
-	$s .= "*\n\n";
-	return $s;
+        my $seq = $row->seq;
+        my $len = length($seq);
+        my $s = '';
+        for (my $i=0; $i<$len; $i+=$PIR_SEQ_WIDTH) {
+            $s .= "\n" . substr($seq, $i, $PIR_SEQ_WIDTH);
+        }
+        $s .= "\n"    if length($s) % ($PIR_SEQ_WIDTH+1) < 1 and $s ne '';
+        $s .= "*\n\n";
+        return $s;
     };
 
     return &$head . &$desc . &$sequence;
@@ -172,15 +172,15 @@ sub msf {
     my $CHECKSUM = '--------------------------------------&---*---.-----------------@ABCDEFGHIJKLMNOPQRSTUVWXYZ------ABCDEFGHIJKLMNOPQRSTUVWXYZ---~---------------------------------------------------------------------------------------------------------------------------------';
 
     my $checksum = sub {
-	my $s = shift;
-	my ($sum, $ch) = (0, 0);
-	my $len = length($$s);
-	while ($len--) {
-	    $ch = ord substr($$s, $len, 1);
-	    $ch = substr($CHECKSUM, $ch, 1);
-	    $sum += (($len % 57) + 1) * ord $ch  if $ch ne '-';
-	}
-	return $sum % 10000;
+        my $s = shift;
+        my ($sum, $ch) = (0, 0);
+        my $len = length($$s);
+        while ($len--) {
+            $ch = ord substr($$s, $len, 1);
+            $ch = substr($CHECKSUM, $ch, 1);
+            $sum += (($len % 57) + 1) * ord $ch  if $ch ne '-';
+        }
+        return $sum % 10000;
     };
 
     my $now = `date '+%B %d, %Y %H:%M'`;
@@ -259,12 +259,12 @@ sub clustal {
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
 
     my $symcount = sub {
-	my ($s, $pad, $gap, $c) = (@_, 0);
-	my @s = split('', $$s);
-	for (my $i=0; $i<@s; $i++) {
-	    $c += 1  unless $s[$i] eq $pad or $s[$i] eq $gap;
-	}
-	return $c;
+        my ($s, $pad, $gap, $c) = (@_, 0);
+        my @s = split('', $$s);
+        for (my $i=0; $i<@s; $i++) {
+            $c += 1  unless $s[$i] eq $pad or $s[$i] eq $gap;
+        }
+        return $c;
     };
 
     $s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";

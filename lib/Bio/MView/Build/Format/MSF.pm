@@ -43,17 +43,17 @@ sub parse {
 
     foreach $id (@{$self->{'entry'}->parse(qw(NAME))->{'order'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $id);
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	$wgt = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id}->{'weight'};
-	$seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
+        $wgt = $self->{'entry'}->parse(qw(NAME))->{'seq'}->{$id}->{'weight'};
+        $seq = $self->{'entry'}->parse(qw(ALIGNMENT))->{'seq'}->{$id};
 
-	push @hit, new Bio::MView::Build::Row::MSF(
+        push @hit, new Bio::MView::Build::Row::MSF(
             $rank,
             $id,
             '',

@@ -53,10 +53,10 @@ sub col {
     my $p = $self->{'hi'} - $col + 1;
 
 #    warn("col(-): $col [",
-#	 exists $self->{'seq'}->{$col} ? $self->{'seq'}->{$col} : '',
-#	 "]=> $p [",
-#	 exists $self->{'seq'}->{$p} ? $self->{'seq'}->{$p} : '',
-#	 "]\n");
+#        exists $self->{'seq'}->{$col} ? $self->{'seq'}->{$col} : '',
+#        "]=> $p [",
+#        exists $self->{'seq'}->{$p} ? $self->{'seq'}->{$p} : '',
+#        "]\n");
 
     return ''  if $p < $self->{'lo'} or $p > $self->{'hi'};
 
@@ -81,8 +81,8 @@ sub _insert {
     my ($o, $state) = ('-', 0);
 
     foreach my $frag (@_) {
-	die "insert($o) wrong direction ($frag->[1], $frag->[2])\n"
-	    if $frag->[2] > $frag->[1];
+        die "insert($o) wrong direction ($frag->[1], $frag->[2])\n"
+            if $frag->[2] > $frag->[1];
 
         my ($len, $lo, $hi, $string);
 
@@ -105,7 +105,7 @@ sub _insert {
         $self->_update_sequence_labels($frag->[5], $frag->[6], 'f2', 't2');
         $self->_populate_sequence_array($o, $state, $len, $lo, $hi, \$string);
 
-	#warn "insert($o): $self->{'lo'} $self->{'hi'}\n";
+        #warn "insert($o): $self->{'lo'} $self->{'hi'}\n";
     }
 
     #adjust prefix/suffix positions given new lengths
@@ -133,19 +133,19 @@ sub _substr {
     my $s = '';
 
     for (my $i = $start; $i > $stop; $i--) {
-	if ($i < $self->{'refhi'} or $i > $self->{'reflo'}) {
-	    $s .= $Bio::MView::Sequence::Mark_Pad;
-	    next;
-	}
-	#warn "_substr(-): $i [$self->{'seq'}->{$i}]";
-	if (exists $self->{'seq'}->{$i}) {
-	    $s .= $self->{'seq'}->{$i};
-	} elsif ($i > $self->{'refhi'} and $i < $self->{'reflo'}) {
-	    #We never write a gap at the edge. Frameshifts upset the
-	    #numbering so that [begin,end] may exceed the true range.
-	    #warn "_substr(-): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
-	    $s .= $Bio::MView::Sequence::Mark_Gap;
-	}
+        if ($i < $self->{'refhi'} or $i > $self->{'reflo'}) {
+            $s .= $Bio::MView::Sequence::Mark_Pad;
+            next;
+        }
+        #warn "_substr(-): $i [$self->{'seq'}->{$i}]";
+        if (exists $self->{'seq'}->{$i}) {
+            $s .= $self->{'seq'}->{$i};
+        } elsif ($i > $self->{'refhi'} and $i < $self->{'reflo'}) {
+            #We never write a gap at the edge. Frameshifts upset the
+            #numbering so that [begin,end] may exceed the true range.
+            #warn "_substr(-): gap: [$i] ($self->{lo},$self->{hi}), ($self->{reflo},$self->{refhi})\n";
+            $s .= $Bio::MView::Sequence::Mark_Gap;
+        }
     }
     return $s;
 }

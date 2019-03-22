@@ -133,7 +133,7 @@ sub set_color_scheme {
 sub color_special {
     my $self = shift;
     foreach my $row (@{$self->{'index2row'}}) {
-	next  unless defined $row;
+        next  unless defined $row;
         $row->color_special;
     }
 }

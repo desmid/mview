@@ -40,14 +40,14 @@ use vars qw(
 
             $ALN_START
             $ALN_END
-	   );
+           );
 
 @ISA = qw(Bio::Parse::Format::FASTA);
 
 @VERSIONS = (
              'GCG/2' => [
-			 'FASTA',
-			],
+                 'FASTA',
+             ],
             );
 
 $NULL  = '^\s*$';#for emacs'
@@ -79,8 +79,8 @@ $ALN_END       = '(?:^\S+(?:\s+/rev)?\s*$' . "|$MATCH_END)";#for emacs'
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -90,38 +90,38 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#Header lines
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #Header lines
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#Rank lines
-	if ($line =~ /$RANK_START/o) {
-	    $text->scan_until_inclusive($RANK_END, 'RANK');
-	    next;
-	}
+        #Rank lines
+        if ($line =~ /$RANK_START/o) {
+            $text->scan_until_inclusive($RANK_END, 'RANK');
+            next;
+        }
 
-	#Hit lines
-	if ($line =~ /$MATCH_START/o) {
-	    $text->scan_skipping_until($MATCH_END, 1, 'MATCH');
-	    next;
-	}
+        #Hit lines
+        if ($line =~ /$MATCH_START/o) {
+            $text->scan_skipping_until($MATCH_END, 1, 'MATCH');
+            next;
+        }
 
-	#Trailer lines
-	if ($line =~ /$TRAILER_START/o) {
-	    $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
-	    next;
-	}
+        #Trailer lines
+        if ($line =~ /$TRAILER_START/o) {
+            $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
+            next;
+        }
 
-	#end of FASTA job
-	next    if $line =~ /$ENTRY_END/o;
+        #end of FASTA job
+        next    if $line =~ /$ENTRY_END/o;
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -262,65 +262,65 @@ sub new {
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::RANK_START/o;
         next    if $line =~ /$Bio::Parse::Format::FASTA::GCG_JUNK/o;
 
-	#first line
+        #first line
         if ($line =~ /^\s*
            ([^\s]+)                #id
            \s+
            Begin:\s+(\d+)          #start position
            \s+
            End:\s+(\d+)            #end position
-	   /xo) {
+           /xo) {
 
-	    #initialise
+            #initialise
             ($id,$desc,$init1,$initn,$opt,$z,$e) = ('','','','','','','');
 
-	    #warn "($1,$2,$3)\n";
+            #warn "($1,$2,$3)\n";
 
-	    $self->test_args(\$line, $1);
+            $self->test_args(\$line, $1);
 
-	    $id = Bio::Parse::Record::clean_identifier($1);
+            $id = Bio::Parse::Record::clean_identifier($1);
 
-	    #read next line
-	    $line = $text->next_line;
+            #read next line
+            $line = $text->next_line;
 
-	    #second line
-	    if ($line =~ /
-		\s+
-		(\d+)                   #init1
-		\s+
-		(\d+)                   #initn
-		\s+
-		(\d+)                   #opt
-		\s+
-		(\S+)                   #z-score
-		\s+
-		(\S+)                   #E(58765)
-		\s*$
-		$/xo) {
+            #second line
+            if ($line =~ /
+                \s+
+                (\d+)                   #init1
+                \s+
+                (\d+)                   #initn
+                \s+
+                (\d+)                   #opt
+                \s+
+                (\S+)                   #z-score
+                \s+
+                (\S+)                   #E(58765)
+                \s*$
+                $/xo) {
 
-		#warn "($1,$2,$3,$4,$5)\n";
+                #warn "($1,$2,$3,$4,$5)\n";
 
-		$self->test_args(\$line, $1,$2,$3,$4,$5);
+                $self->test_args(\$line, $1,$2,$3,$4,$5);
 
-		($init1,$initn,$opt,$z,$e) = ($1,$2,$3,$4,$5);
+                ($init1,$initn,$opt,$z,$e) = ($1,$2,$3,$4,$5);
 
-		$desc = $`;
+                $desc = $`;
 
-		$desc =~ s/^\s*!\s*//;
-	    }
+                $desc =~ s/^\s*!\s*//;
+            }
 
-	    push(@{$self->{'hit'}},
-		 {
-		  'id'     => $id,
-		  'desc'   => $desc,
-		  'initn'  => $initn,
-		  'init1'  => $init1,
-		  'opt'    => $opt,
-		  'zscore' => $z,
-		  'expect' => $e,
-		 });
+            push(@{$self->{'hit'}},
+                 {
+                  'id'     => $id,
+                  'desc'   => $desc,
+                  'initn'  => $initn,
+                  'init1'  => $init1,
+                  'opt'    => $opt,
+                  'zscore' => $z,
+                  'expect' => $e,
+                 });
 
-	    next;
+            next;
         }
 
         #blank line or empty record: ignore
@@ -352,8 +352,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -363,26 +363,26 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#identifier lines
-	if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::SUM_START/o) {
-	    $text->scan_until_inclusive($Bio::Parse::Format::GCG_FASTA2::SUM_END, 'SUM');
-	    next;
-	}
+        #identifier lines
+        if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::SUM_START/o) {
+            $text->scan_until_inclusive($Bio::Parse::Format::GCG_FASTA2::SUM_END, 'SUM');
+            next;
+        }
 
-	#fragment hits: terminated by several possibilities
-	if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_START/o) {
-	    $text->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
-	    next;
-	}
+        #fragment hits: terminated by several possibilities
+        if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_START/o) {
+            $text->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
+            next;
+        }
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
 
-	#ugly: skip queryfile or hit identifier lines
-	next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_END/;
+        #ugly: skip queryfile or hit identifier lines
+        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_END/;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -399,8 +399,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -415,91 +415,91 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#hit database:identifier: appears as line 2
-	if ($line =~ /^\s*(\S+:\S+);?\s*$/) {
-	    $id1 = $1;
-	    next;
-	}
+        #hit database:identifier: appears as line 2
+        if ($line =~ /^\s*(\S+:\S+);?\s*$/) {
+            $id1 = $1;
+            next;
+        }
 
-	#hit identifier
-	if ($line =~ /^ID\s{3}(\S+);?.*;\s+(\d+)\s+\S+\./o) {
-	    $id2 = $1;
-	    $self->{'length'} = $2;
-	    next;
-	}
+        #hit identifier
+        if ($line =~ /^ID\s{3}(\S+);?.*;\s+(\d+)\s+\S+\./o) {
+            $id2 = $1;
+            $self->{'length'} = $2;
+            next;
+        }
 
-	#hit accession
-	if ($line =~ /^AC\s{3}(\S+);?/o) {
-	    $ac = $1;
-	    next;
-	}
+        #hit accession
+        if ($line =~ /^AC\s{3}(\S+);?/o) {
+            $ac = $1;
+            next;
+        }
 
-	#hit description
-	if ($line =~ /^DE\s{3}(.*)/o) {
+        #hit description
+        if ($line =~ /^DE\s{3}(.*)/o) {
             $de .= Bio::Parse::Record::strip_english_newlines($1);
-	    $de =~ s/\s*\.\s\.\s\.\s*$//;
-	    $de =~ s/\s*\.\.\.\*$//;
-	    next;
-	}
+            $de =~ s/\s*\.\s\.\s\.\s*$//;
+            $de =~ s/\s*\.\.\.\*$//;
+            next;
+        }
 
-	#skip other database entry lines
-	next    if $line =~ /^(NI|DT|DE)\s{3}/o;
+        #skip other database entry lines
+        next    if $line =~ /^(NI|DT|DE)\s{3}/o;
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
 
-	#scores
-	if ($line =~ /^
-	    SCORES\s+
-	    init1\:\s*(\S+)        #init1
-	    \s*
-	    initn\:\s*(\S+)        #initn
-	    \s*
-	    opt\:\s*(\S+)          #opt
-	    \s*
-	    z-score\:\s*(\S+)      #z
-	    \s*
-	    E\(\)\:\s*(\S+)        #E
-	    \s*
-	    $/ixo) {
+        #scores
+        if ($line =~ /^
+            SCORES\s+
+            init1\:\s*(\S+)        #init1
+            \s*
+            initn\:\s*(\S+)        #initn
+            \s*
+            opt\:\s*(\S+)          #opt
+            \s*
+            z-score\:\s*(\S+)      #z
+            \s*
+            E\(\)\:\s*(\S+)        #E
+            \s*
+            $/ixo) {
 
-	    $self->test_args(\$line,$1,$2,$3,$4,$5);
+            $self->test_args(\$line,$1,$2,$3,$4,$5);
 
-	    (
-	     $self->{'init1'},
-	     $self->{'initn'},
-	     $self->{'opt'},
-	     $self->{'zscore'},
-	     $self->{'expect'},
-	    ) = ($1,$2,$3,$4,$5);
+            (
+             $self->{'init1'},
+             $self->{'initn'},
+             $self->{'opt'},
+             $self->{'zscore'},
+             $self->{'expect'},
+            ) = ($1,$2,$3,$4,$5);
 
-	    $self->{'id'}   = ($id1 ne '' ? $id1 : $id2);
-	    $self->{'desc'} = $de;
+            $self->{'id'}   = ($id1 ne '' ? $id1 : $id2);
+            $self->{'desc'} = $de;
 
-	    next;
-	}
+            next;
+        }
 
-	if ($line =~ /^
-	    #smith-waterman in fasta2 and fasta3, maybe in gcg?
-	    (?:Smith-Waterman\s+score:\s*(\d+);)?    #sw score
-	    \s*($RX_Ureal)%                          #percent identity
-	    \s*identity\s+in\s+(\d+)                 #overlap length
-	    \s+(?:aa|nt|bp)\s+overlap
-	    \s*$/xo) {
+        if ($line =~ /^
+            #smith-waterman in fasta2 and fasta3, maybe in gcg?
+            (?:Smith-Waterman\s+score:\s*(\d+);)?    #sw score
+            \s*($RX_Ureal)%                          #percent identity
+            \s*identity\s+in\s+(\d+)                 #overlap length
+            \s+(?:aa|nt|bp)\s+overlap
+            \s*$/xo) {
 
-	    $self->test_args(\$line,$2,$3);
+            $self->test_args(\$line,$2,$3);
 
-	    (
-	     $self->{'score'},
-	     $self->{'id_percent'},
-	     $self->{'overlap'},
-	    ) = (defined $1?$1:0,$2,$3);
+            (
+             $self->{'score'},
+             $self->{'id_percent'},
+             $self->{'overlap'},
+            ) = (defined $1?$1:0,$2,$3);
 
-	    next;
-	}
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;

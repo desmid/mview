@@ -82,9 +82,9 @@ sub parse_argv {
     #fail unprocessed options; leave implicit non-options
     @$argv = ();
     foreach my $arg (@lhs) {
-	if ($arg =~ /^--?\S/) {
+        if ($arg =~ /^--?\S/) {
             push @errors, "unknown or bad option '$arg'";
-	}
+        }
         push @$argv, $arg;
     }
     push @$argv, @rhs;  #replace explicit non-options

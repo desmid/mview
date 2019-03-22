@@ -32,10 +32,10 @@ sub vmstat {
     my ($s) = (@_, '');
     local ($_, *TMP);
     if (open(TMP, "cat /proc/$$/stat|")) {
-	$_ = <TMP>; my @ps = split /\s+/; close TMP;
-	print sprintf "VM: %8luk  $s\n", $ps[22] >> 10;
+        $_ = <TMP>; my @ps = split /\s+/; close TMP;
+        print sprintf "VM: %8luk  $s\n", $ps[22] >> 10;
     } else {
-	print sprintf "VM: -  $s\n";
+        print sprintf "VM: -  $s\n";
     }
 }
 

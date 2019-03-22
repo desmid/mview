@@ -140,8 +140,8 @@ sub range {
         #warn "range: $frag->[1], $frag->[2]\n";
         $lo = $frag->[1]  if $frag->[1] < $lo;
         $lo = $frag->[2]  if $frag->[2] < $lo;
-	$hi = $frag->[1]  if $frag->[1] > $hi;
-	$hi = $frag->[2]  if $frag->[2] > $hi;
+        $hi = $frag->[1]  if $frag->[1] > $hi;
+        $hi = $frag->[2]  if $frag->[2] > $hi;
     }
     #warn "range: ($lo, $hi)\n";
     return ($lo, $hi);

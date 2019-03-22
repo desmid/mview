@@ -26,8 +26,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -39,49 +39,49 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /\s*(version\s+(\S+).*)/) {
-	    $self->{'full_version'} = $1;
-	    $self->{'version'}      = $2;
-	}
+        if ($line =~ /\s*(version\s+(\S+).*)/) {
+            $self->{'full_version'} = $1;
+            $self->{'version'}      = $2;
+        }
 
-	if ($line =~ /(\S+)\s*,\s+(\d+)\s+(?:aa|nt)/o) {
+        if ($line =~ /(\S+)\s*,\s+(\d+)\s+(?:aa|nt)/o) {
 
-	    $self->test_args(\$line, $1, $2);
+            $self->test_args(\$line, $1, $2);
 
-	    (
-	     $self->{'queryfile'},
-	     $self->{'length'},
-	    ) = ($1, $2);
+            (
+             $self->{'queryfile'},
+             $self->{'length'},
+            ) = ($1, $2);
 
-	    next;
-	}
+            next;
+        }
 
-	if ($line =~ /^\s*>(\S+)\s*\:\s*\d+\s+(?:aa|nt)/) {
-	    $self->test_args(\$line, $1);
-	    $self->{'query'} = Bio::Parse::Record::clean_identifier($1);
-	    next;
-	}
+        if ($line =~ /^\s*>(\S+)\s*\:\s*\d+\s+(?:aa|nt)/) {
+            $self->test_args(\$line, $1);
+            $self->{'query'} = Bio::Parse::Record::clean_identifier($1);
+            next;
+        }
 
-	if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
+        if ($line =~ /^(\d+)\s+residues\s+in\s+(\d+)\s+sequences/) {
 
-	    $self->test_args(\$line, $1,$2);
+            $self->test_args(\$line, $1,$2);
 
-	    (
-	     $self->{'residues'},
-	     $self->{'sequences'},
-	    ) = ($1, $2);
+            (
+             $self->{'residues'},
+             $self->{'sequences'},
+            ) = ($1, $2);
 
-	    next;
-	}
+            next;
+        }
 
-	#ignore any other text
+        #ignore any other text
 
     }
 
     if (! defined $self->{'full_version'} ) {
-	#can't determine version: hardwire one!
-	$self->{'full_version'} = 'looks like FASTA 1';
-	$self->{'version'}      = '1?';
+        #can't determine version: hardwire one!
+        $self->{'full_version'} = 'looks like FASTA 1';
+        $self->{'version'}      = '1?';
     }
 
     $self;
@@ -98,8 +98,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -110,41 +110,41 @@ sub new {
     #ranked search hits
     while (defined ($line = $text->next_line)) {
 
-	next    if $line =~ /$Bio::Parse::Format::FASTA1::RANK_START/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA1::RANK_START/o;
 
-	if ($line =~ /^
-	    \s*
-	    (\S+)                #id
-	    \s+
-	    (.*)                 #description
-	    \s+
-	    (\d+)                #initn
-	    \s+
-	    (\d+)                #init1
-	    \s+
-	    (\d+)                #opt
-	    \s*
-	    $/xo) {
+        if ($line =~ /^
+            \s*
+            (\S+)                #id
+            \s+
+            (.*)                 #description
+            \s+
+            (\d+)                #initn
+            \s+
+            (\d+)                #init1
+            \s+
+            (\d+)                #opt
+            \s*
+            $/xo) {
 
-	    $self->test_args(\$line, $1,$2,$3,$4,$5);
+            $self->test_args(\$line, $1,$2,$3,$4,$5);
 
-	    push @{$self->{'hit'}},
-	    {
-	     'id'    => Bio::Parse::Record::clean_identifier($1),
-	     'desc'  => $2,
-	     'initn' => $3,
-	     'init1' => $4,
-	     'opt'   => $5,
-	    };
+            push @{$self->{'hit'}},
+            {
+             'id'    => Bio::Parse::Record::clean_identifier($1),
+             'desc'  => $2,
+             'initn' => $3,
+             'init1' => $4,
+             'opt'   => $5,
+            };
 
-	    next;
-	}
+            next;
+        }
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$Bio::Parse::Format::FASTA1::NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -177,8 +177,8 @@ use Bio::Util::Regexp;
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -190,27 +190,27 @@ sub new {
 
     if ($line =~ /^(\S+)\s+(.*)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/) {
 
-	$self->test_args(\$line, $1, $2, $3, $4, $5);    #ignore $2
+        $self->test_args(\$line, $1, $2, $3, $4, $5);    #ignore $2
 
-	(
-	 $self->{'id'},
-	 $self->{'desc'},
-	 $self->{'initn'},
-	 $self->{'init1'},
-	 $self->{'opt'},
-	) = (Bio::Parse::Record::clean_identifier($1),
-	     Bio::Parse::Record::strip_english_newlines($2), $3, $4, $5);
+        (
+         $self->{'id'},
+         $self->{'desc'},
+         $self->{'initn'},
+         $self->{'init1'},
+         $self->{'opt'},
+        ) = (Bio::Parse::Record::clean_identifier($1),
+             Bio::Parse::Record::strip_english_newlines($2), $3, $4, $5);
 
     }
 
     $line = $text->next_line;
 
     if ($line =~ /^\s*($RX_Ureal)\% identity in (\d+) (?:aa|nt) overlap\s*$/) {
-	$self->test_args(\$line, $1, $2);
-	(
-	 $self->{'id_percent'},
-	 $self->{'overlap'},
-	)= ($1,$2);
+        $self->test_args(\$line, $1, $2);
+        (
+         $self->{'id_percent'},
+         $self->{'overlap'},
+        )= ($1,$2);
     }
 
     $self;

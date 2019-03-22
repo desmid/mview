@@ -37,12 +37,12 @@ use Bio::Parse::Format::FASTA3X;
 use Bio::Parse::Format::GCG_FASTA2;
 
 my %VERSIONS = (
-		@Bio::Parse::Format::FASTA1::VERSIONS,
-		@Bio::Parse::Format::FASTA2::VERSIONS,
-		@Bio::Parse::Format::FASTA3::VERSIONS,
-		@Bio::Parse::Format::FASTA3X::VERSIONS,
+                @Bio::Parse::Format::FASTA1::VERSIONS,
+                @Bio::Parse::Format::FASTA2::VERSIONS,
+                @Bio::Parse::Format::FASTA3::VERSIONS,
+                @Bio::Parse::Format::FASTA3X::VERSIONS,
                 @Bio::Parse::Format::GCG_FASTA2::VERSIONS,
-	       );
+               );
 
 my $NULL        = '^\s*$';#for emacs';
 
@@ -225,134 +225,134 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#warn "($offset) >>$line";
+        #warn "($offset) >>$line";
 
         #start of entry
         if ($line =~ /$ENTRY_START/o and $offset < 0) {
             $offset = $parent->{'text'}->startofline;
-	    $start = $line;
-	    #warn "STA $offset, $bytes, ($line)\n";
+            $start = $line;
+            #warn "STA $offset, $bytes, ($line)\n";
             #fall through for version tests
 
         } elsif ($line =~ /$ENTRY_END/o) {
 
-	    if ($start =~ /$FASTA_START/o and $line =~ /^\s*L?ALIGN/) {
-		#replace offset
-		$offset = $parent->{'text'}->startofline;
-		$start = $line;
-		#warn "STA $offset, $bytes, ($line)\n";
-		#fall through for version tests
+            if ($start =~ /$FASTA_START/o and $line =~ /^\s*L?ALIGN/) {
+                #replace offset
+                $offset = $parent->{'text'}->startofline;
+                $start = $line;
+                #warn "STA $offset, $bytes, ($line)\n";
+                #fall through for version tests
 
-	    } elsif ($start =~ /^\s*LALIGN/o and $line =~ /^\s*Comparison of:/) {
-		#keep old offset
-		$start = $line;
-		#warn "STA $offset, $bytes, ($line)\n";
-		#fall through for version tests
+            } elsif ($start =~ /^\s*LALIGN/o and $line =~ /^\s*Comparison of:/) {
+                #keep old offset
+                $start = $line;
+                #warn "STA $offset, $bytes, ($line)\n";
+                #fall through for version tests
 
-	    } else {
-		#end of entry
-		#warn "END $offset, $bytes, ($line)\n";
-		last;
-	    }
-	} elsif ($offset < 0) {
-	    next;
-	}
+            } else {
+                #end of entry
+                #warn "END $offset, $bytes, ($line)\n";
+                last;
+            }
+        } elsif ($offset < 0) {
+            next;
+        }
 
-	#escape iteration if we've hit the alignment section
-	next  if $line =~ /$ALN_START/;
+        #escape iteration if we've hit the alignment section
+        next  if $line =~ /$ALN_START/;
 
-	#try to get program and version from header; these headers are
-	#only present if stderr was collected. sigh.
+        #try to get program and version from header; these headers are
+        #only present if stderr was collected. sigh.
 
-	#try to determine program
-	if ($line =~ /^\s*(\S+)\s+(?:searches|compares|produces|translates|performs)/) {
-	    #FASTA family versions 2 upwards
-	    $prog = $1;
-	    next;
-	} elsif ($line =~ /^\s*(\S+)\s+(?:searches|compares)/) {
-	    #FASTA version 1
-	    $prog = $1;
-	    next;
-	}
+        #try to determine program
+        if ($line =~ /^\s*(\S+)\s+(?:searches|compares|produces|translates|performs)/) {
+            #FASTA family versions 2 upwards
+            $prog = $1;
+            next;
+        } elsif ($line =~ /^\s*(\S+)\s+(?:searches|compares)/) {
+            #FASTA version 1
+            $prog = $1;
+            next;
+        }
 
-	#try to determine version from header
-	if ($line =~ /^\s*version\s+(\d)\./) {
-	    $version = $1;   #eg, version 3.4
-	} elsif ($line =~ /^\s*version\s+(3\d)/) {
-	    $version = '3X'; #eg, version 34
-	} elsif ($line =~ /^\s*v(\d+)\.\d+\S\d+/) {
-	    $version = $1;
-	}
+        #try to determine version from header
+        if ($line =~ /^\s*version\s+(\d)\./) {
+            $version = $1;   #eg, version 3.4
+        } elsif ($line =~ /^\s*version\s+(3\d)/) {
+            $version = '3X'; #eg, version 34
+        } elsif ($line =~ /^\s*v(\d+)\.\d+\S\d+/) {
+            $version = $1;
+        }
 
-	#otherwise... stderr header was missing... look at stdout part
-	#warn ">>$line";
+        #otherwise... stderr header was missing... look at stdout part
+        #warn ">>$line";
 
-	#try to determine FASTA version by minor differences
-	if ($line =~ /The best scores are:\s+initn\s+init1\s+opt\s*$/) {
-	    $prog    = 'FASTA'    unless defined $prog;    #guess!
-	    $version = 1          unless defined $version;
-	    next;
-	}
+        #try to determine FASTA version by minor differences
+        if ($line =~ /The best scores are:\s+initn\s+init1\s+opt\s*$/) {
+            $prog    = 'FASTA'    unless defined $prog;    #guess!
+            $version = 1          unless defined $version;
+            next;
+        }
 
-	if ($line =~ /The best scores are:\s+initn\s+init1\s+opt\s+z-sc/) {
-	    #matches FASTA2,FASTA3,TFASTX3, but next rules commit first
-	    $prog    = 'FASTA'    unless defined $prog;    #guess!
-	    $version = 2          unless defined $version;
-	    next;
-	}
+        if ($line =~ /The best scores are:\s+initn\s+init1\s+opt\s+z-sc/) {
+            #matches FASTA2,FASTA3,TFASTX3, but next rules commit first
+            $prog    = 'FASTA'    unless defined $prog;    #guess!
+            $version = 2          unless defined $version;
+            next;
+        }
 
-	if ($line =~ /The best scores are:\s+init1\s+initn\s+opt\s+z-sc/) {
-	    #matches GCG FASTA2
-	    $prog    = 'FASTA'    unless defined $prog;    #guess!
-	    $version = 2          unless defined $version;
-	    $GCG = 1;
-	    next;
-	}
+        if ($line =~ /The best scores are:\s+init1\s+initn\s+opt\s+z-sc/) {
+            #matches GCG FASTA2
+            $prog    = 'FASTA'    unless defined $prog;    #guess!
+            $version = 2          unless defined $version;
+            $GCG = 1;
+            next;
+        }
 
-	if ($line =~ /ALIGN calculates/) {
-	    #matches FASTA2/ALIGN
-	    $prog    = 'ALIGN'     unless defined $prog;
-	    $version = 2           unless defined $version;
-	    next;
-	}
+        if ($line =~ /ALIGN calculates/) {
+            #matches FASTA2/ALIGN
+            $prog    = 'ALIGN'     unless defined $prog;
+            $version = 2           unless defined $version;
+            next;
+        }
 
-	if ($line =~ /LALIGN finds/) {
-	    #matches FASTA2/LALIGN with stderr
-	    $prog    = 'LALIGN'    unless defined $prog;
-	    $version = 2           unless defined $version;
-	    next;
-	}
+        if ($line =~ /LALIGN finds/) {
+            #matches FASTA2/LALIGN with stderr
+            $prog    = 'LALIGN'    unless defined $prog;
+            $version = 2           unless defined $version;
+            next;
+        }
 
-	if ($line =~ /Comparison of:/) {
-	    #matches FASTA2/LALIGN
-	    $prog    = 'LALIGN'    unless defined $prog;
-	    $version = 2           unless defined $version;
-	    next;
-	}
+        if ($line =~ /Comparison of:/) {
+            #matches FASTA2/LALIGN
+            $prog    = 'LALIGN'    unless defined $prog;
+            $version = 2           unless defined $version;
+            next;
+        }
 
-	if ($line =~ /SSEARCH searches/) {
-	    #matches FASTA2/SSEARCH
-	    $prog    = 'SSEARCH'   unless defined $prog;
-	    $version = 2           unless defined $version;
-	    next;
-	}
+        if ($line =~ /SSEARCH searches/) {
+            #matches FASTA2/SSEARCH
+            $prog    = 'SSEARCH'   unless defined $prog;
+            $version = 2           unless defined $version;
+            next;
+        }
 
-	if ($line =~ /^(\S+)\s+\((\d+)/) {
-	    $prog    = $1          unless defined $prog;
-	    $version = $2          unless defined $version;
-	    next;
-	}
+        if ($line =~ /^(\S+)\s+\((\d+)/) {
+            $prog    = $1          unless defined $prog;
+            $version = $2          unless defined $version;
+            next;
+        }
 
-	if ($line =~ /frame-shift:/) {
-	    $prog    = 'TFASTX';    #guess
-	    next;
-	}
+        if ($line =~ /frame-shift:/) {
+            $prog    = 'TFASTX';    #guess
+            next;
+        }
 
-	if ($line =~ /$GCG_JUNK/) {
-	    #matches GCG
-	    $GCG = 1;
-	    next;
-	}
+        if ($line =~ /$GCG_JUNK/) {
+            #matches GCG
+            $GCG = 1;
+            next;
+        }
 
     }
     return 0   if $offset < 0;
@@ -360,12 +360,12 @@ sub get_entry {
     $bytes = $parent->{'text'}->tell - $offset;
 
     unless (defined $prog and defined $version) {
-	die "get_entry() top-level FASTA parser could not determine program/version\n";
+        die "get_entry() top-level FASTA parser could not determine program/version\n";
     }
 
     unless (exists $VERSIONS{$version} and
-	    grep(/^$prog$/i, @{$VERSIONS{$version}}) > 0) {
-	die "get_entry() parser for program '$prog' version '$version' not implemented\n";
+            grep(/^$prog$/i, @{$VERSIONS{$version}}) > 0) {
+        die "get_entry() parser for program '$prog' version '$version' not implemented\n";
     }
 
     $prog    = lc $prog;
@@ -373,9 +373,9 @@ sub get_entry {
     $version =~ s/-/_/g;
 
     if ($GCG) {
-	$class = "Bio::Parse::Format::GCG_FASTA${version}::$prog";
+        $class = "Bio::Parse::Format::GCG_FASTA${version}::$prog";
     } else {
- 	$class = "Bio::Parse::Format::FASTA${version}::$prog";
+        $class = "Bio::Parse::Format::FASTA${version}::$prog";
     }
 
     #reuse packages: tfastx,tfasty,tfastxy -> tfasta
@@ -410,8 +410,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -421,38 +421,38 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#Header lines
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #Header lines
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#Rank lines
-	if ($line =~ /$RANK_START/o) {
-	    $text->scan_until($RANK_END, 'RANK');
-	    next;
-	}
+        #Rank lines
+        if ($line =~ /$RANK_START/o) {
+            $text->scan_until($RANK_END, 'RANK');
+            next;
+        }
 
-	#Hit lines
-	if ($line =~ /$MATCH_START/o) {
-	    $text->scan_until($MATCH_END, 'MATCH');
-	    next;
-	}
+        #Hit lines
+        if ($line =~ /$MATCH_START/o) {
+            $text->scan_until($MATCH_END, 'MATCH');
+            next;
+        }
 
-	#Trailer lines
-	if ($line =~ /$TRAILER_START/o) {
-	    $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
-	    next;
-	}
+        #Trailer lines
+        if ($line =~ /$TRAILER_START/o) {
+            $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
+            next;
+        }
 
-	#end of FASTA job
-	next    if $line =~ /$ENTRY_END/o;
+        #end of FASTA job
+        next    if $line =~ /$ENTRY_END/o;
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -499,7 +499,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $field (sort $self->list_attrs) {
-	printf "$x%20s -> %s\n", $field,  $self->{$field};
+        printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
 
@@ -517,9 +517,9 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $hit (@{$self->{'hit'}}) {
-	foreach my $field (sort keys %$hit) {
-	    printf "$x%20s -> %s\n", $field, $hit->{$field};
-	}
+        foreach my $field (sort keys %$hit) {
+            printf "$x%20s -> %s\n", $field, $hit->{$field};
+        }
     }
 }
 
@@ -534,8 +534,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -554,7 +554,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $field (sort $self->list_attrs) {
-	printf "$x%20s -> %s\n", $field,  $self->{$field};
+        printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
 
@@ -569,8 +569,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -580,23 +580,23 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#identifier lines
-	if ($line =~ /$SUM_START/o) {
-	    $text->scan_until_inclusive($SUM_END, 'SUM');
-	    next;
-	}
+        #identifier lines
+        if ($line =~ /$SUM_START/o) {
+            $text->scan_until_inclusive($SUM_END, 'SUM');
+            next;
+        }
 
-	#fragment hits: terminated by several possibilities
-	if ($line =~ /$ALN_START/o) {
-	    $text->scan_until($ALN_END, 'ALN');
-	    next;
-	}
+        #fragment hits: terminated by several possibilities
+        if ($line =~ /$ALN_START/o) {
+            $text->scan_until($ALN_END, 'ALN');
+            next;
+        }
 
-	#blank line or empty record: ignore
+        #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -605,7 +605,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $field (sort $self->list_attrs) {
-	printf "$x%20s -> %s\n", $field,  $self->{$field};
+        printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
 
@@ -627,7 +627,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $field (sort $self->list_attrs) {
-	printf "$x%20s -> %s\n", $field,  $self->{$field};
+        printf "$x%20s -> %s\n", $field,  $self->{$field};
     }
 }
 
@@ -652,62 +652,62 @@ sub get_summary {
 sub new {
 
     my $keys_and_depth = sub {
-	my ($query, $sbjct) = @_;
-	#determine depth of sequence labels at left: take the
-	#shorter since either sequence may begin with a gap
-	$$query =~ /^(\s*\S+\s*)/o; my $x = length $1;
-	$$sbjct =~ /^(\s*\S+\s*)/o; my $y = length $1;
-	my $depth = min($x, $y);
-	#warn "depth: $depth\n";
-	#recover sequence row names
-	my $qkey = substr($$query, 0, $depth);
-	my $skey = substr($$sbjct, 0, $depth);
-	return ($qkey, $skey, $depth);
+        my ($query, $sbjct) = @_;
+        #determine depth of sequence labels at left: take the
+        #shorter since either sequence may begin with a gap
+        $$query =~ /^(\s*\S+\s*)/o; my $x = length $1;
+        $$sbjct =~ /^(\s*\S+\s*)/o; my $y = length $1;
+        my $depth = min($x, $y);
+        #warn "depth: $depth\n";
+        #recover sequence row names
+        my $qkey = substr($$query, 0, $depth);
+        my $skey = substr($$sbjct, 0, $depth);
+        return ($qkey, $skey, $depth);
     };
 
     my $append_ruler = sub {
-	my ($ruler, $piece, $depth) = @_;
-	if ($$ruler eq '') {
-	    $$ruler .= $$piece;
-	    return $$ruler;
-	}
-	my ($num, $junk, $rlen) = (0, $depth, length($$ruler));
-	my $s = substr($$piece, 0, $depth);
-	if ($s =~ /(\d+)/o) {
-	    $num  = length $1;
-	    $junk -= $num;
-	}
-	$ruler = substr($$ruler, 0, $rlen-$num) . substr($$piece, $junk);
-	#warn "ruler: $num/$junk/$depth/$rlen [$ruler]\n";
-	$ruler;
+        my ($ruler, $piece, $depth) = @_;
+        if ($$ruler eq '') {
+            $$ruler .= $$piece;
+            return $$ruler;
+        }
+        my ($num, $junk, $rlen) = (0, $depth, length($$ruler));
+        my $s = substr($$piece, 0, $depth);
+        if ($s =~ /(\d+)/o) {
+            $num  = length $1;
+            $junk -= $num;
+        }
+        $ruler = substr($$ruler, 0, $rlen-$num) . substr($$piece, $junk);
+        #warn "ruler: $num/$junk/$depth/$rlen [$ruler]\n";
+        $ruler;
     };
 
     my $summary_info = sub {
-	my ($self) = @_;
-	#look in the parent MATCH record's already parsed SUM record
+        my ($self) = @_;
+        #look in the parent MATCH record's already parsed SUM record
         my $sum = $self->get_summary;
-	#get any alignment ranges (but these only cover the aligned
+        #get any alignment ranges (but these only cover the aligned
         #regions; terminal overhanging sequences are not counted!
-	my ($q1, $q2, $s1, $s2) = (0, 0, 0, 0);
-	if (exists $sum->{'ranges'} and
+        my ($q1, $q2, $s1, $s2) = (0, 0, 0, 0);
+        if (exists $sum->{'ranges'} and
             $sum->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
-	    ($q1, $q2, $s1, $s2) = ($1, $2, $3, $4);
-	}
-	warn "\n>>> $sum->{'id'}\n"  if $DEBUG;
-	warn "ranges: [$q1, $q2], [$s1, $s2]\n\n"  if $DEBUG;
-	[ [$q1, $q2], [$s1, $s2] ];
+            ($q1, $q2, $s1, $s2) = ($1, $2, $3, $4);
+        }
+        warn "\n>>> $sum->{'id'}\n"  if $DEBUG;
+        warn "ranges: [$q1, $q2], [$s1, $s2]\n\n"  if $DEBUG;
+        [ [$q1, $q2], [$s1, $s2] ];
     };
 
     my $start_info = sub {
-	my ($self, $name, $ruler, $string, $depth, $rstart) = @_;
-	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
+        my ($self, $name, $ruler, $string, $depth, $rstart) = @_;
+        my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
 
         #find the index of the start of sequence
-	if ($$string =~ /(^[-\s]*)\S/o) {
-	    $si = length($1);
-	} else {
-	    $self->die("no sequence:", $name);
-	}
+        if ($$string =~ /(^[-\s]*)\S/o) {
+            $si = length($1);
+        } else {
+            $self->die("no sequence:", $name);
+        }
 
         #find the index of the first ruler number not over a gap (it happens)
         my $rcopy = $$ruler;
@@ -733,26 +733,26 @@ sub new {
             ($ni, $num, $usedr) = ($si, $rstart, 1);
         }
 
-	#count gaps in the fragment between seqstart and label
-	my $gc = 0;
-	if ($si < $ni) {  #seqstart ... label
-	    my $s = substr($$string, $si, $ni-$si);
+        #count gaps in the fragment between seqstart and label
+        my $gc = 0;
+        if ($si < $ni) {  #seqstart ... label
+            my $s = substr($$string, $si, $ni-$si);
             $gc = $s =~ tr/-\/\\//;
-	}
-	[$rstart, $ai, $si, $ni, $num, $gc, $usedr];
+        }
+        [$rstart, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
     my $stop_info = sub {
-	my ($self, $name, $ruler, $string, $depth, $rend) = @_;
-	my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
+        my ($self, $name, $ruler, $string, $depth, $rend) = @_;
+        my ($ai, $si, $ni, $num, $usedr) = (0, 0, 0, 0, 0);
 
         #find the index of the end of sequence
-	if ($$string =~ /\S([-\s]*)$/o) {
-	    $ai = length($$string) -1;
-	    $si = $ai - length($1);
-	} else {
-	    $self->die("no sequence:", $name);
-	}
+        if ($$string =~ /\S([-\s]*)$/o) {
+            $ai = length($$string) -1;
+            $si = $ai - length($1);
+        } else {
+            $self->die("no sequence:", $name);
+        }
 
         #find the index of the last ruler number not over a gap (it happens)
         my $rcopy = $$ruler;
@@ -779,41 +779,41 @@ sub new {
             ($ni, $num, $usedr) = ($si, $rend, 1);
         }
 
-	#count non-sequence in the fragment between label and seqend
-	my $gc = 0;
-	if ($ni < $si) {  #label ... seqend
-	    my $s = substr($$string, $ni, $si-$ni);
+        #count non-sequence in the fragment between label and seqend
+        my $gc = 0;
+        if ($ni < $si) {  #label ... seqend
+            my $s = substr($$string, $ni, $si-$ni);
             $gc = $s =~ tr/-\/\\//;
-	}
-	[$rend, $ai, $si, $ni, $num, $gc, $usedr];
+        }
+        [$rend, $ai, $si, $ni, $num, $gc, $usedr];
     };
 
     my $align_info = sub {
-	my ($self, $sum, $name, $ruler, $string, $depth) = @_;
-	my $r1  = $sum->[0];  #summary from
-	my $r2  = $sum->[1];  #summary to
-	my $start = &$start_info($self, $name, $ruler, $string, $depth, $r1);
-	my $stop  = &$stop_info($self, $name, $ruler, $string, $depth, $r2);
-	#count frameshifts lying between the extreme ruler numbers
-	#my ($n1, $n2) = ($start->[2], $stop->[2]);
-	#my $s = substr($$string, $n1, $n2-$n1+1);
-	#count frameshifts of types '/' and '\'
-	my $s = $$string;
-	my $fsf = $s =~ tr/[\/]//;
-	my $fsb = $s =~ tr/[\\]//;
+        my ($self, $sum, $name, $ruler, $string, $depth) = @_;
+        my $r1  = $sum->[0];  #summary from
+        my $r2  = $sum->[1];  #summary to
+        my $start = &$start_info($self, $name, $ruler, $string, $depth, $r1);
+        my $stop  = &$stop_info($self, $name, $ruler, $string, $depth, $r2);
+        #count frameshifts lying between the extreme ruler numbers
+        #my ($n1, $n2) = ($start->[2], $stop->[2]);
+        #my $s = substr($$string, $n1, $n2-$n1+1);
+        #count frameshifts of types '/' and '\'
+        my $s = $$string;
+        my $fsf = $s =~ tr/[\/]//;
+        my $fsb = $s =~ tr/[\\]//;
         if ($DEBUG) {
             warn "[$$ruler]\n[@{['.'x$depth]}$$string]\n";
             warn sprintf("start:  [r1:%4d  a:%4d  b:%4d  x:%4d  X:%4d  gc: %d  usedr: %d]\n", @$start);
             warn sprintf("stop:   [r2:%4d  a:%4d  b:%4d  x:%4d  Y:%4d  gc: %d  usedr: %d]\n", @$stop);
             warn "fshift: [/ $fsf, \\ $fsb]\n\n";
         }
-	[ $start, $stop, $fsf, $fsb ];
+        [ $start, $stop, $fsf, $fsb ];
     };
 
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -826,71 +826,71 @@ sub new {
 
     #read records
     while (defined ($line = $text->next_line(1))) {
-	my @tmp = ();
+        my @tmp = ();
 
-	#initial empty line before the alignment ruler
-	next if $line =~ /^$/;
+        #initial empty line before the alignment ruler
+        next if $line =~ /^$/;
 
-	#warn "$first_pass, [$line]\n";
+        #warn "$first_pass, [$line]\n";
 
-	if ($line =~ /^\s+(?:\d+)?/) {
-	    #warn "QUERY RULER\n";
-	    $tmp[0] = $line;                #query ruler
-	    $tmp[1] = $text->next_line(1);  #query sequence
-	    $tmp[2] = $text->next_line(1);  #match pattern
-	    $tmp[3] = $text->next_line(1);  #sbjct sequence
-	    $tmp[4] = $text->next_line(1);  #sbjct ruler
+        if ($line =~ /^\s+(?:\d+)?/) {
+            #warn "QUERY RULER\n";
+            $tmp[0] = $line;                #query ruler
+            $tmp[1] = $text->next_line(1);  #query sequence
+            $tmp[2] = $text->next_line(1);  #match pattern
+            $tmp[3] = $text->next_line(1);  #sbjct sequence
+            $tmp[4] = $text->next_line(1);  #sbjct ruler
 
-	    if ($first_pass) {
-		($qkey, $skey, $depth) = &$keys_and_depth(\$tmp[1], \$tmp[3]);
-		#warn "ENTRY [$qkey], [$skey]\n";
-		$first_pass = 0;
-	    }
+            if ($first_pass) {
+                ($qkey, $skey, $depth) = &$keys_and_depth(\$tmp[1], \$tmp[3]);
+                #warn "ENTRY [$qkey], [$skey]\n";
+                $first_pass = 0;
+            }
 
-	} elsif (index($line, $qkey) == 0) {
-	    #warn "QUERY (####)\n";
-	    $tmp[1] = $line;                #query sequence
-	    $tmp[2] = $text->next_line(1);  #match pattern
-	    $tmp[3] = $text->next_line(1);  #sbjct sequence
-	    $tmp[4] = $text->next_line(1);  #sbjct ruler
+        } elsif (index($line, $qkey) == 0) {
+            #warn "QUERY (####)\n";
+            $tmp[1] = $line;                #query sequence
+            $tmp[2] = $text->next_line(1);  #match pattern
+            $tmp[3] = $text->next_line(1);  #sbjct sequence
+            $tmp[4] = $text->next_line(1);  #sbjct ruler
 
-	} elsif (index($line, $skey) == 0) {
-	    #warn "SBJCT (####)\n";
-	    $tmp[3] = $line;                #sbjct sequence
-	    $tmp[4] = $text->next_line(1);  #sbjct ruler
+        } elsif (index($line, $skey) == 0) {
+            #warn "SBJCT (####)\n";
+            $tmp[3] = $line;                #sbjct sequence
+            $tmp[4] = $text->next_line(1);  #sbjct ruler
 
-	} else {
-	    $self->die("unexpected line: [$line]\n");
-	}
-	map { $tmp[$_] = '' unless defined $tmp[$_] } 0..@tmp-1;
+        } else {
+            $self->die("unexpected line: [$line]\n");
+        }
+        map { $tmp[$_] = '' unless defined $tmp[$_] } 0..@tmp-1;
 
-	#warn "#0# [$tmp[0]]\n";
-	#warn "#1# [$tmp[1]]\n";
-	#warn "#2# [$tmp[2]]\n";
-	#warn "#3# [$tmp[3]]\n";
-	#warn "#4# [$tmp[4]]\n";
+        #warn "#0# [$tmp[0]]\n";
+        #warn "#1# [$tmp[1]]\n";
+        #warn "#2# [$tmp[2]]\n";
+        #warn "#3# [$tmp[3]]\n";
+        #warn "#4# [$tmp[4]]\n";
 
-	#pad query/match/sbjct lines
-	my $len = max(length($tmp[1]), length($tmp[3]));
-	$tmp[0] .= ' ' x ($len-length $tmp[0]);
-	$tmp[1] .= ' ' x ($len-length $tmp[1]);
-	$tmp[2] .= ' ' x ($len-length $tmp[2]);
-	$tmp[3] .= ' ' x ($len-length $tmp[3]);
-	$tmp[4] .= ' ' x ($len-length $tmp[4]);
+        #pad query/match/sbjct lines
+        my $len = max(length($tmp[1]), length($tmp[3]));
+        $tmp[0] .= ' ' x ($len-length $tmp[0]);
+        $tmp[1] .= ' ' x ($len-length $tmp[1]);
+        $tmp[2] .= ' ' x ($len-length $tmp[2]);
+        $tmp[3] .= ' ' x ($len-length $tmp[3]);
+        $tmp[4] .= ' ' x ($len-length $tmp[4]);
 
-	#strip leading name from alignment rows
-	$tmp[1] = substr($tmp[1], $depth);
-	$tmp[2] = substr($tmp[2], $depth);
-	$tmp[3] = substr($tmp[3], $depth);
+        #strip leading name from alignment rows
+        $tmp[1] = substr($tmp[1], $depth);
+        $tmp[2] = substr($tmp[2], $depth);
+        $tmp[3] = substr($tmp[3], $depth);
 
-	#grow the ruler
-	$qrule = &$append_ruler(\$qrule, \$tmp[0], $depth);
-	$srule = &$append_ruler(\$srule, \$tmp[4], $depth);
+        #grow the ruler
+        $qrule = &$append_ruler(\$qrule, \$tmp[0], $depth);
+        $srule = &$append_ruler(\$srule, \$tmp[4], $depth);
 
-	#grow the alignment
-	$query .= $tmp[1];
-	$align .= $tmp[2];
-	$sbjct .= $tmp[3];
+        #grow the alignment
+        $query .= $tmp[1];
+        $align .= $tmp[2];
+        $sbjct .= $tmp[3];
     }
 
     #query/sbjct start/stop positions from parent summary
@@ -906,7 +906,7 @@ sub new {
 
     #query/sbjct recomputed start/stop
     my ($query_start, $query_stop) =
-	$self->get_start_stop('qry', $qorient, $qinfo, $self->query_base);
+        $self->get_start_stop('qry', $qorient, $qinfo, $self->query_base);
     my ($sbjct_start, $sbjct_stop) =
         $self->get_start_stop('hit', $sorient, $sinfo, $self->sbjct_base);
 
@@ -1047,10 +1047,10 @@ sub get_start_stop {
     my $delta2 = abs($y - $c) - $gc2;
 
     if ($x < $b) {
-	$delta1 = -$delta1;
+        $delta1 = -$delta1;
     }
     if ($y > $c) {
-	$delta2 = -$delta2;
+        $delta2 = -$delta2;
     }
 
     my ($start, $stop, $shift) = (0, 0, 0);
@@ -1061,28 +1061,28 @@ sub get_start_stop {
     #- shift according to the alignment summary range values
     warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  usedr= $usedr2\n"  if $DEBUG;
     if ($orient eq '+') {
-     	if ($base == 1) {
-     	    $start = $nx - $delta1;
-	    $stop  = $ny + $delta2;
-     	} else {
-     	    $start = $nx - $base * $delta1;
-	    $stop  = $ny + $base * $delta2;
-	    $stop += 2  unless $usedr2;
+        if ($base == 1) {
+            $start = $nx - $delta1;
+            $stop  = $ny + $delta2;
+        } else {
+            $start = $nx - $base * $delta1;
+            $stop  = $ny + $base * $delta2;
+            $stop += 2  unless $usedr2;
             if ($r1 != 0) {
                 $shift = $r1 - $start;
                 $start -= $shift;
                 $stop  -= $shift;
             }
             warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
-     	}
+        }
     } else {
-     	if ($base == 1) {
-     	    $start = $nx + $delta1;
-	    $stop  = $ny - $delta2;
-     	} else {
-     	    $start = $nx + $base * $delta1;
-	    $stop  = $ny - $base * $delta2;
-	    $stop -= 2  unless $usedr2;
+        if ($base == 1) {
+            $start = $nx + $delta1;
+            $stop  = $ny - $delta2;
+        } else {
+            $start = $nx + $base * $delta1;
+            $stop  = $ny - $base * $delta2;
+            $stop -= 2  unless $usedr2;
             if ($r1 != 0) {
                 $shift = $r1 - $start;
                 $start += $shift;

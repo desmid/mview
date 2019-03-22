@@ -25,15 +25,15 @@ sub new {
     $self->{'depth'} = $depth;
 
     if (defined $text and ref $text) {
-	#use supplied text and positions (or defaults thereof)
-	$self->{'text'}   = new Bio::Parse::Substring($text);
-	$self->{'offset'} = defined $offset ? $offset : 0;
-	$self->{'bytes'}  = defined $bytes ? $bytes : length($$text);
+        #use supplied text and positions (or defaults thereof)
+        $self->{'text'}   = new Bio::Parse::Substring($text);
+        $self->{'offset'} = defined $offset ? $offset : 0;
+        $self->{'bytes'}  = defined $bytes ? $bytes : length($$text);
     } else {
-	#use entry object's text and positions
-	$self->{'text'}   = $entry->{'text'};
-	$self->{'offset'} = $entry->{'offset'};
-	$self->{'bytes'}  = $entry->{'bytes'};
+        #use entry object's text and positions
+        $self->{'text'}   = $entry->{'text'};
+        $self->{'offset'} = $entry->{'offset'};
+        $self->{'bytes'}  = $entry->{'bytes'};
     }
     $self->{'limit'}      = $self->{'offset'} + $self->{'bytes'};
 
@@ -79,14 +79,14 @@ sub scan_lines {
     my $record = $$line;
 
     if ($count < 1) {  #scan everything
-	while ($self->_next_line) {
-	    $record .= $$line;
-	}
+        while ($self->_next_line) {
+            $record .= $$line;
+        }
     } else {  #scan $count lines
         $count--;  #already seen one line
         while ($count-- > 0 and $self->_next_line) {
-	    $record .= $$line;
-	}
+            $record .= $$line;
+        }
     }
     #no backup as we've read exactly the right amount
     my $bytes = $self->{'cursor'} - $offset;
@@ -108,7 +108,7 @@ sub scan_while {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line !~ /$pattern/) {  #backup
+        if ($$line !~ /$pattern/) {  #backup
             $self->{'cursor'} = $self->{'linestart'};
             $$line = '';
             last;
@@ -134,12 +134,12 @@ sub scan_until {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line =~ /$pattern/) {  #backup
+        if ($$line =~ /$pattern/) {  #backup
             $self->{'cursor'} = $self->{'linestart'};
             $$line = '';
-	    last;
-	}
-	$record .= $$line;
+            last;
+        }
+        $record .= $$line;
     }
     my $bytes = $self->{'cursor'} - $offset;
 
@@ -160,8 +160,8 @@ sub scan_until_inclusive {
     my $record = $$line;
 
     while ($self->_next_line) {
-	$record .= $$line;
-	last  if $$line =~ /$pattern/;
+        $record .= $$line;
+        last  if $$line =~ /$pattern/;
     }
     my $bytes = $self->{'cursor'} - $offset;
 
@@ -183,14 +183,14 @@ sub scan_skipping_until {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line =~ /$pattern/) {
-	    if ($skip-- < 1) {  #backup
+        if ($$line =~ /$pattern/) {
+            if ($skip-- < 1) {  #backup
                 $self->{'cursor'} = $self->{'linestart'};
                 $$line = '';
-	        last;
+                last;
             }
-	}
-	$record .= $$line;
+        }
+        $record .= $$line;
     }
     my $bytes = $self->{'cursor'} - $offset;
 
@@ -212,7 +212,7 @@ sub scan_nest {
     my $record = $$line;
 
     while ($self->_next_line) {
-	if ($$line !~ /^(\s{$nest}|$)/) {  #backup
+        if ($$line !~ /^(\s{$nest}|$)/) {  #backup
             $self->{'cursor'} = $self->{'linestart'};
             $$line = '';
             last;
@@ -259,12 +259,12 @@ sub _next_line {
 
     if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
         #truncate to within this delimited record
-	$bytes = $self->{'limit'} - $self->{'cursor'};
+        $bytes = $self->{'limit'} - $self->{'cursor'};
         #also ignore leading depth
-	$$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
+        $$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
     } elsif ($self->{'depth'} > 0) {
         #just ignore leading depth
-	$$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
+        $$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
     }
 
     #advance cursor

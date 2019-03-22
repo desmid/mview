@@ -118,9 +118,9 @@ sub parse {
 
     my $query = 'Query';
     if ($header->{'query'} ne '') {
-	$query = $header->{'query'};
+        $query = $header->{'query'};
     } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
-	$query = $1;
+        $query = $1;
     }
 
     my $coll = new Bio::MView::Build::Search::Collector($self);
@@ -146,16 +146,16 @@ sub parse {
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
 
-	#warn "KEEP: ($rank,$hit->{'id'})\n";
+        #warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
+        my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
 
-	$coll->insert((new $class(
+        $coll->insert((new $class(
                            $rank,
                            $hit->{'id'},
                            $hit->{'desc'},
@@ -177,14 +177,14 @@ sub parse {
 
         $rank++;
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
         my $key1 = $coll->key($rank, $sum->{'id'}, $sum->{'expect'});
 
-	next  unless $coll->has($key1);
+        next  unless $coll->has($key1);
 
-	#warn "USE: [$key1]\n";
+        #warn "USE: [$key1]\n";
 
         my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
 
@@ -192,16 +192,16 @@ sub parse {
         next  unless @$aset;
 
         foreach my $aln (@$aset) {
-	    #apply score/significance filter
+            #apply score/significance filter
             next  if $self->skip_frag($sum->{'opt'});
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->dump;
+            #$aln->dump;
 
-	    #for FASTA gapped alignments
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
-				    $aln->{'query_leader'},
+            #for FASTA gapped alignments
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
+                                    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 
             $coll->add_frags(
@@ -214,8 +214,8 @@ sub parse {
                     $aln->{'sbjct_start'},
                     $aln->{'sbjct_stop'},
                 ]);
-	}
-	#override row data
+        }
+        #override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
 
         my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);
@@ -276,9 +276,9 @@ sub parse {
 
     my $query = 'Query';
     if ($header->{'query'} ne '') {
-	$query = $header->{'query'};
+        $query = $header->{'query'};
     } elsif ($header->{'queryfile'} =~ m,.*/([^\.]+)\.,) {
-	$query = $1;
+        $query = $1;
     }
 
     my $coll = new Bio::MView::Build::Search::Collector($self);
@@ -304,16 +304,16 @@ sub parse {
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
 
-	#warn "KEEP: ($rank,$hit->{'id'})\n";
+        #warn "KEEP: ($rank,$hit->{'id'})\n";
 
-	my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
+        my $key1 = $coll->key($rank, $hit->{'id'}, $hit->{'expect'});
 
-	$coll->insert((new $class(
+        $coll->insert((new $class(
                            $rank,
                            $hit->{'id'},
                            $hit->{'desc'},
@@ -335,14 +335,14 @@ sub parse {
 
         $rank++;
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
-	my $key1 = $coll->key($rank, $sum->{'id'}, $sum->{'expect'});
+        my $key1 = $coll->key($rank, $sum->{'id'}, $sum->{'expect'});
 
-	next  unless $coll->has($key1);
+        next  unless $coll->has($key1);
 
-	#warn "USE: [$key1]\n";
+        #warn "USE: [$key1]\n";
 
         my $aset = $self->get_ranked_frags($match, $coll, $key1, $self->strand);
 
@@ -350,16 +350,16 @@ sub parse {
         next  unless @$aset;
 
         foreach my $aln (@$aset) {
-	    #apply score/significance filter
+            #apply score/significance filter
             next  if $self->skip_frag($sum->{'opt'});
 
             #warn "SEE: [$key1]\n";
 
-	    #$aln->dump;
+            #$aln->dump;
 
-	    #for FASTA gapped alignments
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
-				    $aln->{'query_leader'},
+            #for FASTA gapped alignments
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'},
+                                    $aln->{'query_leader'},
                                     $aln->{'query_trailer'});
 
             $coll->add_frags(
@@ -375,8 +375,8 @@ sub parse {
 
             #override row data (non-standard)
             $coll->item($key1)->set_val('sbjct_orient', $sum->{'orient'});
-	}
-	#override row data
+        }
+        #override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'}  if $sum->{'desc'};
 
         my ($N, $sig, $qorient, $sorient) = $self->get_scores($aset, $sum);

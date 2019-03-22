@@ -38,11 +38,11 @@ sub subheader {
     return $s  if $quiet;
     my $mode = $PAR->get('hsp');
     if ($mode eq 'all') {
-	$s .= "HSP processing: all\n";
+        $s .= "HSP processing: all\n";
     } elsif ($mode eq 'discrete') {
-	$s .= "HSP processing: discrete\n";
+        $s .= "HSP processing: discrete\n";
     } else {
-	$s .= "HSP processing: ranked\n";
+        $s .= "HSP processing: ranked\n";
     }
     $s;
 }
@@ -109,16 +109,16 @@ sub parse {
     #extract hits and identifiers from the ranking
     my $rank = 0; foreach my $hit (@{$ranking->{'hit'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $hit->{'id'});
 
-	#warn "KEEP: ($rank,$hit->{'id'})\n";
+        #warn "KEEP: ($rank,$hit->{'id'})\n";
 
         my $key1 = $coll->key($hit->{'id'});
 
-	$coll->insert($self->record($rank, undef, undef, $hit), $key1);
+        $coll->insert($self->record($rank, undef, undef, $hit), $key1);
     }
 
     my $mode = $PAR->get('hsp');
@@ -143,13 +143,13 @@ sub parse_ranked_hits {
     #pull out each hit
     foreach my $match ($search->parse(qw(MATCH))) {
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
         my $key1 = $coll->key($sum->{'id'});
 
-	#ignore hit?
-	next  unless $coll->has($key1);
+        #ignore hit?
+        next  unless $coll->has($key1);
 
         #$self->report_ranking_data($match, $coll, $key1, $self->strand), next;
 
@@ -159,12 +159,12 @@ sub parse_ranked_hits {
         next  unless @$raln;
 
         foreach my $aln (@$raln) {
-	    #apply score/significance filter
+            #apply score/significance filter
             next  if $self->skip_hsp($aln);
 
-	    #for gapped alignments: keep sbjct sequence insertions?
+            #for gapped alignments: keep sbjct sequence insertions?
             my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
@@ -199,33 +199,33 @@ sub parse_discrete_hits {
     #pull out each hit
     foreach my $match ($search->parse(qw(MATCH))) {
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
         my $key1 = $coll->key($sum->{'id'});
 
-	#ignore hit?
-	next  unless $coll->has($key1);
+        #ignore hit?
+        next  unless $coll->has($key1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
+        foreach my $aln ($match->parse(qw(ALN))) {
 
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+            #ignore other query strand orientation
+            next  unless $aln->{'query_orient'} eq $self->strand;
 
             my $key2 = $coll->key($match->{'index'}, $aln->{'index'});
 
-	    #apply row filter with new row numbers
+            #apply row filter with new row numbers
             next  if $self->skip_row($match->{'index'}, $key2, $sum->{'id'});
             next  if $self->skip_hsp($aln);
 
             #make new row
-	    if (! $coll->has($key2)) {
+            if (! $coll->has($key2)) {
                 $coll->insert($self->record($key2, undef, $sum, $aln), $key2);
-	    }
+            }
 
-	    #for gapped alignments: keep sbjct sequence insertions?
+            #for gapped alignments: keep sbjct sequence insertions?
             my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
                 $key2, $aln->{'query_start'}, $aln->{'query_stop'}, [
@@ -249,7 +249,7 @@ sub parse_discrete_hits {
 
             #override N: for discrete output this must always be 1
             $coll->item($key2)->set_val('n', 1);
-	}
+        }
     }
     $self;
 }
@@ -260,32 +260,32 @@ sub parse_blastpx_all_hits {
     #pull out each hit
     foreach my $match ($search->parse(qw(MATCH))) {
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
         my $key1 = $coll->key($sum->{'id'});
 
-	#ignore hit?
-	next  unless $coll->has($key1);
+        #ignore hit?
+        next  unless $coll->has($key1);
 
-	my ($n, $score, $sig) = (0, 0, -1);
+        my ($n, $score, $sig) = (0, 0, -1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
+        foreach my $aln ($match->parse(qw(ALN))) {
 
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+            #ignore other query strand orientation
+            next  unless $aln->{'query_orient'} eq $self->strand;
 
-	    #apply score/significance filter
+            #apply score/significance filter
             next  if $self->skip_hsp($aln);
 
-	    #accumulate row data
+            #accumulate row data
             $score = $self->hi_score($score, $aln);
             $sig   = $self->lo_sig($sig, $aln);
-	    $n++;
+            $n++;
 
-	    #for gapped alignments: keep sbjct sequence insertions?
+            #for gapped alignments: keep sbjct sequence insertions?
             my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
                 $key1, $aln->{'query_start'}, $aln->{'query_stop'}, [
@@ -300,12 +300,12 @@ sub parse_blastpx_all_hits {
                     $aln->{$self->{'attr_score'}},
                     \$uncut,
                 ]);
-	}
-	#override row data
+        }
+        #override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
-	$coll->item($key1)->set_val('n', $n);
-	$coll->item($key1)->set_val($self->{'attr_score'}, $score);
-	$coll->item($key1)->set_val($self->{'attr_sig'}, $sig);
+        $coll->item($key1)->set_val('n', $n);
+        $coll->item($key1)->set_val($self->{'attr_score'}, $score);
+        $coll->item($key1)->set_val($self->{'attr_sig'}, $sig);
     }
     $self;
 }
@@ -317,26 +317,26 @@ sub parse_tblastnx_all_hits {
     #pull out each hit
     foreach my $match ($search->parse(qw(MATCH))) {
 
-	#first the summary
-	my $sum = $match->parse(qw(SUM));
+        #first the summary
+        my $sum = $match->parse(qw(SUM));
 
         my $key1 = $coll->key($sum->{'id'});
 
-	#ignore hit?
-	next  unless $coll->has($key1);
+        #ignore hit?
+        next  unless $coll->has($key1);
 
-	my ($n1,$n2, $score1,$score2, $sig1,$sig2) = (0,0,  0,0, -1,-1);
+        my ($n1,$n2, $score1,$score2, $sig1,$sig2) = (0,0,  0,0, -1,-1);
 
-	foreach my $aln ($match->parse(qw(ALN))) {
+        foreach my $aln ($match->parse(qw(ALN))) {
 
-	    #ignore other query strand orientation
-	    next  unless $aln->{'query_orient'} eq $self->strand;
+            #ignore other query strand orientation
+            next  unless $aln->{'query_orient'} eq $self->strand;
 
-	    #apply score/significance filter
+            #apply score/significance filter
             next  if $self->skip_hsp($aln);
 
-	    #accumulate row data
-	    my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
+            #accumulate row data
+            my $rank   = $coll->key($match->{'index'}, $aln->{'index'});
 
             if ($aln->{'sbjct_orient'} eq '+') {
                 $score1 = $self->hi_score($score1, $aln);
@@ -350,13 +350,13 @@ sub parse_tblastnx_all_hits {
 
             my $key2 = $coll->key($sum->{'id'}, $aln->{'sbjct_orient'});
 
-	    if (! $coll->has($key2)) {
+            if (! $coll->has($key2)) {
                 $coll->insert($self->record($rank, undef, $sum, $aln), $key2);
             }
 
-	    #for gapped alignments: keep sbjct sequence insertions?
+            #for gapped alignments: keep sbjct sequence insertions?
             my $uncut = ($PAR->get('keepinserts') ? $aln->{'sbjct'} : '');
-	    $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
+            $self->strip_query_gaps(\$aln->{'query'}, \$aln->{'sbjct'});
 
             $coll->add_frags(
                 $key2, $aln->{'query_start'}, $aln->{'query_stop'}, [
@@ -371,23 +371,23 @@ sub parse_tblastnx_all_hits {
                     $aln->{$self->{'attr_score'}},
                     \$uncut,
                 ]);
-	}
-	#override row data
+        }
+        #override row data
         $coll->item($key1)->{'desc'} = $sum->{'desc'};
 
-	my $keyp = $coll->key($key1, '+');
-	if ($coll->has($keyp)) {
-	    $coll->item($keyp)->set_val('n', $n1);
-	    $coll->item($keyp)->set_val($self->{'attr_score'}, $score1);
-	    $coll->item($keyp)->set_val($self->{'attr_sig'}, $sig1);
-	}
+        my $keyp = $coll->key($key1, '+');
+        if ($coll->has($keyp)) {
+            $coll->item($keyp)->set_val('n', $n1);
+            $coll->item($keyp)->set_val($self->{'attr_score'}, $score1);
+            $coll->item($keyp)->set_val($self->{'attr_sig'}, $sig1);
+        }
 
-	my $keym = $coll->key($key1, '-');
-	if ($coll->has($keym)) {
-	    $coll->item($keym)->set_val('n', $n2);
-	    $coll->item($keym)->set_val($self->{'attr_score'}, $score2);
-	    $coll->item($keym)->set_val($self->{'attr_sig'}, $sig2);
-	}
+        my $keym = $coll->key($key1, '-');
+        if ($coll->has($keym)) {
+            $coll->item($keym)->set_val('n', $n2);
+            $coll->item($keym)->set_val($self->{'attr_score'}, $score2);
+            $coll->item($keym)->set_val($self->{'attr_sig'}, $sig2);
+        }
     }
     $self;
 }

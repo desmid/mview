@@ -26,11 +26,11 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($offset < 0) {
+        #start of entry
+        if ($offset < 0) {
             $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+            next;
+        }
 
     }
     return 0   if $offset < 0;
@@ -44,8 +44,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -55,19 +55,19 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#SEQ lines
-	if ($line =~ /$PIR_SEQ/o) {
-	    $text->scan_until($PIR_SEQend, 'SEQ');
-	    next;
-	}
+        #SEQ lines
+        if ($line =~ /$PIR_SEQ/o) {
+            $text->scan_until($PIR_SEQend, 'SEQ');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	if ($line =~ /$PIR_Null/o) {
-	    next;
-	}
+        #blank line or empty record: ignore
+        if ($line =~ /$PIR_Null/o) {
+            next;
+        }
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -83,8 +83,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -99,33 +99,33 @@ sub new {
 
     while (defined ($line = $text->next_line(1))) {
 
-	#read header line
-	if ($line =~ /^\s*>\s*(..);(\S+)/o) {
-	    $self->test_args(\$line, $1, $2);
-	    (
-	     $self->{'prefix'},
-	     $self->{'id'},
-	    ) = ($1, $2);
+        #read header line
+        if ($line =~ /^\s*>\s*(..);(\S+)/o) {
+            $self->test_args(\$line, $1, $2);
+            (
+             $self->{'prefix'},
+             $self->{'id'},
+            ) = ($1, $2);
 
-	    #force read of next line for description
-	    $self->{'desc'} = $text->next_line(1);
+            #force read of next line for description
+            $self->{'desc'} = $text->next_line(1);
             $self->{'desc'} = Bio::Parse::Record::strip_leading_space($self->{'desc'});
             $self->{'desc'} = Bio::Parse::Record::strip_trailing_space($self->{'desc'});
 
-	    next;
-	}
+            next;
+        }
 
-	#read sequence lines upto asterisk, if present
-	if ($line =~ /([^\*]+)/) {
-	    $self->{'seq'} .= $1;
-	    next;
-	}
+        #read sequence lines upto asterisk, if present
+        if ($line =~ /([^\*]+)/) {
+            $self->{'seq'} .= $1;
+            next;
+        }
 
-	#ignore lone asterisk
-	last    if $line =~ /\*/;
+        #ignore lone asterisk
+        last    if $line =~ /\*/;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
 
     }
     #strip internal whitespace from sequence

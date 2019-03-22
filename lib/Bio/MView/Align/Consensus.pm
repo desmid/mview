@@ -27,7 +27,7 @@ sub new {
     my ($from, $to, $tally, $group, $thresh, $ignore) = @_;
 
     if ($thresh < 50 or $thresh > 100) {
-	die "${type}::new: threshold '$thresh\%' outside valid range [50..100]\n";
+        die "${type}::new: threshold '$thresh\%' outside valid range [50..100]\n";
     }
 
     my $string =
@@ -69,23 +69,23 @@ sub color_by_type {
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
-	$cg = $self->{'string'}->raw($i);
+        $cg = $self->{'string'}->raw($i);
 
-	#warn "[$i]= $cg\n";
+        #warn "[$i]= $cg\n";
 
-	#white space: no color
-	next  if $self->{'string'}->is_space($cg);
+        #white space: no color
+        next  if $self->{'string'}->is_space($cg);
 
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($cg)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap: gapcolour
+        if ($self->{'string'}->is_non_char($cg)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
-	#use symbol color/wildcard colour
-	@tmp = $self->get_color_type($cg,
-				     $kw->{'aln_colormap'},
-				     $kw->{'con_colormap'});
+        #use symbol color/wildcard colour
+        @tmp = $self->get_color_type($cg,
+                                     $kw->{'aln_colormap'},
+                                     $kw->{'con_colormap'});
 
         push @$color, $self->color_tag($kw->{'css1'}, $SYMCOLOR, $i, @tmp);
     }
@@ -139,7 +139,7 @@ sub color_by_consensus_sequence {
     return  unless $othr->is_sequence;
 
     die "${self}::color_by_consensus_sequence: length mismatch\n"
-	unless $self->length == $othr->length;
+        unless $self->length == $othr->length;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -149,23 +149,23 @@ sub color_by_consensus_sequence {
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
-	$cg = $self->{'string'}->raw($i); $cs = $othr->{'string'}->raw($i);
+        $cg = $self->{'string'}->raw($i); $cs = $othr->{'string'}->raw($i);
 
-	#warn "[$i]= $cg <=> $cs\n";
+        #warn "[$i]= $cg <=> $cs\n";
 
-	#white space: no colour
-	next  if $self->{'string'}->is_space($cs);
+        #white space: no colour
+        next  if $self->{'string'}->is_space($cs);
 
-	#gap: gapcolour
-	if ($self->{'string'}->is_non_char($cs)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap: gapcolour
+        if ($self->{'string'}->is_non_char($cs)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
-	#symbols in consensus group are stored upcased
-	$c = uc $cs;
+        #symbols in consensus group are stored upcased
+        $c = uc $cs;
 
-	#symbol in consensus group: choose colour
+        #symbol in consensus group: choose colour
         if ($GROUPMAP->in_consensus_group($self->{'group'}, $cg, $c)) {
 
             #colour by sequence symbol
@@ -177,10 +177,10 @@ sub color_by_consensus_sequence {
                 $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
 
             next;
-	}
+        }
 
         #symbol not in consensus group: use contrast colour
-	push @$color, $i, 'color' => $kw->{'symcolor'};
+        push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 }
 
@@ -193,7 +193,7 @@ sub color_by_consensus_group {
     return  unless $othr->is_sequence;
 
     die "${self}::color_by_consensus_group: length mismatch\n"
-	unless $self->length == $othr->length;
+        unless $self->length == $othr->length;
 
     my ($color, $end, $i, $cg, $cs, $c, @tmp) = ($othr->{'display'}->{'range'});
 
@@ -203,23 +203,23 @@ sub color_by_consensus_group {
 
     for ($end=$self->length+1, $i=1; $i<$end; $i++) {
 
-	$cg = $self->{'string'}->raw($i); $cs = $othr->{'string'}->raw($i);
+        $cg = $self->{'string'}->raw($i); $cs = $othr->{'string'}->raw($i);
 
-	#warn "[$i]= $cg <=> $cs\n";
+        #warn "[$i]= $cg <=> $cs\n";
 
-	#no sequence symbol: whitespace: no colour
-	next  if $self->{'string'}->is_space($cs);
+        #no sequence symbol: whitespace: no colour
+        next  if $self->{'string'}->is_space($cs);
 
-	#gap or frameshift: gapcolour
-	if ($self->{'string'}->is_non_char($cs)) {
-	    push @$color, $i, 'color' => $kw->{'gapcolor'};
-	    next;
-	}
+        #gap or frameshift: gapcolour
+        if ($self->{'string'}->is_non_char($cs)) {
+            push @$color, $i, 'color' => $kw->{'gapcolor'};
+            next;
+        }
 
-	#symbols in consensus group are stored upcased
-	$c = uc $cs;
+        #symbols in consensus group are stored upcased
+        $c = uc $cs;
 
-	#symbol in consensus group: choose colour
+        #symbol in consensus group: choose colour
         if ($GROUPMAP->in_consensus_group($self->{'group'}, $cg, $c)) {
 
             #colour by consensus group symbol
@@ -232,10 +232,10 @@ sub color_by_consensus_group {
                 $self->color_tag($kw->{'css1'}, $kw->{'symcolor'}, $i, @tmp);
 
             next;
-	}
+        }
 
-	#symbol not in consensus group: use contrast colour
-	push @$color, $i, 'color' => $kw->{'symcolor'};
+        #symbol not in consensus group: use contrast colour
+        push @$color, $i, 'color' => $kw->{'symcolor'};
     }
 }
 

@@ -19,39 +19,39 @@ use strict;
 
 use vars qw(@ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $NULL
+            $NULL
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
-	    $HEADER_START
-	    $HEADER_END
+            $HEADER_START
+            $HEADER_END
 
-	    $RANK_START
-	    $RANK_END
+            $RANK_START
+            $RANK_END
 
-	    $TRAILER_START
-	    $TRAILER_END
+            $TRAILER_START
+            $TRAILER_END
 
-	    $MATCH_START
-	    $MATCH_END
+            $MATCH_START
+            $MATCH_END
 
-	    $SUM_START
-	    $SUM_END
+            $SUM_START
+            $SUM_END
 
-	    $ALN_START
-	    $ALN_END
-	   );
+            $ALN_START
+            $ALN_END
+           );
 
 @ISA   = qw(Bio::Parse::Format::FASTA);
 
 @VERSIONS = (
-	     '1' => [
-		     'FASTA',
-		    ],
-	    );
+             '1' => [
+                     'FASTA',
+                    ],
+            );
 
 $NULL  = '^\s*$';#for emacs';
 
@@ -95,8 +95,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -119,34 +119,34 @@ sub new {
 
     #initial empty line before the alignment ruler
     if ($line =~ /^$/) {
-	$line = $text->next_line(1);
+        $line = $text->next_line(1);
     }
 
     if ($line =~ /^\s*(\S+)\s+([^0-9 ]+)$/) {
-	#no query ruler on first line, due to pure leading gaps seen
-	#in ALIGN and ALIGN0 or very short sequences in LALIGN.
-	#very short sequences can mean that start/stop is missing!
-	$tmp[0] = '';                     #missing ruler
-	$tmp[1] = $line;                  #query sequence
-	$tmp[2] = $text->next_line(1);    #match pattern
-	$tmp[3] = $text->next_line(1);    #sbjct sequence
-	$tmp[4] = $text->next_line(1);    #sbjct ruler
+        #no query ruler on first line, due to pure leading gaps seen
+        #in ALIGN and ALIGN0 or very short sequences in LALIGN.
+        #very short sequences can mean that start/stop is missing!
+        $tmp[0] = '';                     #missing ruler
+        $tmp[1] = $line;                  #query sequence
+        $tmp[2] = $text->next_line(1);    #match pattern
+        $tmp[3] = $text->next_line(1);    #sbjct sequence
+        $tmp[4] = $text->next_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s*\d+/) {
-	#query ruler present on first line
-	$tmp[0] = $line;                  #query ruler
-	$tmp[1] = $text->next_line(1);    #query sequence
-	$tmp[2] = $text->next_line(1);    #match pattern
-	$tmp[3] = $text->next_line(1);    #sbjct sequence
-	$tmp[4] = $text->next_line(1);    #sbjct ruler
+        #query ruler present on first line
+        $tmp[0] = $line;                  #query ruler
+        $tmp[1] = $text->next_line(1);    #query sequence
+        $tmp[2] = $text->next_line(1);    #match pattern
+        $tmp[3] = $text->next_line(1);    #sbjct sequence
+        $tmp[4] = $text->next_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s+$/) {
-	#ruler has no numbers as sequence is too short
-	$tmp[0] = '';                     #missing ruler
-	$tmp[1] = $text->next_line(1);    #query sequence
-	$tmp[2] = $text->next_line(1);    #match pattern
-	$tmp[3] = $text->next_line(1);    #sbjct sequence
-	$tmp[4] = $text->next_line(1);    #sbjct ruler
+        #ruler has no numbers as sequence is too short
+        $tmp[0] = '';                     #missing ruler
+        $tmp[1] = $text->next_line(1);    #query sequence
+        $tmp[2] = $text->next_line(1);    #match pattern
+        $tmp[3] = $text->next_line(1);    #sbjct sequence
+        $tmp[4] = $text->next_line(1);    #sbjct ruler
     } else {
-	$self->die("unexpected line: [$line]\n");
+        $self->die("unexpected line: [$line]\n");
     }
 
     #determine depth of sequence labels at left: take the shorter
@@ -187,10 +187,10 @@ sub new {
 
     #first query start/stop, if any
     if ($tmp[0] =~ /^\s*(\d+)/) {
-	$query_start = $1;
+        $query_start = $1;
     }
     if ($tmp[0] =~ /(\d+)\s*$/) {
-	$query_stop  = $1;
+        $query_stop  = $1;
     }
 
     #compute length of query before query_start label
@@ -204,10 +204,10 @@ sub new {
 
     #first sbjct start/stop, if any
     if ($tmp[4] =~ /^\s*(\d+)/) {
-	$sbjct_start = $1;
+        $sbjct_start = $1;
     }
     if ($tmp[4] =~ /(\d+)\s*$/) {
-	$sbjct_stop  = $1;
+        $sbjct_stop  = $1;
     }
 
     #compute length of sbjct before sbjct_start label
@@ -222,144 +222,144 @@ sub new {
     #remaining records
     while (defined ($line = $text->next_line(1))) {
 
-	next if $line =~ /^\s*$/;
+        next if $line =~ /^\s*$/;
 
-	@tmp = ();
+        @tmp = ();
 
-	if ($line =~ /^\s*\d+(?:\s|$)/) {
-	    #query ruler
-	    #warn "QUERY+RULER\n";
+        if ($line =~ /^\s*\d+(?:\s|$)/) {
+            #query ruler
+            #warn "QUERY+RULER\n";
 
-	    $tmp[0] = $line;                     #query ruler
+            $tmp[0] = $line;                     #query ruler
 
-	    $line = $text->next_line(1);
-	    $tmp[1] = substr($line, $depth);     #query sequence
+            $line = $text->next_line(1);
+            $tmp[1] = substr($line, $depth);     #query sequence
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[2] = substr($line, $depth); #match pattern
-	    } else {
-		$tmp[2] = ' ' x length $tmp[1];
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[2] = substr($line, $depth); #match pattern
+            } else {
+                $tmp[2] = ' ' x length $tmp[1];
+            }
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[3] = substr($line, $depth); #sbjct sequence
-	    } else {
-		$tmp[3] = ' ' x length $tmp[1];
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[3] = substr($line, $depth); #sbjct sequence
+            } else {
+                $tmp[3] = ' ' x length $tmp[1];
+            }
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[4] = $line;                 #sbjct ruler
-	    } else {
-		$tmp[4] = '';
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[4] = $line;                 #sbjct ruler
+            } else {
+                $tmp[4] = '';
+            }
 
-	} elsif (index($line, $sbjctkey) == 0) {
-	    #sbjct sequence
-	    #warn "SBJCT (####)\n";
+        } elsif (index($line, $sbjctkey) == 0) {
+            #sbjct sequence
+            #warn "SBJCT (####)\n";
 
-	    if ($line) {
-		$tmp[3] = substr($line, $depth); #sbjct sequence
-	    } else {
-		$tmp[3] = ' ' x length $tmp[1];
-	    }
+            if ($line) {
+                $tmp[3] = substr($line, $depth); #sbjct sequence
+            } else {
+                $tmp[3] = ' ' x length $tmp[1];
+            }
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[4] = $line;                 #sbjct ruler
-	    } else {
-		$tmp[4] = '';
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[4] = $line;                 #sbjct ruler
+            } else {
+                $tmp[4] = '';
+            }
 
-	    $tmp[0] = '';
-	    $tmp[1] = ' ' x length $tmp[3];
-	    $tmp[2] = ' ' x length $tmp[3];
+            $tmp[0] = '';
+            $tmp[1] = ' ' x length $tmp[3];
+            $tmp[2] = ' ' x length $tmp[3];
 
-	} elsif (index($line, $querykey) == 0) {
-	    #query sequence (no ruler)
-	    #warn "QUERY (####)\n";
+        } elsif (index($line, $querykey) == 0) {
+            #query sequence (no ruler)
+            #warn "QUERY (####)\n";
 
-	    $tmp[1] = substr($line, $depth);     #query sequence
+            $tmp[1] = substr($line, $depth);     #query sequence
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[2] = substr($line, $depth); #match pattern
-	    } else {
-		$tmp[2] = ' ' x length $tmp[1];
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[2] = substr($line, $depth); #match pattern
+            } else {
+                $tmp[2] = ' ' x length $tmp[1];
+            }
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[3] = substr($line, $depth); #sbjct sequence
-	    } else {
-		$tmp[3] = ' ' x length $tmp[1];
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[3] = substr($line, $depth); #sbjct sequence
+            } else {
+                $tmp[3] = ' ' x length $tmp[1];
+            }
 
-	    $line = $text->next_line(1);
-	    if ($line) {
-		$tmp[4] = $line;                 #sbjct ruler
-	    } else {
-		$tmp[4] = '';
-	    }
+            $line = $text->next_line(1);
+            if ($line) {
+                $tmp[4] = $line;                 #sbjct ruler
+            } else {
+                $tmp[4] = '';
+            }
 
-	    $tmp[0] = '';
+            $tmp[0] = '';
 
-	} else {
-	    $self->die("unexpected line: [$line]\n");
-	}
+        } else {
+            $self->die("unexpected line: [$line]\n");
+        }
 
-	#warn "#0##$tmp[0]\n";
-	#warn "#1##$tmp[1]\n";
-	#warn "#2##$tmp[2]\n";
-	#warn "#3##$tmp[3]\n";
-	#warn "#4##$tmp[4]\n";
+        #warn "#0##$tmp[0]\n";
+        #warn "#1##$tmp[1]\n";
+        #warn "#2##$tmp[2]\n";
+        #warn "#3##$tmp[3]\n";
+        #warn "#4##$tmp[4]\n";
 
-	#subsequent query start/stop, if any
-	if ($query_start < 1 and $tmp[0] =~ /^\s*(\d+)/) {
-	    $query_start = $1;
-	    #compute length of query before query_start label
-	    $x = index($tmp[0], $query_start) + length($query_start) -1;
-	    $x = substr($tmp[1], 0, $x-$depth);  #whole leader
-	    $x =~ tr/- //d;                      #leader minus gaps
-	    $query_leader = length($x);
-	}
-	if ($tmp[0] =~ /(\d+)\s*$/) {
-	    $query_stop  = $1;    #always update stop
-	}
+        #subsequent query start/stop, if any
+        if ($query_start < 1 and $tmp[0] =~ /^\s*(\d+)/) {
+            $query_start = $1;
+            #compute length of query before query_start label
+            $x = index($tmp[0], $query_start) + length($query_start) -1;
+            $x = substr($tmp[1], 0, $x-$depth);  #whole leader
+            $x =~ tr/- //d;                      #leader minus gaps
+            $query_leader = length($x);
+        }
+        if ($tmp[0] =~ /(\d+)\s*$/) {
+            $query_stop  = $1;    #always update stop
+        }
 
-	#subsequent sbjct start/stop, if any
-	if ($sbjct_start < 1 and $tmp[4] =~ /^\s*(\d+)/) {
-	    $sbjct_start = $1;
-	}
-	if ($tmp[4] =~ /(\d+)\s*$/) {
-	    $sbjct_stop  = $1;    #always update stop
-	}
+        #subsequent sbjct start/stop, if any
+        if ($sbjct_start < 1 and $tmp[4] =~ /^\s*(\d+)/) {
+            $sbjct_start = $1;
+        }
+        if ($tmp[4] =~ /(\d+)\s*$/) {
+            $sbjct_stop  = $1;    #always update stop
+        }
 
-	#increment query length
-	$x = $tmp[1]; $x =~ tr/- //d; $query_length += length($x);
+        #increment query length
+        $x = $tmp[1]; $x =~ tr/- //d; $query_length += length($x);
 
-	#increment sbjct length
-	$x = $tmp[3]; $x =~ tr/- //d; $sbjct_length += length($x);
+        #increment sbjct length
+        $x = $tmp[3]; $x =~ tr/- //d; $sbjct_length += length($x);
 
-	#query/sbjct/match lines
-	#warn "|$tmp[1]|\n|$tmp[2]|\n|$tmp[3]|\n";
-	$len = max(length($tmp[1]), length($tmp[3]));
-	if (length $tmp[1] < $len) {
-	    $tmp[1] .= ' ' x ($len-length $tmp[1]);
-	}
-	if (length $tmp[2] < $len) {
-	    $tmp[2] .= ' ' x ($len-length $tmp[2]);
-	}
-	if (length $tmp[3] < $len) {
-	    $tmp[3] .= ' ' x ($len-length $tmp[3]);
-	}
-	$query .= $tmp[1];
-	$align .= $tmp[2];
-	$sbjct .= $tmp[3];
+        #query/sbjct/match lines
+        #warn "|$tmp[1]|\n|$tmp[2]|\n|$tmp[3]|\n";
+        $len = max(length($tmp[1]), length($tmp[3]));
+        if (length $tmp[1] < $len) {
+            $tmp[1] .= ' ' x ($len-length $tmp[1]);
+        }
+        if (length $tmp[2] < $len) {
+            $tmp[2] .= ' ' x ($len-length $tmp[2]);
+        }
+        if (length $tmp[3] < $len) {
+            $tmp[3] .= ' ' x ($len-length $tmp[3]);
+        }
+        $query .= $tmp[1];
+        $align .= $tmp[2];
+        $sbjct .= $tmp[3];
 
-	#warn "($query_length) ($sbjct_length)\n";
+        #warn "($query_length) ($sbjct_length)\n";
     }
 
     #warn "$query\n$sbjct\n";
@@ -368,14 +368,14 @@ sub new {
     #determine query orientation and start/stop
     #warn "QUERY ($query_start, $query_stop, $query_length, $query_leader)\n";
     ($query_orient, $query_start, $query_stop) =
-	$self->adjust_counts($query_start, $query_stop, $query_length,
-			     $query_leader, $self->query_base());
+        $self->adjust_counts($query_start, $query_stop, $query_length,
+                 $query_leader, $self->query_base());
 
     #determine sbjct orientation and start/stop
     #warn "SBJCT ($sbjct_start, $sbjct_stop, $sbjct_length, $sbjct_leader)\n";
     ($sbjct_orient, $sbjct_start, $sbjct_stop) =
-	$self->adjust_counts($sbjct_start, $sbjct_stop, $sbjct_length,
-			     $sbjct_leader, $self->sbjct_base());
+        $self->adjust_counts($sbjct_start, $sbjct_stop, $sbjct_length,
+                             $sbjct_leader, $self->sbjct_base());
 
     #warn "EXIT ($query_orient, $query_start, $query_stop) ($sbjct_orient, $sbjct_start, $sbjct_stop)\n";
 
@@ -434,11 +434,11 @@ sub adjust_counts {
 
     #counting untranslated sequence
     if ($orient eq '+') {
-	$start -= $leader;
-	$stop   = $start + $length - 1;
+        $start -= $leader;
+        $stop   = $start + $length - 1;
     } else {
-	$start += $leader;
-	$stop   = $start - $length + 1;
+        $start += $leader;
+        $stop   = $start - $length + 1;
     }
 
     return ($orient, $start, $stop);

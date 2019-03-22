@@ -33,15 +33,15 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
- 	if ($line =~ /$MAF_START/o and $offset < 0) {
-	    $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+        #start of entry
+        if ($line =~ /$MAF_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            next;
+        }
 
-	#consume rest of stream
+        #consume rest of stream
         if ($line =~ /$MAF_END/o) {
-	    last;
+            last;
         }
     }
     return 0   if $offset < 0;
@@ -55,8 +55,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -66,25 +66,25 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#HEADER lines
-	if ($line =~ /$MAF_HEADER/o) {
-	    $text->scan_until($MAF_HEADERend, 'HEADER');
-	    next;
-	}
+        #HEADER lines
+        if ($line =~ /$MAF_HEADER/o) {
+            $text->scan_until($MAF_HEADERend, 'HEADER');
+            next;
+        }
 
-	#consume data
+        #consume data
 
-	#BLOCK lines
-	if ($line =~ /$MAF_BLOCK/o) {
-	    $text->scan_until($MAF_BLOCKend, 'BLOCK');
-	    next;
-	}
+        #BLOCK lines
+        if ($line =~ /$MAF_BLOCK/o) {
+            $text->scan_until($MAF_BLOCKend, 'BLOCK');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$MAF_Null/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$MAF_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;
@@ -101,8 +101,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -118,24 +118,24 @@ sub new {
     #consume header lines
     while (defined ($line = $text->next_line)) {
 
-	#first line: always has version:
-	if ($line =~ /^##maf\s+version=(\S+)/o) {
-	    $self->{'version'} = $1;
-	}
-	if ($line =~ /^##maf.*?scoring=(\S+)/o) {
-	    $self->{'scoring'} = $1;
-	}
-	if ($line =~ /^##maf.*?program=(\S+)/o) {
-	    $self->{'program'} = $1;
-	    next;
-	}
+        #first line: always has version:
+        if ($line =~ /^##maf\s+version=(\S+)/o) {
+            $self->{'version'} = $1;
+        }
+        if ($line =~ /^##maf.*?scoring=(\S+)/o) {
+            $self->{'scoring'} = $1;
+        }
+        if ($line =~ /^##maf.*?program=(\S+)/o) {
+            $self->{'program'} = $1;
+            next;
+        }
 
-	#subsequent comment lines: program parameters
-	if ($line =~ /^(#\s+.*)/) {
-	    $self->{'options'} .= $1 . "\n";
-	}
+        #subsequent comment lines: program parameters
+        if ($line =~ /^(#\s+.*)/) {
+            $self->{'options'} .= $1 . "\n";
+        }
 
-	#ignore any other text
+        #ignore any other text
     }
     chomp($self->{'options'});
 
@@ -162,8 +162,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $id, $line, $record);
@@ -183,53 +183,53 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	no strict;
+        no strict;
 
-	chomp $line;
+        chomp $line;
 
-	#a score=xxxx.yyyy
-	if ($line =~ /^a\s+.*?score=(\S+)/o) {
-	    $self->{'score'} = $1;
-	}
+        #a score=xxxx.yyyy
+        if ($line =~ /^a\s+.*?score=(\S+)/o) {
+            $self->{'score'} = $1;
+        }
 
-	#a pass=x
-	if ($line =~ /^a\s+.*?pass=(\S+)/o) {
-	    $self->{'pass'} = $1;
-	}
+        #a pass=x
+        if ($line =~ /^a\s+.*?pass=(\S+)/o) {
+            $self->{'pass'} = $1;
+        }
 
-	#s src start size strand srcsize sequence
-	if ($line =~ /^s\s+(\S+)\s+(\d+)\s+(\d+)\s+([+-])\s+(\d+)\s+(\S+)/o) {
-	    $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
-	    push @{$self->{'row'}}, {
-		'id'      => $1,
-		'start'   => $2,
-		'size'    => $3,
-		'strand'  => $4,
-		'srcsize' => $5,
-		'seq'     => $6,
-	    };
-	    $off = length($line) - length($6);
-	    next;
-	}
+        #s src start size strand srcsize sequence
+        if ($line =~ /^s\s+(\S+)\s+(\d+)\s+(\d+)\s+([+-])\s+(\d+)\s+(\S+)/o) {
+            $self->test_args(\$line, $1, $2, $3, $4, $5, $6);
+            push @{$self->{'row'}}, {
+                'id'      => $1,
+                'start'   => $2,
+                'size'    => $3,
+                'strand'  => $4,
+                'srcsize' => $5,
+                'seq'     => $6,
+            };
+            $off = length($line) - length($6);
+            next;
+        }
 
-	next    if $line =~ /^[aie]\s/o;
-	next    if $line =~ /$MAF_Null/o;
+        next    if $line =~ /^[aie]\s/o;
+        next    if $line =~ /$MAF_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     #line length check
     if (defined $self->{'row'}->[0]) {
-	$off = length $self->{'row'}->[0]->{'seq'};
-	foreach my $row (@{$self->{'row'}}) {
-	    $line = $row->{'seq'};
-	    my $len = length $line;
-	    #warn "$off, $len, $row->{'id'}\n";
-	    if ($len != $off) {
-		$self->die("length mismatch for '$row->{'id'}' (expect $off, saw $len):\noffending sequence: [$line]\n");
-	    }
-	}
+        $off = length $self->{'row'}->[0]->{'seq'};
+        foreach my $row (@{$self->{'row'}}) {
+            $line = $row->{'seq'};
+            my $len = length $line;
+            #warn "$off, $len, $row->{'id'}\n";
+            if ($len != $off) {
+                $self->die("length mismatch for '$row->{'id'}' (expect $off, saw $len):\noffending sequence: [$line]\n");
+            }
+        }
     }
 
     $self;
@@ -241,12 +241,12 @@ sub print_data {
     printf "$x%20s -> %s\n", 'score', $self->{'score'};
     printf "$x%20s -> %s\n", 'pass',  $self->{'pass'};
     foreach my $row (@{$self->{'row'}}) {
-	printf "$x%20s -> %s\n", 'id',      $row->{'id'};
-	printf "$x%20s -> %s\n", 'start',   $row->{'start'};
-	printf "$x%20s -> %s\n", 'size',    $row->{'size'};
-	printf "$x%20s -> %s\n", 'strand',  $row->{'strand'};
-	printf "$x%20s -> %s\n", 'srcsize', $row->{'srcsize'};
-	printf "$x%20s -> %s\n", 'seq',     $row->{'seq'};
+        printf "$x%20s -> %s\n", 'id',      $row->{'id'};
+        printf "$x%20s -> %s\n", 'start',   $row->{'start'};
+        printf "$x%20s -> %s\n", 'size',    $row->{'size'};
+        printf "$x%20s -> %s\n", 'strand',  $row->{'strand'};
+        printf "$x%20s -> %s\n", 'srcsize', $row->{'srcsize'};
+        printf "$x%20s -> %s\n", 'seq',     $row->{'seq'};
     }
 }
 

@@ -30,10 +30,10 @@ use strict;
 
 use vars qw(@ISA
 
-	    @VERSIONS
+            @VERSIONS
 
-	    $ENTRY_START
-	    $ENTRY_END
+            $ENTRY_START
+            $ENTRY_END
 
             $WARNING_START
             $WARNING_END
@@ -59,19 +59,19 @@ use vars qw(@ISA
 
             $SCORE_START
             $SCORE_END
-	   );
+           );
 
 @ISA   = qw(Bio::Parse::Format::BLAST);
 
 @VERSIONS = (
-	     '1' => [
-		     'BLASTP',
-		     'BLASTN',
-		     'BLASTX',
-		     'TBLASTN',
-		     'TBLASTX',
-		    ],
-	    );
+             '1' => [
+                     'BLASTP',
+                     'BLASTN',
+                     'BLASTX',
+                     'TBLASTN',
+                     'TBLASTX',
+                    ],
+            );
 
 my $NULL = '^\s*$';
 
@@ -88,24 +88,24 @@ $ENTRY_START = '^(?:'
     . ')';
 $ENTRY_END        = '^WARNINGS\s+ISSUED:';
 
-$WARNING_START	  = '^(?:WARNING|NOTE):';
-$WARNING_END	  = $NULL;
+$WARNING_START    = '^(?:WARNING|NOTE):';
+$WARNING_END      = $NULL;
 
-$WARNINGS_START	  = '^WARNINGS\s+ISSUED:';
-$WARNINGS_END	  = $NULL;
+$WARNINGS_START   = '^WARNINGS\s+ISSUED:';
+$WARNINGS_END     = $NULL;
 
 $PARAMETERS_START = '^Parameters';
-$PARAMETERS_END	  = "^(?:$WARNINGS_START|$ENTRY_START)";
+$PARAMETERS_END   = "^(?:$WARNINGS_START|$ENTRY_START)";
 
-$MATCH_START	  = '^>';
-$MATCH_END	  = "^(?:$MATCH_START|$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
+$MATCH_START      = '^>';
+$MATCH_END        = "^(?:$MATCH_START|$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
 
-$RANK_START	  = '^\s+Smallest';
-$RANK_MATCH	  = "^(?:$NULL|\\s+Smallest|\\s+Sum|\\s+High|\\s+Reading|\\s*Sequences|[^>].*$RX_Uint\\s+$RX_Ureal\\s+$RX_Uint|$Bio::Parse::Format::BLAST::GCG_JUNK)";
-$RANK_END	  = "^(?:$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
+$RANK_START       = '^\s+Smallest';
+$RANK_MATCH       = "^(?:$NULL|\\s+Smallest|\\s+Sum|\\s+High|\\s+Reading|\\s*Sequences|[^>].*$RX_Uint\\s+$RX_Ureal\\s+$RX_Uint|$Bio::Parse::Format::BLAST::GCG_JUNK)";
+$RANK_END         = "^(?:$WARNING_START|$PARAMETERS_START|$PARAMETERS_END)";
 
 $HISTOGRAM_START  = '^\s+Observed Numbers';
-$HISTOGRAM_END	  = "^(?:$RANK_START|$RANK_END)";
+$HISTOGRAM_END    = "^(?:$RANK_START|$RANK_END)";
 
 $HEADER_START     = $ENTRY_START;
 $HEADER_END       = "^(?:$WARNING_START|$HISTOGRAM_START|$HISTOGRAM_END)";
@@ -117,8 +117,8 @@ $SCORE_END        = "^(?:$SCORE_START|$MATCH_START|$PARAMETERS_START)";
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -128,50 +128,50 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#Header lines
-	if ($line =~ /$HEADER_START/o) {
-	    $text->scan_until($HEADER_END, 'HEADER');
-	    next;
-	}
+        #Header lines
+        if ($line =~ /$HEADER_START/o) {
+            $text->scan_until($HEADER_END, 'HEADER');
+            next;
+        }
 
-	#Histogram lines
-	if ($line =~ /$HISTOGRAM_START/o) {
-	    $text->scan_until($HISTOGRAM_END, 'HISTOGRAM');
-	    next;
-	}
+        #Histogram lines
+        if ($line =~ /$HISTOGRAM_START/o) {
+            $text->scan_until($HISTOGRAM_END, 'HISTOGRAM');
+            next;
+        }
 
-	#Rank lines: override $RANK_END definition
-	if ($line =~ /$RANK_START/o) {
-	    $text->scan_while($RANK_MATCH, 'RANK');
-	    next;
-	}
+        #Rank lines: override $RANK_END definition
+        if ($line =~ /$RANK_START/o) {
+            $text->scan_while($RANK_MATCH, 'RANK');
+            next;
+        }
 
-	#Hit lines
-	if ($line =~ /$MATCH_START/o) {
-	    $text->scan_until($MATCH_END, 'MATCH');
-	    next;
-	}
+        #Hit lines
+        if ($line =~ /$MATCH_START/o) {
+            $text->scan_until($MATCH_END, 'MATCH');
+            next;
+        }
 
-	#WARNING lines
-	if ($line =~ /$WARNING_START/o) {
-	    $text->scan_until($WARNING_END, 'WARNING');
-	    next;
-	}
+        #WARNING lines
+        if ($line =~ /$WARNING_START/o) {
+            $text->scan_until($WARNING_END, 'WARNING');
+            next;
+        }
 
-	#Parameter lines
-	if ($line =~ /$PARAMETERS_START/o) {
-	    $text->scan_until($PARAMETERS_END, 'PARAMETERS');
-	    next;
-	}
+        #Parameter lines
+        if ($line =~ /$PARAMETERS_START/o) {
+            $text->scan_until($PARAMETERS_END, 'PARAMETERS');
+            next;
+        }
 
-	#WARNINGS ISSUED line: ignore
-	next    if $line =~ /$WARNINGS_START/o;
+        #WARNINGS ISSUED line: ignore
+        next    if $line =~ /$WARNINGS_START/o;
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$NULL/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$NULL/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;

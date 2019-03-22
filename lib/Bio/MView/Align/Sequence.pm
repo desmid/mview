@@ -74,7 +74,7 @@ sub compute_coverage_wrt {
     return 100.0  if $self == $othr;  #always 100% coverage of self
 
     die "${self}::compute_coverage_wrt: length mismatch\n"
-	unless $self->length == $othr->length;
+        unless $self->length == $othr->length;
 
     my $hit = $self->{'string'};
     my $ref = $othr->{'string'};
@@ -84,13 +84,13 @@ sub compute_coverage_wrt {
 
     for (my $i=1; $i<$end; $i++) {
 
-	#reference must be a sequence character
+        #reference must be a sequence character
         my $c = $ref->char_at($i);
         next  unless defined $c;
-	$reflen++;
+        $reflen++;
 
         $c = $hit->char_at($i);
-	$hitlen++  if defined $c;
+        $hitlen++  if defined $c;
     }
 
     #compute percent coverage
@@ -111,7 +111,7 @@ sub compute_identity_to {
     return 100.0  if $self == $othr;  #always 100% identical to self
 
     die "${self}::compute_identity_to: length mismatch\n"
-	unless $self->length == $othr->length;
+        unless $self->length == $othr->length;
 
     my $hit = $self->{'string'};
     my $ref = $othr->{'string'};

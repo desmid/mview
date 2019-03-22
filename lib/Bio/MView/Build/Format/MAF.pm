@@ -80,9 +80,9 @@ sub subheader {
     return $s  if $quiet;
     $s .= "Block: " . $self->block;
     $s .= "  score: $self->{'parsed'}->{'score'}"
-	if $self->{'parsed'}->{'score'} ne '';
+        if $self->{'parsed'}->{'score'} ne '';
     $s .= "  pass: $self->{'parsed'}->{'pass'}"
-	if $self->{'parsed'}->{'pass'} ne '';
+        if $self->{'parsed'}->{'pass'} ne '';
     $s .= "\n";
 }
 
@@ -99,14 +99,14 @@ sub parse {
 
     foreach my $row (@{$self->{'parsed'}->{'row'}}) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $row->{'id'});
 
-	#warn "KEEP: ($rank,$row->{'id'})\n";
+        #warn "KEEP: ($rank,$row->{'id'})\n";
 
-	push @hit, new Bio::MView::Build::Row::MAF(
+        push @hit, new Bio::MView::Build::Row::MAF(
             $rank,
             $row->{'id'},
             '',

@@ -169,7 +169,7 @@ sub build_rows {
     #assemble sparse sequence strings for all rows
     for (my $i=1; $i < @{$self->{'index2row'}}; $i++) {
         #warn "BLAST::build_rows range[$i] ($lo, $hi)\n";
-	$self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
+        $self->{'index2row'}->[$i]->assemble($lo, $hi, $PAR->get('gap'));
     }
     $self;
 }

@@ -113,22 +113,22 @@ sub header {
         my $name = $self->{'ref_row'}->num;
         my $cid  = $self->{'ref_row'}->cid;
         $name = "query"  if $name eq '';
-	$s .= "Reference sequence ($name): $cid\n";
+        $s .= "Reference sequence ($name): $cid\n";
     }
     if (0 < $minident and $maxident < 100) {
-	$s .= "Identity limits: $minident-$maxident%";
-	$s .= " normalised by $pcidmode length.\n";
+        $s .= "Identity limits: $minident-$maxident%";
+        $s .= " normalised by $pcidmode length.\n";
     } elsif (0 < $minident) {
-	$s .= "Minimum identity: $minident%";
-	$s .= " normalised by $pcidmode length.\n";
+        $s .= "Minimum identity: $minident%";
+        $s .= " normalised by $pcidmode length.\n";
     } elsif ($maxident < 100) {
-	$s .= "Maximum identity: $maxident%";
-	$s .= " normalised by $pcidmode length.\n";
+        $s .= "Maximum identity: $maxident%";
+        $s .= " normalised by $pcidmode length.\n";
     } elsif ($showpcid) {
-	$s .= "Identities normalised by $pcidmode length.\n";
+        $s .= "Identities normalised by $pcidmode length.\n";
     }
     if ($topn) {
-	$s .= "Maximum sequences to show: $topn\n";
+        $s .= "Maximum sequences to show: $topn\n";
     }
 
     return $s;
@@ -264,7 +264,7 @@ sub build_indices {
 
     #index the row objects by unique 'uid' for fast lookup
     foreach my $i (@{$self->{'index2row'}}) {
-	$self->{'uid2row'}->{$i->uid} = $i;
+        $self->{'uid2row'}->{$i->uid} = $i;
     }
 
     #make all skiplist rows invisible
@@ -276,7 +276,7 @@ sub build_indices {
     #save any reference row and put it on the keeplist as well
     my $refid = $PAR->get('ref_id');
     if (my @refid = $self->map_id($refid)) {
-	$self->{'ref_row'} = $refid[0];  #save the reference row
+        $self->{'ref_row'} = $refid[0];  #save the reference row
         $self->set_uid_fields([$refid], 'keep_uid');
     }
 
@@ -294,10 +294,10 @@ sub build_indices {
 sub set_uid_fields {
     my ($self, $idlist, $finsert, $fdelete) = @_;
     foreach my $id (@$idlist) {
-	my @ids = $self->map_id($id);
-	foreach my $r (@ids) {
+        my @ids = $self->map_id($id);
+        foreach my $r (@ids) {
             my $uid = $r->uid;
-	    $self->{$finsert}->{$uid} = 1;
+            $self->{$finsert}->{$uid} = 1;
             if (defined $fdelete and exists $self->{$fdelete}->{$uid}) {
                 delete $self->{$fdelete}->{$uid};
             }
@@ -352,8 +352,8 @@ sub build_mview_alignment {
     foreach my $row (@{$self->{'index2row'}}) {
         next  if $self->is_hidden($row->uid);
 
-	my $arow = $aln->uid2row($row->uid);
-	next  unless defined $arow;
+        my $arow = $aln->uid2row($row->uid);
+        next  unless defined $arow;
 
         my @labels = $row->display_column_values;
 

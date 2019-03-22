@@ -68,9 +68,9 @@ sub new {
 
     #record paired orientations in MATCH list
     push @{$parent->{'orient'}->{
-				 $self->{'query_orient'} .
-				 $self->{'sbjct_orient'}
-				}}, $self;
+               $self->{'query_orient'} . $self->{'sbjct_orient'}
+           }}, $self;
+
     $self;
 }
 

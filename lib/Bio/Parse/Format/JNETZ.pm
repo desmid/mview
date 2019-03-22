@@ -33,16 +33,16 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($line =~ /$JNETZ_START/o and $offset < 0) {
+        #start of entry
+        if ($line =~ /$JNETZ_START/o and $offset < 0) {
             $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+            next;
+        }
 
-	#end of entry
-	if ($line =~ /$JNETZ_END/o) {
-	    last;
-	}
+        #end of entry
+        if ($line =~ /$JNETZ_END/o) {
+            last;
+        }
     }
     return 0   if $offset < 0;
 
@@ -55,8 +55,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -66,20 +66,20 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#ALIGNMENT lines
-	if ($line =~ /$JNETZ_ALIGNMENT/o) {
-	    $text->scan_until($JNETZ_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$JNETZ_ALIGNMENT/o) {
+            $text->scan_until($JNETZ_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$JNETZ_Null/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$JNETZ_Null/o;
 
-	#terminal line: ignore
-	next  if $line =~ /$JNETZ_END/o;
+        #terminal line: ignore
+        next  if $line =~ /$JNETZ_END/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;
@@ -96,8 +96,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -113,30 +113,30 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~
-	    /^\s*(\S)
-	    \s+(\S)
-	    \s+\|
-	    \s+(\S)
-	    \s+.
-	    \s+(\d)
-	    /xo
-	   ) {
-	    push @{ $self->{'query'}}, $1;
-	    push @{ $self->{'final'}}, $2;
-	    push @{ $self->{'align'}}, $3;
-	    push @{ $self->{'conf'}},  $4;
-	    next;
-	}
+        if ($line =~
+            /^\s*(\S)
+            \s+(\S)
+            \s+\|
+            \s+(\S)
+            \s+.
+            \s+(\d)
+            /xo
+           ) {
+            push @{ $self->{'query'}}, $1;
+            push @{ $self->{'final'}}, $2;
+            push @{ $self->{'align'}}, $3;
+            push @{ $self->{'conf'}},  $4;
+            next;
+        }
 
-	#header line: ignore
-	next  if $line =~ /$JNETZ_ALIGNMENT/;
+        #header line: ignore
+        next  if $line =~ /$JNETZ_ALIGNMENT/;
 
-	#blank line or empty record: ignore
-	next  if $line =~ /$JNETZ_Null/o;
+        #blank line or empty record: ignore
+        next  if $line =~ /$JNETZ_Null/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
 
     $self;#->examine;

@@ -36,14 +36,14 @@ sub get_entry {
 
     while ($parent->{'text'}->getline(\$line)) {
 
-	#start of entry
-	if ($line =~ /$MIPS_START/o and $offset < 0) {
-	    $offset = $parent->{'text'}->startofline;
-	    next;
-	}
+        #start of entry
+        if ($line =~ /$MIPS_START/o and $offset < 0) {
+            $offset = $parent->{'text'}->startofline;
+            next;
+        }
 
-	#consume rest of stream
-	last  if $line =~ /$MIPS_END/o;
+        #consume rest of stream
+        last  if $line =~ /$MIPS_END/o;
     }
     return 0   if $offset < 0;
 
@@ -56,8 +56,8 @@ sub get_entry {
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -67,34 +67,34 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	#HEADER lines
-	if ($line =~ /$MIPS_HEADER/o) {
-	    $text->scan_until($MIPS_HEADERend, 'HEADER');
-	    next;
-	}
+        #HEADER lines
+        if ($line =~ /$MIPS_HEADER/o) {
+            $text->scan_until($MIPS_HEADERend, 'HEADER');
+            next;
+        }
 
-	#consume data
+        #consume data
 
-	#NAME lines
-	if ($line =~ /$MIPS_NAME/o) {
-	    $text->scan_until($MIPS_NAMEend, 'NAME');
-	    next;
-	}
+        #NAME lines
+        if ($line =~ /$MIPS_NAME/o) {
+            $text->scan_until($MIPS_NAMEend, 'NAME');
+            next;
+        }
 
-	#ALIGNMENT lines
-	if ($line =~ /$MIPS_ALIGNMENT/o) {
-	    $text->scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
-	    next;
-	}
+        #ALIGNMENT lines
+        if ($line =~ /$MIPS_ALIGNMENT/o) {
+            $text->scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
+            next;
+        }
 
-	#blank line or empty record: ignore
-	next    if $line =~ /$MIPS_Null/o;
+        #blank line or empty record: ignore
+        next    if $line =~ /$MIPS_Null/o;
 
-	#end of NAME section: ignore
-	next    if $line =~ /$MIPS_NAMEend/o;
+        #end of NAME section: ignore
+        next    if $line =~ /$MIPS_NAMEend/o;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;#->examine;
 }
@@ -110,8 +110,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -124,15 +124,15 @@ sub new {
     #consume Name lines
     while (defined ($line = $text->next_line)) {
 
-	#> line
-	if ($line =~ /^>[^;]+;(\S+)/o) {
-	    $self->test_args(\$line, $1);
-	    $self->{'ac'} = $1;
-	    next;
-	}
+        #> line
+        if ($line =~ /^>[^;]+;(\S+)/o) {
+            $self->test_args(\$line, $1);
+            $self->{'ac'} = $1;
+            next;
+        }
 
-	#accumulate other lines
-	$self->{'desc'} .= $line;
+        #accumulate other lines
+        $self->{'desc'} .= $line;
     }
 
     $self->warn("missing MIPS data\n")  unless exists $self->{'ac'};
@@ -160,8 +160,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -175,17 +175,17 @@ sub new {
     #consume Name lines
     while (defined ($line = $text->next_line)) {
 
-	if ($line =~ /^L;(\S+)\s+(.*)/o) {
-	    $self->test_args(\$line, $1,$2);
-	    $self->{'seq'}->{$1} = Bio::Parse::Record::strip_english_newlines($2);
-	    push @{$self->{'order'}}, $1;
-	    next;
-	}
+        if ($line =~ /^L;(\S+)\s+(.*)/o) {
+            $self->test_args(\$line, $1,$2);
+            $self->{'seq'}->{$1} = Bio::Parse::Record::strip_english_newlines($2);
+            push @{$self->{'order'}}, $1;
+            next;
+        }
 
-	next  if $line =~ /$MIPS_Null/;
+        next  if $line =~ /$MIPS_Null/;
 
-	#default
-	$self->warn("unknown field: $line");
+        #default
+        $self->warn("unknown field: $line");
     }
     $self;
 }
@@ -194,9 +194,9 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (@{$self->{'order'}}) {
-	printf "$x%20s -> %-15s %s=%s\n",
-	'seq',  $i,
-	'desc', $self->{'seq'}->{$i};
+        printf "$x%20s -> %-15s %s=%s\n",
+        'seq',  $i,
+        'desc', $self->{'seq'}->{$i};
     }
 }
 
@@ -211,8 +211,8 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     if (@_ < 2) {
-	#at least two args, ($offset, $bytes are optional).
-	Bio::Message::die($type, "new() invalid arguments (@_)");
+        #at least two args, ($offset, $bytes are optional).
+        Bio::Message::die($type, "new() invalid arguments (@_)");
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -227,23 +227,23 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-	no strict;
+        no strict;
 
-	#start/end positions
-	next  if $line =~ /^\s*\d+[^0-9]*\d+\s*$/o;
+        #start/end positions
+        next  if $line =~ /^\s*\d+[^0-9]*\d+\s*$/o;
 
-	#id/sequence
-	if ($line =~ /^\s*(\S+)\s+([^0-9]+)\s+\d+$/o) {
-	    $self->test_args(\$line, $1, $2);
-	    $self->{'seq'}->{$1} .= $2;
-	    next;
-	}
+        #id/sequence
+        if ($line =~ /^\s*(\S+)\s+([^0-9]+)\s+\d+$/o) {
+            $self->test_args(\$line, $1, $2);
+            $self->{'seq'}->{$1} .= $2;
+            next;
+        }
 
-	#default: ignore all other line types (site and consensus data)
+        #default: ignore all other line types (site and consensus data)
     }
 
     foreach (keys %{$self->{'seq'}}) {
-	$self->{'seq'}->{$_} =~ s/ //g;
+        $self->{'seq'}->{$_} =~ s/ //g;
     }
 
     $self;
@@ -253,7 +253,7 @@ sub print_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     foreach my $i (sort keys %{$self->{'seq'}}) {
-	printf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        printf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
 }
 

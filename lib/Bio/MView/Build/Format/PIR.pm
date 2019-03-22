@@ -24,14 +24,14 @@ sub parse {
 
     foreach $rec ($self->{'entry'}->parse(qw(SEQ))) {
 
-	$rank++;
+        $rank++;
 
         last  if $self->topn_done($rank);
         next  if $self->skip_row($rank, $rank, $rec->{'id'});
 
-	#warn "KEEP: ($rank,$id)\n";
+        #warn "KEEP: ($rank,$id)\n";
 
-	push @hit, new Bio::MView::Build::Row::PIR($rank,
+        push @hit, new Bio::MView::Build::Row::PIR($rank,
                                                    $rec->{'id'},
                                                    $rec->{'desc'},
                                                    $rec->{'seq'},
