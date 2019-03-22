@@ -37,7 +37,7 @@ program that should run cross-platform.
 ### Download
 
 - The [current release](
-  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.64/
+  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.65/
   "MView current release on SourceForge") can be downloaded from SourceForge
   as a gzip or bzip2 compressed tar archive.
 - Older [releases](
@@ -59,13 +59,13 @@ follow. The procedure is similar for Windows.
 1. Save the archive to your software area, e.g., `/usr/local`, then uncompress
    and extract it:
 
-        tar xvzf mview-1.64.tar.gz
+        tar xvzf mview-1.65.tar.gz
 
    or
 
-        gunzip < mview-1.64.tar.gz | tar xvf -
+        gunzip < mview-1.65.tar.gz | tar xvf -
 
-   This would create a directory called `mview-1.64` and place all the files
+   This would create a directory called `mview-1.65` and place all the files
    under there.
 
 2. Change to this directory and load `bin/mview` into an editor.
@@ -78,7 +78,7 @@ follow. The procedure is similar for Windows.
 4. Find the `use lib '/path/to/mview/lib';` line and change it, in our
    example, to:
 
-        use lib '/usr/local/mview-1.64/lib';
+        use lib '/usr/local/mview-1.65/lib';
 
    and save the file.
 

@@ -75,7 +75,7 @@ The `latest code`_ can be downloaded direct from GitHub by clicking the green
 "Clone or download" button and following the instructions to either clone the
 git repository or download a ZIP archive.
 
-.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.64/
+.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.65/
 .. _releases:             https://sourceforge.net/projects/bio-mview/files/bio-mview/
 .. _download statistics:  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2025-01-01
 .. _latest code:          https://github.com/desmid/mview
@@ -90,13 +90,13 @@ follow. The procedure is similar for Windows.
 1. Save the archive to your software area, e.g., ``/usr/local``, then uncompress
    and extract it::
 
-     tar xvzf mview-1.64.tar.gz
+     tar xvzf mview-1.65.tar.gz
 
    or::
 
-     gunzip < mview-1.64.tar.gz | tar xvf -
+     gunzip < mview-1.65.tar.gz | tar xvf -
 
-   This would create a directory called ``mview-1.64`` and place all the files
+   This would create a directory called ``mview-1.65`` and place all the files
    under there.
 
 2. Change to this directory and load ``bin/mview`` into an editor.
@@ -109,7 +109,7 @@ follow. The procedure is similar for Windows.
 4. Find the ``use lib '/path/to/mview/lib';`` line and change it, in our
    example, to::
 
-     use lib '/usr/local/mview-1.64/lib';
+     use lib '/usr/local/mview-1.65/lib';
 
    and save the file.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# Copyright (C) 1997-2018 Nigel P. Brown
+# Copyright (C) 1997-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -8,12 +8,12 @@
 ###########################################################################
 # Release information
 ###########################################################################
-my $VERSION  = '1.64';
+my $VERSION  = '1.65';
 my $PATCH    = '';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
-my $COPYYRS  = "1997-2018";
+my $COPYYRS  = "1997-2019";
 my $PROJPTH  = 'https://desmid.github.io/mview/';
 my $AUTHMAIL = 'biomview@gmail.com';
 

@@ -1,10 +1,24 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
+Version 1.65  2019-03-24
+
+A maintenance release with no user-visible changes.
+
+Input formats:
+
+- Tested with BLAST 2.8.1+
+- Tested with FASTA 36.3.8g [2018-10-23 build]
+
+Bug fixes:
+
+- Fixed parser error messages - has no effect on normal usage.
+
+
 Version 1.64  2018-05-14
 
 Input formats:
 
-- Tested with BLAST 2.8.0+ (alpha version)
+- Tested with BLAST 2.8.0+ [alpha]
 
 New features:
 
@@ -35,7 +49,7 @@ Version: 1.63  2018-03-25
 Input formats:
 
 - Tested with BLAST 2.7.1+
-- Tested with FASTA 36.3.8f, 36.3.8g
+- Tested with FASTA 36.3.8f, 36.3.8g [2018-01-01 build]
 
 Changes:
 
