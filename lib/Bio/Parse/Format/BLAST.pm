@@ -203,20 +203,27 @@ sub get_entry {
     }
 
     #BLAST+ PSIBLAST handled by BLASTP parser
-    my $parser = $SAVEPROG eq 'PSIBLAST' ? 'blastp' : lc $SAVEPROG;
+    my $format = $SAVEPROG eq 'PSIBLAST' ? 'blastp' : lc $SAVEPROG;
 
     #package $type defines this constructor and coerces to $type
-    $type = "Bio::Parse::Format::BLAST${SAVEVERSION}${SAVEFMT}::$parser";
+    $type = "Bio::Parse::Format::BLAST${SAVEVERSION}${SAVEFMT}::$format";
 
     #warn "prog= $SAVEPROG  version= $SAVEVERSION  type= $type\n";
 
-    my $format = $type; $format =~ s/::/\//g; require "$format.pm";
+    load_parser_class($type);
+
     my $self = $type->new(undef, $parent->{'text'}, $offset, $bytes);
 
-    $self->{'format'}     = $parser;
-    $self->{'version'}    = $SAVEVERSION;
+    $self->{'format'}  = $format;
+    $self->{'version'} = $SAVEVERSION;
 
     $self;
+}
+
+sub load_parser_class {
+    my $class = shift;
+    $class =~ s/::/\//g;
+    require "$class.pm";
 }
 
 sub new { die "$_[0]::new() virtual function called\n" }

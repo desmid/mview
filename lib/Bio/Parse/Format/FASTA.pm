@@ -219,7 +219,7 @@ sub get_entry {
     my ($parent) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    my ($type, $prog, $version, $class, $format) = ('Bio::Parse::Format::FASTA');
+    my ($type, $prog, $version, $format) = ('Bio::Parse::Format::FASTA');
     my $GCG = 0;
     my $start = '';
 
@@ -373,36 +373,39 @@ sub get_entry {
     $version =~ s/-/_/g;
 
     if ($GCG) {
-        $class = "Bio::Parse::Format::GCG_FASTA${version}::$prog";
+        $type = "Bio::Parse::Format::GCG_FASTA${version}::$prog";
     } else {
-        $class = "Bio::Parse::Format::FASTA${version}::$prog";
+        $type = "Bio::Parse::Format::FASTA${version}::$prog";
     }
 
     #reuse packages: tfastx,tfasty,tfastxy -> tfasta
-    $class =~ s/::tfast([xy]|xy)$/::tfasta/;
+    $type =~ s/::tfast([xy]|xy)$/::tfasta/;
 
     #reuse packages: fasty -> fastx
-    $class =~ s/::fasty$/::fastx/;
+    $type =~ s/::fasty$/::fastx/;
 
     #reuse packages: fastf,fasts -> fastm
-    $class =~ s/::fast[fs]$/::fastm/;
+    $type =~ s/::fast[fs]$/::fastm/;
 
     #reuse packages: tfastf,tfasts -> tfastm
-    $class =~ s/::tfast[fs]$/::tfastm/;
+    $type =~ s/::tfast[fs]$/::tfastm/;
 
-    #warn "\nprog=$prog  version=$version (GCG=$GCG) class=$class\n";
+    #warn "\nprog= $prog  version= $version (GCG=$GCG) type= $type\n";
 
-    ($prog = $class) =~ s/::/\//g; require "$prog.pm";
+    load_parser_class($type);
 
-    #contruct specific parser
-    no strict 'refs';
-    my $self =
-        &{"${class}::new"}($class, undef, $parent->{'text'}, $offset, $bytes);
+    my $self = $type->new(undef, $parent->{'text'}, $offset, $bytes);
 
     $self->{'format'}  = $format;
     $self->{'version'} = $version;
 
     $self;
+}
+
+sub load_parser_class {
+    my $class = shift;
+    $class =~ s/::/\//g;
+    require "$class.pm";
 }
 
 #Parse one entry: generic for all FASTA[12]

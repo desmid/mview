@@ -29,8 +29,7 @@ sub new {
     $self->{'text'}   = new Bio::Parse::Substring($file);
     $self->{'offset'} = 0;  #where to start parsing
 
-    ($file = "Bio::Parse::Format::$format") =~ s/::/\//g;
-    require "$file.pm";
+    load_parser_class($format);
 
     $self;
 }
@@ -41,13 +40,7 @@ sub get_entry {
 
     $self->{'text'}->reset($self->{'offset'});  #start parsing here
 
-    no strict 'refs';
-
-    my $parser = "Bio::Parse::Format::$self->{'format'}::get_entry";
-
-    $parser = &$parser($self);
-
-    use strict 'refs';
+    my $parser = new_parser($self, $self->{'format'});
 
     return undef  unless $parser;
 
@@ -59,9 +52,22 @@ sub get_entry {
 sub close { $_[0]->{'text'}->close }
 
 ###########################################################################
-# private methods
+# private methods / statics
 ###########################################################################
 sub DESTROY { $_[0]->close }
+
+sub load_parser_class {
+    my $format = shift;
+    ($format = "Bio::Parse::Format::$format") =~ s/::/\//g;
+    require "$format.pm";
+}
+
+sub new_parser {
+    my ($caller, $format) = @_;
+    my $parser = "Bio::Parse::Format::${format}::get_entry";
+    no strict 'refs';
+    return &$parser($caller);
+}
 
 ###########################################################################
 # debug methods
