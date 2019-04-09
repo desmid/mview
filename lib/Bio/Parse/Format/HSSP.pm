@@ -1,6 +1,6 @@
 # Copyright (C) 1997-2019 Nigel P. Brown
 
-# This file is part of MView. 
+# This file is part of MView.
 # MView is released under license GPLv2, or any later version.
 
 ###########################################################################
