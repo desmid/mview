@@ -66,7 +66,7 @@ sub new_parser {
     my ($caller, $format) = @_;
     my $parser = "Bio::Parse::Format::${format}::get_entry";
     no strict 'refs';
-    return &$parser($caller);
+    return $parser->($caller);
 }
 
 ###########################################################################
