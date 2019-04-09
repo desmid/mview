@@ -9,10 +9,11 @@ use strict;
 package Bio::Parse::Scanner;
 
 use Bio::Parse::Substring;
+use Bio::Util::Object;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::Parse::Message);
+@ISA = qw(Bio::Util::Object);
 
 sub new {
     my $type = shift;

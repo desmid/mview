@@ -16,8 +16,33 @@ use vars qw(@ISA @EXPORT_OK);
 
 @EXPORT_OK = qw(dump_object dump_hash);
 
+my $MIN_KEY_WIDTH = 0;
+
+###########################################################################
+# public methods
+###########################################################################
+#warn with error string
+sub warn {
+    my $self = shift;
+    my $s = $self->_make_message_string('Warning', @_);
+    warn "$s\n";
+}
+
+#exit with error string
+sub die {
+    my $self = shift;
+    my $s = $self->_make_message_string('Died', @_);
+    die "$s\n";
+}
+
+#print all instance variables, or supplied list
+sub examine { print dump_object(@_) }
+
+###########################################################################
+# exported statics
+###########################################################################
 #pretty-print object contents by given ordered keys, or all sorted
-sub dump_object { return "Class: $_[0]\n" . _dump_body(@_) }
+sub dump_object { return "Class $_[0]\n" . _dump_body(@_) }
 
 #pretty-print hash contents by given ordered keys, or all sorted
 sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
@@ -28,12 +53,33 @@ sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 use Bio::Util::Regexp;
 use Bio::Util::Math qw(max);
 
+# generate common error massage string
+sub _make_message_string {
+    my ($self, $prefix) = (shift, shift);
+    my $s = "$prefix ";
+    $s .= ref($self) ? ref($self) : $self;
+    $s .= ": " . _args_as_string(@_)  if @_;
+    return $s;
+}
+
+# return space-separated string of concatenate arguments with undefined values
+# interpolated as 'undef'
+sub _args_as_string {
+    my @tmp = ();
+    foreach my $a (@_) {
+        push @tmp, (defined $a ? $a : 'undef');
+    }
+    my $s = join(" ", @tmp);
+    chomp $s;
+    return $s;
+}
+
 #pretty-print hash contents by given ordered keys, or all sorted
 sub _dump_body {
     my $hash = shift;
 
     sub maxlen {
-        my $w = 0;
+        my $w = $MIN_KEY_WIDTH;
         foreach my $key (@_) {
             $w = max($w, length(defined $key ? $key : '<NOEXIST>'));
         }

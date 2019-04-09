@@ -109,7 +109,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -179,7 +179,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -393,7 +393,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -546,7 +546,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -922,7 +922,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
 
-sub new { Bio::Message::warn(shift, "new() not implemented") }
+sub new { Bio::Util::Object::warn(shift, "new() not implemented") }
 
 
 ###########################################################################
@@ -932,7 +932,7 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
 
-sub new { Bio::Message::warn(shift, "new() not implemented") }
+sub new { Bio::Util::Object::warn(shift, "new() not implemented") }
 
 
 ###########################################################################

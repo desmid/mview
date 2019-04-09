@@ -40,7 +40,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -85,7 +85,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -191,7 +191,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
@@ -233,7 +233,7 @@ sub new {
     my $type = shift;
     if (@_ < 2) {
         #at least two args, ($offset, $bytes are optional).
-        Bio::Parse::Message::die($type, "new() invalid arguments:", @_);
+        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
     my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);

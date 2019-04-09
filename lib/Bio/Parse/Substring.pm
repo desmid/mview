@@ -9,11 +9,11 @@ use strict;
 package Bio::Parse::Substring;
 
 use FileHandle;
-use Bio::Parse::Message;
+use Bio::Util::Object;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::Parse::Message);
+@ISA = qw(Bio::Util::Object);
 
 use vars qw($DEBUG);
 
@@ -22,7 +22,7 @@ $DEBUG = 0;
 sub new {
     my $type = shift;
     #warn "${type}::new:\n"  if $DEBUG;
-    Bio::Parse::Message::die($type, "new() invalid arguments:", @_)
+    Bio::Util::Object::die($type, "new() invalid arguments:", @_)
         if @_ < 1;
     return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                 #filename
@@ -197,8 +197,6 @@ sub _test_crlf {
 # Random access a string in memory assuming any DOS CRLF already converted
 
 package Bio::Parse::Substring::String;
-
-use Bio::Parse::Message;
 
 use vars qw(@ISA);
 

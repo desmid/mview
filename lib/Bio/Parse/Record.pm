@@ -9,6 +9,11 @@ use strict;
 package Bio::Parse::Record;
 
 use Bio::Parse::Scanner;
+use Bio::Util::Object;
+
+use vars qw(@ISA);
+
+@ISA = qw(Bio::Util::Object);
 
 my $PACK_DELIM = "\0";
 my $KEY_DELIM  = "::";
@@ -505,49 +510,19 @@ sub key_range {
     return @rec;
 }
 
-#dump sorted list of all instance variables, or supplied list
-sub examine {
-    my $self = shift;
-    my @keys = @_ ? @_ : sort keys %$self;
-    my $key;
-    print "Class $self\n";
-    foreach $key (@keys) {
-        printf "%16s => %s\n", $key,
-            defined $self->{$key} ? $self->{$key} : 'undef';
-    }
-    return $self;
-}
-
-sub warn {
-    my $self = shift;
-    my $s = $self->make_message_string('Warning', @_);
-    warn "$s\n";
-}
-
-sub die {
-    my $self = shift;
-    my $s = $self->make_message_string('Died', @_);
-    die "$s\n";
-}
-
-sub make_message_string {
+# overrides Bio::Util::Object::_make_message_string
+# used by Bio::Util::Object::warn, Bio::Util::Object::die
+sub _make_message_string {
     my ($self, $prefix) = (shift, shift);
-    my $t = $self; $t =~ s/=.*//;
-    my $s = "$prefix $t ($self->{'absolute_key'})";
-    $s .= ": " . args_as_string(@_)  if @_;
-    return $s;
-}
-
-###########################################################################
-# private static
-###########################################################################
-sub args_as_string {
-    my @tmp = ();
-    foreach my $a (@_) {
-        push @tmp, (defined $a ? $a : 'undef');
+    my ($type, $key, $s) = ('', '', '');
+    if (ref $self) {
+        $type = "$self"; $type =~ s/=.*//;
+        $key = $self->{'absolute_key'};
+        $s = "$prefix $type ($key)";
+    } else {
+        $s = "$prefix $self";
     }
-    my $s = join(" ", @tmp);
-    chomp $s;
+    $s .= ": " . Bio::Util::Object::_args_as_string(@_)  if @_;
     return $s;
 }
 

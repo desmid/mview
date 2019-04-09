@@ -10,11 +10,11 @@ package Bio::Parse::Stream;
 
 use Bio::Parse::Record;
 use Bio::Parse::Substring;
-use Bio::Parse::Message;
+use Bio::Util::Object;
 
 use vars qw(@ISA);
 
-@ISA = qw(Bio::Parse::Message);
+@ISA = qw(Bio::Util::Object);
 
 #assumes a stream doesn't mix formats
 sub new {
@@ -72,7 +72,16 @@ sub new_parser {
 ###########################################################################
 # debug methods
 ###########################################################################
-sub print { $_[0]->examine(qw(file format)) }
+
+# called in the parser test suite
+sub print {
+    my $self = shift;
+    print "Class $self\n";
+    foreach my $key (qw(file format)) {
+        printf "%16s => %s\n", $key,
+            defined $self->{$key} ? $self->{$key} : 'undef';
+    }
+}
 
 ###########################################################################
 1;
