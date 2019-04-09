@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2018 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -36,6 +36,10 @@ sub new {
         $self->{'bytes'}  = $entry->{'bytes'};
     }
     $self->{'limit'}      = $self->{'offset'} + $self->{'bytes'};
+
+    $self->{'cursor'}     = -1;
+    $self->{'linestart'}  = -1;
+    $self->{'line'}       = '';
 
     $self->reset;
 

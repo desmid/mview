@@ -32,6 +32,9 @@ sub open  {}
 sub close {}
 sub reset {}
 
+sub substr {}
+sub getline {}
+
 sub startofline { $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
@@ -83,18 +86,6 @@ sub open {
     $self->reset($self->{'base'});
 }
 
-sub reset {
-    my ($self, $offset) = @_;
-    #warn "File::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
-    if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
-        $self->close;
-    }
-    $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
-    $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
-    $self->{'state'} = $OPEN;
-    $self->_init($offset);
-}
-
 sub close {
     my $self = shift;
     #warn "File::close:\n"  if $Bio::Parse::Substring::DEBUG;
@@ -105,6 +96,18 @@ sub close {
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
     $self->{'crlf'}       = undef;
+}
+
+sub reset {
+    my ($self, $offset) = @_;
+    #warn "File::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
+    if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
+        $self->close;
+    }
+    $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
+    $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
+    $self->{'state'} = $OPEN;
+    $self->_init($offset);
 }
 
 sub substr {

@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2018 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -148,7 +148,7 @@ sub print {
     printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
         $self->{'parent'} : 'undef';
     printf "%sKey:    %s   Indices: [%s]\n", $x,
-        $self->relative_key, join(',', @{$_[0]->{'indices'}});
+        $self->get_relative_key, join(',', @{$_[0]->{'indices'}});
 
     #print records in order of appearance in parent Record
     printf "%s  Subrecords by posn:\n", $x;
@@ -306,8 +306,8 @@ sub clean_identifier {
 sub get_pos   { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
 sub get_class { ref $_[0] }
 
-sub relative_key { $_[0]->{'relative_key'} }
-sub absolute_key { $_[0]->{'absolute_key'} }
+sub get_relative_key { $_[0]->{'relative_key'} }
+sub get_absolute_key { $_[0]->{'absolute_key'} }
 
 sub get_object {
     my ($self, $rec) = @_;
