@@ -24,25 +24,29 @@ sub examine {
 #warn with error string
 sub warn {
     my $self = shift;
-    my $s = ref($self) ? ref($self) : $self;
-    $s = "Warning $s";
-    $s .= ": " . to_string(@_)  if @_;
+    my $s = $self->make_message_string('Warning', @_);
     warn "$s\n";
 }
 
 #exit with error string
 sub die {
     my $self = shift;
-    my $s = ref($self) ? ref($self) : $self;
-    $s = "Died $s";
-    $s .= ": " . to_string(@_)  if @_;
+    my $s = $self->make_message_string('Died', @_);
     die "$s\n";
 }
 
+sub make_message_string {
+    my ($self, $prefix) = (shift, shift);
+    my $s = "$prefix ";
+    $s .= ref($self) ? ref($self) : $self;
+    $s .= ": " . args_as_string(@_)  if @_;
+    return $s;
+}
+
 ###########################################################################
-# local
+# private static
 ###########################################################################
-sub to_string {
+sub args_as_string {
     my @tmp = ();
     foreach my $a (@_) {
         push @tmp, (defined $a ? $a : 'undef');

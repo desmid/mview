@@ -9,11 +9,6 @@ use strict;
 package Bio::Parse::Record;
 
 use Bio::Parse::Scanner;
-use Bio::Parse::Message;
-
-use vars qw(@ISA);
-
-@ISA = qw(Bio::Parse::Message);
 
 my $PACK_DELIM = "\0";
 my $KEY_DELIM  = "::";
@@ -510,13 +505,50 @@ sub key_range {
     return @rec;
 }
 
-#warn with error string: override Message::warn() to a) be quiet
-#about the classname and b) interpolate Bio::Parse::Record->get_absolute_key.
+#dump sorted list of all instance variables, or supplied list
+sub examine {
+    my $self = shift;
+    my @keys = @_ ? @_ : sort keys %$self;
+    my $key;
+    print "Class $self\n";
+    foreach $key (@keys) {
+        printf "%16s => %s\n", $key,
+            defined $self->{$key} ? $self->{$key} : 'undef';
+    }
+    return $self;
+}
+
 sub warn {
     my $self = shift;
-    my $s = $_[$#_]; chomp $s;
+    my $s = $self->make_message_string('Warning', @_);
+    warn "$s\n";
+}
+
+sub die {
+    my $self = shift;
+    my $s = $self->make_message_string('Died', @_);
+    die "$s\n";
+}
+
+sub make_message_string {
+    my ($self, $prefix) = (shift, shift);
     my $t = $self; $t =~ s/=.*//;
-    warn "Warning $t ($self->{'absolute_key'}) $s\n";
+    my $s = "$prefix $t ($self->{'absolute_key'})";
+    $s .= ": " . args_as_string(@_)  if @_;
+    return $s;
+}
+
+###########################################################################
+# private static
+###########################################################################
+sub args_as_string {
+    my @tmp = ();
+    foreach my $a (@_) {
+        push @tmp, (defined $a ? $a : 'undef');
+    }
+    my $s = join(" ", @tmp);
+    chomp $s;
+    return $s;
 }
 
 ###########################################################################
