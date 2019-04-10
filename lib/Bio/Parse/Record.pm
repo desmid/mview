@@ -492,47 +492,4 @@ sub string {
 }
 
 ###########################################################################
-# junk
-###########################################################################
-
-# sub get_class { ref $_[0] }
-# sub get_relative_key { $_[0]->{'relative_key'} }
-# sub get_absolute_key { $_[0]->{'absolute_key'} }
-
-# sub print_records_by_type {
-#     my ($self, $indent) = (@_, 0);
-#     my $x = ' ' x ($indent+2);
-#     foreach my $key (sort keys %{$self->{'record_by_type'}}) {
-#         my ($rec, $label);
-#         if (@{$self->{'record_by_type'}->{$key}} > 1) {
-#             for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
-#                 $rec = $self->{'record_by_type'}->{$key}->[$i];
-#                 $label = $rec->[0] . '/' . ($i+1);
-#                 printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
-#             }
-#         } else {
-#             $rec = $self->{'record_by_type'}->{$key}->[0];
-#             $label = $rec->[0];
-#             printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
-#         }
-#     }
-# }
-
-# #extract a substring with offset and bytecount from the 'text' attribute,
-# #defaulting to the entire string
-# sub substr {
-#     my $self = shift;
-#     my ($offset, $bytes) = (@_, $self->{'offset'}, $self->{'bytes'});
-
-#     #warn "Record::substr(@_)\n";
-
-#     if (! defined $self->{'text'}) {
-#         $self->die("substr() $self text field undefined");
-#     }
-
-#     ## substr(${$self->{'text'}}, $offset, $bytes);
-#     return $self->{'text'}->substr($offset, $bytes);
-# }
-
-###########################################################################
 1;
