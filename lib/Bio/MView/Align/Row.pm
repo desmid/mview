@@ -94,5 +94,8 @@ use Bio::Util::Object qw(dump_self);
 
 sub dump { warn dump_self(@_) }
 
+# subclass overrides
+sub string { 'row' }
+
 ###########################################################################
 1;

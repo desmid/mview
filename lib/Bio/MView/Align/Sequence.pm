@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Nigel P. Brown
+# Copyright (C) 1997-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -41,9 +41,11 @@ sub new {
 #override
 sub is_sequence { 1 }
 
+#overrides Bio::MView::Align::Row::string
+sub string   { return $_[0]->{'string'}->string }
+
 sub from     { return $_[0]->{'from'} }
 sub seqobj   { return $_[0]->{'string'} }
-sub string   { return $_[0]->{'string'}->string }
 sub sequence { return $_[0]->{'string'}->sequence }
 sub seqlen   { return $_[0]->{'string'}->seqlen }
 

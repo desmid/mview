@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Nigel P. Brown
+# Copyright (C) 1997-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -52,6 +52,12 @@ sub reset_display {
         'labels' => \@labels,  #label strings
     );
 }
+
+######################################################################
+# debug
+######################################################################
+#overrides Bio::MView::Align::Row::string
+sub string { 'ruler length= ' . $_[0]->length }
 
 ###########################################################################
 1;
