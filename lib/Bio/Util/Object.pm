@@ -16,35 +16,36 @@ use vars qw(@ISA @EXPORT_OK);
 
 @EXPORT_OK = qw(dump_self dump_hash);
 
+my $PRETTY_PRINT_STREAM = \*STDOUT;
 my $MIN_KEY_WIDTH = 16;
 
 ###########################################################################
 # public methods
 ###########################################################################
-#warn with error string
+# warn with error string
 sub warn {
     my $self = shift;
     my $s = $self->_make_message_string('Warning', @_);
     warn "$s\n";
 }
 
-#exit with error string
+# exit with error string
 sub die {
     my $self = shift;
     my $s = $self->_make_message_string('Died', @_);
     die "$s\n";
 }
 
-#print all instance variables, or supplied list
-sub examine { print dump_self(@_) }
+# pretty-print all instance variables on object, or supplied list
+sub examine { print $PRETTY_PRINT_STREAM dump_self(@_) }
 
 ###########################################################################
 # exported statics
 ###########################################################################
-#pretty-print object contents by given ordered keys, or all sorted
+# return pretty-printed object contents by given ordered keys, or all sorted
 sub dump_self { return "Class $_[0]\n" . _dump_body(@_) }
 
-#pretty-print hash contents by given ordered keys, or all sorted
+# return pretty-printed hash contents by given ordered keys, or all sorted
 sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 
 ###########################################################################
@@ -74,7 +75,7 @@ sub _args_as_string {
     return $s;
 }
 
-#pretty-print hash contents by given ordered keys, or all sorted
+# return pretty-printed hash contents by given ordered keys, or all sorted
 sub _dump_body {
     my $hash = shift;
 
