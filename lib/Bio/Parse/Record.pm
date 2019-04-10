@@ -514,13 +514,13 @@ sub key_range {
 # used by Bio::Util::Object::warn, Bio::Util::Object::die
 sub _make_message_string {
     my ($self, $prefix) = (shift, shift);
-    my ($type, $key, $s) = ('', '', '');
+    my $s = $prefix;
     if (ref $self) {
-        $type = "$self"; $type =~ s/=.*//;
-        $key = $self->{'absolute_key'};
-        $s = "$prefix $type ($key)";
+        my $type = "$self"; $type =~ s/=.*//;
+        my $path = $self->{'absolute_key'};
+        $s .= " $type ($path)";
     } else {
-        $s = "$prefix $self";
+        $s .= " $self";
     }
     $s .= ": " . Bio::Util::Object::_args_as_string(@_)  if @_;
     return $s;

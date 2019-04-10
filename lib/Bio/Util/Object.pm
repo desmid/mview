@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2018 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -14,9 +14,9 @@ use vars qw(@ISA @EXPORT_OK);
 
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(dump_object dump_hash);
+@EXPORT_OK = qw(dump_self dump_hash);
 
-my $MIN_KEY_WIDTH = 0;
+my $MIN_KEY_WIDTH = 16;
 
 ###########################################################################
 # public methods
@@ -36,13 +36,13 @@ sub die {
 }
 
 #print all instance variables, or supplied list
-sub examine { print dump_object(@_) }
+sub examine { print dump_self(@_) }
 
 ###########################################################################
 # exported statics
 ###########################################################################
 #pretty-print object contents by given ordered keys, or all sorted
-sub dump_object { return "Class $_[0]\n" . _dump_body(@_) }
+sub dump_self { return "Class $_[0]\n" . _dump_body(@_) }
 
 #pretty-print hash contents by given ordered keys, or all sorted
 sub dump_hash { return "$_[0]\n" . _dump_body(@_) }

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Nigel P. Brown
+# Copyright (C) 1997-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -419,9 +419,9 @@ sub _populate_sequence_array {
 ######################################################################
 #sub DESTROY { print "destroy: $_[0]\n" }
 
-use Bio::Util::Object qw(dump_object);
+use Bio::Util::Object qw(dump_self);
 
-sub dump { warn dump_object(@_) }
+sub dump { warn dump_self(@_) }
 
 ###########################################################################
 1;
