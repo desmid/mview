@@ -50,15 +50,6 @@ sub new {
 sub get_offset { $_[0]->{'linestart'} }
 sub get_bytes  { $_[0]->{'cursor'} - $_[0]->{'linestart'} }
 
-#return the remaining unprocessed stream without altering the cursor
-sub inspect_stream {
-    my $self = shift;
-    return ''  if $self->{'cursor'} >= $self->{'limit'};
-    return $self->{'text'}->substr(
-        $self->{'cursor'}, $self->{'limit'} - $self->{'cursor'} + 1
-    );
-}
-
 #return next line of text or undef if the text stream is done; chomp line if
 #optional argument is non-zero.
 sub next_line {
@@ -277,6 +268,18 @@ sub _next_line {
     $self->{'cursor'}   += $bytes;
 
     return 1;
+}
+
+###########################################################################
+# debug
+###########################################################################
+#return the remaining unprocessed stream without altering the cursor
+sub inspect_stream {
+    my $self = shift;
+    return ''  if $self->{'cursor'} >= $self->{'limit'};
+    return $self->{'text'}->substr(
+        $self->{'cursor'}, $self->{'limit'} - $self->{'cursor'} + 1
+    );
 }
 
 ###########################################################################

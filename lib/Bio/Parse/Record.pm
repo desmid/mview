@@ -125,71 +125,6 @@ sub test_records {
     }
 }
 
-sub fmt {
-    my ($self, $val, $undef) = (@_, '<undef>');
-    my $ref = ref $val;
-    if ($ref eq 'HASH') {
-        my @tmp = map {
-            my $v = defined $val->{$_} ? $val->{$_} : $undef; "$_:$v"
-        } sort keys %$val;
-        return "{" . join(',', @tmp) . "}";
-    }
-    if ($ref eq 'ARRAY') {
-        my @tmp = map { defined $_ ? $_ : $undef } @$val;
-        return "[" . join(',', @tmp) . "]";
-    }
-    return defined $val ? $val : $undef;
-}
-
-sub print {
-    my ($self, $indent) = (@_, 0);
-    my $x = ' ' x $indent;
-    printf "%sClass:  %s\n", $x, $self;
-    printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
-        $self->{'parent'} : 'undef';
-    printf "%sKey:    %s   Indices: [%s]\n", $x,
-        $self->get_relative_key, join(',', @{$_[0]->{'indices'}});
-
-    #print records in order of appearance in parent Record
-    printf "%s  Subrecords by posn:\n", $x;
-    $self->print_records_by_posn($indent);
-
-    #print records in order of type
-    #printf "%s  Subrecords by type:\n", $x;
-    #$self->print_records_by_type($indent);
-
-    printf "%s  Miscellaneous:\n", $x;
-    printf "$x%20s -> %d\n",   'index', $self->{'index'};
-    printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
-    my $tmp = '';
-    if (defined $self->{'text'}) {
-        $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
-        ($tmp) = split("\n", $tmp);
-    }
-    printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
-    printf "%s  Data:\n", $x;
-    $self->print_data($indent);
-}
-
-#subclass overrides to add fields
-sub print_data {}
-
-#extract a substring with offset and bytecount from the 'text' attribute,
-#defaulting to the entire string
-sub substr {
-    my $self = shift;
-    my ($offset, $bytes) = (@_, $self->{'offset'}, $self->{'bytes'});
-
-    #warn "Record::substr(@_)\n";
-
-    if (! defined $self->{'text'}) {
-        $self->die("substr() $self text field undefined");
-    }
-
-    ## substr(${$self->{'text'}}, $offset, $bytes);
-    return $self->{'text'}->substr($offset, $bytes);
-}
-
 #Given a record key for this entry, parse corresponding records and return
 #an array of the parsed objects or the first object if called in a scalar
 #context. If called with no argument or just '*' parse everything at this
@@ -246,13 +181,6 @@ sub count {
     return 0;  #no data
 }
 
-#tidy up identifiers: strip leading "/:" or ">" substrings
-sub strip_leading_identifier_chars {
-    my $string = shift;
-    $string =~ s/^(\/:|>)//;
-    return $string;
-}
-
 #Returns $text less newlines while attempting to assemble hyphenated words
 #and excess white space split over multiple lines correctly.
 sub strip_english_newlines {
@@ -285,7 +213,13 @@ sub strip_trailing_space {
     return $text;
 }
 
-sub strip_trailing_junk {
+sub strip_leading_identifier_chars {
+    my $text = shift;
+    $text =~ s/^(\/:|>)//;  #leading "/:" or ">"
+    return $text;
+}
+
+sub strip_trailing_identifier_chars {
     my $text = shift;
     $text =~ s/[;:|,.-]+$//;  #default trailing PDB chain is often '_'
     return $text;
@@ -294,7 +228,7 @@ sub strip_trailing_junk {
 sub clean_identifier {
     my $text = shift;
     $text = strip_leading_identifier_chars($text);
-    $text = strip_trailing_junk($text);
+    $text = strip_trailing_identifier_chars($text);
     return $text;
 }
 
@@ -302,12 +236,6 @@ sub clean_identifier {
 # private methods
 ###########################################################################
 #sub DESTROY { warn "DESTROY $_[0]\n" }
-
-sub get_pos   { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
-sub get_class { ref $_[0] }
-
-sub get_relative_key { $_[0]->{'relative_key'} }
-sub get_absolute_key { $_[0]->{'absolute_key'} }
 
 sub get_object {
     my ($self, $rec) = @_;
@@ -331,40 +259,6 @@ sub get_record_number {
     }
     #there is no record number
     return 0;
-}
-
-sub print_records_by_posn {
-    my ($self, $indent) = (@_, 0);
-    my $x = ' ' x ($indent+2);
-    my %count;
-    foreach my $rec (@{$self->{'record_by_posn'}}) {
-        if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
-            printf "$x%20s -> [%s]\n",
-                $rec->[0] . '/' . ++$count{$rec->[0]}, join(", ", @$rec);
-        } else {
-            printf "$x%20s -> [%s]\n",
-                $rec->[0],                             join(", ", @$rec);
-        }
-    }
-}
-
-sub print_records_by_type {
-    my ($self, $indent) = (@_, 0);
-    my $x = ' ' x ($indent+2);
-    foreach my $key (sort keys %{$self->{'record_by_type'}}) {
-        my $rec;
-        if (@{$self->{'record_by_type'}->{$key}} > 1) {
-            for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
-                $rec = $self->{'record_by_type'}->{$key}->[$i];
-                printf "$x%20s -> [%s]\n",
-                    $rec->[0] . '/' . ($i+1),          join(", ", @$rec);
-            }
-        } else {
-            $rec = $self->{'record_by_type'}->{$key}->[0];
-            printf "$x%20s -> [%s]\n",
-                $rec->[0],                             join(", ", @$rec);
-        }
-    }
 }
 
 #Given a triple (key, offset, bytecount) in $rec, extract the record
@@ -428,41 +322,6 @@ sub free_record {
     return $rec;
 }
 
-#Given a record key for this entry, return an array of corresponding record
-#strings or the first string if called in a scalar context. If called with
-#just '*' return an array of all record strings at this level. If called
-#with no argument return the whole database entry string as a scalar.
-sub string {
-    my ($self, $key) = (@_, undef);
-    my (@list, @keys) = ();
-
-    #warn "string($key)\n";
-
-    if (! defined $key) {
-        return $self->substr($self->{'offset'}, $self->{'bytes'});
-    }
-
-    if ($key eq '*') {
-        @keys = keys %{$self->{'record_by_type'}};
-    }
-
-    foreach $key (@keys) {
-        foreach my $rec ($self->key_range($key)) {
-            if (defined $rec->[3]) {
-                #print "STRING() calling child\n";
-                push @list, $rec->[3]->string;
-            } else {
-                #print "STRING() calling substr [$rec->[1], $rec->[2]]\n";
-                push @list, $self->substr($rec->[1], $rec->[2]);
-            }
-        }
-    }
-
-    return @list    if wantarray;
-    return $list[0] if @list;
-    return '';  #no data
-}
-
 #Split a key string of forms 'key' or 'key[N]' or 'key[M..N]' and return
 #an array of records so indexed. Supplied range indices are assumed to be
 #positive 1-based and are converted to 0-based for internal use.
@@ -486,7 +345,6 @@ sub key_range {
 
     #was a range requested?
     if (defined $lo) {
-
         $lo--; $hi--;    #convert to internal 0-based indices
 
         #want range?
@@ -525,6 +383,156 @@ sub _make_message_string {
     $s .= ": " . Bio::Util::Object::_args_as_string(@_)  if @_;
     return $s;
 }
+
+###########################################################################
+# debug methods
+###########################################################################
+# called in the parser test suite
+sub print {
+    my ($self, $indent) = (@_, 0);
+    my $x = ' ' x $indent;
+    printf "%sClass:  %s\n", $x, $self;
+    printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
+        $self->{'parent'} : 'undef';
+    printf "%sKey:    %s   Indices: [%s]\n", $x,
+        $self->{'relative_key'}, join(',', @{$_[0]->{'indices'}});
+
+    #print records in order of appearance in parent Record
+    printf "%s  Subrecords by posn:\n", $x;
+    $self->print_records_by_posn($indent);
+
+    #print records in order of type
+    #printf "%s  Subrecords by type:\n", $x;
+    #$self->print_records_by_type($indent);
+
+    printf "%s  Miscellaneous:\n", $x;
+    printf "$x%20s -> %d\n",   'index', $self->{'index'};
+    printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
+    my $tmp = '';
+    if (defined $self->{'text'}) {
+        $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
+        ($tmp) = split("\n", $tmp);
+    }
+    printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
+    printf "%s  Data:\n", $x;
+
+    $self->print_data($indent);  #supplied by subclass
+}
+
+# helper for print()
+sub get_pos   { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
+
+# helper for print()
+sub print_records_by_posn {
+    my ($self, $indent) = (@_, 0);
+    my $x = ' ' x ($indent+2);
+    my %count;
+    foreach my $rec (@{$self->{'record_by_posn'}}) {
+        my $label = $rec->[0];
+        if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
+            $label .=  '/' . ++$count{$rec->[0]};
+        }
+        printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
+    }
+}
+
+# subclass overrides to add fields; called by print()
+sub print_data {}
+
+# helper for print_data()
+sub fmt {
+    my ($self, $val, $undef) = (@_, '<undef>');
+    my $ref = ref $val;
+    if ($ref eq 'HASH') {
+        my @tmp = map {
+            my $v = defined $val->{$_} ? $val->{$_} : $undef; "$_:$v"
+        } sort keys %$val;
+        return "{" . join(',', @tmp) . "}";
+    }
+    if ($ref eq 'ARRAY') {
+        my @tmp = map { defined $_ ? $_ : $undef } @$val;
+        return "[" . join(',', @tmp) . "]";
+    }
+    return defined $val ? $val : $undef;
+}
+
+#Given a record key for this entry, return an array of corresponding record
+#strings or the first string if called in a scalar context. If called with
+#just '*' return an array of all record strings at this level. If called
+#with no argument return the whole database entry string as a scalar.
+sub string {
+    my ($self, $key) = (@_, undef);
+    my (@list, @keys) = ();
+
+    #warn "string($key)\n";
+
+    if (! defined $key) {
+        return $self->{'text'}->substr($self->{'offset'}, $self->{'bytes'});
+    }
+
+    if ($key eq '*') {
+        @keys = keys %{$self->{'record_by_type'}};
+    }
+
+    foreach $key (@keys) {
+        foreach my $rec ($self->key_range($key)) {
+            if (defined $rec->[3]) {
+                #print "STRING() calling child\n";
+                push @list, $rec->[3]->string;
+            } else {
+                #print "STRING() calling substr [$rec->[1], $rec->[2]]\n";
+                push @list, $self->{'text'}->substr($rec->[1], $rec->[2]);
+            }
+        }
+    }
+
+    return @list    if wantarray;
+    return $list[0] if @list;
+    return '';  #no data
+}
+
+###########################################################################
+# junk
+###########################################################################
+
+# sub get_class { ref $_[0] }
+# sub get_relative_key { $_[0]->{'relative_key'} }
+# sub get_absolute_key { $_[0]->{'absolute_key'} }
+
+# sub print_records_by_type {
+#     my ($self, $indent) = (@_, 0);
+#     my $x = ' ' x ($indent+2);
+#     foreach my $key (sort keys %{$self->{'record_by_type'}}) {
+#         my ($rec, $label);
+#         if (@{$self->{'record_by_type'}->{$key}} > 1) {
+#             for (my $i=0; $i < @{$self->{'record_by_type'}->{$key}}; $i++) {
+#                 $rec = $self->{'record_by_type'}->{$key}->[$i];
+#                 $label = $rec->[0] . '/' . ($i+1);
+#                 printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
+#             }
+#         } else {
+#             $rec = $self->{'record_by_type'}->{$key}->[0];
+#             $label = $rec->[0];
+#             printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
+#         }
+#     }
+# }
+
+# #extract a substring with offset and bytecount from the 'text' attribute,
+# #defaulting to the entire string
+# sub substr {
+#     my $self = shift;
+#     my ($offset, $bytes) = (@_, $self->{'offset'}, $self->{'bytes'});
+
+#     #warn "Record::substr(@_)\n";
+
+#     if (! defined $self->{'text'}) {
+#         $self->die("substr() $self text field undefined");
+#     }
+
+#     ## substr(${$self->{'text'}}, $offset, $bytes);
+#     return $self->{'text'}->substr($offset, $bytes);
+# }
 
 ###########################################################################
 1;
