@@ -43,16 +43,13 @@ sub new { #discard system supplied type
     $self->{'indices'}        = [];         #additional keys for indexing
 
     #subrecord counter
-    $self->{'index'}         = $self->get_record_number($parent);
+    $self->{'index'} = $self->get_record_number($parent);
 
     #relative key for reporting
-    $self->{'relative_key'}  = $self->get_type . $KEY_DELIM . $self->{'index'};
+    $self->{'relative_key'} = $self->get_type() . $KEY_DELIM . $self->{'index'};
 
     #absolute hierarchical key for indexing/reporting
-    $self->{'absolute_key'}  = '';
-    $self->{'absolute_key'}  = $parent->{'absolute_key'}. $KEY_DELIM  if
-        defined $parent;
-    $self->{'absolute_key'} .= $self->{'relative_key'};
+    $self->{'absolute_key'} = $self->make_absolute_key();
 
     $self;
 }
@@ -236,6 +233,15 @@ sub clean_identifier {
 # private methods
 ###########################################################################
 #sub DESTROY { warn "DESTROY $_[0]\n" }
+
+sub make_absolute_key {
+    my $self = shift;
+    my $key = '';
+    $key = $self->{'parent'}->{'absolute_key'}. $KEY_DELIM
+        if defined $self->{'parent'};
+    $key .= $self->{'relative_key'};
+    return $key;
+}
 
 sub get_object {
     my ($self, $rec) = @_;
