@@ -9,8 +9,6 @@ use strict;
 package Bio::Parse::Stream;
 
 use Bio::Parse::Record;
-use Bio::Parse::Substring;
-use Bio::Util::Object;
 
 use vars qw(@ISA);
 

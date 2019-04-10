@@ -9,7 +9,6 @@ use strict;
 package Bio::Parse::Scanner;
 
 use Bio::Parse::Substring;
-use Bio::Util::Object;
 
 use vars qw(@ISA);
 

@@ -6,10 +6,9 @@
 use strict;
 
 ###########################################################################
-package Bio::Parse::Substring;
+# Random access a file or in-memory string
 
-use FileHandle;
-use Bio::Util::Object;
+package Bio::Parse::Substring;
 
 use vars qw(@ISA);
 
@@ -24,8 +23,8 @@ sub new {
     #warn "${type}::new:\n"  if $DEBUG;
     Bio::Util::Object::die($type, "new() invalid arguments:", @_)
         if @_ < 1;
-    return new Bio::Parse::Substring::String(@_) if ref $_[0];  #string ref
-    return new Bio::Parse::Substring::File(@_);                 #filename
+    return new Bio::Parse::Substring::String(@_)  if ref $_[0];  #string ref
+    return new Bio::Parse::Substring::File(@_);                  #filename
 }
 
 sub open  {}
@@ -70,7 +69,7 @@ sub new {
     $self->{'state'}      = $CLOSE;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
-    $self->{'crlf'}       = undef;
+    $self->{'dos'}        = 0;  #true if file is non-native DOS
     $self->{'fh'}         = -1;
 
     $self->open;
@@ -95,7 +94,7 @@ sub close {
     $self->{'state'} = $CLOSE;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
-    $self->{'crlf'}       = undef;
+    $self->{'dos'}        = 0;
 }
 
 sub reset {
@@ -107,7 +106,10 @@ sub reset {
     $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
     $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
     $self->{'state'} = $OPEN;
-    $self->_init($offset);
+    $self->{'dos'} = $self->_file_has_crlf();
+    $self->{'fh'}->seek($offset, SEEK_SET);  #seek absolute
+    $self->{'lastoffset'} = $offset;
+    $self->{'thisoffset'} = $offset;
 }
 
 sub substr {
@@ -135,7 +137,7 @@ sub substr {
     $self->{'thisoffset'} = $offset + $bytes;
 
     #strip multiple CR if file from DOS
-    $buff =~ s/\015\012/\012/go  if $self->{'crlf'};
+    $buff =~ s/\015\012/\012/go  if $self->{'dos'};
 
     #warn "File::substr: [$buff]\n"  if $Bio::Parse::Substring::DEBUG;
 
@@ -164,7 +166,7 @@ sub getline {
     $self->{'thisoffset'} = $offset + $bytes;
 
     #strip terminal CR if file from DOS
-    CORE::substr($$line, $bytes-2, 1, '')  if $self->{'crlf'};
+    CORE::substr($$line, $bytes-2, 1, '')  if $self->{'dos'};
 
     #warn "File::getline: [$$line]\n"  if $Bio::Parse::Substring::DEBUG;
 
@@ -174,22 +176,12 @@ sub getline {
 ###########################################################################
 # private methods
 ###########################################################################
-sub _init {
-    my ($self, $offset) = @_;
-    #warn "File::_init($offset):\n"  if $Bio::Parse::Substring::DEBUG;
-    my $line = readline($self->{'fh'});
-    $self->{'crlf'} = $self->_test_crlf(\$line);
-    #seek absolute to desired offset
-    $self->{'fh'}->seek($offset, SEEK_SET);
-    $self->{'lastoffset'} = $offset;
-    $self->{'thisoffset'} = $offset;
-}
-
 #detect CRLF in non-native DOS file on UNIX
-sub _test_crlf {
-    my ($self, $buff) = @_;
-    my $test = index($$buff, "\r\n") > -1;
-    #warn "File::_test_crlf: [$$buff] --> @{[$test > 0 ? '1' : '0']}\n";
+sub _file_has_crlf {
+    my $self = shift;
+    my $line = readline($self->{'fh'});
+    my $test = index($line, "\r\n") > -1;
+    #warn "File::_file_has_crlf: [$line] --> @{[$test > 0 ? '1' : '0']}\n";
     return $test;
 }
 
