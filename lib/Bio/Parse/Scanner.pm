@@ -8,7 +8,8 @@ use strict;
 ###########################################################################
 package Bio::Parse::Scanner;
 
-use Bio::Parse::Substring;
+use Bio::Util::Object;
+use Bio::Parse::ReadText;
 
 use vars qw(@ISA);
 
@@ -26,7 +27,7 @@ sub new {
 
     if (defined $text and ref $text) {
         #use supplied text and positions (or defaults thereof)
-        $self->{'text'}   = new Bio::Parse::Substring($text);
+        $self->{'text'}   = new Bio::Parse::ReadText($text);
         $self->{'offset'} = defined $offset ? $offset : 0;
         $self->{'bytes'}  = defined $bytes ? $bytes : length($$text);
     } else {

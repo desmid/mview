@@ -8,7 +8,9 @@ use strict;
 ###########################################################################
 package Bio::Parse::Stream;
 
+use Bio::Util::Object;
 use Bio::Parse::Record;
+use Bio::Parse::ReadFile;
 
 use vars qw(@ISA);
 
@@ -24,7 +26,7 @@ sub new {
 
     $self->{'file'}   = $file;
     $self->{'format'} = $format;
-    $self->{'text'}   = new Bio::Parse::Substring($file);
+    $self->{'text'}   = new Bio::Parse::ReadFile($file);
     $self->{'offset'} = 0;  #where to start parsing
 
     load_parser_class($format);

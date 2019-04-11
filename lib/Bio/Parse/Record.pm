@@ -8,8 +8,8 @@ use strict;
 ###########################################################################
 package Bio::Parse::Record;
 
-use Bio::Parse::Scanner;
 use Bio::Util::Object;
+use Bio::Parse::Scanner;
 
 use vars qw(@ISA);
 
