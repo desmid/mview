@@ -21,8 +21,7 @@ $DEBUG = 0;
 sub new {
     my $type = shift;
     #warn "${type}::new:\n"  if $DEBUG;
-    Bio::Util::Object::die($type, "new() invalid arguments:", @_)
-        if @_ < 1;
+    Bio::Util::Object::die($type, "new() invalid arguments:", @_)  if @_ < 1;
     return new Bio::Parse::Substring::String(@_)  if ref $_[0];  #string ref
     return new Bio::Parse::Substring::File(@_);                  #filename
 }
@@ -30,10 +29,8 @@ sub new {
 sub open  {}
 sub close {}
 sub reset {}
-
 sub substr {}
 sub getline {}
-
 sub startofline { $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
@@ -44,18 +41,16 @@ sub tell        { $_[0]->{'thisoffset'} }
 
 package Bio::Parse::Substring::File;
 
-use POSIX;
 use FileHandle;
+use POSIX;  # for SEEK_SET
 
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Substring);
 
-use vars qw($OPEN $CLOSE $ERROR);
+use vars qw($OPEN $CLOSED $ERROR);
 
-$OPEN  = 1;
-$CLOSE = 2;
-$ERROR = 4;
+$OPEN = 1; $CLOSED = 2; $ERROR = 4;
 
 sub new {
     my $type = shift;
@@ -66,13 +61,15 @@ sub new {
 
     $self->{'file'}       = $file;
     $self->{'base'}       = $base;
-    $self->{'state'}      = $CLOSE;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
-    $self->{'dos'}        = 0;  #true if file is non-native DOS
-    $self->{'fh'}         = -1;
+    $self->{'extent'}     = undef;
 
-    $self->open;
+    $self->{'fh'}    = $self->{'fh'} = new FileHandle();
+    $self->{'state'} = $CLOSED;
+    $self->{'dos'}   = 0;  #true if file is non-native DOS
+
+    $self->open();
 
     $self->{'extent'} = (stat $self->{'fh'})[7];
 
@@ -88,10 +85,9 @@ sub open {
 sub close {
     my $self = shift;
     #warn "File::close:\n"  if $Bio::Parse::Substring::DEBUG;
-    return $self  if $self->{'state'} & $CLOSE;
-    $self->{'fh'}->close;
-    $self->{'fh'} = -1;
-    $self->{'state'} = $CLOSE;
+    return $self  if $self->{'state'} & $CLOSED;
+    $self->{'fh'}->close();
+    $self->{'state'} = $CLOSED;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
     $self->{'dos'}        = 0;
@@ -101,9 +97,8 @@ sub reset {
     my ($self, $offset) = @_;
     #warn "File::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
     if ($self->{'state'} & $ERROR or $self->{'state'} & $OPEN) {
-        $self->close;
+        $self->close();
     }
-    $self->{'fh'} = new FileHandle  if $self->{'fh'} < 1;
     $self->{'fh'}->open($self->{'file'}) or $self->die("open: can't open '$self->{'file'}'");
     $self->{'state'} = $OPEN;
     $self->{'dos'} = $self->_file_has_crlf();
@@ -116,7 +111,7 @@ sub substr {
     my $self = shift;
     #warn "File::substr(@_)\n"  if $Bio::Parse::Substring::DEBUG;
 
-    if ($self->{'state'} & $CLOSE) {
+    if ($self->{'state'} & $CLOSED) {
         $self->die("substr: can't read on closed file '$self->{'file'}'");
     }
 
@@ -197,16 +192,17 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     #warn "${type}::new:\n"  if $Bio::Parse::Substring::DEBUG;
+    my ($text, $base) = (@_, 0);
     my $self = {};
     bless $self, $type;
 
-    ($self->{'text'}, $self->{'base'}) = (@_, 0);
-
+    $self->{'text'}       = $text;
+    $self->{'base'}       = $base;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
     $self->{'extent'}     = length ${$self->{'text'}};
 
-    $self->open;
+    $self->open();
 
     $self;
 }
@@ -227,7 +223,6 @@ sub close {
 sub reset {
     my ($self, $offset) = @_;
     #warn "String::reset($offset)\n"  if $Bio::Parse::Substring::DEBUG;
-    #set desired start
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
 }
