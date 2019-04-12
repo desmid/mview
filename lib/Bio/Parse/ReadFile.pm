@@ -137,7 +137,7 @@ sub getline {
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset + $bytes;
 
-    #strip terminal CR if file from DOS
+    #convert CRLF to LF if file from DOS
     CORE::substr($$line, $bytes-2, 1, '')  if $self->{'dos'};
 
     #warn "File::getline: [$$line]\n"  if $DEBUG;

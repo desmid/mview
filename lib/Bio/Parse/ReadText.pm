@@ -67,8 +67,10 @@ sub substr {
 
     my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
 
+    $bytes = 0 + length $buff;
+
     $self->{'lastoffset'} = $offset;
-    $self->{'thisoffset'} = $offset + length $buff;
+    $self->{'thisoffset'} = $offset + $bytes;
 
     #warn "String::substr: [$buff]\n"  if $DEBUG;
 
@@ -80,20 +82,19 @@ sub getline {
     #warn "String::getline(@_)\n"  if $DEBUG;
     my ($line, $offset) = (@_, $self->{'thisoffset'});
 
-    return 0  unless -1 < $offset and $offset < $self->{'extent'};
+    return 0  if $offset < 0 or $offset >= $self->{'extent'};
 
     my $i = index(${$self->{'text'}}, "\n", $offset);
 
     if ($i < 0) {
         #read remaining text, if any, until end of string
         $$line = CORE::substr(${$self->{'text'}}, $offset);
-        return 0  unless defined $$line;
     } else {
         #read line upto and including eol; cannot be undef
         $$line = CORE::substr(${$self->{'text'}}, $offset, $i - $offset + 1);
     }
 
-    my $bytes = length $$line;
+    my $bytes = 0 + length $$line;
 
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset + $bytes;
