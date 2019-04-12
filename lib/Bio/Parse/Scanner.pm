@@ -37,7 +37,7 @@ sub new {
         $self->{'bytes'}  = $entry->{'bytes'};
     }
 
-    $self->{'limit'}     = $self->{'offset'} + $self->{'bytes'};
+    $self->{'extent'}    = $self->{'offset'} + $self->{'bytes'};
     $self->{'cursor'}    = $self->{'offset'};
     $self->{'linestart'} = $self->{'offset'};
     $self->{'line'}      = '';
@@ -232,24 +232,19 @@ sub DESTROY {
 #self.line to undef and return 0
 sub _next_line {
     my $self = shift;
-    #warn "_next_line: $self->{'cursor'} / $self->{'limit'}\n";
+    #warn "_next_line: $self->{'cursor'} / $self->{'extent'}\n";
 
     my $line = \$self->{'line'};
 
-    $$line = undef, return 0  if $self->{'cursor'} >= $self->{'limit'};
+    $$line = undef, return 0  if $self->{'cursor'} >= $self->{'extent'};
 
     #read the line
     my $bytes = $self->{'text'}->getline($line, $self->{'cursor'});
 
     return 0  unless $bytes;
 
-    if ($self->{'cursor'} + $bytes > $self->{'limit'}) {
-        #truncate to within this delimited record
-        $bytes = $self->{'limit'} - $self->{'cursor'};
-        #also ignore leading depth
-        $$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
-    } elsif ($self->{'depth'} > 0) {
-        #just ignore leading depth
+    #ignore leading depth
+    if ($self->{'depth'} > 0) {
         $$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
     }
 
@@ -266,9 +261,9 @@ sub _next_line {
 #return the remaining unprocessed stream without altering the cursor
 sub inspect_stream {
     my $self = shift;
-    return ''  if $self->{'cursor'} >= $self->{'limit'};
+    return ''  if $self->{'cursor'} >= $self->{'extent'};
     return $self->{'text'}->substr(
-        $self->{'cursor'}, $self->{'limit'} - $self->{'cursor'} + 1
+        $self->{'cursor'}, $self->{'extent'} - $self->{'cursor'} + 1
     );
 }
 
