@@ -17,7 +17,7 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    my ($entry, $depth,  $text, $offset, $bytes) = (@_, 0);
+    my ($entry, $depth,  $text) = (@_, 0, undef);
 
     my $self = {};
     bless $self, $type;
@@ -28,8 +28,8 @@ sub new {
     if (defined $text and ref $text) {
         #use supplied text and positions (or defaults thereof)
         $self->{'text'}   = new Bio::Parse::ReadText($text);
-        $self->{'offset'} = defined $offset ? $offset : 0;
-        $self->{'bytes'}  = defined $bytes ? $bytes : length($$text);
+        $self->{'offset'} = 0;
+        $self->{'bytes'}  = length($$text);
     } else {
         #use entry object's text and positions
         $self->{'text'}   = $entry->{'text'};

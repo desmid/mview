@@ -544,7 +544,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self, 0, undef);
+    $text = new Bio::Parse::Scanner($self);
 
     $line = $text->scan_lines(0);
 
