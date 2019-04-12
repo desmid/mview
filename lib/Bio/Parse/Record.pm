@@ -15,7 +15,6 @@ use vars qw(@ISA);
 
 @ISA = qw(Bio::Util::Object);
 
-my $PACK_DELIM = "\0";
 my $KEY_DELIM  = "::";
 
 my $IGNORE_ATTR = "text|offset|bytes|index|parent|record_by_posn|record_by_type|indices|relative_key|absolute_key";
@@ -40,7 +39,6 @@ sub new { #discard system supplied type
     $self->{'parent'}         = $parent;    #parent record (to be free'd)
     $self->{'record_by_posn'} = [];         #list of records(to be free'd)
     $self->{'record_by_type'} = {};         #hash of record types (to be free'd)
-    $self->{'indices'}        = [];         #additional keys for indexing
 
     #subrecord counter
     $self->{'index'} = $self->get_record_number($parent);
@@ -398,35 +396,27 @@ sub print {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
     printf "%sClass:  %s\n", $x, $self;
-    printf "%sParent: %s\n", $x, defined $self->{'parent'} ?
-        $self->{'parent'} : 'undef';
-    printf "%sKey:    %s   Indices: [%s]\n", $x,
-        $self->{'relative_key'}, join(',', @{$_[0]->{'indices'}});
+    printf "%sParent: %s\n", $x,
+        defined $self->{'parent'} ? $self->{'parent'} : 'undef';
+    printf "%sKey:    %s   Indices: []\n", $x, $self->{'relative_key'};
 
-    #print records in order of appearance in parent Record
     printf "%s  Subrecords by posn:\n", $x;
     $self->print_records_by_posn($indent);
 
-    #print records in order of type
-    #printf "%s  Subrecords by type:\n", $x;
-    #$self->print_records_by_type($indent);
-
     printf "%s  Miscellaneous:\n", $x;
     printf "$x%20s -> %d\n",   'index', $self->{'index'};
-    printf "$x%20s -> [%s]\n", 'pos', join(', ', $self->get_pos);
+    printf "$x%20s -> [%s]\n", 'pos',
+        join(', ', ($self->{'offset'}, $self->{'bytes'}));
     my $tmp = '';
     if (defined $self->{'text'}) {
         $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
         ($tmp) = split("\n", $tmp);
     }
     printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
-    printf "%s  Data:\n", $x;
 
+    printf "%s  Data:\n", $x;
     $self->print_data($indent);  #supplied by subclass
 }
-
-# helper for print()
-sub get_pos   { ($_[0]->{'offset'}, $_[0]->{'bytes'}) }
 
 # helper for print()
 sub print_records_by_posn {
@@ -442,10 +432,10 @@ sub print_records_by_posn {
     }
 }
 
-# subclass overrides to add fields; called by print()
+# helper for print(); subclass overrides to add fields
 sub print_data {}
 
-# helper for print_data()
+# helper for print_data(); used by subclasses
 sub fmt {
     my ($self, $val, $undef) = (@_, '<undef>');
     my $ref = ref $val;
