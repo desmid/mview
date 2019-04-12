@@ -36,13 +36,11 @@ sub new {
         $self->{'offset'} = $entry->{'offset'};
         $self->{'bytes'}  = $entry->{'bytes'};
     }
-    $self->{'limit'}      = $self->{'offset'} + $self->{'bytes'};
 
-    $self->{'cursor'}     = -1;
-    $self->{'linestart'}  = -1;
-    $self->{'line'}       = '';
-
-    $self->reset;
+    $self->{'limit'}     = $self->{'offset'} + $self->{'bytes'};
+    $self->{'cursor'}    = $self->{'offset'};
+    $self->{'linestart'} = $self->{'offset'};
+    $self->{'line'}      = '';
 
     $self;
 }
@@ -228,14 +226,6 @@ sub scan_nest {
 sub DESTROY {
     #warn "DESTROY $_[0]\n";
     map { $_[0]->{$_} = undef } keys %{$_[0]};
-}
-
-sub reset {
-    my $self = shift;
-    $self->{'cursor'}    = $self->{'offset'};
-    $self->{'linestart'} = $self->{'offset'};
-    $self->{'line'}      = '';
-    #warn "INITIAL=(c=$self->{'cursor'} l=$self->{'limit'})\n";
 }
 
 #read next line of text into self.line and return 1 on success; otherwise set
