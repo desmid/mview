@@ -79,7 +79,7 @@ sub reset {
     if ($self->{'state'} != $OPEN) {
         $self->die("reset: can't reset '$self->{'file'}'");
     }
-    $self->{'fh'}->seek($offset, SEEK_SET);  #seek absolute
+    $self->{'fh'}->seek($offset, SEEK_SET);  #absolute
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
 }
@@ -92,15 +92,25 @@ sub substr {
         $self->die("substr: can't read '$self->{'file'}'");
     }
 
-    my ($offset, $bytes) = @_;
+    my ($offset, $bytes) =
+        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
 
-    $bytes  = $self->{'extent'} - $self->{'base'}  unless defined $bytes;
-    $offset = $self->{'base'}                      unless defined $offset;
+    # validate offset
+    if ($offset < 0 or $offset > $self->{'extent'}) {
+        die("substr: offset out of range ", $offset);
+    } elsif ($offset == $self->{'extent'}) {
+        return undef;  #EOF
+    }
+
+    # validate bytes
+    if ($bytes < 0 or $offset + $bytes > $self->{'extent'}) {
+        die("substr: bytes out of range ", $bytes);
+    }
 
     my $fh = $self->{'fh'};
 
-    if (my $delta = $offset - $self->{'thisoffset'}) {
-        return undef  unless seek($fh, $delta, SEEK_CUR);
+    if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
+        return undef  unless seek($fh, $delta, SEEK_CUR);  #relative
     }
 
     my $buff = ''; $bytes = read($fh, $buff, $bytes);
@@ -118,14 +128,27 @@ sub substr {
 
 sub getline {
     my $self = shift;
-    #warn "File::getline(@_)\n"  if $DEBUG;
+    warn "File::getline(@_)\n"  if $DEBUG;
+
+    if ($self->{'state'} != $OPEN) {
+        $self->die("getline: can't read '$self->{'file'}'");
+    }
+
     my ($line, $offset) = (@_, $self->{'thisoffset'});
+
+    # validate offset
+    if ($offset < 0 or $offset > $self->{'extent'}) {
+        die("getline: offset out of range ", $offset);
+    } elsif ($offset == $self->{'extent'}) {
+        return 0;  #EOF
+    }
 
     my $fh = $self->{'fh'};
 
-    if (my $delta = $offset - $self->{'thisoffset'}) {
+    #seek?
+    if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
         #warn "File::getline: seek($delta)\n"  if $DEBUG;
-        return 0  unless seek($fh, $delta, SEEK_CUR);
+        return 0  unless seek($fh, $delta, SEEK_CUR);  #relative
     }
 
     $$line = readline($fh);

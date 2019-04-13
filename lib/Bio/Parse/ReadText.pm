@@ -60,10 +60,8 @@ sub reset {
 sub substr {
     my $self = shift;
     #warn "String::substr(@_)\n"  if $DEBUG;
-    my ($offset, $bytes) = @_;
-
-    $bytes  = $self->{'extent'} - $self->{'base'}  unless defined $bytes;
-    $offset = $self->{'base'}                      unless defined $offset;
+    my ($offset, $bytes) =
+        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
 
     my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
 
@@ -82,7 +80,12 @@ sub getline {
     #warn "String::getline(@_)\n"  if $DEBUG;
     my ($line, $offset) = (@_, $self->{'thisoffset'});
 
-    return 0  if $offset < 0 or $offset >= $self->{'extent'};
+    # validate offset
+    if ($offset < 0 or $offset > $self->{'extent'}) {
+        die("getline: offset out of range ", $offset);
+    } elsif ($offset == $self->{'extent'}) {
+        return 0;  #EOF
+    }
 
     my $i = index(${$self->{'text'}}, "\n", $offset);
 
