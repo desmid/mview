@@ -84,47 +84,8 @@ sub reset {
     $self->{'thisoffset'} = $offset;
 }
 
-sub substr {
-    my $self = shift;
-    #warn "File::substr(@_)\n"  if $DEBUG;
-
-    if ($self->{'state'} != $OPEN) {
-        $self->die("substr: can't read '$self->{'file'}'");
-    }
-
-    my ($offset, $bytes) =
-        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
-
-    # validate offset
-    if ($offset < 0 or $offset > $self->{'extent'}) {
-        die("substr: offset out of range ", $offset);
-    } elsif ($offset == $self->{'extent'}) {
-        return undef;  #EOF
-    }
-
-    # validate bytes
-    if ($bytes < 0 or $offset + $bytes > $self->{'extent'}) {
-        die("substr: bytes out of range ", $bytes);
-    }
-
-    my $fh = $self->{'fh'};
-
-    if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        return undef  unless seek($fh, $delta, SEEK_CUR);  #relative
-    }
-
-    my $buff = ''; $bytes = read($fh, $buff, $bytes);
-
-    $self->{'lastoffset'} = $offset;
-    $self->{'thisoffset'} = $offset + $bytes;
-
-    #strip multiple CR if file from DOS
-    $buff =~ s/\015\012/\012/go  if $self->{'dos'};
-
-    #warn "File::substr: [$buff]\n"  if $DEBUG;
-
-    return $buff;
-}
+sub startofline { $_[0]->{'lastoffset'} }
+sub tell        { $_[0]->{'thisoffset'} }
 
 sub getline {
     my $self = shift;
@@ -168,8 +129,47 @@ sub getline {
     return $bytes;
 }
 
-sub startofline { $_[0]->{'lastoffset'} }
-sub tell        { $_[0]->{'thisoffset'} }
+sub substr {
+    my $self = shift;
+    #warn "File::substr(@_)\n"  if $DEBUG;
+
+    if ($self->{'state'} != $OPEN) {
+        $self->die("substr: can't read '$self->{'file'}'");
+    }
+
+    my ($offset, $bytes) =
+        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
+
+    # validate offset
+    if ($offset < 0 or $offset > $self->{'extent'}) {
+        die("substr: offset out of range ", $offset);
+    } elsif ($offset == $self->{'extent'}) {
+        return undef;  #EOF
+    }
+
+    # validate bytes
+    if ($bytes < 0 or $offset + $bytes > $self->{'extent'}) {
+        die("substr: bytes out of range ", $bytes);
+    }
+
+    my $fh = $self->{'fh'};
+
+    if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
+        return undef  unless seek($fh, $delta, SEEK_CUR);  #relative
+    }
+
+    my $buff = ''; $bytes = read($fh, $buff, $bytes);
+
+    $self->{'lastoffset'} = $offset;
+    $self->{'thisoffset'} = $offset + $bytes;
+
+    #strip multiple CR if file from DOS
+    $buff =~ s/\015\012/\012/go  if $self->{'dos'};
+
+    #warn "File::substr: [$buff]\n"  if $DEBUG;
+
+    return $buff;
+}
 
 ###########################################################################
 # private methods

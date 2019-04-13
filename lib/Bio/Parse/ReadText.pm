@@ -57,23 +57,8 @@ sub reset {
     $self->{'thisoffset'} = $offset;
 }
 
-sub substr {
-    my $self = shift;
-    #warn "String::substr(@_)\n"  if $DEBUG;
-    my ($offset, $bytes) =
-        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
-
-    my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
-
-    $bytes = 0 + length $buff;
-
-    $self->{'lastoffset'} = $offset;
-    $self->{'thisoffset'} = $offset + $bytes;
-
-    #warn "String::substr: [$buff]\n"  if $DEBUG;
-
-    return $buff;
-}
+sub startofline { $_[0]->{'lastoffset'} }
+sub tell        { $_[0]->{'thisoffset'} }
 
 sub getline {
     my $self = shift;
@@ -107,8 +92,23 @@ sub getline {
     return $bytes;
 }
 
-sub startofline { $_[0]->{'lastoffset'} }
-sub tell        { $_[0]->{'thisoffset'} }
+sub substr {
+    my $self = shift;
+    #warn "String::substr(@_)\n"  if $DEBUG;
+    my ($offset, $bytes) =
+        (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
+
+    my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
+
+    $bytes = 0 + length $buff;
+
+    $self->{'lastoffset'} = $offset;
+    $self->{'thisoffset'} = $offset + $bytes;
+
+    #warn "String::substr: [$buff]\n"  if $DEBUG;
+
+    return $buff;
+}
 
 ###########################################################################
 1;
