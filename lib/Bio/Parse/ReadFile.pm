@@ -147,9 +147,11 @@ sub substr {
         return undef;  #EOF
     }
 
-    # validate bytes
-    if ($bytes < 0 or $offset + $bytes > $self->{'extent'}) {
+    # validate bytes; truncate if too long
+    if ($bytes < 0) {
         die("substr: bytes out of range ", $bytes);
+    } elsif (($offset + $bytes) > $self->{'extent'}) {
+        $bytes = $self->{'extent'} - $offset;
     }
 
     my $fh = $self->{'fh'};

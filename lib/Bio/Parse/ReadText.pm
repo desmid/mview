@@ -98,6 +98,20 @@ sub substr {
     my ($offset, $bytes) =
         (@_, $self->{'base'}, $self->{'extent'} - $self->{'base'});
 
+    # validate offset
+    if ($offset < 0 or $offset > $self->{'extent'}) {
+        die("substr: offset out of range ", $offset);
+    } elsif ($offset == $self->{'extent'}) {
+        return undef;  #EOF
+    }
+
+    # validate bytes; truncate if too long
+    if ($bytes < 0) {
+        die("substr: bytes out of range ", $bytes);
+    } elsif (($offset + $bytes) > $self->{'extent'}) {
+        $bytes = $self->{'extent'} - $offset;
+    }
+
     my $buff = CORE::substr(${$self->{'text'}}, $offset, $bytes);
 
     $bytes = 0 + length $buff;
