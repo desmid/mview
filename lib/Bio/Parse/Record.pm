@@ -371,9 +371,9 @@ sub key_range {
     return @rec;
 }
 
-# overrides Bio::Util::Object::_make_message_string
+# overrides Bio::Util::Object::make_message_string
 # used by Bio::Util::Object::warn, Bio::Util::Object::die
-sub _make_message_string {
+sub make_message_string {
     my ($self, $prefix) = (shift, shift);
     my $s = $prefix;
     if (ref $self) {

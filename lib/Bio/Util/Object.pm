@@ -25,14 +25,14 @@ my $MIN_KEY_WIDTH = 16;
 # warn with error string
 sub warn {
     my $self = shift;
-    my $s = $self->_make_message_string('Warning', @_);
+    my $s = $self->make_message_string('Warning', @_);
     warn "$s\n";
 }
 
 # exit with error string
 sub die {
     my $self = shift;
-    my $s = $self->_make_message_string('Died', @_);
+    my $s = $self->make_message_string('Died', @_);
     die "$s\n";
 }
 
@@ -49,19 +49,22 @@ sub dump_self { return "Class $_[0]\n" . _dump_body(@_) }
 sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 
 ###########################################################################
-# private functions
+# protected functions
 ###########################################################################
-use Bio::Util::Regexp;
-use Bio::Util::Math qw(max);
-
 # generate common error massage string
-sub _make_message_string {
+sub make_message_string {
     my ($self, $prefix) = (shift, shift);
     my $s = "$prefix ";
     $s .= ref($self) ? ref($self) : $self;
     $s .= ": " . _args_as_string(@_)  if @_;
     return $s;
 }
+
+###########################################################################
+# private functions
+###########################################################################
+use Bio::Util::Regexp;
+use Bio::Util::Math qw(max);
 
 # return space-separated string of concatenate arguments with undefined values
 # interpolated as 'undef'
