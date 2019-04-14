@@ -468,6 +468,8 @@ sub string {
 
     if ($key eq '*') {
         @keys = keys %{$self->{'record_by_type'}};
+    } else {
+        push @keys, $key;
     }
 
     foreach $key (@keys) {
