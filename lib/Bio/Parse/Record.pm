@@ -120,25 +120,26 @@ sub test_records {
     }
 }
 
-#Given a record key for this entry, parse corresponding records and return
-#an array of the parsed objects or the first object if called in a scalar
-#context. If called with no argument or just '*' parse everything at this
-#level.
+#Given a record key and optional 1-based index, parse corresponding records
+#and return an array of the parsed objects or the first object if called in
+#a scalar context. If called with no argument or just '*' parse everything at
+#this level.
 sub parse {
-    my ($self, $key) = (@_, '*');
-    my (@list, @keys, $rec) = ();
+    my $self = shift;
+    my ($key, $num) = @_;
+    my (@list, @keys) = ();
 
-    #warn "parse($key)\n";
+    #warn "parse(key=@{[defined $key?$key:'']}, num=@{[defined $num?$num:'']})\n";
 
-    if ($key eq '*') {
+    if (@_ == 0 or $key eq '*') {
         @keys = keys %{$self->{'record_by_type'}};
     } else {
         push @keys, $key;
     }
 
-    foreach $key (@keys) {
+    foreach my $key (@keys) {
         #warn "parse: $key\n";
-        foreach $rec ($self->key_range($key)) {
+        foreach my $rec ($self->get_records_for_key($key, $num)) {
             push @list, $self->get_parsed_subrecord($rec);
         }
     }
@@ -152,17 +153,19 @@ sub parse {
 #exist and return an array of counts or the first count if called in a
 #scalar context. If called with no argument or just '*' count everything.
 sub count {
-    my ($self, $key) = (@_, '*');
+    my $self = shift;
+    my ($key) = @_;
     my (@list, @keys) = ();
 
-    if ($key eq '*') {
-        @keys = sort keys %{$self->{'record_by_type'}};
+    #warn "count(key=@{[defined $key?$key:'']})\n";
+
+    if (@_ == 0 or $key eq '*') {
+        @keys = sort keys %{$self->{'record_by_type'}};  #note: sorted
     } else {
         push @keys, $key;
     }
 
     foreach $key (@keys) {
-
         #is there a record instance for this type?
         if (exists $self->{'record_by_type'}->{$key}) {
             push @list, scalar @{$self->{'record_by_type'}->{$key}};
@@ -255,7 +258,7 @@ sub parse_subrecord {
     my ($self, $rec) = @_;
     my ($class, $ob);
     $class = ref($self) . '::' . $rec->[0];
-    #warn "parse_subrecord($class)\n";
+    #warn "parse_subrecord: new $class($self, $self->{'text'}, $rec->[1], $rec->[2])\n";
     $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
     push @$rec, $ob;
 }
@@ -325,50 +328,19 @@ sub free_record {
     return $rec;
 }
 
-#Split a key string of forms 'key' or 'key[N]' or 'key[M..N]' and return
-#an array of records so indexed. Supplied range indices are assumed to be
-#positive 1-based and are converted to 0-based for internal use.
-sub key_range {
-    my ($self, $key) = @_;
-    my ($lo, $hi, @rec) = (undef, undef);
+#Return an array of records indexed by key and optional index (1-based)
+sub get_records_for_key {
+    my ($self, $key, $num) = (@_, undef);
 
-    if ($key =~ /(\S+)\s*\[\s*(\d+)\s*\]/) {
-        ($key, $lo, $hi) = ($1, $2, $2);
-    }
-    elsif ($key =~ /(\S+)\s*\[\s*(\d+)\s*\.\.\s*(\d+)\s*\]/) {
-        if ($2 < $3) {
-            ($key, $lo, $hi) = ($1, $2, $3);
-        } else {
-            ($key, $lo, $hi) = ($1, $3, $2);
-        }
-    }
+    return ()  unless exists $self->{'record_by_type'}->{$key};
 
-    #does the key map to a record type?
-    return unless exists $self->{'record_by_type'}->{$key};
+    #key only
+    return @{$self->{'record_by_type'}->{$key}}  unless defined $num;
 
-    #was a range requested?
-    if (defined $lo) {
-        $lo--; $hi--;    #convert to internal 0-based indices
-
-        #want range?
-        if ($lo != $hi) {
-            #adjust range to fit available records?
-            $lo = 0
-                unless defined $self->{'record_by_type'}->{$key}[$lo];
-            $hi = $#{$self->{'record_by_type'}->{$key}}
-                unless defined $self->{'record_by_type'}->{$key}[$hi];
-        } else {
-            #ignore non-existent single index
-            return unless $lo > -1 and defined $self->{'record_by_type'}->{$key}[$lo];
-        }
-        #get the slice
-        @rec = @{$self->{'record_by_type'}->{$key}}[$lo..$hi];
-    } else {
-        #just get'em all
-        @rec = @{$self->{'record_by_type'}->{$key}};
-    }
-
-    return @rec;
+    #key with num
+    $num--;  #convert 1-based to 0-based
+    return () unless defined $self->{'record_by_type'}->{$key}->[$num];
+    return ($self->{'record_by_type'}->{$key}->[$num]);
 }
 
 # overrides Bio::Util::Object::make_message_string
@@ -451,28 +423,28 @@ sub fmt {
     return defined $val ? $val : $undef;
 }
 
-#Given a record key for this entry, return an array of corresponding record
-#strings or the first string if called in a scalar context. If called with
-#just '*' return an array of all record strings at this level. If called
-#with no argument return the whole database entry string as a scalar.
+#Given a record key and optional 1-based index, return an array of
+#corresponding record strings or the first string if called in a scalar
+#context. If called with just '*' return an array of all record strings at
+#this level. If called with no argument return the whole database entry
+#string as a scalar.
 sub string {
-    my ($self, $key) = (@_, undef);
+    my $self = shift;
+    my ($key, $num) = @_;
     my (@list, @keys) = ();
 
-    #warn "string($key)\n";
+    #warn "string(key=@{[defined $key?$key:'']}, num=@{[defined $num?$num:'']})\n";
 
-    if (! defined $key) {
+    if (@_ == 0) {
         return $self->{'text'}->substr($self->{'offset'}, $self->{'bytes'});
-    }
-
-    if ($key eq '*') {
+    } elsif ($key eq '*') {
         @keys = keys %{$self->{'record_by_type'}};
     } else {
         push @keys, $key;
     }
 
-    foreach $key (@keys) {
-        foreach my $rec ($self->key_range($key)) {
+    foreach my $key (@keys) {
+        foreach my $rec ($self->get_records_for_key($key, $num)) {
             if (defined $rec->[3]) {
                 #print "STRING() calling child\n";
                 push @list, $rec->[3]->string;

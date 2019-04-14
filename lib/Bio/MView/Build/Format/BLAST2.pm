@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Nigel P. Brown
+# Copyright (C) 1997-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -22,7 +22,7 @@ use vars qw(@ISA);
 
 sub begin_parse {
     my $self = shift;
-    my $s = $self->{'entry'}->parse("SEARCH[@{[ $self->cycle ]}]");
+    my $s = $self->{'entry'}->parse("SEARCH", $self->cycle);
     return ()  unless defined $s;
     my $r = $s->parse(qw(RANK));
     return ()  unless defined $r;

@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2018 Nigel P. Brown
+# Copyright (C) 2013-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -92,7 +92,7 @@ sub parse {
 
     return  unless defined $self->{scheduler}->next;
 
-    $self->{'parsed'} = $self->{'entry'}->parse("BLOCK[@{[$self->block]}]");
+    $self->{'parsed'} = $self->{'entry'}->parse("BLOCK", $self->block);
 
     #block doesn't exist?
     return  unless defined $self->{'parsed'};
