@@ -115,20 +115,16 @@ sub new {
 
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
-    $self->{'match'} = '';
 
     my $off = 0;
 
-    while (defined ($line = $text->next_line)) {
-
-        chomp $line;
+    while (defined ($line = $text->next_line(1))) {
 
         #id/sequence
         if ($line =~ /^\s*(\S+)\s+(\S+)\s*$/o) {
             $self->test_args(\$line, $1, $2);
             push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
             $self->{'seq'}->{$1} .= $2;
-            $off = length($line) - length($2);
             next;
         }
 
@@ -136,7 +132,7 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-    #line length check (ignore 'match' as this may be missing)
+    #line length check
     if (defined $self->{'id'}->[0]) {
         $off = length $self->{'seq'}->{$self->{'id'}->[0]};
         foreach $line (keys %{$self->{'seq'}}) {
@@ -156,7 +152,6 @@ sub print_data {
     foreach my $i (@{$self->{'id'}}) {
         printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
-    printf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
 }
 
 

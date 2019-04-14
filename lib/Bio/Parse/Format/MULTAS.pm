@@ -273,9 +273,9 @@ sub new {
     $self->{'length'} = 0;
     $self->{'count'}  = 0;
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $text->next_line(1))) {
 
-        chomp $line; @tmp = split(//, $line);
+        @tmp = split(//, $line);
 
         for ($i=0; $i<@tmp; $i++) {
             push @{$self->{'seq'}->[$i]}, $tmp[$i];

@@ -181,11 +181,7 @@ sub new {
 
     my $off = 0;
 
-    while (defined ($line = $text->next_line)) {
-
-        no strict;
-
-        chomp $line;
+    while (defined ($line = $text->next_line(1))) {
 
         #a score=xxxx.yyyy
         if ($line =~ /^a\s+.*?score=(\S+)/o) {

@@ -194,11 +194,7 @@ sub new {
 
     my $off = 0;
 
-    while (defined ($line = $text->next_line)) {
-
-        no strict;
-
-        chomp $line;
+    while (defined ($line = $text->next_line(1))) {
 
         #match symbols, but only if expected
         if ($off and $line !~ /[^*:. ]/) {
