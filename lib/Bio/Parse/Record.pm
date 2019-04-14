@@ -90,7 +90,7 @@ sub get_parent {
 sub get_record {
     my ($self, $type, $index) = (@_, 0);
     my $rec = $self->{'record_by_type'}->{$type}->[$index];
-    return $self->get_object($rec);
+    return $self->get_parsed_subrecord($rec);
 }
 
 #Return list of attributes of Record, excepting housekeeping ones.
@@ -139,7 +139,7 @@ sub parse {
     foreach $key (@keys) {
         #warn "parse: $key\n";
         foreach $rec ($self->key_range($key)) {
-            push @list, $self->get_object($rec);
+            push @list, $self->get_parsed_subrecord($rec);
         }
     }
 
@@ -241,11 +241,23 @@ sub make_absolute_key {
     return $key;
 }
 
-sub get_object {
+sub get_parsed_subrecord {
     my ($self, $rec) = @_;
-    #warn "get_object($rec = [@$rec])\n";
-    $self->add_object($rec)  unless defined $rec->[3];
+    #warn "get_parsed_subrecord($rec = [@$rec])\n";
+    $self->parse_subrecord($rec)  unless defined $rec->[3];
     return $rec->[3];
+}
+
+#Given a triple (key, offset, bytecount) in $rec, extract the record
+#string, generate an object subclassed from $class, store this in $rec
+#after the existing triple.
+sub parse_subrecord {
+    my ($self, $rec) = @_;
+    my ($class, $ob);
+    $class = ref($self) . '::' . $rec->[0];
+    #warn "parse_subrecord($class)\n";
+    $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
+    push @$rec, $ob;
 }
 
 sub get_type {
@@ -263,19 +275,6 @@ sub get_record_number {
     }
     #there is no record number
     return 0;
-}
-
-#Given a triple (key, offset, bytecount) in $rec, extract the record
-#string, generate an object subclassed from $class, store this in $rec
-#after the existing triple, and return the object.
-sub add_object {
-    my ($self, $rec) = @_;
-    my ($class, $ob);
-    $class = ref($self) . '::' . $rec->[0];
-    #warn "ADD_OBJECT($class)\n";
-    $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
-    push @$rec, $ob;
-    return $ob;
 }
 
 #Explicitly call this when finished with a Record to ensure indirect
