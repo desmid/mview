@@ -261,9 +261,6 @@ sub new {
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Scanner($self);
 
-    local $^W=0;
-    local $_;
-
     $self->{'seq'} = {};
 
     #warn "@{[keys %$parent]}";
@@ -276,8 +273,6 @@ sub new {
 
     while (defined ($line = $text->next_line)) {
 
-        no strict;
-
         #start/end positions
         next  if $line =~ /^\s*\d+\s+\d+$/o;
 
@@ -286,6 +281,7 @@ sub new {
 
         #id/sequence
         if ($line =~ /^\s*(.{$maxnamelen})\s+(.*)$/o) {
+            my $id;
             $id = Bio::Parse::Record::strip_leading_space($1);
             $id = Bio::Parse::Record::strip_trailing_space($id);
             $self->test_args(\$line, $id, $2);

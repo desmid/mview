@@ -220,14 +220,9 @@ sub new {
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Scanner($self);
 
-    local $^W=0;
-    local $_;
-
     $self->{'seq'} = {};
 
     while (defined ($line = $text->next_line)) {
-
-        no strict;
 
         #start/end positions
         next  if $line =~ /^\s*\d+[^0-9]*\d+\s*$/o;

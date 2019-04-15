@@ -185,9 +185,6 @@ sub new {
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Scanner($self);
 
-    local $^W=0;
-    local $_;
-
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
     $self->{'match'} = '';
@@ -198,6 +195,7 @@ sub new {
 
         #match symbols, but only if expected
         if ($off and $line !~ /[^*:. ]/) {
+            local $^W=0;
             $line = substr($line, $off);
             $self->{'match'} .= $line;
             $off = 0;

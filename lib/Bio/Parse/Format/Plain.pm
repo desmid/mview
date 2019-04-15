@@ -110,9 +110,6 @@ sub new {
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
     $text = new Bio::Parse::Scanner($self);
 
-    local $^W=0;
-    local $_;
-
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
 
