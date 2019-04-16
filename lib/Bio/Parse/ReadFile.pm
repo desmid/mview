@@ -98,9 +98,12 @@ sub getline {
 
     my ($line, $offset) = (@_, $self->{'thisoffset'});
 
+    warn sprintf("File::getline: > lastoffset=%d thisoffset=%d offset=%d\n",
+                 $self->{'lastoffset'}, $self->{'thisoffset'}, $offset)  if $DEBUG;
+
     # validate offset
     if ($offset < 0 or $offset > $self->{'extent'}) {
-        die("getline: offset out of range ", $offset);
+        die("File::getline: offset ", $offset, " beyond extent 0..", $self->{'extent'});
     } elsif ($offset == $self->{'extent'}) {
         return 0;  #EOF
     }
@@ -109,10 +112,11 @@ sub getline {
 
     #seek?
     if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        #warn "File::getline: seek($delta)\n"  if $DEBUG;
+        #warn "File::getline:  seek($delta)\n"  if $DEBUG;
         return 0  unless seek($fh, $delta, SEEK_CUR);  #relative
     }
 
+    #warn "File::getline:   reading from core::readline()\n";
     $$line = readline($fh);
 
     return 0  unless defined $$line;
@@ -125,7 +129,10 @@ sub getline {
     #convert CRLF to LF if file from DOS
     CORE::substr($$line, $bytes-2, 1, '')  if $self->{'dos'};
 
-    #warn "File::getline: [$$line]\n"  if $DEBUG;
+    #warn "File::getline:  [$$line]\n"  if $DEBUG;
+
+    warn sprintf("File::getline: < lastoffset=%d thisoffset=%d bytes=%d buff=[%s]\n", $self->{'lastoffset'},
+                 $self->{'thisoffset'}, $bytes, $$line)  if $DEBUG;
 
     return $bytes;
 }

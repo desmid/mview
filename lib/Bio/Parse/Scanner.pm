@@ -232,7 +232,8 @@ sub DESTROY {
 #self.line to undef and return 0
 sub _next_line {
     my $self = shift;
-    #warn "_next_line: $self->{'cursor'} / $self->{'extent'}\n";
+    #warn sprintf("_next_line: > linestart=%d cursor=%d extent=%d\n",
+    #    $self->{'linestart'}, $self->{'cursor'}, $self->{'extent'});
 
     my $line = \$self->{'line'};
 
@@ -240,6 +241,8 @@ sub _next_line {
 
     #read the line
     my $bytes = $self->{'text'}->getline($line, $self->{'cursor'});
+
+    #warn "_next_line:   read $bytes\n";
 
     return 0  unless $bytes;
 
@@ -251,6 +254,9 @@ sub _next_line {
     #advance cursor
     $self->{'linestart'} = $self->{'cursor'};
     $self->{'cursor'}   += $bytes;
+
+    #warn sprintf("_next_line: < linestart=%d cursor=%d\n",
+    #             $self->{'linestart'}, $self->{'cursor'});
 
     return 1;
 }
