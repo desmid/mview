@@ -27,7 +27,7 @@ sub new {
     $self->{'file'}   = $file;
     $self->{'format'} = $format;
     $self->{'text'}   = new Bio::Parse::ReadFile($file);
-    $self->{'offset'} = 0;  #where to start parsing
+    $self->{'offset'} = $self->{'text'}->get_offset();
 
     load_parser_class($format);
 
@@ -44,7 +44,7 @@ sub get_entry {
 
     return undef  unless $parser;
 
-    $self->{'offset'} += $parser->get_size;  #parsed this many bytes
+    $self->{'offset'} = $parser->get_offset();
 
     return $parser;
 }

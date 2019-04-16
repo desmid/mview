@@ -71,8 +71,11 @@ sub pop_record {
     return $self->free_record($rec);
 }
 
-#return record string length
-sub get_size { $_[0]->{'bytes'} }
+#return record starting offset
+sub get_offset { $_[0]->{'text'}->get_offset() }
+
+#return record bytes read
+sub get_bytes { $_[0]->{'text'}->get_bytes() }
 
 sub get_parent {
     my ($self, $depth) = (@_, 1);
