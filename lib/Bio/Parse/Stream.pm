@@ -40,11 +40,12 @@ sub get_entry {
 
     $self->{'text'}->reset($self->{'offset'});  #start parsing here
 
+    #warn "Stream: next offset: $self->{'offset'}\n";
     my $parser = new_parser($self, $self->{'format'});
 
     return undef  unless $parser;
 
-    $self->{'offset'} = $parser->get_offset();
+    $self->{'offset'} = $self->{'text'}->get_offset();
 
     return $parser;
 }

@@ -88,7 +88,6 @@ sub startofline { $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
 sub get_offset { $_[0]->{'thisoffset'} }
-sub get_bytes  { $_[0]->{'thisoffset'} - $_[0]->{'base'}; }
 
 sub getline {
     my $self = shift;
