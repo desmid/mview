@@ -41,14 +41,14 @@ my $MULTAS_ALIGNMENTend   = $MULTAS_BLOCKend;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new MULTAS instance.
 sub get_entry {
-    my ($parent) = @_;
+    my ($text) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    while ($parent->{'text'}->getline(\$line)) {
+    while ($text->getline(\$line)) {
 
         #start of entry
         if ($line =~ /$MULTAS_START/o and $offset < 0) {
-            $offset = $parent->{'text'}->startofline;
+            $offset = $text->startofline;
             next;
         }
 
@@ -59,9 +59,9 @@ sub get_entry {
     }
     return 0   if $offset < 0;
 
-    $bytes = $parent->{'text'}->tell - $offset;
+    $bytes = $text->tell - $offset;
 
-    new Bio::Parse::Format::MULTAS(undef, $parent->{'text'}, $offset, $bytes);
+    new Bio::Parse::Format::MULTAS(undef, $text, $offset, $bytes);
 }
 
 #Parse one entry

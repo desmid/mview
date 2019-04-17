@@ -33,12 +33,12 @@ my $DEBUG = 0;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new Plain instance.
 sub get_entry {
-    my ($parent) = @_;
+    my ($text) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     #warn "BEGIN ENTRY\n"  if $DEBUG;
 
-    while ($parent->{'text'}->getline(\$line)) {
+    while ($text->getline(\$line)) {
 
         #initial blank
         if ($line =~ /$BLANK/o and $offset < 0) {
@@ -55,7 +55,7 @@ sub get_entry {
         #start of data
         if ($line =~ /$DATA_BEGIN/o and $offset < 0) {
             #warn " START OF DATA\n"  if $DEBUG;
-            $offset = $parent->{'text'}->startofline;
+            $offset = $text->startofline;
             next;
         }
 
@@ -70,9 +70,9 @@ sub get_entry {
 
     return 0   if $offset < 0;
 
-    $bytes = $parent->{'text'}->tell - $offset;
+    $bytes = $text->tell - $offset;
 
-    new Bio::Parse::Format::Plain(undef, $parent->{'text'}, $offset, $bytes);
+    new Bio::Parse::Format::Plain(undef, $text, $offset, $bytes);
 }
 
 #Parse one entry

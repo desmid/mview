@@ -21,23 +21,23 @@ my $PIR_SEQend   = $PIR_SEQ;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new PIR instance.
 sub get_entry {
-    my ($parent) = @_;
+    my ($text) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
-    while ($parent->{'text'}->getline(\$line)) {
+    while ($text->getline(\$line)) {
 
         #start of entry
         if ($offset < 0) {
-            $offset = $parent->{'text'}->startofline;
+            $offset = $text->startofline;
             next;
         }
 
     }
     return 0   if $offset < 0;
 
-    $bytes = $parent->{'text'}->tell - $offset;
+    $bytes = $text->tell - $offset;
 
-    new Bio::Parse::Format::PIR(undef, $parent->{'text'}, $offset, $bytes);
+    new Bio::Parse::Format::PIR(undef, $text, $offset, $bytes);
 }
 
 #Parse one entry

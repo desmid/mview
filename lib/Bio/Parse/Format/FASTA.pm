@@ -216,20 +216,20 @@ my $TRAILER_END = "(?:"
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new FASTA instance.
 sub get_entry {
-    my ($parent) = @_;
+    my ($text) = @_;
     my ($line, $offset, $bytes) = ('', -1, 0);
 
     my ($type, $prog, $version, $format) = ('Bio::Parse::Format::FASTA');
     my $GCG = 0;
     my $start = '';
 
-    while ($parent->{'text'}->getline(\$line)) {
+    while ($text->getline(\$line)) {
 
         #warn "($offset) >>$line";
 
         #start of entry
         if ($line =~ /$ENTRY_START/o and $offset < 0) {
-            $offset = $parent->{'text'}->startofline;
+            $offset = $text->startofline;
             $start = $line;
             #warn "STA $offset, $bytes, ($line)\n";
             #fall through for version tests
@@ -238,7 +238,7 @@ sub get_entry {
 
             if ($start =~ /$FASTA_START/o and $line =~ /^\s*L?ALIGN/) {
                 #replace offset
-                $offset = $parent->{'text'}->startofline;
+                $offset = $text->startofline;
                 $start = $line;
                 #warn "STA $offset, $bytes, ($line)\n";
                 #fall through for version tests
@@ -357,7 +357,7 @@ sub get_entry {
     }
     return 0   if $offset < 0;
 
-    $bytes = $parent->{'text'}->tell - $offset;
+    $bytes = $text->tell - $offset;
 
     unless (defined $prog and defined $version) {
         die "get_entry() top-level FASTA parser could not determine program/version\n";
@@ -394,7 +394,7 @@ sub get_entry {
 
     load_parser_class($type);
 
-    my $self = $type->new(undef, $parent->{'text'}, $offset, $bytes);
+    my $self = $type->new(undef, $text, $offset, $bytes);
 
     $self->{'format'}  = $format;
     $self->{'version'} = $version;

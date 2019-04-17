@@ -41,7 +41,7 @@ sub get_entry {
     $self->{'text'}->reset($self->{'offset'});  #start parsing here
 
     #warn "Stream: next offset: $self->{'offset'}\n";
-    my $parser = new_parser($self, $self->{'format'});
+    my $parser = new_parser($self->{'text'}, $self->{'format'});
 
     return undef  unless $parser;
 
@@ -64,10 +64,10 @@ sub load_parser_class {
 }
 
 sub new_parser {
-    my ($caller, $format) = @_;
+    my ($text, $format) = @_;
     my $parser = "Bio::Parse::Format::${format}::get_entry";
     no strict 'refs';
-    return $parser->($caller);
+    return $parser->($text);
 }
 
 ###########################################################################
