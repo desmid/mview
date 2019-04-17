@@ -17,13 +17,13 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    my ($entry, $depth,  $text) = (@_, 0, undef);
+    my ($entry, $indent,  $text) = (@_, 0, undef);
 
     my $self = {};
     bless $self, $type;
 
-    $self->{'entry'} = $entry;
-    $self->{'depth'} = $depth;
+    $self->{'entry'}  = $entry;
+    $self->{'indent'} = $indent;
 
     if (defined $text and ref $text) {
         #use supplied text and positions (or defaults thereof)
@@ -246,9 +246,9 @@ sub _next_line {
 
     return 0  unless $bytes;
 
-    #ignore leading depth
-    if ($self->{'depth'} > 0) {
-        $$line = substr($$line, $self->{'depth'}, $bytes - $self->{'depth'});
+    #ignore leading indent chars
+    if ($self->{'indent'} > 0) {
+        $$line = substr($$line, $self->{'indent'}, $bytes - $self->{'indent'});
     }
 
     #advance cursor
