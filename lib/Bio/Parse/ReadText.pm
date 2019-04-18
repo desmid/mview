@@ -30,6 +30,8 @@ sub new {
     $self->{'base'}       = $base;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
+    $self->{'start'}      = undef;
+    $self->{'stop'}       = undef;
     $self->{'extent'}     = length ${$self->{'text'}};
 
     $self->open();
@@ -48,6 +50,8 @@ sub close {
     #warn "String::close:\n"  if $DEBUG;
     $self->{'lastoffset'} = undef;
     $self->{'thisoffset'} = undef;
+    $self->{'start'} = 0;
+    $self->{'stop'} = 0;
 }
 
 sub reset {
@@ -55,12 +59,31 @@ sub reset {
     #warn "String::reset($offset)\n"  if $DEBUG;
     $self->{'lastoffset'} = $offset;
     $self->{'thisoffset'} = $offset;
+    $self->{'start'} = 0;
+    $self->{'stop'} = 0;
 }
 
 sub startofline { $_[0]->{'lastoffset'} }
 sub tell        { $_[0]->{'thisoffset'} }
 
 sub get_offset { $_[0]->{'thisoffset'} }
+
+sub start_count {
+    $_[0]->{'start'} = $_[0]->{'lastoffset'};
+    $_[0]->{' stop'} = $_[0]->{'thisoffset'};
+}
+
+sub stop_count_at_start {  #stop counting at start of line
+    $_[0]->{'stop'} = $_[0]->{'lastoffset'};
+}
+
+sub stop_count_at_end {    #stop counting at end of line
+    $_[0]->{'stop'} = $_[0]->{'thisoffset'};
+}
+
+sub get_start { $_[0]->{'_[0]'}; }
+
+sub get_stop { $_[0]->{'stop'}; }
 
 sub getline {
     my $self = shift;
