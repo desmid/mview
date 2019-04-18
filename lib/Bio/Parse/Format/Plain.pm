@@ -3,6 +3,8 @@
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
 
+use strict;
+
 ######################################################################
 #
 # The simplest input alignment is a column of id's and a column of aligned
@@ -12,7 +14,6 @@
 package Bio::Parse::Format::Plain;
 
 use vars qw(@ISA);
-use strict;
 
 @ISA = qw(Bio::Parse::Record);
 
@@ -34,45 +35,46 @@ my $DEBUG = 0;
 #return a new Plain instance.
 sub get_entry {
     my ($text) = @_;
-    my ($line, $offset, $bytes) = ('', -1, 0);
+    my $line = '';
+    my $data = 0;
 
     #warn "BEGIN ENTRY\n"  if $DEBUG;
 
     while ($text->getline(\$line)) {
 
         #initial blank
-        if ($line =~ /$BLANK/o and $offset < 0) {
+        if ($line =~ /$BLANK/o and !$data) {
             #warn " LEADING BLANK\n"  if $DEBUG;
             next;
         }
 
         #initial comment
-        if ($line =~ /$COMMENT/o and $offset < 0) {
+        if ($line =~ /$COMMENT/o and !$data) {
             #warn " LEADING COMMENT\n"  if $DEBUG;
             next;
         }
 
         #start of data
-        if ($line =~ /$DATA_BEGIN/o and $offset < 0) {
+        if ($line =~ /$DATA_BEGIN/o and !$data) {
             #warn " START OF DATA\n"  if $DEBUG;
-            $offset = $text->startofline;
+            $text->start_count();
+            $data = 1;
             next;
         }
 
         #end of data
-        if ($line =~ /$DATA_END/o and ! ($offset < 0)) {
+        if ($line =~ /$DATA_END/o and $data) {
             #warn " END OF DATA\n"  if $DEBUG;
+            $text->stop_count_at_start();
             last;
         }
     }
 
     #warn "END ENTRY\n"  if $DEBUG;
 
-    return 0   if $offset < 0;
+    return 0   unless $data;
 
-    $bytes = $text->tell - $offset;
-
-    new Bio::Parse::Format::Plain(undef, $text, $offset, $bytes);
+    new Bio::Parse::Format::Plain(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 }
 
 #Parse one entry
@@ -86,18 +88,24 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $scan = new Bio::Parse::Scanner($self);
 
     #warn "BEGIN PARSE\n"  if $DEBUG;
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #comment: ignore in middle of alignment; test first
         next    if $line =~ /$COMMENT/o;
 
         #alignment line
         if ($line =~ /$ALIGNMENT_BEGIN/o) {
-            $text->scan_until($ALIGNMENT_END, 'ALIGNMENT');
+            if ($scan->NEW_scan_until($ALIGNMENT_END)) {
+                $self->push_record(
+                    'ALIGNMENT',
+                    $scan->get_block_start(),
+                    $scan->get_block_bytes(),
+                    );
+            }
             next;
         }
 
@@ -130,7 +138,7 @@ sub new {
     my ($self, $line, $record);
 
     $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $scan = new Bio::Parse::Scanner($self);
 
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
@@ -139,9 +147,9 @@ sub new {
 
     #warn "BEGIN PARSE ALIGNMENT\n"  if $DEBUG;
     #warn "POSITION(self): $offset $bytes\n" if $DEBUG;
-    #warn "POSITION(text): ", $text->{'offset'}, " ", $text->{'bytes'}, "\n" if $DEBUG;
+    #warn "POSITION(scan): ", $scan->{'offset'}, " ", $scan->{'bytes'}, "\n" if $DEBUG;
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #comment: ignore in middle of alignment; must come first
         next    if $line =~ /$COMMENT/o;
