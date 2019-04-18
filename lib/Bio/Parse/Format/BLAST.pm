@@ -286,13 +286,15 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'version',      $self->{'version'};
-    printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
-    printf "$x%20s -> %s\n", 'query',        $self->{'query'};
-    printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'version',      $self->{'version'};
+    $s .= sprintf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
+    $s .= sprintf "$x%20s -> %s\n", 'query',        $self->{'query'};
+    $s .= sprintf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
+    return $s;
 }
 
 
@@ -305,15 +307,17 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
         foreach my $field (sort keys %$hit) {
-            printf "$x%20s -> %s\n", $field,  $hit->{$field};
+            $s .= sprintf "$x%20s -> %s\n", $field,  $hit->{$field};
         }
     }
+    return $s;
 }
 
 
@@ -362,13 +366,15 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $i (sort keys %{$self->{'orient'}}) {
-        printf("$x%20s -> %s\n",
-               "orient $i", scalar @{$self->{'orient'}->{$i}});
+        $s .= sprintf("$x%20s -> %s\n",
+                      "orient $i", scalar @{$self->{'orient'}->{$i}});
     }
+    return $s;
 }
 
 
@@ -415,12 +421,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'id',     $self->{'id'};
-    printf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
-    printf "$x%20s -> %s\n",   'length', $self->{'length'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n",   'id',     $self->{'id'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
+    $s .= sprintf "$x%20s -> %s\n",   'length', $self->{'length'};
+    return $s;
 }
 
 
@@ -611,18 +619,20 @@ sub parse_alignment {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'query',        $self->{'query'};
-    printf "$x%20s -> '%s'\n", 'align',        $self->{'align'};
-    printf "$x%20s -> '%s'\n", 'sbjct',        $self->{'sbjct'};
-    printf "$x%20s -> %s\n",   'query_orient', $self->{'query_orient'};
-    printf "$x%20s -> %s\n",   'query_start',  $self->{'query_start'};
-    printf "$x%20s -> %s\n",   'query_stop',   $self->{'query_stop'};
-    printf "$x%20s -> %s\n",   'sbjct_orient', $self->{'sbjct_orient'};
-    printf "$x%20s -> %s\n",   'sbjct_start',  $self->{'sbjct_start'};
-    printf "$x%20s -> %s\n",   'sbjct_stop',   $self->{'sbjct_stop'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'query',        $self->{'query'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'align',        $self->{'align'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'sbjct',        $self->{'sbjct'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_orient', $self->{'query_orient'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_start',  $self->{'query_start'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_stop',   $self->{'query_stop'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_orient', $self->{'sbjct_orient'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_start',  $self->{'sbjct_start'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_stop',   $self->{'sbjct_stop'};
+    return $s;
 }
 
 
@@ -652,10 +662,12 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'warning', $self->{'warning'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'warning', $self->{'warning'};
+    return $s;
 }
 
 
@@ -685,10 +697,12 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'histogram', $self->{'histogram'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'histogram', $self->{'histogram'};
+    return $s;
 }
 
 
@@ -718,10 +732,12 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'parameters', $self->{'parameters'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'parameters', $self->{'parameters'};
+    return $s;
 }
 
 

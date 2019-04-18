@@ -165,18 +165,20 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'program', $self->{'program'};
-    printf "$x%20s -> %s\n",   'version', $self->{'version'};
-    printf "$x%20s -> %s\n",   'moltype', $self->{'moltype'};
-    printf "$x%20s -> %s\n",   'id1',     $self->{'id1'};
-    printf "$x%20s -> %s\n",   'desc1',   $self->{'desc1'};
-    printf "$x%20s -> %s\n",   'length1', $self->{'length1'};
-    printf "$x%20s -> %s\n",   'id2',     $self->{'id2'};
-    printf "$x%20s -> %s\n",   'desc2',   $self->{'desc2'};
-    printf "$x%20s -> %s\n",   'length2', $self->{'length2'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n",   'program', $self->{'program'};
+    $s .= sprintf "$x%20s -> %s\n",   'version', $self->{'version'};
+    $s .= sprintf "$x%20s -> %s\n",   'moltype', $self->{'moltype'};
+    $s .= sprintf "$x%20s -> %s\n",   'id1',     $self->{'id1'};
+    $s .= sprintf "$x%20s -> %s\n",   'desc1',   $self->{'desc1'};
+    $s .= sprintf "$x%20s -> %s\n",   'length1', $self->{'length1'};
+    $s .= sprintf "$x%20s -> %s\n",   'id2',     $self->{'id2'};
+    $s .= sprintf "$x%20s -> %s\n",   'desc2',   $self->{'desc2'};
+    $s .= sprintf "$x%20s -> %s\n",   'length2', $self->{'length2'};
+    return $s;
 }
 
 
@@ -269,11 +271,13 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'identity', $self->{'identity'};
-    printf "$x%20s -> %s\n", 'score',    $self->{'score'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'identity', $self->{'identity'};
+    $s .= sprintf "$x%20s -> %s\n", 'score',    $self->{'score'};
+    return $s;
 }
 
 ###########################################################################

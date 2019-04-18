@@ -164,10 +164,12 @@ sub new {
     $self;#->examine;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %d\n", 'number', $self->{'number'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %d\n", 'number', $self->{'number'};
+    return $s;
 }
 
 
@@ -236,15 +238,17 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %d\n", 'count', $self->{'count'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %d\n", 'count', $self->{'count'};
     foreach my $hit (@{$self->{'hit'}}) {
         foreach my $field (sort keys %$hit) {
-            printf "$x%20s -> '%s'\n", $field,  $hit->{$field};
+            $s .= sprintf "$x%20s -> '%s'\n", $field,  $hit->{$field};
         }
     }
+    return $s;
 }
 
 
@@ -296,14 +300,16 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %d\n", 'count',  $self->{'count'};
-    printf "$x%20s -> %d\n", 'length', $self->{'length'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %d\n", 'count',  $self->{'count'};
+    $s .= sprintf "$x%20s -> %d\n", 'length', $self->{'length'};
     for (my $i=0; $i<@{$self->{'seq'}}; $i++) {
-        printf("$x%20s[%d] -> '%s'\n", 'seq', $i+1, $self->{'seq'}->[$i]);
+        $s .= sprintf("$x%20s[%d] -> '%s'\n", 'seq', $i+1, $self->{'seq'}->[$i]);
     }
+    return $s;
 }
 
 

@@ -356,29 +356,31 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'version',        $self->{'version'};
-    printf "$x%20s -> '%s'\n", 'full_version',   $self->{'full_version'};
-    printf "$x%20s -> %s\n",   'pdbid',          $self->{'pdbid'};
-    printf "$x%20s -> %s\n",   'date',           $self->{'date'};
-    printf "$x%20s -> %s\n",   'seqbase',        $self->{'seqbase'};
-    printf "$x%20s -> %s\n",   'parameter',      $self->{'parameter'};
-    printf "$x%20s -> %s\n",   'threshold',      $self->{'threshold'};
-    printf "$x%20s -> %s\n",   'reference',      $self->{'reference'};
-    printf "$x%20s -> %s\n",   'contact',        $self->{'contact'};
-    printf "$x%20s -> %s\n",   'available',      $self->{'available'};
-    printf "$x%20s -> %s\n",   'header',         $self->{'header'};
-    printf "$x%20s -> %s\n",   'compnd',         $self->{'compnd'};
-    printf "$x%20s -> %s\n",   'source',         $self->{'source'};
-    printf "$x%20s -> %s\n",   'author',         $self->{'author'};
-    printf "$x%20s -> %s\n",   'seqlength',      $self->{'seqlength'};
-    printf "$x%20s -> %s\n",   'nchain',         $self->{'nchain'};
-    printf "$x%20s -> %s\n",   'kchain',         $self->{'kchain'};
-    printf "$x%20s -> %s\n",   'chainname',      $self->fmt($self->{'chainname'});
-    printf "$x%20s -> %s\n",   'nalign',         $self->{'nalign'};
-    printf "$x%20s -> %s\n",   'notation',       $self->{'notation'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'version',        $self->{'version'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'full_version',   $self->{'full_version'};
+    $s .= sprintf "$x%20s -> %s\n",   'pdbid',          $self->{'pdbid'};
+    $s .= sprintf "$x%20s -> %s\n",   'date',           $self->{'date'};
+    $s .= sprintf "$x%20s -> %s\n",   'seqbase',        $self->{'seqbase'};
+    $s .= sprintf "$x%20s -> %s\n",   'parameter',      $self->{'parameter'};
+    $s .= sprintf "$x%20s -> %s\n",   'threshold',      $self->{'threshold'};
+    $s .= sprintf "$x%20s -> %s\n",   'reference',      $self->{'reference'};
+    $s .= sprintf "$x%20s -> %s\n",   'contact',        $self->{'contact'};
+    $s .= sprintf "$x%20s -> %s\n",   'available',      $self->{'available'};
+    $s .= sprintf "$x%20s -> %s\n",   'header',         $self->{'header'};
+    $s .= sprintf "$x%20s -> %s\n",   'compnd',         $self->{'compnd'};
+    $s .= sprintf "$x%20s -> %s\n",   'source',         $self->{'source'};
+    $s .= sprintf "$x%20s -> %s\n",   'author',         $self->{'author'};
+    $s .= sprintf "$x%20s -> %s\n",   'seqlength',      $self->{'seqlength'};
+    $s .= sprintf "$x%20s -> %s\n",   'nchain',         $self->{'nchain'};
+    $s .= sprintf "$x%20s -> %s\n",   'kchain',         $self->{'kchain'};
+    $s .= sprintf "$x%20s -> %s\n",   'chainname',      $self->fmt($self->{'chainname'});
+    $s .= sprintf "$x%20s -> %s\n",   'nalign',         $self->{'nalign'};
+    $s .= sprintf "$x%20s -> %s\n",   'notation',       $self->{'notation'};
+    return $s;
 }
 
 
@@ -494,24 +496,26 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     for (my $i=0; $i<@{$self->{'ranking'}}; $i++) {
-        printf "$x%20s -> %s\n", 'nr',      $self->{'ranking'}->[$i]->{'nr'};
-        printf "$x%20s -> %s\n", 'id',      $self->{'ranking'}->[$i]->{'id'};
-        printf "$x%20s -> %s\n", '%ide',    $self->{'ranking'}->[$i]->{'%ide'};
-        printf "$x%20s -> %s\n", '%wsim',   $self->{'ranking'}->[$i]->{'%wsim'};
-        printf "$x%20s -> %s\n", 'ifir',    $self->{'ranking'}->[$i]->{'ifir'};
-        printf "$x%20s -> %s\n", 'ilas',    $self->{'ranking'}->[$i]->{'ilas'};
-        printf "$x%20s -> %s\n", 'jfir',    $self->{'ranking'}->[$i]->{'jfir'};
-        printf "$x%20s -> %s\n", 'jlas',    $self->{'ranking'}->[$i]->{'jlas'};
-        printf "$x%20s -> %s\n", 'lali',    $self->{'ranking'}->[$i]->{'lali'};
-        printf "$x%20s -> %s\n", 'ngap',    $self->{'ranking'}->[$i]->{'ngap'};
-        printf "$x%20s -> %s\n", 'lgap',    $self->{'ranking'}->[$i]->{'lgap'};
-        printf "$x%20s -> %s\n", 'lseq2',   $self->{'ranking'}->[$i]->{'lseq2'};
-        printf "$x%20s -> %s\n", 'protein', $self->{'ranking'}->[$i]->{'protein'};
+        $s .= sprintf "$x%20s -> %s\n", 'nr',      $self->{'ranking'}->[$i]->{'nr'};
+        $s .= sprintf "$x%20s -> %s\n", 'id',      $self->{'ranking'}->[$i]->{'id'};
+        $s .= sprintf "$x%20s -> %s\n", '%ide',    $self->{'ranking'}->[$i]->{'%ide'};
+        $s .= sprintf "$x%20s -> %s\n", '%wsim',   $self->{'ranking'}->[$i]->{'%wsim'};
+        $s .= sprintf "$x%20s -> %s\n", 'ifir',    $self->{'ranking'}->[$i]->{'ifir'};
+        $s .= sprintf "$x%20s -> %s\n", 'ilas',    $self->{'ranking'}->[$i]->{'ilas'};
+        $s .= sprintf "$x%20s -> %s\n", 'jfir',    $self->{'ranking'}->[$i]->{'jfir'};
+        $s .= sprintf "$x%20s -> %s\n", 'jlas',    $self->{'ranking'}->[$i]->{'jlas'};
+        $s .= sprintf "$x%20s -> %s\n", 'lali',    $self->{'ranking'}->[$i]->{'lali'};
+        $s .= sprintf "$x%20s -> %s\n", 'ngap',    $self->{'ranking'}->[$i]->{'ngap'};
+        $s .= sprintf "$x%20s -> %s\n", 'lgap',    $self->{'ranking'}->[$i]->{'lgap'};
+        $s .= sprintf "$x%20s -> %s\n", 'lseq2',   $self->{'ranking'}->[$i]->{'lseq2'};
+        $s .= sprintf "$x%20s -> %s\n", 'protein', $self->{'ranking'}->[$i]->{'protein'};
     }
+    return $s;
 }
 
 #returns an ordered array of rank records, or just those requested in the
@@ -776,30 +780,32 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'query',  $self->get_query;
-    printf "$x%20s -> '%s'\n", 'dssp',   $self->get_dssp();
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'query',  $self->get_query;
+    $s .= sprintf "$x%20s -> '%s'\n", 'dssp',   $self->get_dssp();
     #structure data [position]
     foreach my $i ($self->get_record) {
-        printf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
-        printf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
-        printf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
-        printf "$x  %20s -> '%s'\n", 'structure',  $i->{'structure'};
-        printf "$x  %20s -> '%s'\n", 'bp1',        $i->{'bp1'};
-        printf "$x  %20s -> '%s'\n", 'bp2',        $i->{'bp2'};
-        printf "$x  %20s -> %s\n",   'acc',        $i->{'acc'};
-        printf "$x  %20s -> %s\n",   'nocc',       $i->{'nocc'};
-        printf "$x  %20s -> %s\n",   'var',        $i->{'var'};
+        $s .= sprintf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
+        $s .= sprintf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
+        $s .= sprintf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
+        $s .= sprintf "$x  %20s -> '%s'\n", 'structure',  $i->{'structure'};
+        $s .= sprintf "$x  %20s -> '%s'\n", 'bp1',        $i->{'bp1'};
+        $s .= sprintf "$x  %20s -> '%s'\n", 'bp2',        $i->{'bp2'};
+        $s .= sprintf "$x  %20s -> %s\n",   'acc',        $i->{'acc'};
+        $s .= sprintf "$x  %20s -> %s\n",   'nocc',       $i->{'nocc'};
+        $s .= sprintf "$x  %20s -> %s\n",   'var',        $i->{'var'};
     }
     #alignments[chain][rank]
     foreach my $j ($self->get_chains) {
-        printf "$x%20s -> '%s'\n", "chain[$j]",  $self->get_query($j);
+        $s .= sprintf "$x%20s -> '%s'\n", "chain[$j]",  $self->get_query($j);
         for (my $i=1; $i<@{$self->{'alignment'}}; $i++) {
-            printf "$x%20s -> '%s'\n", "alignment[$j][$i]", $self->get_sequence($i, $j);
+            $s .= sprintf "$x%20s -> '%s'\n", "alignment[$j][$i]", $self->get_sequence($i, $j);
         }
     }
+    return $s;
 }
 
 #returns list of chain names, in order of appearance in HSSP alignment

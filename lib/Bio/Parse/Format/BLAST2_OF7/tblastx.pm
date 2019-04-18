@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Nigel P. Brown
+# Copyright (C) 2015-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -100,12 +100,13 @@ sub new {
     bless $self, $type;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    $self->SUPER::print_data($indent);
-    printf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'};
-    printf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'};
+    mx $s = $self->SUPER::dump_data($indent);
+    $s .= sprintf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'};
+    $s .= sprintf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'};
+    return $s;
 }
 
 

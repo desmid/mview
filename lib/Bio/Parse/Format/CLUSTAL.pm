@@ -157,12 +157,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'version', $self->{'version'};
-    printf "$x%20s -> %s\n",   'major',   $self->{'major'};
-    printf "$x%20s -> %s\n",   'minor',   $self->{'minor'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n",   'version', $self->{'version'};
+    $s .= sprintf "$x%20s -> %s\n",   'major',   $self->{'major'};
+    $s .= sprintf "$x%20s -> %s\n",   'minor',   $self->{'minor'};
+    return $s;
 }
 
 
@@ -233,13 +235,15 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $i (@{$self->{'id'}}) {
-        printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        $s .= sprintf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
-    printf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
+    $s .= sprintf "$x%20s -> %-15s %s\n", 'match', '', $self->{'match'};
+    return $s;
 }
 
 

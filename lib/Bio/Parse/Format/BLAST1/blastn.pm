@@ -209,19 +209,20 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    $self->SUPER::print_data($indent);
-    printf "$x%20s -> %s\n",  'score',        $self->{'score'};
-    printf "$x%20s -> %s\n",  'bits',         $self->{'bits'};
-    printf "$x%20s -> %s\n",  'expect',       $self->{'expect'};
-    printf "$x%20s -> %s\n",  'p',            $self->{'p'};
-    printf "$x%20s -> %s\n",  'n',            $self->{'n'};
-    printf "$x%20s -> %s\n",  'id_fraction',  $self->{'id_fraction'};
-    printf "$x%20s -> %s\n",  'id_percent',   $self->{'id_percent'};
-    printf "$x%20s -> %s\n",  'pos_fraction', $self->{'pos_fraction'};
-    printf "$x%20s -> %s\n",  'pos_percent',  $self->{'pos_percent'};
+    my $s = $self->SUPER::dump_data($indent);
+    $s .= sprintf "$x%20s -> %s\n",  'score',        $self->{'score'};
+    $s .= sprintf "$x%20s -> %s\n",  'bits',         $self->{'bits'};
+    $s .= sprintf "$x%20s -> %s\n",  'expect',       $self->{'expect'};
+    $s .= sprintf "$x%20s -> %s\n",  'p',            $self->{'p'};
+    $s .= sprintf "$x%20s -> %s\n",  'n',            $self->{'n'};
+    $s .= sprintf "$x%20s -> %s\n",  'id_fraction',  $self->{'id_fraction'};
+    $s .= sprintf "$x%20s -> %s\n",  'id_percent',   $self->{'id_percent'};
+    $s .= sprintf "$x%20s -> %s\n",  'pos_fraction', $self->{'pos_fraction'};
+    $s .= sprintf "$x%20s -> %s\n",  'pos_percent',  $self->{'pos_percent'};
+    return $s;
 }
 
 

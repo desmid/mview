@@ -142,13 +142,15 @@ sub new {
     $self;#->examine;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'query', scalar $self->get_query;
-    printf "$x%20s -> %s\n",   'final', scalar $self->get_final;
-    printf "$x%20s -> %s\n",   'conf',  scalar $self->get_conf;
-    printf "$x%20s -> %s\n",   'align', scalar $self->get_align;
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n",   'query', scalar $self->get_query;
+    $s .= sprintf "$x%20s -> %s\n",   'final', scalar $self->get_final;
+    $s .= sprintf "$x%20s -> %s\n",   'conf',  scalar $self->get_conf;
+    $s .= sprintf "$x%20s -> %s\n",   'align', scalar $self->get_align;
+    return $s;
 }
 
 sub get_query {

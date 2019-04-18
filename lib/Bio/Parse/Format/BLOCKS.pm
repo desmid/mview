@@ -212,16 +212,18 @@ sub new {
     $self;#->examine;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'id', $self->{'id'};
-    printf "$x%20s -> %s\n", 'ac', $self->{'ac'};
-    printf "$x%20s -> %s\n", 'de', $self->{'de'};
-    printf "$x%20s -> %s\n", 'bl', $self->{'bl'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'id', $self->{'id'};
+    $s .= sprintf "$x%20s -> %s\n", 'ac', $self->{'ac'};
+    $s .= sprintf "$x%20s -> %s\n", 'de', $self->{'de'};
+    $s .= sprintf "$x%20s -> %s\n", 'bl', $self->{'bl'};
     for (my $i=0; $i < @{$self->{'block'}}; $i++) {
-        print "$x$i => [@{$self->{'block'}->[$i]}]\n";
+        $s .= sprint "$x$i => [@{$self->{'block'}->[$i]}]\n";
     }
+    return $s;
 }
 
 

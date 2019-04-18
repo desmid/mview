@@ -37,14 +37,14 @@ sub new { #discard system supplied type
     $self->{'offset'}         = $offset;    #my string offset
     $self->{'bytes'}          = $bytes;     #my string length
     $self->{'parent'}         = $parent;    #parent record (to be free'd)
-    $self->{'record_by_posn'} = [];         #list of records(to be free'd)
+    $self->{'record_by_posn'} = [];         #list of records (to be free'd)
     $self->{'record_by_type'} = {};         #hash of record types (to be free'd)
 
     #subrecord counter
     $self->{'index'} = $self->get_record_number($parent);
 
     #relative key for reporting
-    $self->{'relative_key'} = $self->get_type() . $KEY_DELIM . $self->{'index'};
+    $self->{'relative_key'} = $self->make_relative_key();
 
     #absolute hierarchical key for indexing/reporting
     $self->{'absolute_key'} = $self->make_absolute_key();
@@ -232,6 +232,10 @@ sub clean_identifier {
 ###########################################################################
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
+sub make_relative_key {
+    return $_[0]->get_type() . $KEY_DELIM . $_[0]->{'index'};
+}
+
 sub make_absolute_key {
     my $self = shift;
     my $key = '';
@@ -362,46 +366,55 @@ sub make_message_string {
 # called in the parser test suite
 sub print {
     my ($self, $indent) = (@_, 0);
+    print $self->dump_record($indent);
+}
+
+sub dump_record {
+    my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "%sClass:  %s\n", $x, $self;
-    printf "%sParent: %s\n", $x,
+    my $s = '';
+    $s .= sprintf "%sClass:  %s\n", $x, $self;
+    $s .= sprintf "%sParent: %s\n", $x,
         defined $self->{'parent'} ? $self->{'parent'} : 'undef';
-    printf "%sKey:    %s   Indices: []\n", $x, $self->{'relative_key'};
+    $s .= sprintf "%sKey:    %s   Indices: []\n", $x, $self->{'relative_key'};
 
-    printf "%s  Subrecords by posn:\n", $x;
-    $self->print_records_by_posn($indent);
+    $s .= sprintf "%s  Subrecords by posn:\n", $x;
+    $s .= $self->dump_records_by_posn($indent);
 
-    printf "%s  Miscellaneous:\n", $x;
-    printf "$x%20s -> %d\n",   'index', $self->{'index'};
-    printf "$x%20s -> [%s]\n", 'pos',
+    $s .= sprintf "%s  Miscellaneous:\n", $x;
+    $s .= sprintf "$x%20s -> %d\n",   'index', $self->{'index'};
+    $s .= sprintf "$x%20s -> [%s]\n", 'pos',
         join(', ', ($self->{'offset'}, $self->{'bytes'}));
     my $tmp = '';
     if (defined $self->{'text'}) {
         $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
         ($tmp) = split("\n", $tmp);
     }
-    printf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
+    $s .= sprintf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
 
-    printf "%s  Data:\n", $x;
-    $self->print_data($indent);  #supplied by subclass
+    $s .= sprintf "%s  Data:\n", $x;
+    $s .= $self->dump_data($indent);  #supplied by subclass
+
+    return $s;
 }
 
-# helper for print()
-sub print_records_by_posn {
+# FIXME into bookkeeper
+sub dump_records_by_posn {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x ($indent+2);
-    my %count;
+    my ($s, %count) = ('');
     foreach my $rec (@{$self->{'record_by_posn'}}) {
         my $label = $rec->[0];
         if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
             $label .=  '/' . ++$count{$rec->[0]};
         }
-        printf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
+        $s .= sprintf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
     }
+    return $s;
 }
 
 # helper for print(); subclass overrides to add fields
-sub print_data {}
+sub dump_data { '' }
 
 # helper for print_data(); used by subclasses
 sub fmt {

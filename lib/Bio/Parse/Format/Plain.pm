@@ -182,12 +182,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $i (@{$self->{'id'}}) {
-        printf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        $s .= sprintf "$x%20s -> %-15s %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
+    return $s;
 }
 
 

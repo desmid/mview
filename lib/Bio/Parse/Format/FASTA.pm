@@ -498,12 +498,14 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $field (sort $self->list_attrs) {
-        printf "$x%20s -> %s\n", $field,  $self->{$field};
+        $s .= sprintf "$x%20s -> %s\n", $field,  $self->{$field};
     }
+    return $s;
 }
 
 
@@ -516,14 +518,16 @@ use vars qw(@ISA);
 
 sub new { die "$_[0]::new() virtual function called\n" }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $hit (@{$self->{'hit'}}) {
         foreach my $field (sort keys %$hit) {
-            printf "$x%20s -> %s\n", $field, $hit->{$field};
+            $s .= sprintf "$x%20s -> %s\n", $field, $hit->{$field};
         }
     }
+    return $s;
 }
 
 
@@ -553,12 +557,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $field (sort $self->list_attrs) {
-        printf "$x%20s -> %s\n", $field,  $self->{$field};
+        $s .= sprintf "$x%20s -> %s\n", $field,  $self->{$field};
     }
+    return $s;
 }
 
 
@@ -604,12 +610,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $field (sort $self->list_attrs) {
-        printf "$x%20s -> %s\n", $field,  $self->{$field};
+        $s .= sprintf "$x%20s -> %s\n", $field,  $self->{$field};
     }
+    return $s;
 }
 
 
@@ -626,12 +634,14 @@ sub get_sibling {
     $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[$_[1]][3];
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $field (sort $self->list_attrs) {
-        printf "$x%20s -> %s\n", $field,  $self->{$field};
+        $s .= sprintf "$x%20s -> %s\n", $field,  $self->{$field};
     }
+    return $s;
 }
 
 
@@ -1100,22 +1110,24 @@ sub get_start_stop {
     return ($start, $stop);
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'query',          $self->{'query'};
-    printf "$x%20s -> '%s'\n", 'align',          $self->{'align'};
-    printf "$x%20s -> '%s'\n", 'sbjct',          $self->{'sbjct'};
-    printf "$x%20s -> %s\n",   'query_orient',   $self->{'query_orient'};
-    printf "$x%20s -> %s\n",   'query_start',    $self->{'query_start'};
-    printf "$x%20s -> %s\n",   'query_stop',     $self->{'query_stop'};
-    printf "$x%20s -> %s\n",   'query_leader',   $self->{'query_leader'};
-    printf "$x%20s -> %s\n",   'query_trailer',  $self->{'query_trailer'};
-    printf "$x%20s -> %s\n",   'sbjct_orient',   $self->{'sbjct_orient'};
-    printf "$x%20s -> %s\n",   'sbjct_start',    $self->{'sbjct_start'};
-    printf "$x%20s -> %s\n",   'sbjct_stop' ,    $self->{'sbjct_stop'};
-    printf "$x%20s -> %s\n",   'sbjct_leader',   $self->{'sbjct_leader'};
-    printf "$x%20s -> %s\n",   'sbjct_trailer',  $self->{'sbjct_trailer'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'query',          $self->{'query'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'align',          $self->{'align'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'sbjct',          $self->{'sbjct'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_orient',   $self->{'query_orient'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_start',    $self->{'query_start'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_stop',     $self->{'query_stop'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_leader',   $self->{'query_leader'};
+    $s .= sprintf "$x%20s -> %s\n",   'query_trailer',  $self->{'query_trailer'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_orient',   $self->{'sbjct_orient'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_start',    $self->{'sbjct_start'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_stop' ,    $self->{'sbjct_stop'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_leader',   $self->{'sbjct_leader'};
+    $s .= sprintf "$x%20s -> %s\n",   'sbjct_trailer',  $self->{'sbjct_trailer'};
+    return $s;
 }
 
 

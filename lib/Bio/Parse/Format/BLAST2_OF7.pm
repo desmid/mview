@@ -387,15 +387,17 @@ sub extract_fields {
     }
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'version',      $self->{'version'};
-    printf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
-    printf "$x%20s -> %s\n", 'query',        $self->{'query'};
-    printf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
-    printf "$x%20s -> %s\n", 'fields',       $self->fmt($self->{'fields'});
-    printf "$x%20s -> %s (initial)\n", 'counts', $self->fmt($self->{'counts'});
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'version',      $self->{'version'};
+    $s .= sprintf "$x%20s -> %s\n", 'full_version', $self->{'full_version'};
+    $s .= sprintf "$x%20s -> %s\n", 'query',        $self->{'query'};
+    $s .= sprintf "$x%20s -> %s\n", 'summary',      $self->{'summary'};
+    $s .= sprintf "$x%20s -> %s\n", 'fields',       $self->fmt($self->{'fields'});
+    $s .= sprintf "$x%20s -> %s (initial)\n", 'counts', $self->fmt($self->{'counts'});
+    return $s;
 }
 
 
@@ -541,17 +543,19 @@ sub init_field_counts {
     }
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
         foreach my $field (sort keys %$hit) {
             my $val = $hit->{$field};
             $val = $self->fmt_hash($val)  if $field eq 'extra';
-            printf "$x%20s -> %s\n", $field, $val;
+            $s .= sprintf "$x%20s -> %s\n", $field, $val;
         }
     }
+    return $s;
 }
 
 

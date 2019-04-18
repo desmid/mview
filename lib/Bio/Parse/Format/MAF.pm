@@ -142,13 +142,15 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'version', $self->{'version'};
-    printf "$x%20s -> %s\n", 'scoring', $self->{'scoring'};
-    printf "$x%20s -> %s\n", 'program', $self->{'program'};
-    printf "$x%20s -> %s\n", 'options', $self->{'options'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'version', $self->{'version'};
+    $s .= sprintf "$x%20s -> %s\n", 'scoring', $self->{'scoring'};
+    $s .= sprintf "$x%20s -> %s\n", 'program', $self->{'program'};
+    $s .= sprintf "$x%20s -> %s\n", 'options', $self->{'options'};
+    return $s;
 }
 
 
@@ -228,19 +230,21 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n", 'score', $self->{'score'};
-    printf "$x%20s -> %s\n", 'pass',  $self->{'pass'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n", 'score', $self->{'score'};
+    $s .= sprintf "$x%20s -> %s\n", 'pass',  $self->{'pass'};
     foreach my $row (@{$self->{'row'}}) {
-        printf "$x%20s -> %s\n", 'id',      $row->{'id'};
-        printf "$x%20s -> %s\n", 'start',   $row->{'start'};
-        printf "$x%20s -> %s\n", 'size',    $row->{'size'};
-        printf "$x%20s -> %s\n", 'strand',  $row->{'strand'};
-        printf "$x%20s -> %s\n", 'srcsize', $row->{'srcsize'};
-        printf "$x%20s -> %s\n", 'seq',     $row->{'seq'};
+        $s .= sprintf "$x%20s -> %s\n", 'id',      $row->{'id'};
+        $s .= sprintf "$x%20s -> %s\n", 'start',   $row->{'start'};
+        $s .= sprintf "$x%20s -> %s\n", 'size',    $row->{'size'};
+        $s .= sprintf "$x%20s -> %s\n", 'strand',  $row->{'strand'};
+        $s .= sprintf "$x%20s -> %s\n", 'srcsize', $row->{'srcsize'};
+        $s .= sprintf "$x%20s -> %s\n", 'seq',     $row->{'seq'};
     }
+    return $s;
 }
 
 

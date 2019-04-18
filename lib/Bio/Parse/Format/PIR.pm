@@ -134,13 +134,15 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> %s\n",   'prefix', $self->{'prefix'};
-    printf "$x%20s -> %s\n",   'id',     $self->{'id'};
-    printf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
-    printf "$x%20s -> %s\n",   'seq',    $self->{'seq'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> %s\n",   'prefix', $self->{'prefix'};
+    $s .= sprintf "$x%20s -> %s\n",   'id',     $self->{'id'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'desc',   $self->{'desc'};
+    $s .= sprintf "$x%20s -> %s\n",   'seq',    $self->{'seq'};
+    return $s;
 }
 
 

@@ -156,14 +156,16 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    printf "$x%20s -> '%s'\n", 'file',   $self->{'file'};
-    printf "$x%20s -> %s\n",   'msf',    $self->{'msf'};
-    printf "$x%20s -> %s\n",   'type',   $self->{'type'};
-    printf "$x%20s -> '%s'\n", 'data',   $self->{'data'};
-    printf "$x%20s -> %s\n",   'check',  $self->{'check'};
+    my $s = '';
+    $s .= sprintf "$x%20s -> '%s'\n", 'file',   $self->{'file'};
+    $s .= sprintf "$x%20s -> %s\n",   'msf',    $self->{'msf'};
+    $s .= sprintf "$x%20s -> %s\n",   'type',   $self->{'type'};
+    $s .= sprintf "$x%20s -> '%s'\n", 'data',   $self->{'data'};
+    $s .= sprintf "$x%20s -> %s\n",   'check',  $self->{'check'};
+    return $s;
 }
 
 
@@ -229,16 +231,18 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $i (@{$self->{'order'}}) {
-        printf "$x%20s -> %-15s %s=%5s %s=%5s %s=%5s\n",
-        'seq',    $i,
-        'length', $self->{'seq'}->{$i}->{'length'},
-        'check',  $self->{'seq'}->{$i}->{'check'},
-        'weight', $self->{'seq'}->{$i}->{'weight'};
+        $s .= sprintf "$x%20s -> %-15s %s=%5s %s=%5s %s=%5s\n",
+            'seq',    $i,
+            'length', $self->{'seq'}->{$i}->{'length'},
+            'check',  $self->{'seq'}->{$i}->{'check'},
+            'weight', $self->{'seq'}->{$i}->{'weight'};
     }
+    return $s;
 }
 
 
@@ -302,12 +306,14 @@ sub new {
     $self;
 }
 
-sub print_data {
+sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
+    my $s = '';
     foreach my $i (sort keys %{$self->{'seq'}}) {
-        printf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
+        $s .= sprintf "$x%20s -> %-15s =  %s\n", 'seq', $i, $self->{'seq'}->{$i};
     }
+    return $s;
 }
 
 
