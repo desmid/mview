@@ -346,13 +346,13 @@ sub new {
 
         #identifier lines
         if ($line =~ /$MATCH_START/o) {
-            $text->scan_until($SCORE_START, 'SUM');
+            $text->OLD_scan_until($SCORE_START, 'SUM');
             next;
         }
 
         #scored alignments
         if ($line =~ /$SCORE_START/o) {
-            $text->scan_until($SCORE_END, 'ALN');
+            $text->OLD_scan_until($SCORE_END, 'ALN');
             next;
         }
 

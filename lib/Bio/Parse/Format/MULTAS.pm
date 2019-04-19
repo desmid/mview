@@ -81,7 +81,7 @@ sub new {
 
         #BLOCK lines
         if ($line =~ /$MULTAS_BLOCK/o) {
-            $text->scan_until($MULTAS_BLOCKend, 'BLOCK');
+            $text->OLD_scan_until($MULTAS_BLOCKend, 'BLOCK');
             next;
         }
 
@@ -140,13 +140,13 @@ sub new {
 
 #       #LIST lines
 #       if ($line =~ /$MULTAS_LIST/o) {
-#           $text->scan_until($MULTAS_LISTend, 'LIST');
+#           $text->OLD_scan_until($MULTAS_LISTend, 'LIST');
 #           next;
 #       }
 
         #ALIGNMENT lines
         if ($line =~ /$MULTAS_ALIGNMENT/o) {
-            $text->scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 

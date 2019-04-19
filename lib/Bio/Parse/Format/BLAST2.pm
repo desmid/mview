@@ -137,28 +137,28 @@ sub new {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->scan_until($HEADER_END, 'HEADER');
+            $text->OLD_scan_until($HEADER_END, 'HEADER');
             next;
         }
 
         #Search lines
         if ($line =~ /$SEARCH_START/o) {
             if ($line =~ /^Searching/o) {  #BLAST2
-                $text->scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
+                $text->OLD_scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
                 next;
             }
             if ($line =~ /^Results from round/o) {  #BLAST+
-                $text->scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
+                $text->OLD_scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
                 next;
             }
             #keywords 'Searching' or 'Results' stripped by web server
-            $text->scan_until($SEARCH_END, 'SEARCH');
+            $text->OLD_scan_until($SEARCH_END, 'SEARCH');
             next;
         }
 
         #Parameter lines
         if ($line =~ /$PARAMETERS_START/o) {
-            $text->scan_until($PARAMETERS_END, 'PARAMETERS');
+            $text->OLD_scan_until($PARAMETERS_END, 'PARAMETERS');
             next;
         }
 
@@ -226,19 +226,19 @@ sub new {
 
         #Rank lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::RANK_START/o) {
-            $text->scan_until($Bio::Parse::Format::BLAST2::RANK_END, 'RANK');
+            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::RANK_END, 'RANK');
             next;
         }
 
         #Hit lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::MATCH_START/o) {
-            $text->scan_until($Bio::Parse::Format::BLAST2::MATCH_END, 'MATCH');
+            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::MATCH_END, 'MATCH');
             next;
         }
 
         #WARNING lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::WARNING_START/o) {
-            $text->scan_until($Bio::Parse::Format::BLAST2::WARNING_END, 'WARNING');
+            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::WARNING_END, 'WARNING');
             next;
         }
 

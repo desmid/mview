@@ -52,7 +52,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$ALIGN_HEADER/o) {
-            $text->scan_until($ALIGN_HEADERend, 'HEADER');
+            $text->OLD_scan_until($ALIGN_HEADERend, 'HEADER');
             next;
         }
 
@@ -60,7 +60,7 @@ sub new {
 
         #MATCH lines
         if ($line =~ /$ALIGN_MATCH/o) {
-            $text->scan_until($ALIGN_MATCHend, 'MATCH');
+            $text->OLD_scan_until($ALIGN_MATCHend, 'MATCH');
             next;
         }
 
@@ -204,12 +204,12 @@ sub new {
     while (defined ($line = $text->next_line)) {
 
         if ($line =~ /$ALIGN_SUMMARY/o) {
-            $text->scan_until($ALIGN_SUMMARYend, 'SUM');
+            $text->OLD_scan_until($ALIGN_SUMMARYend, 'SUM');
             next;
         }
 
         if ($line =~ /$ALIGN_ALIGNMENT/o) {
-            $text->scan_until($ALIGN_ALIGNMENTend, 'ALN');
+            $text->OLD_scan_until($ALIGN_ALIGNMENTend, 'ALN');
             next;
         }
 

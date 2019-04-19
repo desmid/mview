@@ -67,7 +67,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$CLUSTAL_HEADER/o) {
-            $text->scan_until($CLUSTAL_HEADERend, 'HEADER');
+            $text->OLD_scan_until($CLUSTAL_HEADERend, 'HEADER');
             next;
         }
 
@@ -75,7 +75,7 @@ sub new {
 
         #ALIGNMENT lines
         if ($line =~ /$CLUSTAL_ALIGNMENT/o) {
-            $text->scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 

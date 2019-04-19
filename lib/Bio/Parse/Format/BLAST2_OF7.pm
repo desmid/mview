@@ -283,13 +283,13 @@ sub new {
 
         #HEADER block
         if ($line =~ /$HEADER_START/o) {
-            $text->scan_until($HEADER_END, 'HEADER');
+            $text->OLD_scan_until($HEADER_END, 'HEADER');
             next;
         }
 
         #SEARCH block
         if ($line =~ /$SEARCH_START/o) {
-            $text->scan_until($SEARCH_END, 'SEARCH');
+            $text->OLD_scan_until($SEARCH_END, 'SEARCH');
             next;
         }
 

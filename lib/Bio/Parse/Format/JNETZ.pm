@@ -68,7 +68,7 @@ sub new {
 
         #ALIGNMENT lines
         if ($line =~ /$JNETZ_ALIGNMENT/o) {
-            $text->scan_until($JNETZ_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($JNETZ_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 

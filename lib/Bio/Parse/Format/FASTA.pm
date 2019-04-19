@@ -426,19 +426,19 @@ sub new {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->scan_until($HEADER_END, 'HEADER');
+            $text->OLD_scan_until($HEADER_END, 'HEADER');
             next;
         }
 
         #Rank lines
         if ($line =~ /$RANK_START/o) {
-            $text->scan_until($RANK_END, 'RANK');
+            $text->OLD_scan_until($RANK_END, 'RANK');
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
-            $text->scan_until($MATCH_END, 'MATCH');
+            $text->OLD_scan_until($MATCH_END, 'MATCH');
             next;
         }
 
@@ -597,7 +597,7 @@ sub new {
 
         #fragment hits: terminated by several possibilities
         if ($line =~ /$ALN_START/o) {
-            $text->scan_until($ALN_END, 'ALN');
+            $text->OLD_scan_until($ALN_END, 'ALN');
             next;
         }
 

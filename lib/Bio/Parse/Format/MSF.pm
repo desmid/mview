@@ -69,7 +69,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$MSF_HEADER/o) {
-            $text->scan_until($MSF_HEADERend, 'HEADER');
+            $text->OLD_scan_until($MSF_HEADERend, 'HEADER');
             next;
         }
 
@@ -77,13 +77,13 @@ sub new {
 
         #NAME lines
         if ($line =~ /$MSF_NAME/o) {
-            $text->scan_until($MSF_NAMEend, 'NAME');
+            $text->OLD_scan_until($MSF_NAMEend, 'NAME');
             next;
         }
 
         #ALIGNMENT lines
         if ($line =~ /$MSF_ALIGNMENT/o) {
-            $text->scan_until($MSF_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($MSF_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 

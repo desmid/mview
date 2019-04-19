@@ -68,7 +68,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$MAF_HEADER/o) {
-            $text->scan_until($MAF_HEADERend, 'HEADER');
+            $text->OLD_scan_until($MAF_HEADERend, 'HEADER');
             next;
         }
 
@@ -76,7 +76,7 @@ sub new {
 
         #BLOCK lines
         if ($line =~ /$MAF_BLOCK/o) {
-            $text->scan_until($MAF_BLOCKend, 'BLOCK');
+            $text->OLD_scan_until($MAF_BLOCKend, 'BLOCK');
             next;
         }
 

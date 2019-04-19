@@ -121,7 +121,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$HSSP_HEADER/o) {
-            $text->scan_until($HSSP_HEADERend, 'HEADER');
+            $text->OLD_scan_until($HSSP_HEADERend, 'HEADER');
             next;
         }
 
@@ -129,25 +129,25 @@ sub new {
 
         #PROTEIN lines
         if ($line =~ /$HSSP_PROTEIN/o) {
-            $text->scan_until($HSSP_PROTEINend, 'PROTEIN');
+            $text->OLD_scan_until($HSSP_PROTEINend, 'PROTEIN');
             next;
         }
 
         #ALIGNMENT lines
         if ($line =~ /$HSSP_ALIGNMENT/o) {
-            $text->scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 
         #PROFILE lines
         if ($line =~ /$HSSP_PROFILE/o) {
-            $text->scan_until($HSSP_PROFILEend, 'PROFILE');
+            $text->OLD_scan_until($HSSP_PROFILEend, 'PROFILE');
             next;
         }
 
         #INSERTION lines
         if ($line =~ /$HSSP_INSERTION/o) {
-            $text->scan_until($HSSP_INSERTIONend, 'INSERTION');
+            $text->OLD_scan_until($HSSP_INSERTIONend, 'INSERTION');
             next;
         }
 

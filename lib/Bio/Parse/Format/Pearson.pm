@@ -57,7 +57,7 @@ sub new {
 
         #SEQ lines
         if ($line =~ /$Pearson_SEQ/o) {
-            $text->scan_until($Pearson_SEQend, 'SEQ');
+            $text->OLD_scan_until($Pearson_SEQend, 'SEQ');
             next;
         }
 

@@ -130,13 +130,13 @@ sub new {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->scan_until($HEADER_END, 'HEADER');
+            $text->OLD_scan_until($HEADER_END, 'HEADER');
             next;
         }
 
         #Histogram lines
         if ($line =~ /$HISTOGRAM_START/o) {
-            $text->scan_until($HISTOGRAM_END, 'HISTOGRAM');
+            $text->OLD_scan_until($HISTOGRAM_END, 'HISTOGRAM');
             next;
         }
 
@@ -148,19 +148,19 @@ sub new {
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
-            $text->scan_until($MATCH_END, 'MATCH');
+            $text->OLD_scan_until($MATCH_END, 'MATCH');
             next;
         }
 
         #WARNING lines
         if ($line =~ /$WARNING_START/o) {
-            $text->scan_until($WARNING_END, 'WARNING');
+            $text->OLD_scan_until($WARNING_END, 'WARNING');
             next;
         }
 
         #Parameter lines
         if ($line =~ /$PARAMETERS_START/o) {
-            $text->scan_until($PARAMETERS_END, 'PARAMETERS');
+            $text->OLD_scan_until($PARAMETERS_END, 'PARAMETERS');
             next;
         }
 

@@ -69,7 +69,7 @@ sub new {
 
         #HEADER lines
         if ($line =~ /$MIPS_HEADER/o) {
-            $text->scan_until($MIPS_HEADERend, 'HEADER');
+            $text->OLD_scan_until($MIPS_HEADERend, 'HEADER');
             next;
         }
 
@@ -77,13 +77,13 @@ sub new {
 
         #NAME lines
         if ($line =~ /$MIPS_NAME/o) {
-            $text->scan_until($MIPS_NAMEend, 'NAME');
+            $text->OLD_scan_until($MIPS_NAMEend, 'NAME');
             next;
         }
 
         #ALIGNMENT lines
         if ($line =~ /$MIPS_ALIGNMENT/o) {
-            $text->scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
+            $text->OLD_scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
             next;
         }
 

@@ -93,7 +93,7 @@ sub new {
 
             #FIXME NEW_scan_until and use stop not bytes
 
-            if ($scan->NEW_scan_until($ALIGNMENT_END)) {
+            if ($scan->scan_until($ALIGNMENT_END)) {
                 $self->push_record(
                     'ALIGNMENT',
                     $scan->get_block_start(),

@@ -59,7 +59,7 @@ sub new {
 
         #SEQ lines
         if ($line =~ /$PIR_SEQ/o) {
-            $text->scan_until($PIR_SEQend, 'SEQ');
+            $text->OLD_scan_until($PIR_SEQend, 'SEQ');
             next;
         }
 

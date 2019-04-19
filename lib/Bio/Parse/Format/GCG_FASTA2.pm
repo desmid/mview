@@ -92,7 +92,7 @@ sub new {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->scan_until($HEADER_END, 'HEADER');
+            $text->OLD_scan_until($HEADER_END, 'HEADER');
             next;
         }
 
@@ -373,7 +373,7 @@ sub new {
 
         #fragment hits: terminated by several possibilities
         if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_START/o) {
-            $text->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
+            $text->OLD_scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
             next;
         }
 
