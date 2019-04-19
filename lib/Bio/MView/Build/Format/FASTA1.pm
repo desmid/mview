@@ -82,7 +82,7 @@ sub parse {
 
     #all strands done?
     if (! defined $self->{scheduler}->next) {
-        $self->{'entry'}->free_keys();
+        $self->{'entry'}->free_parsers();
         #warn "fasta1::parse: exiting at end\n";
         return;
     }
@@ -223,7 +223,7 @@ sub parse {
 
     #all strands done?
     if (! defined $self->{scheduler}->next) {
-        $self->{'entry'}->free_keys();
+        $self->{'entry'}->free_parsers();
         #warn "fasta1::parse: exiting at end\n";
         return;
     }

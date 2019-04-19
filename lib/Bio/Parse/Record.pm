@@ -72,13 +72,13 @@ sub free {
 }
 
 #free records by key
-sub free_keys {
+sub free_parsers {
     my $self = shift;
-    #warn "> Record::free_keys $self\n"  if $DEBUG;
+    #warn "> Record::free_parsers $self\n"  if $DEBUG;
 
-    $self->{'blockkeeper'}->free_keys(@_);
+    $self->{'blockkeeper'}->free_parsers(@_);
 
-    #warn "< Record::free_keys $self\n"  if $DEBUG;
+    #warn "< Record::free_parsers $self\n"  if $DEBUG;
 }
 
 sub get_offset { $_[0]->{'start'}; }

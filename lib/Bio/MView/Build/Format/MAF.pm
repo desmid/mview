@@ -54,7 +54,7 @@ sub initialise {
     my $last = $self->{'entry'}->count(qw(BLOCK));
 
     #free object
-    $self->{'entry'}->free_keys(qw(BLOCK));
+    $self->{'entry'}->free_parsers(qw(BLOCK));
 
     $self->{scheduler} = new Bio::MView::Build::Scheduler([1..$last]);
 
@@ -121,7 +121,7 @@ sub parse {
     #map { $_->dump } @hit;
 
     #free objects
-    $self->{'entry'}->free_keys(qw(BLOCK));
+    $self->{'entry'}->free_parsers(qw(BLOCK));
 
     return \@hit;
 }

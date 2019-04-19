@@ -35,7 +35,7 @@ sub begin_parse {
 sub end_parse {
     my $self = shift;
     #warn "blast2::end_parse: free SEARCH\n";
-    $self->{'entry'}->free_keys(qw(SEARCH RANK HEADER));
+    $self->{'entry'}->free_parsers(qw(SEARCH RANK HEADER));
 }
 
 sub parse_record {

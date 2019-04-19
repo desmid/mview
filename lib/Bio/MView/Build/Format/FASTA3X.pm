@@ -320,7 +320,7 @@ sub parse_query_tuples {
         }
     }
 
-    $self->{'entry'}->free_keys(qw(MATCH));
+    $self->{'entry'}->free_parsers(qw(MATCH));
 
     $peplist;
 }
@@ -332,7 +332,7 @@ sub parse {
 
     #all peptide tuples done?
     if (! defined $self->{scheduler}->next) {
-        $self->{'entry'}->free_keys();
+        $self->{'entry'}->free_parsers();
         #warn "fasta3X::parse: exiting at end\n";
         return;
     }
@@ -592,7 +592,7 @@ sub parse {
 
     #all strands done?
     if (! defined $self->{scheduler}->next) {
-        $self->{'entry'}->free_keys();
+        $self->{'entry'}->free_parsers();
         #warn "fasta3X::parse: exiting at end\n";
         return;
     }

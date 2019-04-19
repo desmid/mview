@@ -29,7 +29,7 @@ sub begin_parse {
     ($s, $h, $r);
 }
 
-sub end_parse { $_[0]->{'entry'}->free_keys(qw(HEADER RANK MATCH)) }
+sub end_parse { $_[0]->{'entry'}->free_parsers(qw(HEADER RANK MATCH)) }
 
 #sub str { join ", ", map { defined $_ ? $_ : 'undef' } @_ }
 

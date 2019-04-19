@@ -100,9 +100,9 @@ sub free {
 }
 
 # free given blocks leaving data structures intact
-sub free_keys {
+sub free_parsers {
     my $self = shift;
-    #warn "> BlockKeeper::free_keys $self\n"  if $DEBUG;
+    #warn "> BlockKeeper::free_parsers $self\n"  if $DEBUG;
 
     foreach my $key (@_) {
         next  unless exists $self->{'record_by_type'}->{$key};
@@ -113,7 +113,7 @@ sub free_keys {
         }
     }
 
-    #warn "< BlockKeeper::free_keys $self\n"  if $DEBUG;
+    #warn "< BlockKeeper::free_parsers $self\n"  if $DEBUG;
 }
 
 # return index of give block in its particular slot or -1 if not found

@@ -38,7 +38,7 @@ sub parse {
     #map { $_->dump } @hit;
 
     #free objects
-    $self->{'entry'}->free_keys(qw(ALIGNMENT));
+    $self->{'entry'}->free_parsers(qw(ALIGNMENT));
 
     return \@hit;
 }
