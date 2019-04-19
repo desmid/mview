@@ -631,7 +631,8 @@ use vars qw(@ISA);
 sub new { die "$_[0]::new() virtual function called\n" }
 
 sub get_sibling {
-    $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[$_[1]][3];
+    my ($self, $num) = @_;
+    return $self->{'parent'}->{'blockkeeper'}->get_block('SUM', $num)->{'record'};
 }
 
 sub dump_data {
@@ -655,11 +656,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub get_header {
-    $_[0]->{'parent'}->{'parent'}->{'record_by_type'}->{'HEADER'}->[0][3];
+    $_[0]->{'parent'}->{'parent'}->{'blockkeeper'}->get_block('HEADER')->{'record'};
 }
 
 sub get_summary {
-    $_[0]->{'parent'}->{'record_by_type'}->{'SUM'}->[0][3];
+    $_[0]->{'parent'}->{'blockkeeper'}->get_block('SUM')->{'record'};
 }
 
 sub new {

@@ -233,7 +233,7 @@ sub new {
               $3);
 
     } elsif ($record =~ /^>--/) {  #alternative alignment
-        my $sib = $self->get_sibling(0);
+        my $sib = $self->get_sibling(1);
         (
          $self->{'id'},
          $self->{'desc'},

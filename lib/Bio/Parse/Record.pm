@@ -8,8 +8,10 @@ use strict;
 ###########################################################################
 package Bio::Parse::Record;
 
-use Bio::Util::Object;
+use Bio::Parse::Block;
+use Bio::Parse::BlockKeeper;
 use Bio::Parse::Scanner;
+use Bio::Util::Object;
 
 use vars qw(@ISA);
 
@@ -17,31 +19,29 @@ use vars qw(@ISA);
 
 my $KEY_DELIM  = "::";
 
-my $IGNORE_ATTR = "text|offset|bytes|index|parent|record_by_posn|record_by_type|indices|relative_key|absolute_key";
+my $IGNORE_ATTR = "parent|text|start|stop|blockkeeper|index|relative_key|absolute_key";
 
-#Warning! the 'record_by_*' and 'parent' fields require explicit
-#dereferencing otherwise perl won't garbage collect them until after the
-#program exits. Therefore, the top-level Record of a Record tree should call
-#the free() method when the caller has finished with it a record, to allow
-#normal garbage collection at run-time.
 
-sub new { #discard system supplied type
-    my ($ignore, $type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
+#FIXME make call parsers use start/stop instead of bytes
+
+sub new {
+    my $ignore = shift;  #discard system supplied type
+    my ($type, $parent, $text, $start, $bytes) = (@_, -1, -1);
 
     my $self = {};
     bless $self, $type;
 
     #warn $text->substr(), "\n";
 
-    $self->{'text'}           = $text;
-    $self->{'offset'}         = $offset;    #my string offset
-    $self->{'bytes'}          = $bytes;     #my string length
-    $self->{'parent'}         = $parent;    #parent record (to be free'd)
-    $self->{'record_by_posn'} = [];         #list of records (to be free'd)
-    $self->{'record_by_type'} = {};         #hash of record types (to be free'd)
+    $self->{'parent'} = $parent;          #parent record
+    $self->{'text'}   = $text;            #text object being parsed
+    $self->{'start'}  = $start;           #text start
+    $self->{'stop'}   = $start + $bytes;  #text stop  #FIXME
+
+    $self->{'blockkeeper'} = new Bio::Parse::BlockKeeper();
 
     #subrecord counter
-    $self->{'index'} = $self->get_record_number($parent);
+    $self->{'index'} = $self->get_next_record_number($parent);
 
     #relative key for reporting
     $self->{'relative_key'} = $self->make_relative_key();
@@ -49,26 +49,63 @@ sub new { #discard system supplied type
     #absolute hierarchical key for indexing/reporting
     $self->{'absolute_key'} = $self->make_absolute_key();
 
+    #print $self->examine;
+
     $self;
 }
 
-#Given a triple (key, offset, bytecount), store these as an anonymous array
-#under the appropriate keys in the record_by_ attributes. Do NOT instantiate
-#the record object.
-sub push_record {
+# explicitly call this when finished with a Record to break circular
+# references through upward 'parent' and downward 'blockkeeper'.
+sub free {
     my $self = shift;
-    my $rec = [ @_ ];
-    push @{$self->{'record_by_posn'}},              $rec;
-    push @{$self->{'record_by_type'}->{$rec->[0]}}, $rec;
+
+    #warn "> Record::free $self\n"  if $DEBUG;
+
+    #free all subrecords
+    $self->{'blockkeeper'}->free();
+    $self->{'blockkeeper'} = undef;
+
+    $self->{'text'} = undef;
+    $self->{'parent'} = undef;  #break circle
+
+    #warn "< Record::free $self\n"  if $DEBUG;
 }
 
-#Remove the latest stored record and free any instantiated parse object;
-#returns the deleted record tuple.
-sub pop_record {
+#free records by key
+sub free_keys {
     my $self = shift;
-    my $rec = pop @{$self->{'record_by_posn'}};
-    pop @{$self->{'record_by_type'}->{$rec->[0]}};
-    return $self->free_record($rec);
+    #warn "> Record::free_keys $self\n"  if $DEBUG;
+
+    $self->{'blockkeeper'}->free_keys(@_);
+
+    #warn "< Record::free_keys $self\n"  if $DEBUG;
+}
+
+sub get_offset { $_[0]->{'start'}; }
+
+sub get_bytes { $_[0]->{'stop'} - $_[0]->{'start'}; }
+
+sub get_text { $_[0]->{'text'}; }
+
+# save a subrecord
+sub push_record {
+#FIXME to use stop not bytes
+    my ($self, $key, $start, $bytes) = @_;
+
+    #warn "save: incoming=($key, $start, $bytes) \n ";
+
+    my $block = new Bio::Parse::Block(
+        $key,
+        $start,
+        $start + $bytes,
+        );
+
+    $self->{'blockkeeper'}->add($block);
+}
+
+# remove the most recently stored block; returns the deleted block
+sub pop_record {
+    return $_[0]->{'blockkeeper'}->remove_last();
 }
 
 sub get_parent {
@@ -85,12 +122,13 @@ sub get_parent {
 }
 
 sub get_record {
-    my ($self, $type, $index) = (@_, 0);
-    my $rec = $self->{'record_by_type'}->{$type}->[$index];
-    return $self->get_parsed_subrecord($rec);
+    my ($self, $key, $num) = (@_, 1);
+    my $block = $self->{'blockkeeper'}->get_block($key, $num);
+    $self->die("block $key/$num not found")  unless defined $block;
+    return $block->parse($self, $self->{'text'});
 }
 
-#Return list of attributes of Record, excepting housekeeping ones.
+# return list of attributes of Record, excepting housekeeping ones.
 sub list_attrs {
     my $self = shift;
     my ($key, @attr);
@@ -110,45 +148,62 @@ sub test_args {
 
 sub test_records {
     my $self = shift;
-    local $_;
-    foreach (@_) {
-        $self->warn("corrupt or missing '$_' record\n")
-            unless exists $self->{'record_by_type'}->{$_};
+    foreach my $key (@_) {
+        $self->warn("corrupt or missing '$key' record\n")
+            unless $self->{'blockkeeper'}->has_key($key);
     }
 }
 
-#Given a record key and optional 1-based index, parse corresponding records
-#and return an array of the parsed objects or the first object if called in
-#a scalar context. If called with no argument or just '*' parse everything at
-#this level.
+# parse all subrecords if called with no argument or '*';
+# parse all subrecords of type given by explicit key;
+# parse single subrecord of type given by explicit key and 1-based index.
 sub parse {
-    my $self = shift;
-    my ($key, $num) = @_;
-    my (@list, @keys) = ();
-
-    #warn "parse(key=@{[defined $key?$key:'']}, num=@{[defined $num?$num:'']})\n";
+    my ($self, $key, $num) = @_;
+    my @list;
+    #warn "PARSE(key=@{[defined $key?$key:'']}, num=@{[defined $num?$num:'']}) @{[wantarray]}\n";
 
     if (@_ == 0 or $key eq '*') {
-        @keys = keys %{$self->{'record_by_type'}};
+        my @keys = $self->{'blockkeeper'}->keys();
+        @list = $self->parse_many(@keys);
+    } elsif (! defined $num) {
+        @list = $self->parse_many($key);
     } else {
-        push @keys, $key;
+        @list = $self->parse_one($key, $num);
     }
 
-    foreach my $key (@keys) {
-        #warn "parse: $key\n";
-        foreach my $rec ($self->get_records_for_key($key, $num)) {
-            push @list, $self->get_parsed_subrecord($rec);
-        }
-    }
+    #warn "[@list] @{[wantarray]}\n";
 
     return @list    if wantarray;
     return $list[0] if @list;
     return undef;  #no data
 }
 
-#Given a record key for this entry, count how many corresponding records
-#exist and return an array of counts or the first count if called in a
-#scalar context. If called with no argument or just '*' count everything.
+sub parse_one {
+    my ($self, $key, $num) = (@_, 1);
+    #warn " parse_one: $key $num\n";
+
+    my $block = $self->{'blockkeeper'}->get_block($key, $num);
+    return ()  unless defined $block;
+    return ($block->parse($self, $self->{'text'}));
+}
+
+sub parse_many {
+    my $self = shift;
+    my @list = ();
+    foreach my $key (@_) {
+        #warn " parse_many: $key\n";
+        my @blocks = $self->{'blockkeeper'}->get_block_list($key);
+        foreach my $block (@blocks) {
+            next  unless defined $block;
+            push @list, $block->parse($self, $self->{'text'});
+        }
+    }
+    return @list;
+}
+
+# given a record key for this entry, count how many corresponding records
+# exist and return an array of counts or the first count if called in a scalar
+# context. If called with no argument or just '*' count everything.
 sub count {
     my $self = shift;
     my ($key) = @_;
@@ -157,18 +212,13 @@ sub count {
     #warn "count(key=@{[defined $key?$key:'']})\n";
 
     if (@_ == 0 or $key eq '*') {
-        @keys = sort keys %{$self->{'record_by_type'}};  #note: sorted
+        @keys = sort $self->{'blockkeeper'}->keys();  #note: sorted
     } else {
         push @keys, $key;
     }
 
     foreach $key (@keys) {
-        #is there a record instance for this type?
-        if (exists $self->{'record_by_type'}->{$key}) {
-            push @list, scalar @{$self->{'record_by_type'}->{$key}};
-        } else {
-            push @list, 0;
-        }
+        push @list, $self->{'blockkeeper'}->count($key);
     }
 
     return @list    if wantarray;
@@ -176,8 +226,10 @@ sub count {
     return 0;  #no data
 }
 
-#Returns $text less newlines while attempting to assemble hyphenated words
-#and excess white space split over multiple lines correctly.
+# FIXME - these should not be here: create new Bio::Parse::Strings class
+
+# return $text less newlines while attempting to assemble hyphenated words and
+# excess white space split over multiple lines correctly.
 sub strip_english_newlines {
     my $text = shift;
 
@@ -233,7 +285,7 @@ sub clean_identifier {
 #sub DESTROY { warn "DESTROY $_[0]\n" }
 
 sub make_relative_key {
-    return $_[0]->get_type() . $KEY_DELIM . $_[0]->{'index'};
+    return $_[0]->basename_class() . $KEY_DELIM . $_[0]->{'index'};
 }
 
 sub make_absolute_key {
@@ -245,107 +297,18 @@ sub make_absolute_key {
     return $key;
 }
 
-sub get_parsed_subrecord {
-    my ($self, $rec) = @_;
-    #warn "get_parsed_subrecord($rec = [@$rec])\n";
-    $self->parse_subrecord($rec)  unless defined $rec->[3];
-    return $rec->[3];
-}
-
-#Given a triple (key, offset, bytecount) in $rec, extract the record
-#string, generate an object subclassed from $class, store this in $rec
-#after the existing triple.
-sub parse_subrecord {
-    my ($self, $rec) = @_;
-    my ($class, $ob);
-    $class = ref($self) . '::' . $rec->[0];
-    #warn "parse_subrecord: new $class($self, $self->{'text'}, $rec->[1], $rec->[2])\n";
-    $ob = $class->new($self, $self->{'text'}, $rec->[1], $rec->[2]);
-    push @$rec, $ob;
-}
-
-sub get_type {
-    my @id = split('::', ref($_[0]));
-    return pop @id;
-}
-
-sub get_record_number {
-    my ($self, $parent) = (@_, undef);
+sub get_next_record_number {
+    my ($self, $parent) = @_;
     return 0  unless defined $parent;
-    my $type = $self->get_type;
-    for (my $i=0; $i < @{$parent->{'record_by_type'}->{$type}}; $i++) {
-        my $rec = $parent->{'record_by_type'}->{$type}->[$i];
-        return $i+1  if $rec->[1] == $self->{'offset'};
-    }
-    #there is no record number
-    return 0;
+    my $i = $parent->{'blockkeeper'}->lookup_block_number($self->basename_class(),
+                                                          $self->{'start'});
+    return 1  if $i == -1;
+    return 1 + $i;
 }
 
-#Explicitly call this when finished with a Record to ensure indirect
-#circular references through 'parent' and 'record_by_*' fields are
-#broken by resetting the 'parent' field. Likewise, set the shared 'text'
-#field to undefined. Without this, the Record hierarchy is never garbaged until
-#after the program exits! The caller can supply a list of subrecord types, in
-#which case only those will be marked for destruction, not this Record.
-sub free {
-    my $self = shift;
-    #warn "FREE $self (@_)\n";
-
-    if (@_) {
-        #only free these subrecord types
-        foreach my $type (@_) {
-            if (exists $self->{'record_by_type'}->{$type}) {
-                foreach my $rec (@{$self->{'record_by_type'}->{$type}}) {
-                    $self->free_record($rec);
-                }
-            }
-        }
-        return $self;
-    }
-
-    #free every subrecord
-    foreach my $rec (@{$self->{'record_by_posn'}}) {
-        $self->free_record($rec);
-    }
-
-    #free our records
-    $self->{'parent'} = undef;
-    $self->{'record_by_type'} = undef;
-    $self->{'record_by_posn'} = undef;
-    $self->{'text'} = undef;
-
-    return $self;
-}
-
-#Given a record tuple reference, remove and recursively free any instantiated
-#parse object; returns the tuple reference.
-sub free_record {
-    my ($self, $rec) = @_;
-    return $rec  unless @$rec > 3;
-    #warn "free_record: [", join(", ", @$rec), "]\n";
-    $rec->[3]->free;           #recurse
-    my $ob = splice @$rec, 3;  #excise parse object
-    undef $ob;                 #remove parse object
-    return $rec;
-}
-
-#Return an array of records indexed by key and optional index (1-based)
-sub get_records_for_key {
-    my ($self, $key, $num) = (@_, undef);
-
-    return ()  unless exists $self->{'record_by_type'}->{$key};
-
-    #key only
-    return @{$self->{'record_by_type'}->{$key}}  unless defined $num;
-
-    #key with num
-    $num--;  #convert 1-based to 0-based
-    return () unless defined $self->{'record_by_type'}->{$key}->[$num];
-    return ($self->{'record_by_type'}->{$key}->[$num]);
-}
-
-# overrides Bio::Util::Object::make_message_string
-# used by Bio::Util::Object::warn, Bio::Util::Object::die
+# return an array of records indexed by key and optional index (1-based);
+# overrides Bio::Util::Object::make_message_string used by
+# Bio::Util::Object::warn, Bio::Util::Object::die
 sub make_message_string {
     my ($self, $prefix) = (shift, shift);
     my $s = $prefix;
@@ -379,15 +342,15 @@ sub dump_record {
     $s .= sprintf "%sKey:    %s   Indices: []\n", $x, $self->{'relative_key'};
 
     $s .= sprintf "%s  Subrecords by posn:\n", $x;
-    $s .= $self->dump_records_by_posn($indent);
+    $s .= $self->{'blockkeeper'}->dump_records_by_posn($indent);
 
     $s .= sprintf "%s  Miscellaneous:\n", $x;
     $s .= sprintf "$x%20s -> %d\n",   'index', $self->{'index'};
     $s .= sprintf "$x%20s -> [%s]\n", 'pos',
-        join(', ', ($self->{'offset'}, $self->{'bytes'}));
+        join(', ', $self->{'start'}, ($self->{'stop'}-$self->{'start'}));
     my $tmp = '';
     if (defined $self->{'text'}) {
-        $tmp   = $self->{'text'}->substr($self->{'offset'}, 30);
+        $tmp   = $self->{'text'}->substr($self->{'start'}, 30);
         ($tmp) = split("\n", $tmp);
     }
     $s .= sprintf "$x%20s -> \"%s\" ...\n",  'text', $tmp;
@@ -398,25 +361,10 @@ sub dump_record {
     return $s;
 }
 
-# FIXME into bookkeeper
-sub dump_records_by_posn {
-    my ($self, $indent) = (@_, 0);
-    my $x = ' ' x ($indent+2);
-    my ($s, %count) = ('');
-    foreach my $rec (@{$self->{'record_by_posn'}}) {
-        my $label = $rec->[0];
-        if (@{$self->{'record_by_type'}->{$rec->[0]}} > 1) {
-            $label .=  '/' . ++$count{$rec->[0]};
-        }
-        $s .= sprintf "$x%20s -> [%s]\n", $label, join(", ", @$rec);
-    }
-    return $s;
-}
-
 # helper for print(); subclass overrides to add fields
 sub dump_data { '' }
 
-# helper for print_data(); used by subclasses
+# helper for dump_data(); used by subclasses
 sub fmt {
     my ($self, $val, $undef) = (@_, '<undef>');
     my $ref = ref $val;
@@ -433,41 +381,26 @@ sub fmt {
     return defined $val ? $val : $undef;
 }
 
-#Given a record key and optional 1-based index, return an array of
-#corresponding record strings or the first string if called in a scalar
-#context. If called with just '*' return an array of all record strings at
-#this level. If called with no argument return the whole database entry
-#string as a scalar.
+# given a record key and optional 1-based index, return the subrecord string;
+# if called with no argument or '*' return the whole record string.
 sub string {
     my $self = shift;
-    my ($key, $num) = @_;
-    my (@list, @keys) = ();
+    my ($key, $num) = (@_, 1);
 
-    #warn "string(key=@{[defined $key?$key:'']}, num=@{[defined $num?$num:'']})\n";
+    #warn "string(key=@{[defined $key?$key:'']})\n";
 
-    if (@_ == 0) {
-        return $self->{'text'}->substr($self->{'offset'}, $self->{'bytes'});
-    } elsif ($key eq '*') {
-        @keys = keys %{$self->{'record_by_type'}};
-    } else {
-        push @keys, $key;
+    #whole record string
+    if (@_ == 0 or $key eq '*') {
+        return $self->{'text'}->substr($self->{'start'},
+                                       $self->{'stop'} - $self->{'start'});
     }
 
-    foreach my $key (@keys) {
-        foreach my $rec ($self->get_records_for_key($key, $num)) {
-            if (defined $rec->[3]) {
-                #print "STRING() calling child\n";
-                push @list, $rec->[3]->string;
-            } else {
-                #print "STRING() calling substr [$rec->[1], $rec->[2]]\n";
-                push @list, $self->{'text'}->substr($rec->[1], $rec->[2]);
-            }
-        }
-    }
+    my $block = $self->{'blockkeeper'}->get_block($key, $num);
 
-    return @list    if wantarray;
-    return $list[0] if @list;
-    return '';  #no data
+    return ''  unless defined $block;
+
+    return $self->{'text'}->substr($block->{'start'},
+                                   $block->{'stop'} - $block->{'start'});
 }
 
 ###########################################################################

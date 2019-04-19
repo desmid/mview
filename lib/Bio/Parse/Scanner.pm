@@ -16,8 +16,7 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Util::Object);
 
 sub new {
-    my $type = shift;
-    my ($entry, $indent,  $text) = (@_, 0, undef);
+    my ($type, $entry, $indent,  $text) = (@_, 0, undef);
 
     my $self = {};
     bless $self, $type;
@@ -32,9 +31,9 @@ sub new {
         $self->{'bytes'}  = length($$text);
     } else {
         #use entry object's text and positions
-        $self->{'text'}   = $entry->{'text'};
-        $self->{'offset'} = $entry->{'offset'};
-        $self->{'bytes'}  = $entry->{'bytes'};
+        $self->{'text'}   = $entry->get_text();
+        $self->{'offset'} = $entry->get_offset();
+        $self->{'bytes'}  = $entry->get_bytes();
     }
 
     $self->{'extent'}     = $self->{'offset'} + $self->{'bytes'};
@@ -124,6 +123,7 @@ sub scan_lines {
     #no backup as we've read exactly the right amount
     my $bytes = $self->{'cursor'} - $offset;
 
+    #FIXME
     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
 
     return $block;

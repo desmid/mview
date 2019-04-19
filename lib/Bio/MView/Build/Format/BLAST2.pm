@@ -22,6 +22,8 @@ use vars qw(@ISA);
 
 sub begin_parse {
     my $self = shift;
+    #warn "blast2::begin_parse: cycle ", $self->cycle,
+    #    " strand ", $self->strand, " schedule ", $self->{scheduler}->item, "\n";
     my $s = $self->{'entry'}->parse("SEARCH", $self->cycle);
     return ()  unless defined $s;
     my $r = $s->parse(qw(RANK));
@@ -30,7 +32,11 @@ sub begin_parse {
     ($s, $h, $r);
 }
 
-sub end_parse { $_[0]->{'entry'}->free(qw(SEARCH)) }
+sub end_parse {
+    my $self = shift;
+    #warn "blast2::end_parse: free SEARCH\n";
+    $self->{'entry'}->free_keys(qw(SEARCH RANK HEADER));
+}
 
 sub parse_record {
     my ($self, $k, $hdr, $sum, $aln) = @_;

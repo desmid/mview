@@ -198,7 +198,7 @@ sub new {
         );
 
     } elsif ($lines =~ /^>--/) {  #alternative alignment
-        my $sib = $self->get_sibling(0);
+        my $sib = $self->get_sibling(1);
         (
          $self->{'id'},
          $self->{'desc'},

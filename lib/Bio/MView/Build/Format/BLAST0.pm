@@ -96,11 +96,21 @@ sub get_scores {
 sub parse {
     my $self = shift;
 
-    return  unless defined $self->{scheduler}->next;
+    #warn "\nblast0::parse: entering\n";
+
+    if (! defined $self->{scheduler}->next) {
+        $self->end_parse;
+        #warn "blast0::parse: exiting at end\n";
+        return;
+    }
 
     my ($search, $header, $ranking) = $self->begin_parse;
 
-    return  unless $search and $ranking;
+    #no hits
+    if (! ($search and $ranking)) {
+        #warn "blast0::parse: exiting on empty parse\n";
+        return;
+    }
 
     my $coll = new Bio::MView::Build::Search::Collector($self);
 
@@ -122,6 +132,7 @@ sub parse {
     }
 
     my $mode = $PAR->get('hsp');
+
     if ($mode eq 'all') {
         $self->parse_all_hits($coll, $search);
 
@@ -132,7 +143,7 @@ sub parse {
         $self->parse_discrete_hits($coll, $search);
     }
 
-    $self->end_parse;
+    #warn "blast0::parse: returning with data\n";
 
     return $coll->list;
 }

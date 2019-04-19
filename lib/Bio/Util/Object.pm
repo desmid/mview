@@ -36,8 +36,17 @@ sub die {
     die "$s\n";
 }
 
+# return basename component of class
+sub basename_class {
+    my @id = split("::", ref($_[0]));
+    return pop @id;
+}
+
 # pretty-print all instance variables on object, or supplied list
-sub examine { print $PRETTY_PRINT_STREAM dump_self(@_) }
+sub examine {
+    print $PRETTY_PRINT_STREAM dump_self(@_);
+    return $_[0];
+}
 
 ###########################################################################
 # exported statics
@@ -51,7 +60,7 @@ sub dump_hash { return "$_[0]\n" . _dump_body(@_) }
 ###########################################################################
 # protected functions
 ###########################################################################
-# generate common error massage string
+# generate common error message string
 sub make_message_string {
     my ($self, $prefix) = (shift, shift);
     my $s = "$prefix ";
@@ -103,7 +112,7 @@ sub _dump_body {
         if (exists $hash->{$key}) {
             my $val = $hash->{$key};
             if (! defined $val) {
-                $s .= layout($w, $key, 'UNDEF');
+                $s .= layout($w, $key, 'undef');
                 next;
             }
             my $ref = ref $val;

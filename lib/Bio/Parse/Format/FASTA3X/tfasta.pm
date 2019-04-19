@@ -234,7 +234,7 @@ sub new {
              Bio::Parse::Record::strip_english_newlines($2), $3);
 
     } elsif ($record =~ /^>--/) {  #alternative alignment
-        my $sib = $self->get_sibling(0);
+        my $sib = $self->get_sibling(1);
         (
          $self->{'id'},
          $self->{'desc'},

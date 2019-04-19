@@ -499,7 +499,7 @@ sub new {
 
             #id same as last line: extend SEARCH::MATCH block
             if ($mid eq $tmp->{'id'}) {
-                $parent->pop_record;
+                $parent->pop_record();
                 $parent->push_record('MATCH', $moffset,
                                      $mbytes += $text->get_bytes);
                 #expect the first hit supplied by blast to be the highest

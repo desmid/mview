@@ -310,8 +310,7 @@ sub new { die "$_[0]::new() virtual function called\n" }
 sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $s = '';
-    printf "$x%20s -> '%s'\n", 'header', $self->{'header'};
+    my $s .= sprintf "$x%20s -> '%s'\n", 'header', $self->{'header'};
     foreach my $hit (@{$self->{'hit'}}) {
         foreach my $field (sort keys %$hit) {
             $s .= sprintf "$x%20s -> %s\n", $field,  $hit->{$field};
@@ -665,8 +664,7 @@ sub new {
 sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $s = '';
-    $s .= sprintf "$x%20s -> '%s'\n", 'warning', $self->{'warning'};
+    my $s = sprintf "$x%20s -> '%s'\n", 'warning', $self->{'warning'};
     return $s;
 }
 
@@ -700,8 +698,7 @@ sub new {
 sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $s = '';
-    $s .= sprintf "$x%20s -> '%s'\n", 'histogram', $self->{'histogram'};
+    my $s = sprintf "$x%20s -> '%s'\n", 'histogram', $self->{'histogram'};
     return $s;
 }
 
@@ -735,8 +732,7 @@ sub new {
 sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    my $s = '';
-    $s .= sprintf "$x%20s -> '%s'\n", 'parameters', $self->{'parameters'};
+    my $s = sprintf "$x%20s -> '%s'\n", 'parameters', $self->{'parameters'};
     return $s;
 }
 

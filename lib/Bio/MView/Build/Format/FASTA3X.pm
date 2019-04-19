@@ -301,6 +301,7 @@ sub makepeptup {
 sub parse_query_tuples {
     my $self = shift;
     my ($peplist, $pephash) = ([], {});
+
     foreach my $match ($self->{'entry'}->parse(qw(MATCH))) {
 
         #tfast[mfs] ALN needs to access its SUM
@@ -314,24 +315,35 @@ sub parse_query_tuples {
 
             push @$peplist, $peptup;
             $pephash->{$peptup}++;
+
             #warn "PEP: $peptup\n";
         }
     }
-    #free objects
-    $self->{'entry'}->free(qw(MATCH));
+
+    $self->{'entry'}->free_keys(qw(MATCH));
+
     $peplist;
 }
 
 sub parse {
     my $self = shift;
 
+    #warn "\nfasta3X::parse: entering\n";
+
     #all peptide tuples done?
-    return  unless defined $self->{scheduler}->next;
+    if (! defined $self->{scheduler}->next) {
+        $self->{'entry'}->free_keys();
+        #warn "fasta3X::parse: exiting at end\n";
+        return;
+    }
 
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    #fasta run with no hits
-    return []  unless defined $ranking;
+    #no hits
+    if (! defined $ranking) {
+        #warn "fasta3X::parse: exiting on empty parse\n";
+        return;
+    }
 
     #identify the query
     my $header = $self->{'entry'}->parse(qw(HEADER));
@@ -458,8 +470,7 @@ sub parse {
         $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
-    #free objects
-    $self->{'entry'}->free(qw(HEADER RANK MATCH));
+    #warn "fasta3X::parse: returning with data\n";
 
     return $coll->list;
 }
@@ -577,13 +588,22 @@ sub subheader {
 sub parse {
     my $self = shift;
 
+    #warn "\nfasta3X::parse: entering\n";
+
     #all strands done?
-    return  unless defined $self->{scheduler}->next;
+    if (! defined $self->{scheduler}->next) {
+        $self->{'entry'}->free_keys();
+        #warn "fasta3X::parse: exiting at end\n";
+        return;
+    }
 
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    #fasta run with no hits
-    return []  unless defined $ranking;
+    #no hits
+    if (! defined $ranking) {
+        #warn "fasta3X::parse: exiting on empty parse\n";
+        return;
+    }
 
     #identify the query
     my $header = $self->{'entry'}->parse(qw(HEADER));
@@ -696,8 +716,7 @@ sub parse {
         $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
-    #free objects
-    $self->{'entry'}->free(qw(HEADER RANK MATCH));
+    #warn "fasta3X::parse: returning with data\n";
 
     return $coll->list;
 }

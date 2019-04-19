@@ -267,9 +267,10 @@ sub new {
 
     $self->{'seq'} = {};
 
-    #warn "@{[keys %$parent]}";
     my $maxnamelen = 0;
-    foreach my $id (@{$parent->{record_by_type}->{NAME}[0][3]->{order}}) {
+    my $sibling = $parent->{'blockkeeper'}->get_block('NAME')->{'record'};
+
+    foreach my $id ( @{$sibling->{'order'}} ) {
         my $len = length($id);
         $maxnamelen = $len  if $len > $maxnamelen;
     }

@@ -40,7 +40,7 @@ sub parse {
     #map { $_->dump } @hit;
 
     #free objects
-    $self->{'entry'}->free(qw(SEQ));
+    $self->{'entry'}->free_keys(qw(SEQ));
 
     return \@hit;
 }

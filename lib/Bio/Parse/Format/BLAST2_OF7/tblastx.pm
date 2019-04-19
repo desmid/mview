@@ -103,7 +103,7 @@ sub new {
 sub dump_data {
     my ($self, $indent) = (@_, 0);
     my $x = ' ' x $indent;
-    mx $s = $self->SUPER::dump_data($indent);
+    my $s = $self->SUPER::dump_data($indent);
     $s .= sprintf "$x%20s -> %s\n",  'query_frame',  $self->{'query_frame'};
     $s .= sprintf "$x%20s -> %s\n",  'sbjct_frame',  $self->{'sbjct_frame'};
     return $s;

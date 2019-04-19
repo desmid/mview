@@ -50,7 +50,7 @@ sub initialise {
     my @names = $self->{'entry'}->parse(qw(ALIGNMENT))->get_chains;
 
     #free object
-    $self->{'entry'}->free(qw(ALIGNMENT));
+    $self->{'entry'}->free_keys(qw(ALIGNMENT));
 
     $self->{scheduler} = new Bio::MView::Build::Scheduler(\@names);
 
@@ -135,7 +135,7 @@ sub parse {
     #map { $_->dump } @hit;
 
     #free objects
-    $self->{'entry'}->free(qw(HEADER PROTEIN ALIGNMENT));
+    $self->{'entry'}->free_keys(qw(HEADER PROTEIN ALIGNMENT));
 
     return \@hit;
 }

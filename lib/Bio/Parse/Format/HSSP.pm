@@ -17,7 +17,7 @@
 #    'ranking' is an array of records, one per line of input ordered by NR
 #    with corresponding field names.
 #
-#      get_record() method returns this array, or just the supplied record
+#      get_records() method returns this array, or just the supplied record
 #      numbers counting from 1.
 #
 # ALIGNMENT
@@ -29,7 +29,7 @@
 #
 #      get_chains() returns a list of chain names.
 #
-#      get_record() returns a list of records for the structure fields (the
+#      get_records() returns a list of records for the structure fields (the
 #      alignment portion is not returned), or just the supplied record
 #      numbers counting from 1.
 #
@@ -520,7 +520,7 @@ sub dump_data {
 
 #returns an ordered array of rank records, or just those requested in the
 #order requested. record numbers are counted from 1.
-sub get_record {
+sub get_records {
     my $self = shift;
     my $i;
     my @tmp = ();
@@ -787,7 +787,7 @@ sub dump_data {
     $s .= sprintf "$x%20s -> '%s'\n", 'query',  $self->get_query;
     $s .= sprintf "$x%20s -> '%s'\n", 'dssp',   $self->get_dssp();
     #structure data [position]
-    foreach my $i ($self->get_record) {
+    foreach my $i ($self->get_records) {
         $s .= sprintf "$x  %20s -> %s\n",   'seqno',      $i->{'seqno'};
         $s .= sprintf "$x  %20s -> '%s'\n", 'pdbno',      $i->{'pdbno'};
         $s .= sprintf "$x  %20s -> %s\n",   'aa',         $i->{'aa'};
@@ -815,7 +815,7 @@ sub get_chains {
 
 #returns an ordered array of structure records, or just those requested in the
 #order requested. record numbers are counted from 1.
-sub get_record {
+sub get_records {
     my $self = shift;
     my $i;
     my @tmp = ();

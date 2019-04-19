@@ -34,7 +34,7 @@ my $DEBUG = 0;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new Plain instance.
 sub get_entry {
-    my ($text) = @_;
+    my $text = shift;
     my $line = '';
     my $data = 0;
 
@@ -79,16 +79,9 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
+    my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #warn "BEGIN PARSE\n"  if $DEBUG;
 
@@ -99,6 +92,9 @@ sub new {
 
         #alignment line
         if ($line =~ /$ALIGNMENT_BEGIN/o) {
+
+            #FIXME NEW_scan_until and use stop not bytes
+
             if ($scan->NEW_scan_until($ALIGNMENT_END)) {
                 $self->push_record(
                     'ALIGNMENT',
@@ -129,21 +125,14 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my ($type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
+    my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
-
-    my $off = 0;
 
     #warn "BEGIN PARSE ALIGNMENT\n"  if $DEBUG;
     #warn "POSITION(self): $offset $bytes\n" if $DEBUG;
@@ -169,6 +158,7 @@ sub new {
     #warn "END PARSE ALIGNMENT\n"  if $DEBUG;
 
     #line length check
+    my $off = 0;
     if (defined $self->{'id'}->[0]) {
         $off = length $self->{'seq'}->{$self->{'id'}->[0]};
         foreach $line (keys %{$self->{'seq'}}) {

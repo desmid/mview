@@ -127,13 +127,22 @@ sub subheader {
 sub parse {
     my $self = shift;
 
+    #warn "\nfasta3::parse: entering\n";
+
     #all strands done?
-    return  unless defined $self->{scheduler}->next;
+    if (! defined $self->{scheduler}->next) {
+        $self->{'entry'}->free_keys();
+        #warn "fasta3::parse: exiting at end\n";
+        return;
+    }
 
     my $ranking = $self->{'entry'}->parse(qw(RANK));
 
-    #fasta run with no hits
-    return []  unless defined $ranking;
+    #no hits
+    if (! defined $ranking) {
+        #warn "fasta3::parse: exiting on empty parse\n";
+        return;
+    }
 
     #identify the query
     my $header = $self->{'entry'}->parse(qw(HEADER));
@@ -250,8 +259,7 @@ sub parse {
         $coll->item($key1)->set_val('sbjct_orient', $sorient);
     }
 
-    #free objects
-    $self->{'entry'}->free(qw(HEADER RANK MATCH));
+    #warn "fasta3::parse: returning with data\n";
 
     return $coll->list;
 }
