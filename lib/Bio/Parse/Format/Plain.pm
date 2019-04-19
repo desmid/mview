@@ -87,10 +87,8 @@ sub new {
 
     while (defined ($line = $scan->next_line)) {
 
-        #comment: ignore in middle of alignment; test first
-        next    if $line =~ /$COMMENT/o;
-
-        #alignment line
+        #alignment line; can include sequence identifiers prefixed with '#'
+        #for special colouring treatment
         if ($line =~ /$ALIGNMENT_BEGIN/o) {
 
             #FIXME NEW_scan_until and use stop not bytes
@@ -105,8 +103,11 @@ sub new {
             next;
         }
 
+        #comment: not-matching 'id seq' pattern above; test last
+        next  if $line =~ /$COMMENT/o;
+
         #blank: ignore; test last
-        next    if $line =~ /$BLANK/o;
+        next  if $line =~ /$BLANK/o;
 
         $self->warn("unknown field: $line");
     }
@@ -140,16 +141,17 @@ sub new {
 
     while (defined ($line = $scan->next_line(1))) {
 
-        #comment: ignore in middle of alignment; must come first
-        next    if $line =~ /$COMMENT/o;
-
         #id sequence
         if ($line =~ /$ALIGNMENT_GROUP/o) {
+            #warn "ALIGNMENT_GROUP\n"  if $DEBUG;
             $self->test_args(\$line, $1, $2);
             push @{$self->{'id'}}, $1    unless exists $self->{'seq'}->{$1};
             $self->{'seq'}->{$1} .= $2;
             next;
         }
+
+        #comment: not-matching 'id seq' pattern above; test last
+        next  if $line =~ /$COMMENT/o;
 
         #default
         $self->warn("unknown field: $line");
