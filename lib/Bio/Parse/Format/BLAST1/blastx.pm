@@ -28,8 +28,10 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::BLAST1::blastx::RANK;
 
-use vars qw(@ISA);
+use Bio::Parse::Strings qw(strip_trailing_space clean_identifier);
 use Bio::Util::Regexp;
+
+use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::BLAST1::RANK);
 
@@ -93,13 +95,13 @@ sub new {
 
             push @{$self->{'hit'}},
             {
-             'id'          => Bio::Parse::Record::clean_identifier($1),
+             'id'          => clean_identifier($1),
              #merge sign and number components
              'query_frame' => (defined $2 ? $2.$3 : '?'),
              'score'       => $4,
              'p'           => $5,
              'n'           => $6,
-             'summary'     => Bio::Parse::Record::strip_trailing_space($7),
+             'summary'     => strip_trailing_space($7),
             };
 
             next;

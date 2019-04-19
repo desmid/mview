@@ -430,6 +430,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::BLAST2_OF7::SEARCH::RANK;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::BLAST::RANK);
@@ -495,7 +497,7 @@ sub new {
             $tmp->{'summary'} =
                 Bio::Parse::Format::BLAST2_OF7::strip_id($tmp->{'id'},
                                                          $tmp->{'summary'});
-            $tmp->{'id'} = Bio::Parse::Record::clean_identifier($tmp->{'id'});
+            $tmp->{'id'} = clean_identifier($tmp->{'id'});
 
             #id same as last line: extend SEARCH::MATCH block
             if ($mid eq $tmp->{'id'}) {
@@ -601,6 +603,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::BLAST2_OF7::SEARCH::MATCH::SUM;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::BLAST2::SEARCH::MATCH::SUM);
@@ -627,7 +631,7 @@ sub new {
     $self->{'desc'} =
         Bio::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
                                                  $self->{'desc'});
-    $self->{'id'} = Bio::Parse::Record::clean_identifier($self->{'id'});
+    $self->{'id'} = clean_identifier($self->{'id'});
 
     $self;#->examine;
 }

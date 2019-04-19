@@ -171,6 +171,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::HSSP::HEADER;
 
+use Bio::Parse::Strings qw(strip_english_newlines);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -230,7 +232,7 @@ sub new {
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
             chomp $line;
-            $line = Bio::Parse::Record::strip_english_newlines($line);
+            $line = strip_english_newlines($line);
             #fix typo in maxhom output
             $line =~ s/ :/: /g;
             #add fullstops and trim whitespace
@@ -267,7 +269,7 @@ sub new {
             $line = $text->scan_while('^AVAILABLE');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
-            $self->{'available'} = Bio::Parse::Record::strip_english_newlines($line);
+            $self->{'available'} = strip_english_newlines($line);
             next;
         }
 
@@ -275,7 +277,7 @@ sub new {
             $line = $text->scan_while('^HEADER');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
-            $self->{'header'} = Bio::Parse::Record::strip_english_newlines($line);
+            $self->{'header'} = strip_english_newlines($line);
             next;
         }
 
@@ -283,7 +285,7 @@ sub new {
             $line = $text->scan_while('^COMPND');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
-            $self->{'compnd'} = Bio::Parse::Record::strip_english_newlines($line);
+            $self->{'compnd'} = strip_english_newlines($line);
             next;
         }
 
@@ -291,7 +293,7 @@ sub new {
             $line = $text->scan_while('^SOURCE');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
-            $self->{'source'} = Bio::Parse::Record::strip_english_newlines($line);
+            $self->{'source'} = strip_english_newlines($line);
             next;
         }
 
@@ -299,7 +301,7 @@ sub new {
             $line = $text->scan_while('^AUTHOR');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
             $line = $tmp->scan_lines(0);
-            $self->{'author'} = Bio::Parse::Record::strip_english_newlines($line);
+            $self->{'author'} = strip_english_newlines($line);
             next;
         }
 
@@ -386,6 +388,8 @@ sub dump_data {
 
 ###########################################################################
 package Bio::Parse::Format::HSSP::PROTEIN;
+
+use Bio::Parse::Strings qw(strip_trailing_space);
 
 use vars qw(@ISA);
 
@@ -479,7 +483,7 @@ sub new {
                  $data->{'protein'},
                 ) = ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12);
 
-                $data->{'accnum'} = Bio::Parse::Record::strip_trailing_space($11);
+                $data->{'accnum'} = strip_trailing_space($11);
 
             }
 

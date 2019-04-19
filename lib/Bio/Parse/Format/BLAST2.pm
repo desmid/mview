@@ -252,8 +252,10 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::BLAST2::SEARCH::RANK;
 
-use vars qw(@ISA);
+use Bio::Parse::Strings qw(strip_trailing_space clean_identifier);
 use Bio::Util::Regexp;
+
+use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::BLAST::RANK);
 
@@ -324,10 +326,8 @@ sub new {
 
                 $self->test_args(\$line, $1);    #ignore $2
 
-                $tmp->{'id'} =
-                    Bio::Parse::Record::clean_identifier($1);
-                $tmp->{'summary'} =
-                    Bio::Parse::Record::strip_trailing_space($2);
+                $tmp->{'id'} = clean_identifier($1);
+                $tmp->{'summary'} = strip_trailing_space($2);
 
             } else {
                 $self->warn("unknown field: $line");

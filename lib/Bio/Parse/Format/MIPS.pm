@@ -103,6 +103,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::MIPS::HEADER;
 
+use Bio::Parse::Strings qw(strip_english_newlines);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -137,7 +139,7 @@ sub new {
 
     $self->warn("missing MIPS data\n")  unless exists $self->{'ac'};
 
-    $self->{'desc'} = Bio::Parse::Record::strip_english_newlines($self->{'desc'});
+    $self->{'desc'} = strip_english_newlines($self->{'desc'});
 
     $self;
 }
@@ -154,6 +156,8 @@ sub dump_data {
 
 ###########################################################################
 package Bio::Parse::Format::MIPS::NAME;
+
+use Bio::Parse::Strings qw(strip_english_newlines);
 
 use vars qw(@ISA);
 
@@ -179,7 +183,7 @@ sub new {
 
         if ($line =~ /^L;(\S+)\s+(.*)/o) {
             $self->test_args(\$line, $1,$2);
-            $self->{'seq'}->{$1} = Bio::Parse::Record::strip_english_newlines($2);
+            $self->{'seq'}->{$1} = strip_english_newlines($2);
             push @{$self->{'order'}}, $1;
             next;
         }

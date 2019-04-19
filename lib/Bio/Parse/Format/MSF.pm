@@ -103,6 +103,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::MSF::HEADER;
 
+use Bio::Parse::Strings qw(strip_trailing_space);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -142,9 +144,9 @@ sub new {
              $self->{'type'},
              $self->{'data'},
              $self->{'check'},
-            ) = (Bio::Parse::Record::strip_trailing_space($1),
+            ) = (strip_trailing_space($1),
                  $2,$3,
-                 Bio::Parse::Record::strip_trailing_space($4),
+                 strip_trailing_space($4),
                  $5);
         }
 
@@ -171,6 +173,8 @@ sub dump_data {
 
 ###########################################################################
 package Bio::Parse::Format::MSF::NAME;
+
+use Bio::Parse::Strings qw(strip_trailing_space);
 
 use vars qw(@ISA);
 
@@ -201,7 +205,7 @@ sub new {
             if ($id =~ /^(.*)\s+oo\s*$/) { #weird clustal insertion
                 $id = $1;
             }
-            $id = Bio::Parse::Record::strip_trailing_space($id);
+            $id = strip_trailing_space($id);
             #warn "[$id] [$line]\n";
 
             if ($line =~ /^
@@ -249,6 +253,8 @@ sub dump_data {
 ###########################################################################
 package Bio::Parse::Format::MSF::ALIGNMENT;
 
+use Bio::Parse::Strings qw(strip_leading_space strip_trailing_space);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -287,8 +293,8 @@ sub new {
         #id/sequence
         if ($line =~ /^\s*(.{$maxnamelen})\s+(.*)$/o) {
             my $id;
-            $id = Bio::Parse::Record::strip_leading_space($1);
-            $id = Bio::Parse::Record::strip_trailing_space($id);
+            $id = strip_leading_space($1);
+            $id = strip_trailing_space($id);
             $self->test_args(\$line, $id, $2);
             $self->{'seq'}->{$id} .= $2;
             next;

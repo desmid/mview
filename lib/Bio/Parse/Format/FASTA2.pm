@@ -104,6 +104,8 @@ sub new { my $self=shift; $self->SUPER::new(@_) }
 ###########################################################################
 package Bio::Parse::Format::FASTA2::HEADER;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::HEADER);
@@ -143,7 +145,7 @@ sub new {
                 $self->{'queryfile'} =~ s/,$//;
             } else {
                 $self->test_args(\$line, $1);
-                $self->{'query'} = Bio::Parse::Record::clean_identifier($1);
+                $self->{'query'} = clean_identifier($1);
             }
             $self->{'length'} = $2;
             next;

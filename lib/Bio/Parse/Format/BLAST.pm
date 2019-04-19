@@ -380,8 +380,10 @@ sub dump_data {
 ###########################################################################
 package Bio::Parse::Format::BLAST::MATCH::SUM;
 
-use vars qw(@ISA);
+use Bio::Parse::Strings qw(strip_english_newlines clean_identifier);
 use Bio::Util::Regexp;
+
+use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
 
@@ -414,8 +416,7 @@ sub new {
          $self->{'id'},
          $self->{'desc'},
          $self->{'length'},
-        ) = (Bio::Parse::Record::clean_identifier($1),
-             Bio::Parse::Record::strip_english_newlines($2), $3);
+        ) = (clean_identifier($1), strip_english_newlines($2), $3);
     }
     $self;
 }
@@ -638,6 +639,8 @@ sub dump_data {
 ###########################################################################
 package Bio::Parse::Format::BLAST::WARNING;
 
+use Bio::Parse::Strings qw(strip_english_newlines);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -656,7 +659,7 @@ sub new {
 
     $line = $text->scan_lines(0);
 
-    $self->{'warning'} = Bio::Parse::Record::strip_english_newlines($line);
+    $self->{'warning'} = strip_english_newlines($line);
 
     $self;
 }

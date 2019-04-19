@@ -226,59 +226,6 @@ sub count {
     return 0;  #no data
 }
 
-# FIXME - these should not be here: create new Bio::Parse::Strings class
-
-# return $text less newlines while attempting to assemble hyphenated words and
-# excess white space split over multiple lines correctly.
-sub strip_english_newlines {
-    my $text = shift;
-
-    #multiple hyphens look like 'SO4--' or long dashes - word break with space
-    $text =~ s/(--)\s*\n+\s*/$1 /sg;
-
-    #single hyphens look like hyphenated words - join at the hyphen
-    $text =~ s/(-)\s*\n+\s*/$1/sg;
-
-    #remaining newlines - word break with space
-    $text =~ s/\s*\n+\s*/ /sg;
-
-    #skip trailing white space added after last newline was removed
-    $text =~ s/\s+$//s;
-
-    return $text;
-}
-
-sub strip_leading_space {
-    my $text = shift;
-    $text =~ s/^[ \t]+//;
-    return $text;
-}
-
-sub strip_trailing_space {
-    my $text = shift;
-    $text =~ s/[ \t]+$//;
-    return $text;
-}
-
-sub strip_leading_identifier_chars {
-    my $text = shift;
-    $text =~ s/^(\/:|>)//;  #leading "/:" or ">"
-    return $text;
-}
-
-sub strip_trailing_identifier_chars {
-    my $text = shift;
-    $text =~ s/[;:|,.-]+$//;  #default trailing PDB chain is often '_'
-    return $text;
-}
-
-sub clean_identifier {
-    my $text = shift;
-    $text = strip_leading_identifier_chars($text);
-    $text = strip_trailing_identifier_chars($text);
-    return $text;
-}
-
 ###########################################################################
 # private methods
 ###########################################################################

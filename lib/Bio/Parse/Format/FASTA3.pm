@@ -145,6 +145,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::FASTA3::HEADER;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::HEADER);
@@ -195,8 +197,7 @@ sub new {
             (
              $self->{'query'},
              $self->{'length'},
-            ) = (Bio::Parse::Record::clean_identifier($1),
-                 $2);
+            ) = (clean_identifier($1), $2);
             next;
         }
 

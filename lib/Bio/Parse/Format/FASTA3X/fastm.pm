@@ -28,6 +28,8 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::fastm::RANK;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::RANK);
@@ -80,7 +82,7 @@ sub new {
 
             push(@{$self->{'hit'}},
                  {
-                  'id'     => Bio::Parse::Record::clean_identifier($1),
+                  'id'     => clean_identifier($1),
                   'desc'   => $2,
                   'length' => $3,
                   'frame'  => Bio::Parse::Format::FASTA::parse_frame($4),

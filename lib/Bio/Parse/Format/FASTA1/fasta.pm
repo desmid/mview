@@ -19,6 +19,8 @@ sub new { my $self=shift; $self->SUPER::new(@_) }
 ###########################################################################
 package Bio::Parse::Format::FASTA1::fasta::HEADER;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::HEADER);
@@ -58,7 +60,7 @@ sub new {
 
         if ($line =~ /^\s*>(\S+)\s*\:\s*\d+\s+(?:aa|nt)/) {
             $self->test_args(\$line, $1);
-            $self->{'query'} = Bio::Parse::Record::clean_identifier($1);
+            $self->{'query'} = clean_identifier($1);
             next;
         }
 
@@ -90,6 +92,8 @@ sub new {
 
 ###########################################################################
 package Bio::Parse::Format::FASTA1::fasta::RANK;
+
+use Bio::Parse::Strings qw(clean_identifier);
 
 use vars qw(@ISA);
 
@@ -130,7 +134,7 @@ sub new {
 
             push @{$self->{'hit'}},
             {
-             'id'    => Bio::Parse::Record::clean_identifier($1),
+             'id'    => clean_identifier($1),
              'desc'  => $2,
              'initn' => $3,
              'init1' => $4,
@@ -169,8 +173,10 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA1::fasta::MATCH::SUM;
 
-use vars qw(@ISA);
+use Bio::Parse::Strings qw(strip_english_newlines clean_identifier);
 use Bio::Util::Regexp;
+
+use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::MATCH::SUM);
 
@@ -198,8 +204,7 @@ sub new {
          $self->{'initn'},
          $self->{'init1'},
          $self->{'opt'},
-        ) = (Bio::Parse::Record::clean_identifier($1),
-             Bio::Parse::Record::strip_english_newlines($2), $3, $4, $5);
+        ) = (clean_identifier($1), strip_english_newlines($2), $3, $4, $5);
 
     }
 

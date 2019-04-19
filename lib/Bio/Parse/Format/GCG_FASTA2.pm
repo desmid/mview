@@ -236,6 +236,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::GCG_FASTA2::RANK;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::FASTA::RANK);
@@ -278,7 +280,7 @@ sub new {
 
             $self->test_args(\$line, $1);
 
-            $id = Bio::Parse::Record::clean_identifier($1);
+            $id = clean_identifier($1);
 
             #read next line
             $line = $text->next_line;
@@ -391,8 +393,10 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::GCG_FASTA2::MATCH::SUM;
 
-use vars qw(@ISA);
+use Bio::Parse::Strings qw(strip_english_newlines);
 use Bio::Util::Regexp;
+
+use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Format::FASTA::MATCH);
 
@@ -436,7 +440,7 @@ sub new {
 
         #hit description
         if ($line =~ /^DE\s{3}(.*)/o) {
-            $de .= Bio::Parse::Record::strip_english_newlines($1);
+            $de .= strip_english_newlines($1);
             $de =~ s/\s*\.\s\.\s\.\s*$//;
             $de =~ s/\s*\.\.\.\*$//;
             next;

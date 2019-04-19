@@ -27,6 +27,8 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA2::fasta::RANK;
 
+use Bio::Parse::Strings qw(clean_identifier);
+
 use vars qw(@ISA);
 
 @ISA   = qw(Bio::Parse::Format::FASTA::RANK);
@@ -70,7 +72,7 @@ sub new {
 
             push(@{$self->{'hit'}},
                  {
-                  'id'     => Bio::Parse::Record::clean_identifier($1),
+                  'id'     => clean_identifier($1),
                   'desc'   => $2,
                   'initn'  => $3,
                   'init1'  => $4,
@@ -110,6 +112,8 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA2::fasta::MATCH::SUM;
 
+use Bio::Parse::Strings qw(strip_english_newlines clean_identifier);
+
 use vars qw(@ISA);
 use Bio::Util::Regexp;
 
@@ -145,8 +149,7 @@ sub new {
          $self->{'id'},
          $self->{'desc'},
          $self->{'length'},
-        ) = (Bio::Parse::Record::clean_identifier($1),
-             Bio::Parse::Record::strip_english_newlines($2), $3);
+        ) = (clean_identifier($1), strip_english_newlines($2), $3);
     } else {
         $self->warn("unknown field: $line");
     }

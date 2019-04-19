@@ -37,6 +37,7 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::ggsearch::RANK;
 
+use Bio::Parse::Strings qw(clean_identifier);
 use Bio::Util::Regexp;
 
 use vars qw(@ISA);
@@ -82,7 +83,7 @@ sub new {
 
             push(@{$self->{'hit'}},
                  {
-                  'id'      => Bio::Parse::Record::clean_identifier($1),
+                  'id'      => clean_identifier($1),
                   'desc'    => $2,
                   #ignore $3
                   'frame'   => Bio::Parse::Format::FASTA::parse_frame($4),
@@ -123,6 +124,7 @@ use vars qw(@ISA);
 ###########################################################################
 package Bio::Parse::Format::FASTA3X::ggsearch::MATCH::SUM;
 
+use Bio::Parse::Strings qw(strip_english_newlines clean_identifier);
 use Bio::Util::Regexp;
 
 use vars qw(@ISA);
@@ -191,8 +193,8 @@ sub new {
          $self->{'overlap'},
          $self->{'ranges'},
         ) = (
-            Bio::Parse::Record::clean_identifier($1),
-            Bio::Parse::Record::strip_english_newlines($2),
+            clean_identifier($1),
+            strip_english_newlines($2),
             $3,
             Bio::Parse::Format::FASTA::parse_frame($4),
             Bio::Parse::Format::FASTA::parse_orient($4),

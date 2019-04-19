@@ -6,6 +6,8 @@
 ###########################################################################
 package Bio::Parse::Format::PIR;
 
+use Bio::Parse::Strings;
+
 use vars qw(@ISA);
 use strict;
 
@@ -76,6 +78,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::PIR::SEQ;
 
+use Bio::Parse::Strings qw(strip_leading_space strip_trailing_space);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -109,8 +113,8 @@ sub new {
 
             #force read of next line for description
             $self->{'desc'} = $text->next_line(1);
-            $self->{'desc'} = Bio::Parse::Record::strip_leading_space($self->{'desc'});
-            $self->{'desc'} = Bio::Parse::Record::strip_trailing_space($self->{'desc'});
+            $self->{'desc'} = strip_leading_space($self->{'desc'});
+            $self->{'desc'} = strip_trailing_space($self->{'desc'});
 
             next;
         }

@@ -143,6 +143,8 @@ sub new {
 ###########################################################################
 package Bio::Parse::Format::BLOCKS::BLOCK;
 
+use Bio::Parse::Strings qw(strip_english_newlines);
+
 use vars qw(@ISA);
 
 @ISA = qw(Bio::Parse::Record);
@@ -207,7 +209,7 @@ sub new {
 
     $self->warn("missing block data") if $self->{'ac'} eq '';
 
-    $self->{'de'} = Bio::Parse::Record::strip_english_newlines($self->{'de'});
+    $self->{'de'} = strip_english_newlines($self->{'de'});
 
     $self;#->examine;
 }
