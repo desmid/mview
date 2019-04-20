@@ -53,7 +53,7 @@ use vars qw(@ISA
                     ],
             );
 
-$NULL  = '^\s*$';#for emacs';
+$NULL  = '^\s*$';
 
 $ENTRY_START   = '(?:'
     . '^\s*fasta.*searches a sequence data bank'
@@ -71,7 +71,7 @@ $RANK_END      = $NULL;
 $TRAILER_START = $ENTRY_END;
 $TRAILER_END   = $ENTRY_END;
 
-$MATCH_START   = '^\S{7}.*\d+\s+\d+\s+\d+\s*$';#for emacs';
+$MATCH_START   = '^\S{7}.*\d+\s+\d+\s+\d+\s*$';
 $MATCH_END     = "(?:$MATCH_START|$ENTRY_END)";
 
 $SUM_START     = $MATCH_START;

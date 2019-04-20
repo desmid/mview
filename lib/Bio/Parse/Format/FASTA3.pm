@@ -56,7 +56,7 @@ use vars qw(
                     ],
             );
 
-$NULL  = '^\s*$';#for emacs';
+$NULL  = '^\s*$';
 
 $ENTRY_START   = '(?:^\s*'
     . 'FASTA +searches +a +protein +or +DNA +sequence +data +bank'

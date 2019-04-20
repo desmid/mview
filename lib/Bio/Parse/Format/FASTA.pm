@@ -24,8 +24,6 @@ package Bio::Parse::Format::FASTA;
 use vars qw(@ISA $GCG_JUNK);
 use strict;
 
-our $DEBUG = 0;
-
 @ISA = qw(Bio::Parse::Record);
 
 BEGIN { $GCG_JUNK = '(?:^\.\.|^\\\\)' }
@@ -44,7 +42,7 @@ my %VERSIONS = (
                 @Bio::Parse::Format::GCG_FASTA2::VERSIONS,
                );
 
-my $NULL        = '^\s*$';#for emacs';
+my $NULL        = '^\s*$';
 
 my $FASTA_START = '^\s*\S+\s*[,:]\s+\d+\s+(?:aa|nt)';
 
@@ -213,81 +211,56 @@ my $TRAILER_END = "(?:"
 #Generic get_entry() and new() constructors for all FASTA style parsers:
 #determine program and version and coerce appropriate subclass.
 
+my $DEBUG = 0;
+
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new FASTA instance.
 sub get_entry {
-    my ($text) = @_;
-    my ($line, $offset, $bytes) = ('', -1, 0);
+    my $text = shift;
+    my $line = '';
+    my $data = 0;
 
     my ($type, $prog, $version, $format) = ('Bio::Parse::Format::FASTA');
     my $GCG = 0;
-    my $start = '';
 
     while ($text->getline(\$line)) {
 
-        #warn "($offset) >>$line";
-
         #start of entry
-        if ($line =~ /$ENTRY_START/o and $offset < 0) {
-            $offset = $text->startofline;
-            $start = $line;
-            #warn "STA $offset, $bytes, ($line)\n";
+        if ($line =~ /$ENTRY_START/o and !$data) {
+            $text->start_count();
+            $data = 1;
             #fall through for version tests
-
-        } elsif ($line =~ /$ENTRY_END/o) {
-
-            if ($start =~ /$FASTA_START/o and $line =~ /^\s*L?ALIGN/) {
-                #replace offset
-                $offset = $text->startofline;
-                $start = $line;
-                #warn "STA $offset, $bytes, ($line)\n";
-                #fall through for version tests
-
-            } elsif ($start =~ /^\s*LALIGN/o and $line =~ /^\s*Comparison of:/) {
-                #keep old offset
-                $start = $line;
-                #warn "STA $offset, $bytes, ($line)\n";
-                #fall through for version tests
-
-            } else {
-                #end of entry
-                #warn "END $offset, $bytes, ($line)\n";
-                last;
-            }
-        } elsif ($offset < 0) {
-            next;
         }
 
         #escape iteration if we've hit the alignment section
         next  if $line =~ /$ALN_START/;
 
-        #try to get program and version from header; these headers are
-        #only present if stderr was collected. sigh.
+        #try to determine program from header on stderr
 
-        #try to determine program
         if ($line =~ /^\s*(\S+)\s+(?:searches|compares|produces|translates|performs)/) {
-            #FASTA family versions 2 upwards
-            $prog = $1;
-            next;
-        } elsif ($line =~ /^\s*(\S+)\s+(?:searches|compares)/) {
-            #FASTA version 1
             $prog = $1;
             next;
         }
 
-        #try to determine version from header
+        #try to determine version from header on stderr
+
         if ($line =~ /^\s*version\s+(\d)\./) {
             $version = $1;   #eg, version 3.4
-        } elsif ($line =~ /^\s*version\s+(3\d)/) {
-            $version = '3X'; #eg, version 34
-        } elsif ($line =~ /^\s*v(\d+)\.\d+\S\d+/) {
-            $version = $1;
+            next;
         }
 
-        #otherwise... stderr header was missing... look at stdout part
-        #warn ">>$line";
+        if ($line =~ /^\s*version\s+(3\d)/) {
+            $version = '3X'; #eg, version 34
+            next;
+        }
 
-        #try to determine FASTA version by minor differences
+        if ($line =~ /^\s*v(\d+)\.\d+\S\d+/) {
+            $version = $1;
+            next;
+        }
+
+        #try to determine program and version by minor differences on stdout
+
         if ($line =~ /The best scores are:\s+initn\s+init1\s+opt\s*$/) {
             $prog    = 'FASTA'    unless defined $prog;    #guess!
             $version = 1          unless defined $version;
@@ -344,7 +317,8 @@ sub get_entry {
         }
 
         if ($line =~ /frame-shift:/) {
-            $prog    = 'TFASTX';    #guess
+            #guess
+            $prog    = 'TFASTX';
             next;
         }
 
@@ -355,9 +329,7 @@ sub get_entry {
         }
 
     }
-    return 0   if $offset < 0;
-
-    $bytes = $text->tell - $offset;
+    return 0  unless $data;
 
     unless (defined $prog and defined $version) {
         die "get_entry() top-level FASTA parser could not determine program/version\n";
@@ -394,7 +366,7 @@ sub get_entry {
 
     load_parser_class($type);
 
-    my $self = $type->new(undef, $text, $offset, $bytes);
+    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 
     $self->{'format'}  = $format;
     $self->{'version'} = $version;
@@ -707,8 +679,8 @@ sub new {
             $sum->{'ranges'} =~ /(\d+)-(\d+):(\d+)-(\d+)/) {
             ($q1, $q2, $s1, $s2) = ($1, $2, $3, $4);
         }
-        warn "\n>>> $sum->{'id'}\n"  if $DEBUG;
-        warn "ranges: [$q1, $q2], [$s1, $s2]\n\n"  if $DEBUG;
+       #warn "\n>>> $sum->{'id'}\n"  if $DEBUG;
+       #warn "ranges: [$q1, $q2], [$s1, $s2]\n\n"  if $DEBUG;
         [ [$q1, $q2], [$s1, $s2] ];
     };
 
@@ -815,12 +787,12 @@ sub new {
         my $s = $$string;
         my $fsf = $s =~ tr/[\/]//;
         my $fsb = $s =~ tr/[\\]//;
-        if ($DEBUG) {
-            warn "[$$ruler]\n[@{['.'x$depth]}$$string]\n";
-            warn sprintf("start:  [r1:%4d  a:%4d  b:%4d  x:%4d  X:%4d  gc: %d  usedr: %d]\n", @$start);
-            warn sprintf("stop:   [r2:%4d  a:%4d  b:%4d  x:%4d  Y:%4d  gc: %d  usedr: %d]\n", @$stop);
-            warn "fshift: [/ $fsf, \\ $fsb]\n\n";
-        }
+        # if ($DEBUG) {
+        #     warn "[$$ruler]\n[@{['.'x$depth]}$$string]\n";
+        #     warn sprintf("start:  [r1:%4d  a:%4d  b:%4d  x:%4d  X:%4d  gc: %d  usedr: %d]\n", @$start);
+        #     warn sprintf("stop:   [r2:%4d  a:%4d  b:%4d  x:%4d  Y:%4d  gc: %d  usedr: %d]\n", @$stop);
+        #     warn "fshift: [/ $fsf, \\ $fsb]\n\n";
+        # }
         [ $start, $stop, $fsf, $fsb ];
     };
 
@@ -924,7 +896,7 @@ sub new {
     my ($sbjct_start, $sbjct_stop) =
         $self->get_start_stop('hit', $sorient, $sinfo, $self->sbjct_base);
 
-    warn "Final: [$query_orient $query_start,$query_stop] [$sbjct_orient $sbjct_start $sbjct_stop]\n\n"  if $DEBUG;
+   #warn "Final: [$query_orient $query_start,$query_stop] [$sbjct_orient $sbjct_start $sbjct_stop]\n\n"  if $DEBUG;
 
     my $x;
 
@@ -1037,7 +1009,7 @@ sub get_start_stop {
 
     my ($start_info, $stop_info, $fsf, $fsb) = @$info;
 
-    warn ">>>>>> $tgt, $orient\n"  if $DEBUG;
+   #warn ">>>>>> $tgt, $orient\n"  if $DEBUG;
 
     #              7            20
     #  ---------QWERTY  //  UIOPASDF----------
@@ -1073,7 +1045,7 @@ sub get_start_stop {
     #- scale by $base (1=protein or 3=DNA)
     #- account for the rest of the codon at the end (+/- 2) if in base 3
     #- shift according to the alignment summary range values
-    warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  usedr= $usedr2\n"  if $DEBUG;
+   #warn "$tgt(i): $orient,$base bc= $b,$c  xy= $x,$y  nxy= $nx,$ny  delta1/2= $delta1,$delta2  usedr= $usedr2\n"  if $DEBUG;
     if ($orient eq '+') {
         if ($base == 1) {
             $start = $nx - $delta1;
@@ -1087,7 +1059,7 @@ sub get_start_stop {
                 $start -= $shift;
                 $stop  -= $shift;
             }
-            warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
+           #warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
         }
     } else {
         if ($base == 1) {
@@ -1102,11 +1074,11 @@ sub get_start_stop {
                 $start += $shift;
                 $stop  += $shift;
             }
-            warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
+           #warn "$tgt(i): $orient,$base start/stop: $start,$stop  shift: $shift\n"  if $DEBUG;
         }
     }
-    warn "$tgt(o): $orient,$base start/stop: $start,$stop\n"  if $DEBUG;
-    warn "\n"  if $DEBUG;
+   #warn "$tgt(o): $orient,$base start/stop: $start,$stop\n"  if $DEBUG;
+   #warn "\n"  if $DEBUG;
 
     return ($start, $stop);
 }

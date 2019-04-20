@@ -28,27 +28,28 @@ my $JNETZ_ALIGNMENTend   = $JNETZ_END;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new JNETZ instance.
 sub get_entry {
-    my ($text) = @_;
-    my ($line, $offset, $bytes) = ('', -1, 0);
+    my $text = shift;
+    my $line = '';
+    my $data = 0;
 
     while ($text->getline(\$line)) {
 
         #start of entry
-        if ($line =~ /$JNETZ_START/o and $offset < 0) {
-            $offset = $text->startofline;
+        if ($line =~ /$JNETZ_START/o and !$data) {
+            $text->start_count();
+            $data = 1;
             next;
         }
 
         #end of entry
-        if ($line =~ /$JNETZ_END/o) {
+        if ($line =~ /$JNETZ_END/o and $data) {
+            $text->stop_count_at_end();
             last;
         }
     }
-    return 0   if $offset < 0;
+    return 0  unless $data;
 
-    $bytes = $text->tell - $offset;
-
-    new Bio::Parse::Format::JNETZ(undef, $text, $offset, $bytes);
+    new Bio::Parse::Format::JNETZ(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 }
 
 #Parse one entry

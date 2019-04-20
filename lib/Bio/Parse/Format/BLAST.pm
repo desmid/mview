@@ -150,26 +150,31 @@ my $SAVEFMT = undef;
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new BLAST instance.
 sub get_entry {
-    my ($text) = @_;
-    my ($line, $offset, $bytes) = ('', -1, 0);
+    my $text = shift;
+    my $line = '';
+    my $data = 0;
 
     my $type = 'Bio::Parse::Format::BLAST';
 
     while ($text->getline(\$line)) {
 
         #start of entry
-        if ($line =~ /$ENTRY_START/o and $offset < 0) {
-            $offset = $text->startofline;
+        if ($line =~ /$ENTRY_START/o and !$data) {
+            $text->start_count();
+            $data = 1;
             #fall through for version tests
         }
 
         #end of entry
-        last  if $line =~ /$ENTRY_END/o;
+        if ($line =~ /$ENTRY_END/o and $data) {
+            $text->stop_count_at_end();
+            last;
+        }
 
         #escape iteration if we've found the BLAST type previously
         next  if defined $SAVEPROG and defined $SAVEVERSION;
 
-        if ($line =~ /$HEADER_START\s+(\d+)/o) {
+        if ($line =~ /$HEADER_START\s+(\d+)/o and $data) {
 
             #read major version
             $SAVEVERSION = $1;
@@ -189,9 +194,7 @@ sub get_entry {
         }
 
     }
-    return 0  if $offset < 0;
-
-    $bytes = $text->tell - $offset;
+    return 0  unless $data;
 
     unless (defined $SAVEPROG and defined $SAVEVERSION) {
         die "get_entry() top-level BLAST parser could not determine program/version\n";
@@ -212,7 +215,7 @@ sub get_entry {
 
     load_parser_class($type);
 
-    my $self = $type->new(undef, $text, $offset, $bytes);
+    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 
     $self->{'format'}  = $format;
     $self->{'version'} = $SAVEVERSION;

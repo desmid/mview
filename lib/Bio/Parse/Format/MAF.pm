@@ -11,7 +11,7 @@ use strict;
 
 @ISA = qw(Bio::Parse::Record);
 
-# See: https://cgwb.nci.nih.gov/FAQ/FAQformat.html
+# See: http://www.bx.psu.edu/~dcking/man/maf.xhtml
 
 #delimit full MAF entry
 my $MAF_START          = '^##maf\s';
@@ -28,27 +28,28 @@ my $MAF_HEADERend      = "(?:$MAF_BLOCK|$MAF_HEADER)";
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new MAF instance.
 sub get_entry {
-    my ($text) = @_;
-    my ($line, $offset, $bytes) = ('', -1, 0);
+    my $text = shift;
+    my $line = '';
+    my $data = 0;
 
     while ($text->getline(\$line)) {
 
         #start of entry
-        if ($line =~ /$MAF_START/o and $offset < 0) {
-            $offset = $text->startofline;
+        if ($line =~ /$MAF_START/o and !$data) {
+            $text->start_count();
+            $data = 1;
             next;
         }
 
         #consume rest of stream
-        if ($line =~ /$MAF_END/o) {
+        if ($line =~ /$MAF_END/o and $data) {
+            $text->stop_count_at_start();
             last;
         }
     }
-    return 0   if $offset < 0;
+    return 0  unless $data;
 
-    $bytes = $text->tell - $offset;
-
-    new Bio::Parse::Format::MAF(undef, $text, $offset, $bytes);
+    new Bio::Parse::Format::MAF(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 }
 
 #Parse one entry

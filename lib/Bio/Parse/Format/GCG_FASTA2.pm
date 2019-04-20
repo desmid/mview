@@ -50,7 +50,7 @@ use vars qw(
              ],
             );
 
-$NULL  = '^\s*$';#for emacs'
+$NULL  = '^\s*$';
 
 $ENTRY_START   = '^\(\S+\)\s+FASTA of:';
 $ENTRY_END     = '! Output File:';
@@ -71,7 +71,7 @@ $SUM_START     = $MATCH_START;
 $SUM_END       = '% identity in';
 
 $ALN_START     = '^\s+\d+\s+';    #the ruler
-$ALN_END       = '(?:^\S+(?:\s+/rev)?\s*$' . "|$MATCH_END)";#for emacs'
+$ALN_END       = '(?:^\S+(?:\s+/rev)?\s*$' . "|$MATCH_END)";
 
 
 ###########################################################################

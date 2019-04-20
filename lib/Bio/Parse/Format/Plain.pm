@@ -72,7 +72,7 @@ sub get_entry {
 
     #warn "END ENTRY\n"  if $DEBUG;
 
-    return 0   unless $data;
+    return 0  unless $data;
 
     new Bio::Parse::Format::Plain(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
 }
