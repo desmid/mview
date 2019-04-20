@@ -265,31 +265,32 @@ sub strip_id {
 }
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #blank line or empty record: ignore
         next  if $line =~ /$NULL/o;
 
         #HEADER block
         if ($line =~ /$HEADER_START/o) {
-            $text->OLD_scan_until($HEADER_END, 'HEADER');
+            $scan->scan_until($HEADER_END);
+                $self->push_record('HEADER',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #SEARCH block
         if ($line =~ /$SEARCH_START/o) {
-            $text->OLD_scan_until($SEARCH_END, 'SEARCH');
+            $scan->scan_until($SEARCH_END);
+                $self->push_record('SEARCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
@@ -315,16 +316,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #BLAST
     $self->{'full_version'} = '';
@@ -336,7 +330,7 @@ sub new {
     $self->{'fields'}       = [];
     $self->{'counts'}       = [];
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #blast version info
         if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
@@ -409,16 +403,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST2::SEARCH);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my ($type, $parent, $text, $offset, $bytes) = @_;
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
 
     #create SEARCH::RANK
     $self->push_record('RANK', $offset, $bytes);
@@ -437,15 +424,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST::RANK);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #column headers
     $self->{'header'} = '';
@@ -465,7 +446,9 @@ sub new {
     #accumulate text block data for same hit id on successive lines
     my ($mid, $moffset, $mbytes) = ('', 0, 0);
 
-    while (defined ($line = $text->next_line(1))) {
+    my $parent = $self->get_parent(1);
+
+    while (defined ($line = $scan->next_line(1))) {
         #warn "[$line]\n";
 
         my $tmp = {};
@@ -503,7 +486,7 @@ sub new {
             if ($mid eq $tmp->{'id'}) {
                 $parent->pop_record();
                 $parent->push_record('MATCH', $moffset,
-                                     $mbytes += $text->get_bytes);
+                                     $mbytes += $scan->get_bytes);
                 #expect the first hit supplied by blast to be the highest
                 #scoring, but test just in case:
                 if ($tmp->{'bits'} > $self->{'hit'}->[-1]->{'bits'}) {
@@ -515,8 +498,8 @@ sub new {
             }
 
             #new id: create SEARCH::MATCH
-            ($mid, $moffset, $mbytes) = ($tmp->{'id'}, $text->get_offset,
-                                         $text->get_bytes);
+            ($mid, $moffset, $mbytes) = ($tmp->{'id'}, $scan->get_offset,
+                                         $scan->get_bytes);
             $parent->push_record('MATCH', $moffset, $mbytes);
 
             push @{$self->{'hit'}}, $tmp;
@@ -569,26 +552,21 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST::MATCH);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my ($type, $parent, $text, $offset, $bytes) = @_;
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #create SEARCH::MATCH::SUM
     $self->push_record('SUM', $offset, $bytes);
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
         #warn "[$line]\n";
 
         if ($line =~ /$SEARCH_START/o) {
             #create SEARCH::MATCH::ALN
-            $self->push_record('ALN', $text->get_offset, $text->get_bytes);
+            $self->push_record('ALN', $scan->get_offset, $scan->get_bytes);
             next;
         }
 
@@ -610,27 +588,20 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST2::SEARCH::MATCH::SUM);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
 
     #BLAST
     $self->{'id'}     = '';
     $self->{'desc'}   = '';
     $self->{'length'} = '';
 
-    $self->extract_fields($MAP_SUM, $text->next_line(1));
+    $self->extract_fields($MAP_SUM, $scan->next_line(1));
 
     $self->{'desc'} =
         Bio::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
                                                  $self->{'desc'});
+
     $self->{'id'} = clean_identifier($self->{'id'});
 
     $self;#->examine;
@@ -652,16 +623,8 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST2::SEARCH::MATCH::ALN);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
 
     #BLAST
     $self->{'query'}        = '';
@@ -686,7 +649,7 @@ sub new {
     $self->{'gap_fraction'} = '';
     $self->{'gap_percent'}  = '';
 
-    $self->extract_fields($MAP_ALN, $text->next_line(1));
+    $self->extract_fields($MAP_ALN, $scan->next_line(1));
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =

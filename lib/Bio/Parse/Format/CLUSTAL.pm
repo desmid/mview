@@ -52,22 +52,19 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #HEADER lines
         if ($line =~ /$CLUSTAL_HEADER/o) {
-            $text->OLD_scan_until($CLUSTAL_HEADERend, 'HEADER');
+            $scan->scan_until($CLUSTAL_HEADERend);
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -75,7 +72,11 @@ sub new {
 
         #ALIGNMENT lines
         if ($line =~ /$CLUSTAL_ALIGNMENT/o) {
-            $text->OLD_scan_until($CLUSTAL_ALIGNMENTend, 'ALIGNMENT');
+            $scan->scan_until($CLUSTAL_ALIGNMENTend);
+            $self->push_record('ALIGNMENT',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -97,23 +98,16 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'version'} = '';
     $self->{'major'}   = '';
     $self->{'minor'}   = '';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #first part of CLUSTAL line
         if ($line =~ /^
@@ -176,16 +170,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $id, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'id'}    = [];
     $self->{'seq'}   = {};
@@ -193,7 +180,7 @@ sub new {
 
     my $off = 0;
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #match symbols, but only if expected
         if ($off and $line !~ /[^*:. ]/) {
@@ -222,7 +209,7 @@ sub new {
     #line length check (ignore 'match' as this may be missing)
     if (defined $self->{'id'}->[0]) {
         $off = length $self->{'seq'}->{$self->{'id'}->[0]};
-        foreach $id (keys %{$self->{'seq'}}) {
+        foreach my $id (keys %{$self->{'seq'}}) {
             $line = $self->{'seq'}->{$id};
             my $len = length $line;
             #warn "$off, $len, $id\n";

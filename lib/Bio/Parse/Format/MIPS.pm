@@ -57,22 +57,19 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #HEADER lines
         if ($line =~ /$MIPS_HEADER/o) {
-            $text->OLD_scan_until($MIPS_HEADERend, 'HEADER');
+            $scan->scan_until($MIPS_HEADERend);
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -80,13 +77,21 @@ sub new {
 
         #NAME lines
         if ($line =~ /$MIPS_NAME/o) {
-            $text->OLD_scan_until($MIPS_NAMEend, 'NAME');
+            $scan->scan_until($MIPS_NAMEend);
+            $self->push_record('NAME',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #ALIGNMENT lines
         if ($line =~ /$MIPS_ALIGNMENT/o) {
-            $text->OLD_scan_until($MIPS_ALIGNMENTend, 'ALIGNMENT');
+            $scan->scan_until($MIPS_ALIGNMENTend);
+            $self->push_record('ALIGNMENT',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -113,21 +118,14 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'desc'} = '';
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #> line
         if ($line =~ /^>[^;]+;(\S+)/o) {
@@ -167,22 +165,15 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'seq'}   = {};
     $self->{'order'} = [];
 
     #consume Name lines
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         if ($line =~ /^L;(\S+)\s+(.*)/o) {
             $self->test_args(\$line, $1,$2);
@@ -220,20 +211,13 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'seq'} = {};
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #start/end positions
         next  if $line =~ /^\s*\d+[^0-9]*\d+\s*$/o;

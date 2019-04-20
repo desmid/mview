@@ -36,24 +36,17 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST1::RANK);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #column headers
-    $self->{'header'} = $text->scan_lines(5);
+    $self->{'header'} = $scan->scan_lines(4);
 
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -134,19 +127,12 @@ use Bio::Util::Regexp;
 @ISA = qw(Bio::Parse::Format::BLAST1::MATCH::ALN);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #Score line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -176,7 +162,7 @@ sub new {
     }
 
     #Identities line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*
@@ -208,13 +194,13 @@ sub new {
         ) = ($1, $2, $3, $4, $5.$6, $7.$8);
 
         #record query orientation in MATCH list
-        push @{$parent->{'orient'}->{$self->{'query_frame'}}}, $self;
+        push @{$self->get_parent(1)->{'orient'}->{$self->{'query_frame'}}}, $self;
 
     } else {
         $self->warn("expecting 'Identities' line: $line");
     }
 
-    $self->parse_alignment($text);
+    $self->parse_alignment($scan);
 
     $self;
 }

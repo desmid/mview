@@ -41,19 +41,12 @@ use vars qw(@ISA);
 @ISA   = qw(Bio::Parse::Format::FASTA::RANK);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #ranked search hits
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA2::RANK_START/o;
 
@@ -128,18 +121,11 @@ use vars qw(@ISA);
 @ISA   = qw(Bio::Parse::Format::FASTA::MATCH::SUM);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^
         >*
@@ -162,7 +148,7 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^
         \s*
@@ -182,7 +168,7 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^
         (?:Smith-Waterman\s+score:\s*(\d+);)?    #sw score

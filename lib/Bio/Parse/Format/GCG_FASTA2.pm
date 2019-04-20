@@ -77,40 +77,49 @@ $ALN_END       = '(?:^\S+(?:\s+/rev)?\s*$' . "|$MATCH_END)";
 ###########################################################################
 #Parse one entry: generic for all FASTA family
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->OLD_scan_until($HEADER_END, 'HEADER');
+            $scan->scan_until($HEADER_END);
+                $self->push_record('HEADER',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Rank lines
         if ($line =~ /$RANK_START/o) {
-            $text->scan_until_inclusive($RANK_END, 'RANK');
+            $scan->scan_until_inclusive($RANK_END);
+            $self->push_record('RANK',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
-            $text->scan_skipping_until($MATCH_END, 1, 'MATCH');
+            $scan->scan_skipping_until($MATCH_END, 1, 'MATCH');
+            $self->push_record('MATCH',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Trailer lines
         if ($line =~ /$TRAILER_START/o) {
-            $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
+            $scan->scan_until_inclusive($TRAILER_END);
+            $self->push_record('TRAILER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -135,22 +144,15 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::FASTA::HEADER);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'query'} = '';
 
     my ($ac, $id) = (undef, undef);
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #GCG fasta doesn't write explicit versioning
 
@@ -243,23 +245,14 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::FASTA::RANK);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    my ($id, $desc, $init1, $initn, $opt, $z, $e);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'hit'} = [];
 
     #ranked search hits
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::RANK_START/o;
         next    if $line =~ /$Bio::Parse::Format::FASTA::GCG_JUNK/o;
@@ -274,7 +267,7 @@ sub new {
            /xo) {
 
             #initialise
-            ($id,$desc,$init1,$initn,$opt,$z,$e) = ('','','','','','','');
+            my ($id,$desc,$init1,$initn,$opt,$z,$e) = ('','','','','','','');
 
             #warn "($1,$2,$3)\n";
 
@@ -283,7 +276,7 @@ sub new {
             $id = clean_identifier($1);
 
             #read next line
-            $line = $text->next_line;
+            $line = $scan->next_line;
 
             #second line
             if ($line =~ /
@@ -352,28 +345,29 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::FASTA::MATCH);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #identifier lines
         if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::SUM_START/o) {
-            $text->scan_until_inclusive($Bio::Parse::Format::GCG_FASTA2::SUM_END, 'SUM');
+            $scan->scan_until_inclusive($Bio::Parse::Format::GCG_FASTA2::SUM_END);
+            $self->push_record('SUM',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #fragment hits: terminated by several possibilities
         if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_START/o) {
-            $text->OLD_scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END, 'ALN');
+            $scan->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END);
+                $self->push_record('ALN',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
@@ -401,23 +395,16 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::FASTA::MATCH);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    #skip first line (query filename)
+    $scan->next_line;
 
     my ($id1, $id2, $ac, $de) = ('','','','');
 
-    #skip first line (query filename)
-    $text->next_line;
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #hit database:identifier: appears as line 2
         if ($line =~ /^\s*(\S+:\S+);?\s*$/) {

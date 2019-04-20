@@ -63,13 +63,14 @@ use vars qw(@ISA);
 sub new {
     my $type = shift;
     my $self = new Bio::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
-    my $text = new Bio::Parse::Scanner($self);
+    bless $self, $type;
 
+    my $scan = new Bio::Parse::Scanner($self);
     my $line;
 
-    $line = $text->next_line(1);
-    $line = $text->next_line(1);
-    $line = $text->next_line(1);
+    $line = $scan->next_line(1);
+    $line = $scan->next_line(1);
+    $line = $scan->next_line(1);
 
     #blastx 2.0.5 has no Frame line, so set a useful default
     $self->{'query_frame'} = $self->{'query_orient'};
@@ -84,7 +85,7 @@ sub new {
                $self->{'query_orient'} . $self->{'sbjct_orient'}
            }}, $self;
 
-    bless $self, $type;
+    $self;
 }
 
 sub dump_data {

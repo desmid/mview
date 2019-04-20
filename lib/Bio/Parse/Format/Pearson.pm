@@ -47,24 +47,26 @@ sub new {
         #at least two args, ($offset, $bytes are optional).
         Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
+    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
+    $scan = new Bio::Parse::Scanner($self);
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #SEQ lines
         if ($line =~ /$Pearson_SEQ/o) {
-            $text->OLD_scan_until($Pearson_SEQend, 'SEQ');
+            $scan->scan_until($Pearson_SEQend);
+            $self->push_record('SEQ',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #blank line or empty record: ignore
-        if ($line =~ /$Pearson_Null/o) {
-            next;
-        }
+        next  if $line =~ /$Pearson_Null/o;
 
         #default
         $self->warn("unknown field: $line");
@@ -81,22 +83,15 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'id'}    = '';
     $self->{'desc'}  = '';
     $self->{'seq'}   = '';
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #read header line
         if ($line =~ /^\s*>\s*(\S+)\s*(.*)?/o) {

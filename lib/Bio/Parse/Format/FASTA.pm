@@ -383,40 +383,49 @@ sub load_parser_class {
 #Parse one entry: generic for all FASTA[12]
 #(FASTA3 $MATCH_START definition conflicts)
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->OLD_scan_until($HEADER_END, 'HEADER');
+            $scan->scan_until($HEADER_END);
+                $self->push_record('HEADER',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Rank lines
         if ($line =~ /$RANK_START/o) {
-            $text->OLD_scan_until($RANK_END, 'RANK');
+            $scan->scan_until($RANK_END);
+                $self->push_record('RANK',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
-            $text->OLD_scan_until($MATCH_END, 'MATCH');
+            $scan->scan_until($MATCH_END);
+                $self->push_record('MATCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Trailer lines
         if ($line =~ /$TRAILER_START/o) {
-            $text->scan_until_inclusive($TRAILER_END, 'TRAILER');
+            $scan->scan_until_inclusive($TRAILER_END);
+            $self->push_record('TRAILER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -516,13 +525,13 @@ sub new {
         #at least two args, ($offset, $bytes are optional).
         Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
+    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
+    $scan = new Bio::Parse::Scanner($self);
 
-    $line = $text->scan_lines(0);
+    $line = $scan->scan_remainder();
 
     $self->{'trailer'} = $line;
 
@@ -553,23 +562,31 @@ sub new {
         #at least two args, ($offset, $bytes are optional).
         Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
+    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
+    $scan = new Bio::Parse::Scanner($self);
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #identifier lines
         if ($line =~ /$SUM_START/o) {
-            $text->scan_until_inclusive($SUM_END, 'SUM');
+            $scan->scan_until_inclusive($SUM_END);
+            $self->push_record('SUM',
+                $scan->get_block_start(),
+                $scan->get_block_bytes(),
+                );
             next;
         }
 
         #fragment hits: terminated by several possibilities
         if ($line =~ /$ALN_START/o) {
-            $text->OLD_scan_until($ALN_END, 'ALN');
+            $scan->scan_until($ALN_END);
+                $self->push_record('ALN',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
@@ -801,17 +818,17 @@ sub new {
         #at least two args, ($offset, $bytes are optional).
         Bio::Util::Object::die($type, "new() invalid arguments:", @_);
     }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
+    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
     my ($self, $line, $record);
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
+    $scan = new Bio::Parse::Scanner($self);
 
     my ($qrule, $query, $align, $sbjct, $srule) = ('', '', '', '', '');
     my ($first_pass, $depth, $qkey, $skey) = (1, 0, '', '');
 
     #read records
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
         my @tmp = ();
 
         #initial empty line before the alignment ruler
@@ -822,10 +839,10 @@ sub new {
         if ($line =~ /^\s+(?:\d+)?/) {
             #warn "QUERY RULER\n";
             $tmp[0] = $line;                #query ruler
-            $tmp[1] = $text->next_line(1);  #query sequence
-            $tmp[2] = $text->next_line(1);  #match pattern
-            $tmp[3] = $text->next_line(1);  #sbjct sequence
-            $tmp[4] = $text->next_line(1);  #sbjct ruler
+            $tmp[1] = $scan->next_line(1);  #query sequence
+            $tmp[2] = $scan->next_line(1);  #match pattern
+            $tmp[3] = $scan->next_line(1);  #sbjct sequence
+            $tmp[4] = $scan->next_line(1);  #sbjct ruler
 
             if ($first_pass) {
                 ($qkey, $skey, $depth) = &$keys_and_depth(\$tmp[1], \$tmp[3]);
@@ -836,14 +853,14 @@ sub new {
         } elsif (index($line, $qkey) == 0) {
             #warn "QUERY (####)\n";
             $tmp[1] = $line;                #query sequence
-            $tmp[2] = $text->next_line(1);  #match pattern
-            $tmp[3] = $text->next_line(1);  #sbjct sequence
-            $tmp[4] = $text->next_line(1);  #sbjct ruler
+            $tmp[2] = $scan->next_line(1);  #match pattern
+            $tmp[3] = $scan->next_line(1);  #sbjct sequence
+            $tmp[4] = $scan->next_line(1);  #sbjct ruler
 
         } elsif (index($line, $skey) == 0) {
             #warn "SBJCT (####)\n";
             $tmp[3] = $line;                #sbjct sequence
-            $tmp[4] = $text->next_line(1);  #sbjct ruler
+            $tmp[4] = $scan->next_line(1);  #sbjct ruler
 
         } else {
             $self->die("unexpected line: [$line]\n");

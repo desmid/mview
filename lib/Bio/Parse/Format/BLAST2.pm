@@ -119,46 +119,59 @@ $SCORE_END        = "^(?:$SCORE_START|$MATCH_END)";
 
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->OLD_scan_until($HEADER_END, 'HEADER');
+            $scan->scan_until($HEADER_END);
+                $self->push_record('HEADER',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Search lines
         if ($line =~ /$SEARCH_START/o) {
             if ($line =~ /^Searching/o) {  #BLAST2
-                $text->OLD_scan_until("^(?:Searching|$PARAMETERS_START)", 'SEARCH');
+                $scan->scan_until("^(?:Searching|$PARAMETERS_START)");
+                $self->push_record('SEARCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
                 next;
             }
             if ($line =~ /^Results from round/o) {  #BLAST+
-                $text->OLD_scan_until("^(?:Results from round|$PARAMETERS_START)", 'SEARCH');
+                $scan->scan_until("^(?:Results from round|$PARAMETERS_START)");
+                $self->push_record('SEARCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
                 next;
             }
             #keywords 'Searching' or 'Results' stripped by web server
-            $text->OLD_scan_until($SEARCH_END, 'SEARCH');
+            $scan->scan_until($SEARCH_END);
+                $self->push_record('SEARCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Parameter lines
         if ($line =~ /$PARAMETERS_START/o) {
-            $text->OLD_scan_until($PARAMETERS_END, 'PARAMETERS');
+            $scan->scan_until($PARAMETERS_END);
+                $self->push_record('PARAMETERS',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
@@ -196,18 +209,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
         #warn "[$line]\n";
 
         #query line: update HEADER if needed (for psiblast at least)
@@ -226,19 +232,31 @@ sub new {
 
         #Rank lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::RANK_START/o) {
-            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::RANK_END, 'RANK');
+            $scan->scan_until($Bio::Parse::Format::BLAST2::RANK_END);
+                $self->push_record('RANK',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #Hit lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::MATCH_START/o) {
-            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::MATCH_END, 'MATCH');
+            $scan->scan_until($Bio::Parse::Format::BLAST2::MATCH_END);
+                $self->push_record('MATCH',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
         #WARNING lines
         if ($line =~ /$Bio::Parse::Format::BLAST2::WARNING_START/o) {
-            $text->OLD_scan_until($Bio::Parse::Format::BLAST2::WARNING_END, 'WARNING');
+            $scan->scan_until($Bio::Parse::Format::BLAST2::WARNING_END);
+                $self->push_record('WARNING',
+                                   $scan->get_block_start(),
+                                   $scan->get_block_bytes(),
+                    );
             next;
         }
 
@@ -260,24 +278,17 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST::RANK);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #column headers
-    $self->{'header'} = $text->scan_until_inclusive('Value(?:\s*N)?\s*$');
+    $self->{'header'} = $scan->scan_until_inclusive('Value(?:\s*N)?\s*$');
 
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         next    if $line =~ /^Sequences used in model and found again:/o;
         next    if $line =~ /^Sequences not found previously or not previously below threshold:/o;
@@ -370,19 +381,12 @@ use Bio::Util::Regexp;
 @ISA = qw(Bio::Parse::Format::BLAST::MATCH::ALN);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #Score line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -408,7 +412,7 @@ sub new {
     }
 
     #Identities line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*
@@ -446,9 +450,9 @@ sub new {
     }
 
     #optional (Strand=|Frame=) line: handled in subclasses
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
-    $self->parse_alignment($text);
+    $self->parse_alignment($scan);
 
     $self;
 }

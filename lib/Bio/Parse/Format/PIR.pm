@@ -44,29 +44,24 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #SEQ lines
         if ($line =~ /$PIR_SEQ/o) {
-            $text->OLD_scan_until($PIR_SEQend, 'SEQ');
+            $scan->scan_until($PIR_SEQend);
+            $self->push_record('SEQ',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #blank line or empty record: ignore
-        if ($line =~ /$PIR_Null/o) {
-            next;
-        }
+        next  if $line =~ /$PIR_Null/o;
 
         #default
         $self->warn("unknown field: $line");
@@ -85,23 +80,16 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'prefix'} = '';
     $self->{'id'}     = '';
     $self->{'desc'}   = '';
     $self->{'seq'}    = '';
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #read header line
         if ($line =~ /^\s*>\s*(..);(\S+)/o) {
@@ -112,7 +100,7 @@ sub new {
             ) = ($1, $2);
 
             #force read of next line for description
-            $self->{'desc'} = $text->next_line(1);
+            $self->{'desc'} = $scan->next_line(1);
             $self->{'desc'} = strip_leading_space($self->{'desc'});
             $self->{'desc'} = strip_trailing_space($self->{'desc'});
 

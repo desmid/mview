@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2015 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -62,12 +62,11 @@ use vars qw(@ISA);
 
 sub new {
     my $type = shift;
-    my ($parent) = @_;
     my $self = new Bio::Parse::Format::BLAST2::SEARCH::MATCH::ALN(@_);
     bless $self, $type;
 
     #record paired orientations in MATCH list
-    push @{$parent->{'orient'}->{
+    push @{$self->get_parent(1)->{'orient'}->{
                $self->{'query_orient'} . $self->{'sbjct_orient'}
            }}, $self;
 

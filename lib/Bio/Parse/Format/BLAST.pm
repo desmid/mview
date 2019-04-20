@@ -240,23 +240,16 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'full_version'} = '';
     $self->{'version'}      = '',
     $self->{'query'}        = '';
     $self->{'summary'}      = '';
 
-    while (defined($line = $text->next_line)) {
+    while (defined($line = $scan->next_line)) {
 
         #blast version info
         if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
@@ -331,31 +324,32 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #strand orientations, filled by MATCH::ALN object
     $self->{'orient'} = {};
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #identifier lines
         if ($line =~ /$MATCH_START/o) {
-            $text->OLD_scan_until($SCORE_START, 'SUM');
+            $scan->scan_until($SCORE_START);
+            $self->push_record('SUM',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #scored alignments
         if ($line =~ /$SCORE_START/o) {
-            $text->OLD_scan_until($SCORE_END, 'ALN');
+            $scan->scan_until($SCORE_END);
+            $self->push_record('ALN',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -391,18 +385,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    $line = $text->scan_lines(0);
+    $line = $scan->scan_remainder();
 
     if ($line =~ /^\s*
         >?\s*
@@ -446,7 +433,7 @@ use Bio::Util::Math qw(max);
 sub new { die "$_[0]::new() virtual function called\n" }
 
 sub parse_alignment {
-    my ($self, $text) = @_;
+    my ($self, $scan) = @_;
     my ($query_start, $query_stop, $sbjct_start, $sbjct_stop) = (0,0,0,0);
     my ($query, $align, $sbjct) = ('','','');
     my ($line, $depth, $len);
@@ -454,7 +441,7 @@ sub parse_alignment {
     my @tmp = ();
 
     #alignment lines
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -515,15 +502,15 @@ sub parse_alignment {
 
         #force read of match line, but note:
         #PHI-BLAST has an extra line - ignore for the time being
-        $line = $text->next_line(1);
-        $line = $text->next_line(1)  if $line =~ /^pattern/o;
+        $line = $scan->next_line(1);
+        $line = $scan->next_line(1)  if $line =~ /^pattern/o;
 
         #alignment line
         $tmp[1] = '';
         $tmp[1] = substr($line, $depth)  if length($line) > $depth;
 
         #force read of Sbjct line
-        $line = $text->next_line;
+        $line = $scan->next_line;
 
         #Sbjct line
         if ($line =~ /^\s*
@@ -649,18 +636,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    $line = $text->scan_lines(0);
+    $line = $scan->scan_remainder();
 
     $self->{'warning'} = strip_english_newlines($line);
 
@@ -683,18 +663,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    $line = $text->scan_lines(0);
+    $line = $scan->scan_remainder();
 
     ($self->{'histogram'} = $line) =~ s/\s*$/\n/;
 
@@ -717,18 +690,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    $line = $text->scan_lines(0);
+    $line = $scan->scan_remainder();
 
     ($self->{'parameters'} = $line) =~ s/\s*$/\n/;
 

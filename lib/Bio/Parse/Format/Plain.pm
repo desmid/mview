@@ -93,13 +93,11 @@ sub new {
 
             #FIXME NEW_scan_until and use stop not bytes
 
-            if ($scan->scan_until($ALIGNMENT_END)) {
-                $self->push_record(
-                    'ALIGNMENT',
-                    $scan->get_block_start(),
-                    $scan->get_block_bytes(),
-                    );
-            }
+            $scan->scan_until($ALIGNMENT_END);
+            $self->push_record('ALIGNMENT',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -126,8 +124,6 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my ($type, $parent, $text, $offset, $bytes) = (@_, -1, -1);
-
     my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
@@ -136,8 +132,6 @@ sub new {
     $self->{'seq'}   = {};
 
     #warn "BEGIN PARSE ALIGNMENT\n"  if $DEBUG;
-    #warn "POSITION(self): $offset $bytes\n" if $DEBUG;
-    #warn "POSITION(scan): ", $scan->{'offset'}, " ", $scan->{'bytes'}, "\n" if $DEBUG;
 
     while (defined ($line = $scan->next_line(1))) {
 

@@ -115,52 +115,69 @@ $SCORE_END        = "^(?:$SCORE_START|$MATCH_START|$PARAMETERS_START)";
 
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
-            $text->OLD_scan_until($HEADER_END, 'HEADER');
+            $scan->scan_until($HEADER_END);
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Histogram lines
         if ($line =~ /$HISTOGRAM_START/o) {
-            $text->OLD_scan_until($HISTOGRAM_END, 'HISTOGRAM');
+            $scan->scan_until($HISTOGRAM_END);
+            $self->push_record('HISTOGRAM',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Rank lines: override $RANK_END definition
         if ($line =~ /$RANK_START/o) {
-            $text->scan_while($RANK_MATCH, 'RANK');
+            $scan->scan_while($RANK_MATCH);
+            $self->push_record('RANK',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
-            $text->OLD_scan_until($MATCH_END, 'MATCH');
+            $scan->scan_until($MATCH_END);
+            $self->push_record('MATCH',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #WARNING lines
         if ($line =~ /$WARNING_START/o) {
-            $text->OLD_scan_until($WARNING_END, 'WARNING');
+            $scan->scan_until($WARNING_END);
+            $self->push_record('WARNING',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #Parameter lines
         if ($line =~ /$PARAMETERS_START/o) {
-            $text->OLD_scan_until($PARAMETERS_END, 'PARAMETERS');
+            $scan->scan_until($PARAMETERS_END);
+            $self->push_record('PARAMETERS',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 

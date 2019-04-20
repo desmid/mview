@@ -61,8 +61,8 @@ sub get_block_stop  { $_[0]->{'cursor'}; }
 sub get_block_bytes { $_[0]->{'cursor'} - $_[0]->{'blockstart'}; }
 sub get_block       { $_[0]->{'block'}; }
 
-# return next line of text or undef if the text stream is done; chomp line if
-# optional argument is non-zero.
+# read next line; chomp line if optional argument is non-zero;
+# return line read or undef if no bytes.
 sub next_line {
     my ($self, $chomp) = (@_, 0);
     #warn "next_line(chomp=$chomp)\n";
@@ -74,18 +74,51 @@ sub next_line {
     return $self->{'line'};
 }
 
-# read >= 1 record lines terminating on matching 'pattern';
-# consumed record EXCLUDES matched line;
-# return true if non-zero read, false otherwise;
-# assumes _next_line_core() called just previously.
-sub scan_until {
-    my ($self, $pattern) = @_;
-    #warn "scan_until() looking until /$pattern/\n";
+# Read $count lines; return block read.
+sub scan_lines {
+    my ($self, $count) = (@_, 0);
+    #warn "scan_lines: $count lines\n";
 
     my $line   = \$self->{'line'};
     my $block  = \$self->{'block'};
 
-    $$block = ''; $self->{'blockstart'} = $self->{'linestart'};
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
+
+    while ($count > 0 and $self->_next_line_core) {
+        $$block .= $$line;
+        $count--;
+    }
+
+    return $$block;
+}
+
+# read all remaining lines until EOF; return block read.
+sub scan_remainder {
+    my ($self, $count, $key) = (@_, 0);
+    #warn "scan_lines:\n";
+
+    my $line   = \$self->{'line'};
+    my $block  = \$self->{'block'};
+
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
+
+    while ($self->_next_line_core) {
+        $$block .= $$line;
+    }
+
+    return $$block;
+}
+
+# read >= 1 record lines terminating on matching 'pattern';
+# return block read.
+sub scan_until {
+    my ($self, $pattern) = @_;
+    #warn "scan_until: until /$pattern/\n";
+
+    my $line   = \$self->{'line'};
+    my $block  = \$self->{'block'};
+
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
     while ($self->_next_line_core) {
         if ($$line =~ /$pattern/) {  #backup
@@ -96,78 +129,19 @@ sub scan_until {
         $$block .= $$line;
     }
 
-    return ($self->{'cursor'} - $self->{'blockstart'}) > 0;
+    return $$block;
 }
 
-##################################################
-##################################################
-
-#Read >= 1 record lines terminating on matching $pattern. Store final
-#$record in 'entry' using $key if set (defaults to unset). Assumes
-#_next_line() called just previously. Consumed record EXCLUDES matched line.
-sub OLD_scan_until {
-    my ($self, $pattern, $key) = (@_, 0);
-    #warn "scan_until() looking until /$pattern/\n";
-
-    my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $record = $$line;
-
-    while ($self->_next_line_core) {
-        if ($$line =~ /$pattern/) {  #backup
-            $self->{'cursor'} = $self->{'linestart'};
-            $$line = '';
-            last;
-        }
-        $record .= $$line;
-    }
-    my $bytes = $self->{'cursor'} - $offset;
-
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $record;
-}
-
-#Read $count lines or all lines until (EOF or end-of-string) if $count==0.
-#Store final record in 'entry' using $key if set (defaults to unset).
-#Assumes _next_line_core() called just previously.
-sub scan_lines {
-    my ($self, $count, $key) = (@_, 0);
-    #warn "scan_lines() looking at ($count) lines\n";
-
-    my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $block  = $$line;
-
-    if ($count < 1) {  #scan everything
-        while ($self->_next_line_core) {
-            $block .= $$line;
-        }
-    } else {  #scan $count lines
-        $count--;  #already seen one line
-        while ($count-- > 0 and $self->_next_line_core) {
-            $block .= $$line;
-        }
-    }
-    #no backup as we've read exactly the right amount
-    my $bytes = $self->{'cursor'} - $offset;
-
-    #FIXME
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $block;
-}
-
-#Read >= 1 record lines terminating on failure to match $pattern. Store
-#final record in 'entry' using $key if set (defaults to unset). Assumes
-#_next_line_core() called just previously.
+# read >= 1 record lines terminating on matching 'pattern';
+# return block read.
 sub scan_while {
-    my ($self, $pattern, $key) = (@_, 0);
+    my ($self, $pattern) = @_;
     #warn "scan_while() looking at /$pattern/\n";
 
     my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $block  = $$line;
+    my $block  = \$self->{'block'};
+
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
     while ($self->_next_line_core) {
         if ($$line !~ /$pattern/) {  #backup
@@ -175,92 +149,84 @@ sub scan_while {
             $$line = '';
             last;
         }
-        $block .= $$line;
+        $$block .= $$line;
     }
-    my $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $block;
+    return $$block;
 }
 
-#Read >= 1 record lines terminating on matching $pattern. Store final
-#record in 'entry' using $key if set (defaults to unset). Assumes
-#_next_line_core() called just previously. Consumed record INCLUDES matched line.
+# read >= 1 record lines terminating on matching 'pattern';
+# return block read.
 sub scan_until_inclusive {
-    my ($self, $pattern, $key) = (@_, 0);
-    #warn "scan_until_inclusive() looking until /$pattern/\n";
+    my ($self, $pattern) = @_;
+    #warn "scan_until_inclusive: until /$pattern/\n";
 
     my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $block  = $$line;
+    my $block  = \$self->{'block'};
+
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
     while ($self->_next_line_core) {
-        $block .= $$line;
+        $$block .= $$line;
         last  if $$line =~ /$pattern/;
     }
-    my $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $block;
+    return $$block;
 }
 
-#Read >= 1 record lines terminating on matching $pattern. Store final
-#record in 'entry' using $key if set (defaults to unset). Assumes
-#_next_line_core() called just previously. Consumed record EXCLUDES matched line.
-#Skips initial $skipcount instances of $pattern.
+# read >= 1 record lines terminating on matching 'pattern';
+# skip optional $skip instances (default 0) before terminating;
+# return block read.
 sub scan_skipping_until {
     my ($self, $pattern, $skip, $key) = (@_, 0);
-    #warn "scan_skipping_until() looking until /$pattern/\n";
+    #warn "scan_skipping_until: /$pattern/\n";
 
     my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $block  = $$line;
+    my $block  = \$self->{'block'};
+
+    $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
     while ($self->_next_line_core) {
         if ($$line =~ /$pattern/) {
-            if ($skip-- < 1) {  #backup
+            if ($skip < 1) {  #backup
                 $self->{'cursor'} = $self->{'linestart'};
                 $$line = '';
                 last;
             }
+            $skip--;
         }
-        $block .= $$line;
+        $$block .= $$line;
     }
-    my $bytes = $self->{'cursor'} - $offset;
 
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $block;
+    return $$block;
 }
 
-#Read >= 1 record lines terminating on failure to match empty lines or
-#initial blank space up to $nest characters. Store final record in 'entry'
-#using $key if set (defaults to unset). Assumes _next_line_core() called just
-#previously.
-sub scan_nest {
-    my ($self, $nest, $key) = (@_, 0);
-    #warn "scan_nest() looking at nest depth $nest\n";
-
-    my $line   = \$self->{'line'};
-    my $offset = $self->{'linestart'};
-    my $block  = $$line;
-
-    while ($self->_next_line_core) {
-        if ($$line !~ /^(\s{$nest}|$)/) {  #backup
-            $self->{'cursor'} = $self->{'linestart'};
-            $$line = '';
-            last;
-        }
-        $block .= $$line;
-    }
-    my $bytes = $self->{'cursor'} - $offset;
-
-    $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-
-    return $block;
-}
+# #Read >= 1 record lines terminating on failure to match empty lines or
+# #initial blank space up to $nest characters. Store final record in 'entry'
+# #using $key if set (defaults to unset). Assumes _next_line_core() called just
+# #previously.
+# sub scan_nest {
+#     my ($self, $nest, $key) = (@_, 0);
+#     #warn "scan_nest() looking at nest depth $nest\n";
+#
+#     my $line   = \$self->{'line'};
+#     my $offset = $self->{'linestart'};
+#     my $block  = $$line;
+#
+#     while ($self->_next_line_core) {
+#         if ($$line !~ /^(\s{$nest}|$)/) {  #backup
+#             $self->{'cursor'} = $self->{'linestart'};
+#             $$line = '';
+#             last;
+#         }
+#         $block .= $$line;
+#     }
+#     my $bytes = $self->{'cursor'} - $offset;
+#
+#     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
+#
+#     return $block;
+# }
 
 ###########################################################################
 # private methods

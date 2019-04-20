@@ -93,16 +93,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::FASTA::MATCH::ALN);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     my ($query_start, $query_stop, $sbjct_start, $sbjct_stop) = (0,0,0,0);
     my ($query_leader,$query_trailer,$sbjct_leader,$sbjct_trailer) = (0,0,0,0);
@@ -113,13 +106,13 @@ sub new {
     #first record
     my @tmp = ();
 
-    #warn $text->inspect_stream;
+    #warn $scan->inspect_stream;
 
-    $line = $text->next_line(1);
+    $line = $scan->next_line(1);
 
     #initial empty line before the alignment ruler
     if ($line =~ /^$/) {
-        $line = $text->next_line(1);
+        $line = $scan->next_line(1);
     }
 
     if ($line =~ /^\s*(\S+)\s+([^0-9 ]+)$/) {
@@ -128,23 +121,23 @@ sub new {
         #very short sequences can mean that start/stop is missing!
         $tmp[0] = '';                     #missing ruler
         $tmp[1] = $line;                  #query sequence
-        $tmp[2] = $text->next_line(1);    #match pattern
-        $tmp[3] = $text->next_line(1);    #sbjct sequence
-        $tmp[4] = $text->next_line(1);    #sbjct ruler
+        $tmp[2] = $scan->next_line(1);    #match pattern
+        $tmp[3] = $scan->next_line(1);    #sbjct sequence
+        $tmp[4] = $scan->next_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s*\d+/) {
         #query ruler present on first line
         $tmp[0] = $line;                  #query ruler
-        $tmp[1] = $text->next_line(1);    #query sequence
-        $tmp[2] = $text->next_line(1);    #match pattern
-        $tmp[3] = $text->next_line(1);    #sbjct sequence
-        $tmp[4] = $text->next_line(1);    #sbjct ruler
+        $tmp[1] = $scan->next_line(1);    #query sequence
+        $tmp[2] = $scan->next_line(1);    #match pattern
+        $tmp[3] = $scan->next_line(1);    #sbjct sequence
+        $tmp[4] = $scan->next_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s+$/) {
         #ruler has no numbers as sequence is too short
         $tmp[0] = '';                     #missing ruler
-        $tmp[1] = $text->next_line(1);    #query sequence
-        $tmp[2] = $text->next_line(1);    #match pattern
-        $tmp[3] = $text->next_line(1);    #sbjct sequence
-        $tmp[4] = $text->next_line(1);    #sbjct ruler
+        $tmp[1] = $scan->next_line(1);    #query sequence
+        $tmp[2] = $scan->next_line(1);    #match pattern
+        $tmp[3] = $scan->next_line(1);    #sbjct sequence
+        $tmp[4] = $scan->next_line(1);    #sbjct ruler
     } else {
         $self->die("unexpected line: [$line]\n");
     }
@@ -220,7 +213,7 @@ sub new {
     #warn "($query_length/$query_leader) ($sbjct_length/$sbjct_leader)\n";
 
     #remaining records
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
         next if $line =~ /^\s*$/;
 
@@ -232,24 +225,24 @@ sub new {
 
             $tmp[0] = $line;                     #query ruler
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             $tmp[1] = substr($line, $depth);     #query sequence
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[2] = substr($line, $depth); #match pattern
             } else {
                 $tmp[2] = ' ' x length $tmp[1];
             }
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[3] = substr($line, $depth); #sbjct sequence
             } else {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {
@@ -266,7 +259,7 @@ sub new {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {
@@ -283,21 +276,21 @@ sub new {
 
             $tmp[1] = substr($line, $depth);     #query sequence
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[2] = substr($line, $depth); #match pattern
             } else {
                 $tmp[2] = ' ' x length $tmp[1];
             }
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[3] = substr($line, $depth); #sbjct sequence
             } else {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $text->next_line(1);
+            $line = $scan->next_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {
@@ -363,7 +356,7 @@ sub new {
     }
 
     #warn "$query\n$sbjct\n";
-    #warn $text->inspect_stream;
+    #warn $scan->inspect_stream;
 
     #determine query orientation and start/stop
     #warn "QUERY ($query_start, $query_stop, $query_length, $query_leader)\n";

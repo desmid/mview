@@ -63,22 +63,19 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #BLOCK lines
         if ($line =~ /$MULTAS_BLOCK/o) {
-            $text->OLD_scan_until($MULTAS_BLOCKend, 'BLOCK');
+            $scan->scan_until($MULTAS_BLOCKend);
+            $self->push_record('BLOCK',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -110,18 +107,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #BLOCK number
         if ($line =~ /$MULTAS_BLOCK\s+(\d+)/) {
@@ -131,19 +121,27 @@ sub new {
 
         #LIST lines
         if ($line =~ /$MULTAS_LIST/o) {
-            $text->scan_while($MULTAS_LISTmid, 'LIST');
+            $scan->scan_while($MULTAS_LISTmid, 'LIST');
             next;
         }
 
 #       #LIST lines
 #       if ($line =~ /$MULTAS_LIST/o) {
-#           $text->OLD_scan_until($MULTAS_LISTend, 'LIST');
+#           $scan->scan_until($MULTAS_LISTend);
+#             $self->push_record('LIST',
+#                                $scan->get_block_start(),
+#                                $scan->get_block_bytes(),
+#                 );
 #           next;
 #       }
 
         #ALIGNMENT lines
         if ($line =~ /$MULTAS_ALIGNMENT/o) {
-            $text->OLD_scan_until($MULTAS_ALIGNMENTend, 'ALIGNMENT');
+            $scan->scan_until($MULTAS_ALIGNMENTend);
+            $self->push_record('ALIGNMENT',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -178,22 +176,15 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'count'} = 0;
     $self->{'hit'}   = [];
 
     #ranked search hits
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         if ($line =~ /\s*(\d+)\s+seqs/) {
             $self->{'count'} = $1;
@@ -257,28 +248,19 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    my (@tmp, $i);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     $self->{'seq'}    = [];
     $self->{'length'} = 0;
     $self->{'count'}  = 0;
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
 
-        @tmp = split(//, $line);
+        my @tmp = split(//, $line);
 
-        for ($i=0; $i<@tmp; $i++) {
+        for (my $i=0; $i<@tmp; $i++) {
             push @{$self->{'seq'}->[$i]}, $tmp[$i];
         }
     }
@@ -287,7 +269,7 @@ sub new {
     $self->{'count'}  = @{$self->{'seq'}};
 
     #check alignments all same length, then make string
-    foreach $i (@{$self->{'seq'}}) {
+    foreach my $i (@{$self->{'seq'}}) {
         if (@$i != $self->{'length'}) {
             $self->warn("alignment lengths differ");
         }

@@ -56,19 +56,12 @@ use Bio::Util::Regexp;
 @ISA = qw(Bio::Parse::Format::BLAST1::MATCH::ALN);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #Score line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -98,7 +91,7 @@ sub new {
     }
 
     #Identities line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*
@@ -126,13 +119,13 @@ sub new {
         ) = ($1, $2, $3, $4, $5 . $6);
 
         #record sbjct orientation in MATCH list
-        push @{$parent->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
+        push @{$self->get_parent(1)->{'orient'}->{$self->{'sbjct_frame'}}}, $self;
 
     } else {
         $self->warn("expecting 'Identities' line: $line");
     }
 
-    $self->parse_alignment($text);
+    $self->parse_alignment($scan);
 
     $self;
 }

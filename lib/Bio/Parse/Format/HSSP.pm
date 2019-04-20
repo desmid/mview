@@ -107,22 +107,19 @@ sub get_entry {
 
 #Parse one entry
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
         #HEADER lines
         if ($line =~ /$HSSP_HEADER/o) {
-            $text->OLD_scan_until($HSSP_HEADERend, 'HEADER');
+            $scan->scan_until($HSSP_HEADERend);
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -130,25 +127,41 @@ sub new {
 
         #PROTEIN lines
         if ($line =~ /$HSSP_PROTEIN/o) {
-            $text->OLD_scan_until($HSSP_PROTEINend, 'PROTEIN');
+            $scan->scan_until($HSSP_PROTEINend);
+            $self->push_record('PROTEIN',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #ALIGNMENT lines
         if ($line =~ /$HSSP_ALIGNMENT/o) {
-            $text->OLD_scan_until($HSSP_ALIGNMENTend, 'ALIGNMENT');
+            $scan->scan_until($HSSP_ALIGNMENTend);
+            $self->push_record('ALIGNMENT',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #PROFILE lines
         if ($line =~ /$HSSP_PROFILE/o) {
-            $text->OLD_scan_until($HSSP_PROFILEend, 'PROFILE');
+            $scan->scan_until($HSSP_PROFILEend);
+            $self->push_record('PROFILE',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
         #INSERTION lines
         if ($line =~ /$HSSP_INSERTION/o) {
-            $text->OLD_scan_until($HSSP_INSERTIONend, 'INSERTION');
+            $scan->scan_until($HSSP_INSERTIONend);
+            $self->push_record('INSERTION',
+                               $scan->get_block_start(),
+                               $scan->get_block_bytes(),
+                );
             next;
         }
 
@@ -179,20 +192,13 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
+    while (defined ($line = $scan->next_line)) {
 
-    my $tmp;
-
-    while (defined ($line = $text->next_line)) {
+        my $tmp;
 
         if ($line =~ /^HSSP\s+(.*VERSION\s+(.*)\s*)/o) {
             $self->test_args(\$line, $1, $2);
@@ -229,9 +235,9 @@ sub new {
         }
 
         if ($line =~ /^PARAMETER/) {
-            $line = $text->scan_while('^PARAMETER');
+            $line = $scan->scan_while('^PARAMETER');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             chomp $line;
             $line = strip_english_newlines($line);
             #fix typo in maxhom output
@@ -267,41 +273,41 @@ sub new {
         }
 
         if ($line =~ /^AVAILABLE/) {
-            $line = $text->scan_while('^AVAILABLE');
+            $line = $scan->scan_while('^AVAILABLE');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             $self->{'available'} = strip_english_newlines($line);
             next;
         }
 
         if ($line =~ /^HEADER/) {
-            $line = $text->scan_while('^HEADER');
+            $line = $scan->scan_while('^HEADER');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             $self->{'header'} = strip_english_newlines($line);
             next;
         }
 
         if ($line =~ /^COMPND\s+(.*)/) {
-            $line = $text->scan_while('^COMPND');
+            $line = $scan->scan_while('^COMPND');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             $self->{'compnd'} = strip_english_newlines($line);
             next;
         }
 
         if ($line =~ /^SOURCE\s+(.*)/) {
-            $line = $text->scan_while('^SOURCE');
+            $line = $scan->scan_while('^SOURCE');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             $self->{'source'} = strip_english_newlines($line);
             next;
         }
 
         if ($line =~ /^AUTHOR\s+(.*)/) {
-            $line = $text->scan_while('^AUTHOR');
+            $line = $scan->scan_while('^AUTHOR');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             $self->{'author'} = strip_english_newlines($line);
             next;
         }
@@ -340,9 +346,9 @@ sub new {
         }
 
         if ($line =~ /^NOTATION\s+(.*)/) {
-            $line = $text->scan_while('^NOTATION');
+            $line = $scan->scan_while('^NOTATION');
             $tmp  = new Bio::Parse::Scanner($self, 11, \$line);
-            $line = $tmp->scan_lines(0);
+            $line = $tmp->scan_remainder();
             chomp $line;
             $self->{'notation'} = $line;
 
@@ -397,34 +403,26 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    my ($cut, $part1, $part2, $data);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #(## PROTEINS : EMBL/SWISSPROT ...) line
-    $line = $text->next_line;
+    $line = $scan->next_line;
 
     #(  NR.    ID         STRID   %IDE ...) line
-    $line = $text->next_line;
-    $cut   = index($line, '%IDE');
+    $line = $scan->next_line;
+
+    my $cut = index($line, '%IDE');
 
     $self->{'ranking'} = [];
 
-    while (defined ($line = $text->next_line)) {
+    while (defined ($line = $scan->next_line)) {
 
-        $part1 = substr($line, 0, $cut+1);
-        $part2 = substr($line, $cut);
+        my $part1 = substr($line, 0, $cut+1);
+        my $part2 = substr($line, $cut);
 
-        $data = {};
+        my $data = {};
 
         if ($part1 =~ /^
             \s*
@@ -497,7 +495,6 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-
     $self;
 }
 
@@ -552,18 +549,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $text, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $text, $offset, $bytes);
-    $text = new Bio::Parse::Scanner($self);
-
-    my ($lo, $hi, $cut, $part2, $data, $chaincount, $chain1, $chain2, $i);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     #construct an array of query structural properties ordered by SeqNo
     $self->{'structure'}  = [];
@@ -580,16 +568,20 @@ sub new {
     #read first block of alignments
 
     #(## ALIGNMENTS    1 -   70) line
-    $line  = $text->next_line;
-    ($lo, $hi) = $line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/;
+    $line  = $scan->next_line;
+
+    my ($lo, $hi) = $line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/;
 
     #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
-    $line  = $text->next_line;
-    $cut   = index($line, '..');
+    $line  = $scan->next_line;
 
-    ($chain1, $chaincount) = ('', 1);
+    my $cut = index($line, '..');
 
-    while (defined ($line = $text->next_line(1))) {
+    my ($chain1, $chain2, $chaincount) = ('', '', 1);
+
+    while (defined ($line = $scan->next_line(1))) {
+
+        my $part2;
 
         if ($cut < length $line) {
             $part2 = substr($line, $cut);
@@ -598,7 +590,7 @@ sub new {
             $part2 = ' ' x ($hi-$lo+1);
         }
 
-        $data = {};
+        my $data = {};
 
         #chain discontinuity
         if ($line =~ /^\s*(\d+)\s+!/) {
@@ -616,7 +608,7 @@ sub new {
 
             push @{$self->{'structure'}}, $data;
 
-            for ($i=0; $i < $hi-$lo+1; $i++) {
+            for (my $i=0; $i < $hi-$lo+1; $i++) {
                 push @{$self->{'alignment'}->[$lo+$i]}, '!';
             }
 
@@ -696,7 +688,7 @@ sub new {
             $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
             $data = [ split '', $part2 ];
 
-            for ($i=0; $i < $hi-$lo+1; $i++) {
+            for (my $i=0; $i < $hi-$lo+1; $i++) {
                 push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
             }
 
@@ -720,10 +712,12 @@ sub new {
     ($lo, $hi) = $line =~ /^\#\#\s+ALIGNMENTS\s+(\d+)\s*-\s*(\d+)/;
 
     #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
-    $line  = $text->next_line;
+    $line  = $scan->next_line;
     $cut   = index($line, '..');
 
-    while (defined ($line = $text->next_line(1))) {
+    while (defined ($line = $scan->next_line(1))) {
+
+        my $part2;
 
         if ($cut < length $line) {
             $part2 = substr($line, $cut);
@@ -732,7 +726,7 @@ sub new {
             $part2 = ' ' x ($hi-$lo+1);
         }
 
-        $data = {};
+        my $data = {};
 
         if ($line =~ /^
             \s*
@@ -748,7 +742,7 @@ sub new {
             $part2 .= ' ' x ($hi - $lo + 1 - length($part2));
             $data = [ split '', $part2 ];
 
-            for ($i=0; $i < $hi-$lo+1; $i++) {
+            for (my $i=0; $i < $hi-$lo+1; $i++) {
                 push @{$self->{'alignment'}->[$lo+$i]}, $data->[$i];
             }
 
@@ -758,7 +752,7 @@ sub new {
         #chain discontinuity
         if ($line =~ /^\s*(\d+)\s+!/) {
 
-            for ($i=0; $i < $hi-$lo+1; $i++) {
+            for (my $i=0; $i < $hi-$lo+1; $i++) {
                 push @{$self->{'alignment'}->[$lo+$i]}, '!';
             }
 
@@ -770,7 +764,7 @@ sub new {
             ($lo, $hi) = ($1, $2);
 
             #( SeqNo  PDBNo AA STRUCTURE BP1 BP2  ACC NOCC  VAR  ....:....1..) line
-            $line  = $text->next_line;
+            $line  = $scan->next_line;
             $cut   = index($line, '..');
 
             next;
