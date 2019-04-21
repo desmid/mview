@@ -21,9 +21,6 @@ sub new {
     my $self = {};
     bless $self, $type;
 
-    $self->{'entry'}  = $entry;
-    $self->{'indent'} = $indent;
-
     if (defined $text and ref $text) {
         #use supplied text and positions (or defaults thereof)
         $self->{'text'}   = new Bio::Parse::ReadText($text);
@@ -36,6 +33,7 @@ sub new {
         $self->{'bytes'}  = $entry->get_bytes();
     }
 
+    $self->{'indent'}     = $indent;
     $self->{'extent'}     = $self->{'offset'} + $self->{'bytes'};
 
     $self->{'linestart'}  = $self->{'offset'};
@@ -77,10 +75,10 @@ sub next_line {
 # Read $count lines; return block read.
 sub scan_lines {
     my ($self, $count) = (@_, 0);
-    #warn "scan_lines: $count lines\n";
+    #warn "scan_lines: $count\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -95,10 +93,10 @@ sub scan_lines {
 # read all remaining lines until EOF; return block read.
 sub scan_remainder {
     my ($self, $count, $key) = (@_, 0);
-    #warn "scan_lines:\n";
+    #warn "scan_remainder\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -113,10 +111,10 @@ sub scan_remainder {
 # return block read.
 sub scan_until {
     my ($self, $pattern) = @_;
-    #warn "scan_until: until /$pattern/\n";
+    #warn "scan_until: /$pattern/\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -136,10 +134,10 @@ sub scan_until {
 # return block read.
 sub scan_while {
     my ($self, $pattern) = @_;
-    #warn "scan_while() looking at /$pattern/\n";
+    #warn "scan_while: /$pattern/\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -159,10 +157,10 @@ sub scan_while {
 # return block read.
 sub scan_until_inclusive {
     my ($self, $pattern) = @_;
-    #warn "scan_until_inclusive: until /$pattern/\n";
+    #warn "scan_until_inclusive: /$pattern/\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -181,8 +179,8 @@ sub scan_skipping_until {
     my ($self, $pattern, $skip, $key) = (@_, 0);
     #warn "scan_skipping_until: /$pattern/\n";
 
-    my $line   = \$self->{'line'};
-    my $block  = \$self->{'block'};
+    my $line  = \$self->{'line'};
+    my $block = \$self->{'block'};
 
     $$block = $$line; $self->{'blockstart'} = $self->{'linestart'};
 
@@ -201,41 +199,9 @@ sub scan_skipping_until {
     return $$block;
 }
 
-# #Read >= 1 record lines terminating on failure to match empty lines or
-# #initial blank space up to $nest characters. Store final record in 'entry'
-# #using $key if set (defaults to unset). Assumes _next_line_core() called just
-# #previously.
-# sub scan_nest {
-#     my ($self, $nest, $key) = (@_, 0);
-#     #warn "scan_nest() looking at nest depth $nest\n";
-#
-#     my $line   = \$self->{'line'};
-#     my $offset = $self->{'linestart'};
-#     my $block  = $$line;
-#
-#     while ($self->_next_line_core) {
-#         if ($$line !~ /^(\s{$nest}|$)/) {  #backup
-#             $self->{'cursor'} = $self->{'linestart'};
-#             $$line = '';
-#             last;
-#         }
-#         $block .= $$line;
-#     }
-#     my $bytes = $self->{'cursor'} - $offset;
-#
-#     $self->{'entry'}->push_record($key, $offset, $bytes)  if $key;
-#
-#     return $block;
-# }
-
 ###########################################################################
 # private methods
 ###########################################################################
-sub DESTROY {
-    #warn "DESTROY $_[0]\n";
-    map { $_[0]->{$_} = undef } keys %{$_[0]};
-}
-
 #read next line of text into self.line and return 1 on success; otherwise set
 #self.line to undef and return 0
 sub _next_line_core {
