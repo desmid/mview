@@ -58,7 +58,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #HEADER lines
         if ($line =~ /$MAF_HEADER/o) {
@@ -111,7 +111,7 @@ sub new {
     $self->{'options'} = '';
 
     #consume header lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #first line: always has version:
         if ($line =~ /^##maf\s+version=(\S+)/o) {
@@ -168,7 +168,7 @@ sub new {
 
     my $off = 0;
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #a score=xxxx.yyyy
         if ($line =~ /^a\s+.*?score=(\S+)/o) {

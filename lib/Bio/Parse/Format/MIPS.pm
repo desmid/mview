@@ -61,7 +61,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #HEADER lines
         if ($line =~ /$MIPS_HEADER/o) {
@@ -125,7 +125,7 @@ sub new {
     $self->{'desc'} = '';
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #> line
         if ($line =~ /^>[^;]+;(\S+)/o) {
@@ -173,7 +173,7 @@ sub new {
     $self->{'order'} = [];
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~ /^L;(\S+)\s+(.*)/o) {
             $self->test_args(\$line, $1,$2);
@@ -217,7 +217,7 @@ sub new {
 
     $self->{'seq'} = {};
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #start/end positions
         next  if $line =~ /^\s*\d+[^0-9]*\d+\s*$/o;

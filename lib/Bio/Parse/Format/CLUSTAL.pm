@@ -56,7 +56,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #HEADER lines
         if ($line =~ /$CLUSTAL_HEADER/o) {
@@ -107,7 +107,7 @@ sub new {
     $self->{'minor'}   = '';
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #first part of CLUSTAL line
         if ($line =~ /^
@@ -180,7 +180,7 @@ sub new {
 
     my $off = 0;
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #match symbols, but only if expected
         if ($off and $line !~ /[^*:. ]/) {

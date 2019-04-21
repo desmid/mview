@@ -119,7 +119,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {

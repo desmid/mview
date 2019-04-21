@@ -39,7 +39,7 @@ sub new {
     my $line = '';
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA3::RANK_START/o;
 
@@ -170,7 +170,7 @@ sub new {
 
     my $record = '';
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         if ($line =~ /^>+/) {
             $record = $line;       #process this later

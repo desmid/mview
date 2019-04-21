@@ -40,7 +40,7 @@ sub new {
     my $line = '';
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 

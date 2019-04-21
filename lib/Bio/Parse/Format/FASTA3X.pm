@@ -129,7 +129,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
@@ -201,7 +201,7 @@ sub new {
     $self->{'query'}     = '';
     $self->{'queryfile'} = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~ /^\s*(version\s+(\S+).*)/) {
             $self->{'full_version'} = $1;

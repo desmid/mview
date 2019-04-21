@@ -85,7 +85,7 @@ sub new {
 
     #warn "BEGIN PARSE\n"  if $DEBUG;
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #alignment line; can include sequence identifiers prefixed with '#'
         #for special colouring treatment
@@ -131,7 +131,7 @@ sub new {
 
     #warn "BEGIN PARSE ALIGNMENT\n"  if $DEBUG;
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #id sequence
         if ($line =~ /$ALIGNMENT_GROUP/o) {

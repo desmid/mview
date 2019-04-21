@@ -81,7 +81,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
@@ -152,7 +152,7 @@ sub new {
 
     my ($ac, $id) = (undef, undef);
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #GCG fasta doesn't write explicit versioning
 
@@ -252,7 +252,7 @@ sub new {
     $self->{'hit'} = [];
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::RANK_START/o;
         next    if $line =~ /$Bio::Parse::Format::FASTA::GCG_JUNK/o;
@@ -276,7 +276,7 @@ sub new {
             $id = clean_identifier($1);
 
             #read next line
-            $line = $scan->next_line;
+            $line = $scan->read_line;
 
             #second line
             if ($line =~ /
@@ -349,7 +349,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #identifier lines
         if ($line =~ /$Bio::Parse::Format::FASTA2_GCG::SUM_START/o) {
@@ -400,11 +400,11 @@ sub new {
     my $line = '';
 
     #skip first line (query filename)
-    $scan->next_line;
+    $scan->read_line;
 
     my ($id1, $id2, $ac, $de) = ('','','','');
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #hit database:identifier: appears as line 2
         if ($line =~ /^\s*(\S+:\S+);?\s*$/) {

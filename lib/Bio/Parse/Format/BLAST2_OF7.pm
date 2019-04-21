@@ -269,7 +269,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #blank line or empty record: ignore
         next  if $line =~ /$NULL/o;
@@ -330,7 +330,7 @@ sub new {
     $self->{'fields'}       = [];
     $self->{'counts'}       = [];
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #blast version info
         if ($line =~ /^# ($PROGRAMS\s+(\S+))/o) {
@@ -448,7 +448,7 @@ sub new {
 
     my $parent = $self->get_parent(1);
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
         #warn "[$line]\n";
 
         my $tmp = {};
@@ -562,7 +562,7 @@ sub new {
     #create SEARCH::MATCH::SUM
     $self->push_record('SUM', $start, $stop);
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
         #warn "[$line]\n";
 
         if ($line =~ /$SEARCH_START/o) {
@@ -599,7 +599,7 @@ sub new {
     $self->{'desc'}   = '';
     $self->{'length'} = '';
 
-    $self->extract_fields($MAP_SUM, $scan->next_line(1));
+    $self->extract_fields($MAP_SUM, $scan->read_line(1));
 
     $self->{'desc'} =
         Bio::Parse::Format::BLAST2_OF7::strip_id($self->{'id'},
@@ -652,7 +652,7 @@ sub new {
     $self->{'gap_fraction'} = '';
     $self->{'gap_percent'}  = '';
 
-    $self->extract_fields($MAP_ALN, $scan->next_line(1));
+    $self->extract_fields($MAP_ALN, $scan->read_line(1));
 
     #use sequence numbering to get orientations
     $self->{'query_orient'} =

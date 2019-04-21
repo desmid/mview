@@ -39,7 +39,7 @@ sub new {
     my $line = '';
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA2::RANK_START/o;
 
@@ -121,7 +121,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^
         >*
@@ -144,7 +144,7 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^
         (?:Frame\:\s*(\S+))?   #frame
@@ -180,7 +180,7 @@ sub new {
         $self->warn("unknown field: $line");
     }
 
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^
         (?:Smith-Waterman\s+score:\s*(\d+);)?    #sw score

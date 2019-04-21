@@ -58,7 +58,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #ALIGNMENT lines
         if ($line =~ /$JNETZ_ALIGNMENT/o) {
@@ -102,7 +102,7 @@ sub new {
     $self->{'conf'}  = [];
     $self->{'align'} = [];
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~
             /^\s*(\S)

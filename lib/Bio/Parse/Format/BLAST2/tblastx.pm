@@ -69,9 +69,9 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line;
 
-    $line = $scan->next_line(1);
-    $line = $scan->next_line(1);
-    $line = $scan->next_line(1);
+    $line = $scan->read_line(1);
+    $line = $scan->read_line(1);
+    $line = $scan->read_line(1);
 
     #warn "[$line]\n";
 

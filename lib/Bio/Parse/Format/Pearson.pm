@@ -46,7 +46,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #SEQ lines
         if ($line =~ /$Pearson_SEQ/o) {
@@ -84,7 +84,7 @@ sub new {
     $self->{'desc'}  = '';
     $self->{'seq'}   = '';
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #read header line
         if ($line =~ /^\s*>\s*(\S+)\s*(.*)?/o) {

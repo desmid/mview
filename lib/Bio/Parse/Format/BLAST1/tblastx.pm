@@ -41,12 +41,12 @@ sub new {
     my $line = '';
 
     #column headers
-    $self->{'header'} = $scan->scan_lines(4);
+    $self->{'header'} = $scan->read_lines(4);
 
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -132,7 +132,7 @@ sub new {
     my $line = '';
 
     #Score line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -162,7 +162,7 @@ sub new {
     }
 
     #Identities line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*

@@ -61,7 +61,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #HEADER lines
         if ($line =~ /$MSF_HEADER/o) {
@@ -124,7 +124,7 @@ sub new {
     my $line = '';
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #MSF line
         if ($line =~ /^
@@ -191,7 +191,7 @@ sub new {
     $self->{'order'} = [];
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
         my $id = "";
 
         if ($line =~ /^(\s*Name:\s+(.+))Len:\s+\d/) {
@@ -270,7 +270,7 @@ sub new {
     }
     #warn $maxnamelen;
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #start/end positions
         next  if $line =~ /^\s*\d+\s+\d+$/o;

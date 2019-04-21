@@ -123,7 +123,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -213,7 +213,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
         #warn "[$line]\n";
 
         #query line: update HEADER if needed (for psiblast at least)
@@ -283,12 +283,12 @@ sub new {
     my $line = '';
 
     #column headers
-    $self->{'header'} = $scan->scan_until_inclusive('Value(?:\s*N)?\s*$');
+    $self->{'header'} = $scan->read_until_inclusive('Value(?:\s*N)?\s*$');
 
     #ranked search hits
     $self->{'hit'}    = [];
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         next    if $line =~ /^Sequences used in model and found again:/o;
         next    if $line =~ /^Sequences not found previously or not previously below threshold:/o;
@@ -386,7 +386,7 @@ sub new {
     my $line = '';
 
     #Score line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -412,7 +412,7 @@ sub new {
     }
 
     #Identities line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*
@@ -450,7 +450,7 @@ sub new {
     }
 
     #optional (Strand=|Frame=) line: handled in subclasses
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     $self->parse_alignment($scan);
 

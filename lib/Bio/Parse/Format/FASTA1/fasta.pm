@@ -32,7 +32,7 @@ sub new {
 
     $self->{'query'} = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~ /\s*(version\s+(\S+).*)/) {
             $self->{'full_version'} = $1;
@@ -98,7 +98,7 @@ sub new {
     my $line = '';
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA1::RANK_START/o;
 
@@ -171,7 +171,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^(\S+)\s+(.*)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/) {
 
@@ -187,7 +187,7 @@ sub new {
 
     }
 
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*($RX_Ureal)\% identity in (\d+) (?:aa|nt) overlap\s*$/) {
         $self->test_args(\$line, $1, $2);

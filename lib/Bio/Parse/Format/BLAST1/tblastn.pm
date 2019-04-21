@@ -61,7 +61,7 @@ sub new {
     my $line = '';
 
     #Score line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Score\s*=\s*
@@ -91,7 +91,7 @@ sub new {
     }
 
     #Identities line
-    $line = $scan->next_line;
+    $line = $scan->read_line;
 
     if ($line =~ /^\s*
         Identities\s*=\s*

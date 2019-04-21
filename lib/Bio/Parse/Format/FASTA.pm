@@ -387,7 +387,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #Header lines
         if ($line =~ /$HEADER_START/o) {
@@ -523,7 +523,7 @@ sub new {
     my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
 
-    $self->{'trailer'} = $scan->scan_remainder();
+    $self->{'trailer'} = $scan->read_remainder();
 
     $self;
 }
@@ -551,7 +551,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #identifier lines
         if ($line =~ /$SUM_START/o) {
@@ -803,7 +803,7 @@ sub new {
     my ($first_pass, $depth, $qkey, $skey) = (1, 0, '', '');
 
     #read records
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
         my @tmp = ();
 
         #initial empty line before the alignment ruler
@@ -814,10 +814,10 @@ sub new {
         if ($line =~ /^\s+(?:\d+)?/) {
             #warn "QUERY RULER\n";
             $tmp[0] = $line;                #query ruler
-            $tmp[1] = $scan->next_line(1);  #query sequence
-            $tmp[2] = $scan->next_line(1);  #match pattern
-            $tmp[3] = $scan->next_line(1);  #sbjct sequence
-            $tmp[4] = $scan->next_line(1);  #sbjct ruler
+            $tmp[1] = $scan->read_line(1);  #query sequence
+            $tmp[2] = $scan->read_line(1);  #match pattern
+            $tmp[3] = $scan->read_line(1);  #sbjct sequence
+            $tmp[4] = $scan->read_line(1);  #sbjct ruler
 
             if ($first_pass) {
                 ($qkey, $skey, $depth) = &$keys_and_depth(\$tmp[1], \$tmp[3]);
@@ -828,14 +828,14 @@ sub new {
         } elsif (index($line, $qkey) == 0) {
             #warn "QUERY (####)\n";
             $tmp[1] = $line;                #query sequence
-            $tmp[2] = $scan->next_line(1);  #match pattern
-            $tmp[3] = $scan->next_line(1);  #sbjct sequence
-            $tmp[4] = $scan->next_line(1);  #sbjct ruler
+            $tmp[2] = $scan->read_line(1);  #match pattern
+            $tmp[3] = $scan->read_line(1);  #sbjct sequence
+            $tmp[4] = $scan->read_line(1);  #sbjct ruler
 
         } elsif (index($line, $skey) == 0) {
             #warn "SBJCT (####)\n";
             $tmp[3] = $line;                #sbjct sequence
-            $tmp[4] = $scan->next_line(1);  #sbjct ruler
+            $tmp[4] = $scan->read_line(1);  #sbjct ruler
 
         } else {
             $self->die("unexpected line: [$line]\n");

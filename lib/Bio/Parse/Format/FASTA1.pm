@@ -109,11 +109,11 @@ sub new {
 
     #warn $scan->inspect_stream;
 
-    $line = $scan->next_line(1);
+    $line = $scan->read_line(1);
 
     #initial empty line before the alignment ruler
     if ($line =~ /^$/) {
-        $line = $scan->next_line(1);
+        $line = $scan->read_line(1);
     }
 
     if ($line =~ /^\s*(\S+)\s+([^0-9 ]+)$/) {
@@ -122,23 +122,23 @@ sub new {
         #very short sequences can mean that start/stop is missing!
         $tmp[0] = '';                     #missing ruler
         $tmp[1] = $line;                  #query sequence
-        $tmp[2] = $scan->next_line(1);    #match pattern
-        $tmp[3] = $scan->next_line(1);    #sbjct sequence
-        $tmp[4] = $scan->next_line(1);    #sbjct ruler
+        $tmp[2] = $scan->read_line(1);    #match pattern
+        $tmp[3] = $scan->read_line(1);    #sbjct sequence
+        $tmp[4] = $scan->read_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s*\d+/) {
         #query ruler present on first line
         $tmp[0] = $line;                  #query ruler
-        $tmp[1] = $scan->next_line(1);    #query sequence
-        $tmp[2] = $scan->next_line(1);    #match pattern
-        $tmp[3] = $scan->next_line(1);    #sbjct sequence
-        $tmp[4] = $scan->next_line(1);    #sbjct ruler
+        $tmp[1] = $scan->read_line(1);    #query sequence
+        $tmp[2] = $scan->read_line(1);    #match pattern
+        $tmp[3] = $scan->read_line(1);    #sbjct sequence
+        $tmp[4] = $scan->read_line(1);    #sbjct ruler
     } elsif ($line =~ /^\s+$/) {
         #ruler has no numbers as sequence is too short
         $tmp[0] = '';                     #missing ruler
-        $tmp[1] = $scan->next_line(1);    #query sequence
-        $tmp[2] = $scan->next_line(1);    #match pattern
-        $tmp[3] = $scan->next_line(1);    #sbjct sequence
-        $tmp[4] = $scan->next_line(1);    #sbjct ruler
+        $tmp[1] = $scan->read_line(1);    #query sequence
+        $tmp[2] = $scan->read_line(1);    #match pattern
+        $tmp[3] = $scan->read_line(1);    #sbjct sequence
+        $tmp[4] = $scan->read_line(1);    #sbjct ruler
     } else {
         $self->die("unexpected line: [$line]\n");
     }
@@ -214,7 +214,7 @@ sub new {
     #warn "($query_length/$query_leader) ($sbjct_length/$sbjct_leader)\n";
 
     #remaining records
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         next if $line =~ /^\s*$/;
 
@@ -226,24 +226,24 @@ sub new {
 
             $tmp[0] = $line;                     #query ruler
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             $tmp[1] = substr($line, $depth);     #query sequence
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[2] = substr($line, $depth); #match pattern
             } else {
                 $tmp[2] = ' ' x length $tmp[1];
             }
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[3] = substr($line, $depth); #sbjct sequence
             } else {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {
@@ -260,7 +260,7 @@ sub new {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {
@@ -277,21 +277,21 @@ sub new {
 
             $tmp[1] = substr($line, $depth);     #query sequence
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[2] = substr($line, $depth); #match pattern
             } else {
                 $tmp[2] = ' ' x length $tmp[1];
             }
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[3] = substr($line, $depth); #sbjct sequence
             } else {
                 $tmp[3] = ' ' x length $tmp[1];
             }
 
-            $line = $scan->next_line(1);
+            $line = $scan->read_line(1);
             if ($line) {
                 $tmp[4] = $line;                 #sbjct ruler
             } else {

@@ -50,7 +50,7 @@ sub new {
     my $line = '';
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         next    if $line =~ /$Bio::Parse::Format::FASTA3X::RANK_START/o;
 
@@ -128,7 +128,7 @@ sub new {
     my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
 
-    my $lines = $scan->scan_until_inclusive('^\s*global/global');
+    my $lines = $scan->read_until_inclusive('^\s*global/global');
 
     if ($lines =~ /^
         >*

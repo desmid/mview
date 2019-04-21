@@ -67,7 +67,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #BLOCK lines
         if ($line =~ /$MULTAS_BLOCK/o) {
@@ -111,7 +111,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #BLOCK number
         if ($line =~ /$MULTAS_BLOCK\s+(\d+)/) {
@@ -178,7 +178,7 @@ sub new {
     $self->{'hit'}   = [];
 
     #ranked search hits
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~ /\s*(\d+)\s+seqs/) {
             $self->{'count'} = $1;
@@ -250,7 +250,7 @@ sub new {
     $self->{'length'} = 0;
     $self->{'count'}  = 0;
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         my @tmp = split(//, $line);
 

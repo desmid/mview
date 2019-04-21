@@ -249,7 +249,7 @@ sub new {
     $self->{'query'}        = '';
     $self->{'summary'}      = '';
 
-    while (defined($line = $scan->next_line)) {
+    while (defined($line = $scan->read_line)) {
 
         #blast version info
         if ($line =~ /($HEADER_START\s+(\S+).*)/o) {
@@ -331,7 +331,7 @@ sub new {
     #strand orientations, filled by MATCH::ALN object
     $self->{'orient'} = {};
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #identifier lines
         if ($line =~ /$MATCH_START/o) {
@@ -389,7 +389,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->scan_remainder();
+    $line = $scan->read_remainder();
 
     if ($line =~ /^\s*
         >?\s*
@@ -441,7 +441,7 @@ sub parse_alignment {
     my @tmp = ();
 
     #alignment lines
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #blank line or empty record: ignore
         next    if $line =~ /$NULL/o;
@@ -502,15 +502,15 @@ sub parse_alignment {
 
         #force read of match line, but note:
         #PHI-BLAST has an extra line - ignore for the time being
-        $line = $scan->next_line(1);
-        $line = $scan->next_line(1)  if $line =~ /^pattern/o;
+        $line = $scan->read_line(1);
+        $line = $scan->read_line(1)  if $line =~ /^pattern/o;
 
         #alignment line
         $tmp[1] = '';
         $tmp[1] = substr($line, $depth)  if length($line) > $depth;
 
         #force read of Sbjct line
-        $line = $scan->next_line;
+        $line = $scan->read_line;
 
         #Sbjct line
         if ($line =~ /^\s*
@@ -640,7 +640,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->scan_remainder();
+    $line = $scan->read_remainder();
 
     $self->{'warning'} = strip_english_newlines($line);
 
@@ -667,7 +667,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->scan_remainder();
+    $line = $scan->read_remainder();
 
     ($self->{'histogram'} = $line) =~ s/\s*$/\n/;
 
@@ -694,7 +694,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    $line = $scan->scan_remainder();
+    $line = $scan->read_remainder();
 
     ($self->{'parameters'} = $line) =~ s/\s*$/\n/;
 

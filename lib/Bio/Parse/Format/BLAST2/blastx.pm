@@ -68,9 +68,9 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line;
 
-    $line = $scan->next_line(1);
-    $line = $scan->next_line(1);
-    $line = $scan->next_line(1);
+    $line = $scan->read_line(1);
+    $line = $scan->read_line(1);
+    $line = $scan->read_line(1);
 
     #blastx 2.0.5 has no Frame line, so set a useful default
     $self->{'query_frame'} = $self->{'query_orient'};

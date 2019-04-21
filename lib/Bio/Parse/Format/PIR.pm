@@ -48,7 +48,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #SEQ lines
         if ($line =~ /$PIR_SEQ/o) {
@@ -89,7 +89,7 @@ sub new {
     $self->{'desc'}   = '';
     $self->{'seq'}    = '';
 
-    while (defined ($line = $scan->next_line(1))) {
+    while (defined ($line = $scan->read_line(1))) {
 
         #read header line
         if ($line =~ /^\s*>\s*(..);(\S+)/o) {
@@ -100,7 +100,7 @@ sub new {
             ) = ($1, $2);
 
             #force read of next line for description
-            $self->{'desc'} = $scan->next_line(1);
+            $self->{'desc'} = $scan->read_line(1);
             $self->{'desc'} = strip_leading_space($self->{'desc'});
             $self->{'desc'} = strip_trailing_space($self->{'desc'});
 

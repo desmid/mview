@@ -41,7 +41,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         #HEADER lines
         if ($line =~ /$ALIGN_HEADER/o) {
@@ -100,7 +100,7 @@ sub new {
     $self->{'length2'} = 0;
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
         #warn $line;
 
         #program information
@@ -188,7 +188,7 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
 
         if ($line =~ /$ALIGN_SUMMARY/o) {
             $scan->scan_until($ALIGN_SUMMARYend);
@@ -235,7 +235,7 @@ sub new {
     $self->{'score'}    = '?';
 
     #consume Name lines
-    while (defined ($line = $scan->next_line)) {
+    while (defined ($line = $scan->read_line)) {
         #print $line;
 
         #ALIGN

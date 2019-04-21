@@ -70,7 +70,7 @@ sub new {
     #BLAST2 -outfmt 7
     $self->{'sbjct_frame'} = '';
 
-    $self->extract_fields($MAP_ALN, $text->next_line(1));
+    $self->extract_fields($MAP_ALN, $text->read_line(1));
 
     if ($self->{'sbjct_frame'} eq '') {
         $self->die("blast column specifier 'sframe' is needed");
