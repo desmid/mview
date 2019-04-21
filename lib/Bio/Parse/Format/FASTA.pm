@@ -520,20 +520,10 @@ use vars qw(@ISA);
 @ISA   = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
 
-    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
-    $scan = new Bio::Parse::Scanner($self);
-
-    $line = $scan->scan_remainder();
-
-    $self->{'trailer'} = $line;
+    $self->{'trailer'} = $scan->scan_remainder();
 
     $self;
 }
@@ -557,16 +547,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Record);
 
 sub new {
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
-    $scan = new Bio::Parse::Scanner($self);
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     while (defined ($line = $scan->next_line)) {
 
@@ -653,6 +636,9 @@ sub get_summary {
 }
 
 sub new {
+    my $self = new Bio::Parse::Record(@_);
+    my $scan = new Bio::Parse::Scanner($self);
+    my $line = '';
 
     my $keys_and_depth = sub {
         my ($query, $sbjct) = @_;
@@ -812,17 +798,6 @@ sub new {
         # }
         [ $start, $stop, $fsf, $fsb ];
     };
-
-    my $type = shift;
-    if (@_ < 2) {
-        #at least two args, ($offset, $bytes are optional).
-        Bio::Util::Object::die($type, "new() invalid arguments:", @_);
-    }
-    my ($parent, $scan, $offset, $bytes) = (@_, -1, -1);
-    my ($self, $line, $record);
-
-    $self = new Bio::Parse::Record($type, $parent, $scan, $offset, $bytes);
-    $scan = new Bio::Parse::Scanner($self);
 
     my ($qrule, $query, $align, $sbjct, $srule) = ('', '', '', '', '');
     my ($first_pass, $depth, $qkey, $skey) = (1, 0, '', '');

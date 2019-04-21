@@ -403,9 +403,9 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST2::SEARCH);
 
 sub new {
-    my ($type, $parent, $text, $offset, $bytes) = @_;
-
     my $self = new Bio::Parse::Record(@_);
+
+    my ($type, $parent, $text, $offset, $bytes) = @_;
 
     #create SEARCH::RANK
     $self->push_record('RANK', $offset, $bytes);
@@ -552,11 +552,11 @@ use vars qw(@ISA);
 @ISA = qw(Bio::Parse::Format::BLAST::MATCH);
 
 sub new {
-    my ($type, $parent, $text, $offset, $bytes) = @_;
-
     my $self = new Bio::Parse::Record(@_);
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
+
+    my ($type, $parent, $text, $offset, $bytes) = @_;
 
     #create SEARCH::MATCH::SUM
     $self->push_record('SUM', $offset, $bytes);
