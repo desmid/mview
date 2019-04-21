@@ -10,9 +10,9 @@ SRCS = BLAST.pm      \
        FASTA.pm      \
        FASTA1.pm     \
        FASTA2.pm     \
+       FASTA2_GCG.pm \
        FASTA3.pm     \
        FASTA3X.pm    \
-       FASTA2_GCG.pm \
        HSSP.pm       \
        JNETZ.pm      \
        MAF.pm        \
