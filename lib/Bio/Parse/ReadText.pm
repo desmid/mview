@@ -63,9 +63,6 @@ sub reset {
     $self->{'stop'} = undef;
 }
 
-sub startofline { $_[0]->{'lastoffset'} }
-sub tell        { $_[0]->{'thisoffset'} }
-
 sub get_offset { $_[0]->{'thisoffset'} }
 
 sub start_count {
