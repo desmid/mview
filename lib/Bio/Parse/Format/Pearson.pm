@@ -37,7 +37,7 @@ sub get_entry {
     }
     return 0  unless $data;
 
-    new Bio::Parse::Format::Pearson(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
+    new Bio::Parse::Format::Pearson(undef, $text, $text->get_start(), $text->get_stop());
 }
 
 #Parse one entry
@@ -53,7 +53,7 @@ sub new {
             $scan->scan_until($Pearson_SEQend);
             $self->push_record('SEQ',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

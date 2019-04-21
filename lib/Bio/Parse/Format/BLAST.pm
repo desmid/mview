@@ -215,7 +215,7 @@ sub get_entry {
 
     load_parser_class($type);
 
-    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
+    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop());
 
     $self->{'format'}  = $format;
     $self->{'version'} = $SAVEVERSION;
@@ -338,7 +338,7 @@ sub new {
             $scan->scan_until($SCORE_START);
             $self->push_record('SUM',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -348,7 +348,7 @@ sub new {
             $scan->scan_until($SCORE_END);
             $self->push_record('ALN',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

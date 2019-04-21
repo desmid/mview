@@ -1,4 +1,4 @@
-TREE = lib/Bio/Parse/Format/GCG_FASTA2
+TREE = lib/Bio/Parse/Format/FASTA2_GCG
 DIRS =
 FILE =
 EXES =

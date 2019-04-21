@@ -32,14 +32,14 @@ use Bio::Parse::Format::FASTA1;
 use Bio::Parse::Format::FASTA2;
 use Bio::Parse::Format::FASTA3;
 use Bio::Parse::Format::FASTA3X;
-use Bio::Parse::Format::GCG_FASTA2;
+use Bio::Parse::Format::FASTA2_GCG;
 
 my %VERSIONS = (
                 @Bio::Parse::Format::FASTA1::VERSIONS,
                 @Bio::Parse::Format::FASTA2::VERSIONS,
                 @Bio::Parse::Format::FASTA3::VERSIONS,
                 @Bio::Parse::Format::FASTA3X::VERSIONS,
-                @Bio::Parse::Format::GCG_FASTA2::VERSIONS,
+                @Bio::Parse::Format::FASTA2_GCG::VERSIONS,
                );
 
 my $NULL        = '^\s*$';
@@ -55,7 +55,7 @@ my $ENTRY_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::ENTRY_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::ENTRY_START
+    . $Bio::Parse::Format::FASTA2_GCG::ENTRY_START
     . ")";
 my $ENTRY_END = "(?:"
     . $Bio::Parse::Format::FASTA1::ENTRY_END
@@ -66,7 +66,7 @@ my $ENTRY_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::ENTRY_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::ENTRY_END
+    . $Bio::Parse::Format::FASTA2_GCG::ENTRY_END
     . ")";
 
 my $HEADER_START = "(?:"
@@ -78,7 +78,7 @@ my $HEADER_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::HEADER_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::HEADER_START
+    . $Bio::Parse::Format::FASTA2_GCG::HEADER_START
     . ")";
 my $HEADER_END = "(?:"
     . $Bio::Parse::Format::FASTA1::HEADER_END
@@ -89,7 +89,7 @@ my $HEADER_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::HEADER_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::HEADER_END
+    . $Bio::Parse::Format::FASTA2_GCG::HEADER_END
     . ")";
 
 my $RANK_START = "(?:"
@@ -101,7 +101,7 @@ my $RANK_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::RANK_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::RANK_START
+    . $Bio::Parse::Format::FASTA2_GCG::RANK_START
     . ")";
 my $RANK_END = "(?:"
     . $Bio::Parse::Format::FASTA1::RANK_END
@@ -112,7 +112,7 @@ my $RANK_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::RANK_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::RANK_END
+    . $Bio::Parse::Format::FASTA2_GCG::RANK_END
     . ")";
 
 my $MATCH_START = "(?:"
@@ -124,7 +124,7 @@ my $MATCH_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::MATCH_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::MATCH_START
+    . $Bio::Parse::Format::FASTA2_GCG::MATCH_START
     . ")";
 my $MATCH_END = "(?:"
     . $Bio::Parse::Format::FASTA1::MATCH_END
@@ -135,7 +135,7 @@ my $MATCH_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::MATCH_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::MATCH_END
+    . $Bio::Parse::Format::FASTA2_GCG::MATCH_END
     . ")";
 
 my $SUM_START = "(?:"
@@ -147,7 +147,7 @@ my $SUM_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::SUM_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::SUM_START
+    . $Bio::Parse::Format::FASTA2_GCG::SUM_START
     . ")";
 my $SUM_END = "(?:"
     . $Bio::Parse::Format::FASTA1::SUM_END
@@ -158,7 +158,7 @@ my $SUM_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::SUM_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::SUM_END
+    . $Bio::Parse::Format::FASTA2_GCG::SUM_END
     . ")";
 
 my $ALN_START = "(?:"
@@ -170,7 +170,7 @@ my $ALN_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::ALN_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::ALN_START
+    . $Bio::Parse::Format::FASTA2_GCG::ALN_START
     . ")";
 my $ALN_END = "(?:"
     . $Bio::Parse::Format::FASTA1::ALN_END
@@ -181,7 +181,7 @@ my $ALN_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::ALN_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::ALN_END
+    . $Bio::Parse::Format::FASTA2_GCG::ALN_END
     . ")";
 
 my $TRAILER_START = "(?:"
@@ -193,7 +193,7 @@ my $TRAILER_START = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::TRAILER_START
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::TRAILER_START
+    . $Bio::Parse::Format::FASTA2_GCG::TRAILER_START
     . ")";
 my $TRAILER_END = "(?:"
     . $Bio::Parse::Format::FASTA1::TRAILER_END
@@ -204,7 +204,7 @@ my $TRAILER_END = "(?:"
     . "|"
     . $Bio::Parse::Format::FASTA3X::TRAILER_END
     . "|"
-    . $Bio::Parse::Format::GCG_FASTA2::TRAILER_END
+    . $Bio::Parse::Format::FASTA2_GCG::TRAILER_END
     . ")";
 
 
@@ -345,7 +345,7 @@ sub get_entry {
     $version =~ s/-/_/g;
 
     if ($GCG) {
-        $type = "Bio::Parse::Format::GCG_FASTA${version}::$prog";
+        $type = "Bio::Parse::Format::FASTA${version}_GCG::$prog";
     } else {
         $type = "Bio::Parse::Format::FASTA${version}::$prog";
     }
@@ -366,7 +366,7 @@ sub get_entry {
 
     load_parser_class($type);
 
-    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
+    my $self = $type->new(undef, $text, $text->get_start(), $text->get_stop());
 
     $self->{'format'}  = $format;
     $self->{'version'} = $version;
@@ -392,30 +392,30 @@ sub new {
         #Header lines
         if ($line =~ /$HEADER_START/o) {
             $scan->scan_until($HEADER_END);
-                $self->push_record('HEADER',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
         #Rank lines
         if ($line =~ /$RANK_START/o) {
             $scan->scan_until($RANK_END);
-                $self->push_record('RANK',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('RANK',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
             $scan->scan_until($MATCH_END);
-                $self->push_record('MATCH',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('MATCH',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
@@ -424,7 +424,7 @@ sub new {
             $scan->scan_until_inclusive($TRAILER_END);
             $self->push_record('TRAILER',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -557,8 +557,8 @@ sub new {
         if ($line =~ /$SUM_START/o) {
             $scan->scan_until_inclusive($SUM_END);
             $self->push_record('SUM',
-                $scan->get_block_start(),
-                $scan->get_block_bytes(),
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -566,10 +566,10 @@ sub new {
         #fragment hits: terminated by several possibilities
         if ($line =~ /$ALN_START/o) {
             $scan->scan_until($ALN_END);
-                $self->push_record('ALN',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('ALN',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 

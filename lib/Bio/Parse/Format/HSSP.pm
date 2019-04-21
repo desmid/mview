@@ -102,7 +102,7 @@ sub get_entry {
     }
     return 0  unless $data;
 
-    new Bio::Parse::Format::HSSP(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
+    new Bio::Parse::Format::HSSP(undef, $text, $text->get_start(), $text->get_stop());
 }
 
 #Parse one entry
@@ -118,7 +118,7 @@ sub new {
             $scan->scan_until($HSSP_HEADERend);
             $self->push_record('HEADER',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -130,7 +130,7 @@ sub new {
             $scan->scan_until($HSSP_PROTEINend);
             $self->push_record('PROTEIN',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -140,7 +140,7 @@ sub new {
             $scan->scan_until($HSSP_ALIGNMENTend);
             $self->push_record('ALIGNMENT',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -150,7 +150,7 @@ sub new {
             $scan->scan_until($HSSP_PROFILEend);
             $self->push_record('PROFILE',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -160,7 +160,7 @@ sub new {
             $scan->scan_until($HSSP_INSERTIONend);
             $self->push_record('INSERTION',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

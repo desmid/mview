@@ -101,30 +101,30 @@ sub new {
         #Header lines
         if ($line =~ /$HEADER_START/o) {
             $scan->scan_until($HEADER_END);
-                $self->push_record('HEADER',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
         #Rank lines
         if ($line =~ /$RANK_START/o) {
             $scan->scan_until($RANK_END);
-                $self->push_record('RANK',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('RANK',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
         #Hit lines
         if ($line =~ /$MATCH_START/o) {
             $scan->scan_until($MATCH_END);
-                $self->push_record('MATCH',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('MATCH',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
@@ -132,8 +132,8 @@ sub new {
         if ($line =~ /$TRAILER_START/o) {
             $scan->scan_until_inclusive($TRAILER_END);
             $self->push_record('TRAILER',
-                $scan->get_block_start(),
-                $scan->get_block_bytes(),
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

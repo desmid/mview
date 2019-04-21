@@ -133,7 +133,7 @@ sub new {
             $scan->scan_until($HEADER_END);
                 $self->push_record('HEADER',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -144,7 +144,7 @@ sub new {
                 $scan->scan_until("^(?:Searching|$PARAMETERS_START)");
                 $self->push_record('SEARCH',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
                 next;
             }
@@ -152,7 +152,7 @@ sub new {
                 $scan->scan_until("^(?:Results from round|$PARAMETERS_START)");
                 $self->push_record('SEARCH',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
                 next;
             }
@@ -160,7 +160,7 @@ sub new {
             $scan->scan_until($SEARCH_END);
                 $self->push_record('SEARCH',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -170,7 +170,7 @@ sub new {
             $scan->scan_until($PARAMETERS_END);
                 $self->push_record('PARAMETERS',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -235,7 +235,7 @@ sub new {
             $scan->scan_until($Bio::Parse::Format::BLAST2::RANK_END);
                 $self->push_record('RANK',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -245,7 +245,7 @@ sub new {
             $scan->scan_until($Bio::Parse::Format::BLAST2::MATCH_END);
                 $self->push_record('MATCH',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -255,7 +255,7 @@ sub new {
             $scan->scan_until($Bio::Parse::Format::BLAST2::WARNING_END);
                 $self->push_record('WARNING',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }

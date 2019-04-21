@@ -126,7 +126,7 @@ sub new {
             $scan->scan_until($HEADER_END);
             $self->push_record('HEADER',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -136,7 +136,7 @@ sub new {
             $scan->scan_until($HISTOGRAM_END);
             $self->push_record('HISTOGRAM',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -146,7 +146,7 @@ sub new {
             $scan->scan_while($RANK_MATCH);
             $self->push_record('RANK',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -156,7 +156,7 @@ sub new {
             $scan->scan_until($MATCH_END);
             $self->push_record('MATCH',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -166,7 +166,7 @@ sub new {
             $scan->scan_until($WARNING_END);
             $self->push_record('WARNING',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -176,7 +176,7 @@ sub new {
             $scan->scan_until($PARAMETERS_END);
             $self->push_record('PARAMETERS',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

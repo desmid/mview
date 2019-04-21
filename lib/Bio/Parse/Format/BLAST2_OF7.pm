@@ -279,7 +279,7 @@ sub new {
             $scan->scan_until($HEADER_END);
                 $self->push_record('HEADER',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -289,7 +289,7 @@ sub new {
             $scan->scan_until($SEARCH_END);
                 $self->push_record('SEARCH',
                                    $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+                                   $scan->get_block_stop(),
                     );
             next;
         }
@@ -405,10 +405,10 @@ use vars qw(@ISA);
 sub new {
     my $self = new Bio::Parse::Record(@_);
 
-    my ($type, $parent, $text, $offset, $bytes) = @_;
+    my ($type, $parent, $text, $start, $stop) = @_;
 
     #create SEARCH::RANK
-    $self->push_record('RANK', $offset, $bytes);
+    $self->push_record('RANK', $start, $stop);
 
     $self;#->examine;
 }
@@ -444,7 +444,7 @@ sub new {
     #warn "[@{[scalar @$counts]}] [@{$counts}]\n";
 
     #accumulate text block data for same hit id on successive lines
-    my ($mid, $moffset, $mbytes) = ('', 0, 0);
+    my ($mid, $mstart, $mstop) = ('', 0, 0);
 
     my $parent = $self->get_parent(1);
 
@@ -485,8 +485,8 @@ sub new {
             #id same as last line: extend SEARCH::MATCH block
             if ($mid eq $tmp->{'id'}) {
                 $parent->pop_record();
-                $parent->push_record('MATCH', $moffset,
-                                     $mbytes += $scan->get_bytes);
+                $mstop = $scan->get_line_stop();
+                $parent->push_record('MATCH', $mstart, $mstop);
                 #expect the first hit supplied by blast to be the highest
                 #scoring, but test just in case:
                 if ($tmp->{'bits'} > $self->{'hit'}->[-1]->{'bits'}) {
@@ -498,9 +498,10 @@ sub new {
             }
 
             #new id: create SEARCH::MATCH
-            ($mid, $moffset, $mbytes) = ($tmp->{'id'}, $scan->get_offset,
-                                         $scan->get_bytes);
-            $parent->push_record('MATCH', $moffset, $mbytes);
+            ($mid, $mstart, $mstop) = ($tmp->{'id'},
+                                       $scan->get_line_start(),
+                                       $scan->get_line_stop());
+            $parent->push_record('MATCH', $mstart, $mstop);
 
             push @{$self->{'hit'}}, $tmp;
 
@@ -556,17 +557,19 @@ sub new {
     my $scan = new Bio::Parse::Scanner($self);
     my $line = '';
 
-    my ($type, $parent, $text, $offset, $bytes) = @_;
+    my ($type, $parent, $text, $start, $stop) = @_;
 
     #create SEARCH::MATCH::SUM
-    $self->push_record('SUM', $offset, $bytes);
+    $self->push_record('SUM', $start, $stop);
 
     while (defined ($line = $scan->next_line(1))) {
         #warn "[$line]\n";
 
         if ($line =~ /$SEARCH_START/o) {
             #create SEARCH::MATCH::ALN
-            $self->push_record('ALN', $scan->get_offset, $scan->get_bytes);
+            $self->push_record('ALN',
+                               $scan->get_line_start(),
+                               $scan->get_line_stop());
             next;
         }
 

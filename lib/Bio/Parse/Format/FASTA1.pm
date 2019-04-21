@@ -80,6 +80,7 @@ $SUM_END       = $NULL;
 $ALN_START     = '^(?:\s+\d+\s+|\s+$)';  #the ruler
 $ALN_END       = $MATCH_END;
 
+#Parse one entry
 sub new { my $self=shift; $self->SUPER::new(@_) }
 
 

@@ -49,7 +49,7 @@ sub get_entry {
     }
     return 0  unless $data;
 
-    new Bio::Parse::Format::MAF(undef, $text, $text->get_start(), $text->get_stop()-$text->get_start());
+    new Bio::Parse::Format::MAF(undef, $text, $text->get_start(), $text->get_stop());
 }
 
 #Parse one entry
@@ -65,7 +65,7 @@ sub new {
             $scan->scan_until($MAF_HEADERend);
             $self->push_record('HEADER',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -77,7 +77,7 @@ sub new {
             $scan->scan_until($MAF_BLOCKend);
             $self->push_record('BLOCK',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }

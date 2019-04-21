@@ -46,9 +46,6 @@ sub new {
     $self;
 }
 
-sub get_offset { $_[0]->{'linestart'} }
-sub get_bytes  { $_[0]->{'cursor'} - $_[0]->{'linestart'} }
-
 sub get_line_start  { $_[0]->{'linestart'}; }
 sub get_line_stop   { $_[0]->{'cursor'}; }
 sub get_line_bytes  { $_[0]->{'cursor'} - $_[0]->{'linestart'}; }

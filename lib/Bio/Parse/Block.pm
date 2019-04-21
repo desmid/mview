@@ -50,14 +50,10 @@ sub parse {
 
     my $class = ref($parent) . "::" . $self->{'key'};
 
-    #FIXME change bytes to stop
-    my $bytes = $self->{'stop'} - $self->{'start'};
-
-    #warn "block::parse: new $class($parent, $text, $self->{'start'}, $bytes)\n"
+    #warn "block::parse: new $class($parent, $text, $self->{'start'}, $self->{'stop'})\n"
     #    if $DEBUG;
 
-    #FIXME change bytes to stop
-    my $o = $class->new($parent, $text, $self->{'start'}, $bytes);
+    my $o = $class->new($parent, $text, $self->{'start'}, $self->{'stop'});
 
     $self->{'record'} = $o;
 

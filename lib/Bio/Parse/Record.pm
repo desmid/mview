@@ -21,22 +21,23 @@ my $KEY_DELIM  = "::";
 
 my $IGNORE_ATTR = "parent|text|start|stop|blockkeeper|index|relative_key|absolute_key";
 
-
-#FIXME make call parsers use start/stop instead of bytes
+my $DEBUG = 1;
 
 sub new {
     my $ignore = shift;  #discard system supplied type
-    my ($type, $parent, $text, $start, $bytes) = (@_, -1, -1);
+    my ($type, $parent, $text, $start, $stop) = (@_, -1, -1);
+
+    #warn "> Record($type, $parent, $text, $start, $stop)\n"  if $DEBUG;
 
     my $self = {};
     bless $self, $type;
 
     #warn $text->substr(), "\n";
 
-    $self->{'parent'} = $parent;          #parent record
-    $self->{'text'}   = $text;            #text object being parsed
-    $self->{'start'}  = $start;           #text start
-    $self->{'stop'}   = $start + $bytes;  #text stop  #FIXME
+    $self->{'parent'} = $parent;  #parent record
+    $self->{'text'}   = $text;    #text object being parsed
+    $self->{'start'}  = $start;   #text start
+    $self->{'stop'}   = $stop;    #text stop
 
     $self->{'blockkeeper'} = new Bio::Parse::BlockKeeper();
 
@@ -89,16 +90,10 @@ sub get_text { $_[0]->{'text'}; }
 
 # save a subrecord
 sub push_record {
-#FIXME to use stop not bytes
-    my ($self, $key, $start, $bytes) = @_;
+    my ($self, $key, $start, $stop) = @_;
+    #warn "push_record: incoming=($key, $start, $stop)\n"  if $DEBUG;
 
-    #warn "save: incoming=($key, $start, $bytes) \n ";
-
-    my $block = new Bio::Parse::Block(
-        $key,
-        $start,
-        $start + $bytes,
-        );
+    my $block = new Bio::Parse::Block($key, $start, $stop);
 
     $self->{'blockkeeper'}->add($block);
 }

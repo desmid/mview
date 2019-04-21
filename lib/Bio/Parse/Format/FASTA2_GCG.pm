@@ -8,7 +8,7 @@
 # Handles: GCG FASTA   2.x
 #
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2;
+package Bio::Parse::Format::FASTA2_GCG;
 
 use Bio::Parse::Format::FASTA;
 use strict;
@@ -86,10 +86,10 @@ sub new {
         #Header lines
         if ($line =~ /$HEADER_START/o) {
             $scan->scan_until($HEADER_END);
-                $self->push_record('HEADER',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
@@ -98,7 +98,7 @@ sub new {
             $scan->scan_until_inclusive($RANK_END);
             $self->push_record('RANK',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -108,7 +108,7 @@ sub new {
             $scan->scan_skipping_until($MATCH_END, 1, 'MATCH');
             $self->push_record('MATCH',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -118,7 +118,7 @@ sub new {
             $scan->scan_until_inclusive($TRAILER_END);
             $self->push_record('TRAILER',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
@@ -137,7 +137,7 @@ sub new {
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::HEADER;
+package Bio::Parse::Format::FASTA2_GCG::HEADER;
 
 use vars qw(@ISA);
 
@@ -236,7 +236,7 @@ sub new {
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::RANK;
+package Bio::Parse::Format::FASTA2_GCG::RANK;
 
 use Bio::Parse::Strings qw(clean_identifier);
 
@@ -254,7 +254,7 @@ sub new {
     #ranked search hits
     while (defined ($line = $scan->next_line)) {
 
-        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::RANK_START/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::RANK_START/o;
         next    if $line =~ /$Bio::Parse::Format::FASTA::GCG_JUNK/o;
 
         #first line
@@ -319,7 +319,7 @@ sub new {
         }
 
         #blank line or empty record: ignore
-        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::NULL/o;
 
         #default
         $self->warn("unknown field: $line");
@@ -330,7 +330,7 @@ sub new {
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::TRAILER;
+package Bio::Parse::Format::FASTA2_GCG::TRAILER;
 
 use vars qw(@ISA);
 
@@ -338,7 +338,7 @@ use vars qw(@ISA);
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::MATCH;
+package Bio::Parse::Format::FASTA2_GCG::MATCH;
 
 use vars qw(@ISA);
 
@@ -352,30 +352,30 @@ sub new {
     while (defined ($line = $scan->next_line)) {
 
         #identifier lines
-        if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::SUM_START/o) {
-            $scan->scan_until_inclusive($Bio::Parse::Format::GCG_FASTA2::SUM_END);
+        if ($line =~ /$Bio::Parse::Format::FASTA2_GCG::SUM_START/o) {
+            $scan->scan_until_inclusive($Bio::Parse::Format::FASTA2_GCG::SUM_END);
             $self->push_record('SUM',
                                $scan->get_block_start(),
-                               $scan->get_block_bytes(),
+                               $scan->get_block_stop(),
                 );
             next;
         }
 
         #fragment hits: terminated by several possibilities
-        if ($line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_START/o) {
-            $scan->scan_until($Bio::Parse::Format::GCG_FASTA2::ALN_END);
-                $self->push_record('ALN',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
+        if ($line =~ /$Bio::Parse::Format::FASTA2_GCG::ALN_START/o) {
+            $scan->scan_until($Bio::Parse::Format::FASTA2_GCG::ALN_END);
+            $self->push_record('ALN',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
                     );
             next;
         }
 
         #blank line or empty record: ignore
-        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::NULL/o;
 
         #ugly: skip queryfile or hit identifier lines
-        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::ALN_END/;
+        next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::ALN_END/;
 
         #default
         $self->warn("unknown field: $line");
@@ -385,7 +385,7 @@ sub new {
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::MATCH::SUM;
+package Bio::Parse::Format::FASTA2_GCG::MATCH::SUM;
 
 use Bio::Parse::Strings qw(strip_english_newlines);
 use Bio::Util::Regexp;
@@ -437,7 +437,7 @@ sub new {
         next    if $line =~ /^(NI|DT|DE)\s{3}/o;
 
         #blank line or empty record: ignore
-        next    if $line =~ /$Bio::Parse::Format::GCG_FASTA2::NULL/o;
+        next    if $line =~ /$Bio::Parse::Format::FASTA2_GCG::NULL/o;
 
         #scores
         if ($line =~ /^
@@ -498,7 +498,7 @@ sub new {
 
 
 ###########################################################################
-package Bio::Parse::Format::GCG_FASTA2::MATCH::ALN;
+package Bio::Parse::Format::FASTA2_GCG::MATCH::ALN;
 
 use vars qw(@ISA);
 

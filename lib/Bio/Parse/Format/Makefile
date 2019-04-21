@@ -1,5 +1,5 @@
 TREE = lib/Bio/Parse/Format
-DIRS = BLAST1 BLAST2 BLAST2_OF7 FASTA1 FASTA2 FASTA3 FASTA3X GCG_FASTA2
+DIRS = BLAST1 BLAST2 BLAST2_OF7 FASTA1 FASTA2 FASTA3 FASTA3X FASTA2_GCG
 FILE =
 EXES =
 SRCS = BLAST.pm      \
@@ -12,7 +12,7 @@ SRCS = BLAST.pm      \
        FASTA2.pm     \
        FASTA3.pm     \
        FASTA3X.pm    \
-       GCG_FASTA2.pm \
+       FASTA2_GCG.pm \
        HSSP.pm       \
        JNETZ.pm      \
        MAF.pm        \

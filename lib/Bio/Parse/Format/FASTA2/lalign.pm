@@ -47,10 +47,10 @@ sub new {
         #HEADER lines
         if ($line =~ /$ALIGN_HEADER/o) {
             $scan->scan_until($ALIGN_HEADERend);
-                $self->push_record('HEADER',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('HEADER',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
@@ -59,10 +59,10 @@ sub new {
         #MATCH lines
         if ($line =~ /$ALIGN_MATCH/o) {
             $scan->scan_until($ALIGN_MATCHend);
-                $self->push_record('MATCH',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('MATCH',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
@@ -197,19 +197,19 @@ sub new {
 
         if ($line =~ /$ALIGN_SUMMARY/o) {
             $scan->scan_until($ALIGN_SUMMARYend);
-                $self->push_record('SUM',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('SUM',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
         if ($line =~ /$ALIGN_ALIGNMENT/o) {
             $scan->scan_until($ALIGN_ALIGNMENTend);
-                $self->push_record('ALN',
-                                   $scan->get_block_start(),
-                                   $scan->get_block_bytes(),
-                    );
+            $self->push_record('ALN',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
 
