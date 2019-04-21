@@ -121,19 +121,13 @@ sub new {
 
         #LIST lines
         if ($line =~ /$MULTAS_LIST/o) {
-            $scan->scan_while($MULTAS_LISTmid, 'LIST');
+            $scan->scan_while($MULTAS_LISTmid);
+            $self->push_record('LIST',
+                               $scan->get_block_start(),
+                               $scan->get_block_stop(),
+                );
             next;
         }
-
-#       #LIST lines
-#       if ($line =~ /$MULTAS_LIST/o) {
-#           $scan->scan_until($MULTAS_LISTend);
-#             $self->push_record('LIST',
-#                                $scan->get_block_start(),
-#                                $scan->get_block_stop(),
-#                 );
-#           next;
-#       }
 
         #ALIGNMENT lines
         if ($line =~ /$MULTAS_ALIGNMENT/o) {
