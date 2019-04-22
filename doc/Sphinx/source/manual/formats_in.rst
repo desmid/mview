@@ -331,9 +331,9 @@ The UCSC Multple Alignment Format.
 
 MView option: ``-in maf``
 
-MAF files contain distinct alignment blocks. By default, only the first one
-will be output. You can extract a particular block, say the second one, with
-``-block 2``, or all blocks with ``-block '*'``.
+MAF files contain distinct alignment blocks. By default, all blocks will be
+output. You can extract a particular block, say the second one, with ``-block
+2``, or all blocks with ``-block '*'``.
 
 
 FASTA
