@@ -6,6 +6,9 @@
 use strict;
 
 ######################################################################
+my $OUTPUT_COUNT = 0;  #number of alignment blocks output so far
+
+######################################################################
 package Bio::MView::Convert;
 
 my $ROW_NUMBER_DELIM = ':';
@@ -38,6 +41,7 @@ my $PLAIN_ID_WIDTH = 20;  #default width for id' field
 sub plain {
     my ($self, $idw) = (@_, $PLAIN_ID_WIDTH);
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     foreach my $uid ($aln->visible_ids) {
         my $row = $bld->uid2row($uid);
         my $w = length($row->cid);
@@ -69,6 +73,7 @@ my $PEARSON_SEQ_WIDTH = 70;
 sub pearson {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     foreach my $uid ($aln->visible_ids) {
         my $row = $bld->uid2row($uid);
         $s .= $self->pearson_row($row);
@@ -110,6 +115,7 @@ my $PIR_SEQ_WIDTH = 60;
 sub pir {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     foreach my $uid ($aln->visible_ids) {
         my $row = $bld->uid2row($uid);
         $s .= $self->pir_row($row);
@@ -152,6 +158,7 @@ sub pir_row {
 sub rdb {
     my $self = shift;
     my ($bld, $aln, $s) = ($self->{'build'}, $self->{'align'}, '');
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     $s .= $bld->index2row(0)->row_as_rdb_string('attr') . "\n";
     $s .= $bld->index2row(0)->row_as_rdb_string('form') . "\n";
     foreach my $uid ($aln->visible_ids) {
@@ -186,6 +193,7 @@ sub msf {
     my $now = `date '+%B %d, %Y %H:%M'`;
     $now =~ s/\s0(\d{1})/ $1/; chomp $now; #padding %-d may not work
 
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     if ($self->{'moltype'} eq 'aa') {
         $s .= "!!AA_MULTIPLE_ALIGNMENT 1.0\n";
     } else {
@@ -267,6 +275,7 @@ sub clustal {
         return $c;
     };
 
+    $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     $s .= "CLUSTAL 2.1 multiple sequence alignment (MView)\n\n\n";
 
     my $w = $CLUSTAL_NAME_WIDTH;
