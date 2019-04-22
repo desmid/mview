@@ -1,8 +1,10 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
-Version 1.65  2019-03-24
+Version 1.65  2019-04-22
 
-A maintenance release with no user-visible changes.
+- Speed improvement.
+- MAF format now outputs all blocks instead of just the first.
+- Format conversions add newline between separate alignment blocks.
 
 Input formats:
 
@@ -11,7 +13,10 @@ Input formats:
 
 Bug fixes:
 
-- Fixed parser error messages - has no effect on normal usage.
+- Replaced option range processing 1..N, lost in version 1.63.
+
+Other:
+- Refactoring of parsers.
 
 
 Version 1.64  2018-05-14
