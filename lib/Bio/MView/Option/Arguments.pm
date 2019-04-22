@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Nigel P. Brown
+# Copyright (C) 2018-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -44,6 +44,28 @@ push @EXPORT, qw(list_chain_values  check_chain_value);
 push @EXPORT, qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
 
 use vars qw($HTML_NONE $HTML_DATA $HTML_BODY $HTML_HEAD $HTML_FULL);
+
+############################################################################
+# return a list of integers in the range $lo..$hi, inclusive
+sub integer_range {
+    my ($lo, $hi) = @_;
+    my @tmp = ();
+    for (my $i=$lo; $i<=$hi; $i++) {
+        push @tmp, $i;
+    }
+    return @tmp;
+}
+
+# return a list of letters in the range $lo..$hi, inclusive
+sub letter_range {
+    my ($lo, $hi) = @_;
+    my @tmp = ();
+    ($lo, $hi) = (ord($lo), ord($hi));
+    for (my $i=$lo; $i<=$hi; $i++) {
+        push @tmp, chr($i);
+    }
+    return @tmp;
+}
 
 ############################################################################
 my @Known_Informats = (
@@ -424,8 +446,10 @@ sub check_cycle_type {
         elsif ($_ eq 'all')   { @tmp = (); last }
         elsif ($_ eq '*')     { @tmp = (); last }
         elsif (/^\d+$/)       { push @tmp, $_   }
+        elsif (/^(\d+)\.\.(\d+)$/) { push @tmp, integer_range($1, $2) }
+        elsif (/^(\S)\.\.(\S)$/)   { push @tmp, letter_range($1, $2) }
         else {
-            return undef;    #unrecognised
+            return undef;  #unrecognised
         }
     }
     return [ @tmp ];
@@ -444,8 +468,10 @@ sub check_block_value {
         elsif ($_ eq 'all')   { @tmp = (); last }
         elsif ($_ eq '*')     { @tmp = (); last }
         elsif (/^\d+$/)       { push @tmp, $_ }
+        elsif (/^(\d+)\.\.(\d+)$/) { push @tmp, integer_range($1, $2) }
+        elsif (/^(\S)\.\.(\S)$/)   { push @tmp, letter_range($1, $2) }
         else {
-            return undef;    #unrecognised
+            return undef;  #unrecognised
         }
     }
     return [ @tmp ];
@@ -463,7 +489,11 @@ sub check_chain_value {
         elsif ($_ eq 'last')  { push @tmp, 0 }
         elsif ($_ eq 'all')   { @tmp = (); last }
         elsif ($_ eq '*')     { @tmp = (); last }
-        else                  { push @tmp, $_ }
+        elsif (/^(\d+)\.\.(\d+)$/) { push @tmp, integer_range($1, $2) }
+        elsif (/^(\S)\.\.(\S)$/)   { push @tmp, letter_range($1, $2) }
+        else {
+            push @tmp, $_;
+        }
     }
     return [ @tmp ];
 }
