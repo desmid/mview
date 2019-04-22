@@ -333,7 +333,7 @@ MView option: ``-in maf``
 
 MAF files contain distinct alignment blocks. By default, all blocks will be
 output. You can extract a particular block, say the second one, with ``-block
-2``, or all blocks with ``-block '*'``.
+2``, or several with ``-block '1,2,7'``.
 
 
 FASTA
