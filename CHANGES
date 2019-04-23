@@ -2,6 +2,8 @@
 
 Version 1.65  2019-04-22
 
+Changes:
+
 - Speed improvement.
 - MAF format now outputs all blocks instead of just the first.
 - Format conversions add newline between separate alignment blocks.

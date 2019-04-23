@@ -447,7 +447,6 @@ sub check_cycle_type {
         elsif ($_ eq '*')     { @tmp = (); last }
         elsif (/^\d+$/)       { push @tmp, $_   }
         elsif (/^(\d+)\.\.(\d+)$/) { push @tmp, integer_range($1, $2) }
-        elsif (/^(\S)\.\.(\S)$/)   { push @tmp, letter_range($1, $2) }
         else {
             return undef;  #unrecognised
         }
@@ -469,7 +468,6 @@ sub check_block_value {
         elsif ($_ eq '*')     { @tmp = (); last }
         elsif (/^\d+$/)       { push @tmp, $_ }
         elsif (/^(\d+)\.\.(\d+)$/) { push @tmp, integer_range($1, $2) }
-        elsif (/^(\S)\.\.(\S)$/)   { push @tmp, letter_range($1, $2) }
         else {
             return undef;  #unrecognised
         }
