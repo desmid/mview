@@ -80,8 +80,7 @@ $RANK_END      = $NULL;
 $TRAILER_START = '^\d+\s+residues\s+in\s+\d+\s+query';
 $TRAILER_END   = $ENTRY_END;
 
-#$MATCH_START   = '^>*\S{7}.*\(\d+ (?:aa|nt)\)';
-$MATCH_START   = '^>+\S{7}';  #fasta -L flag makes multiple description lines
+$MATCH_START   = '^>>\S';
 $MATCH_END     = "(?:$MATCH_START|$TRAILER_START|$ENTRY_END)";
 
 $SUM_START     = $MATCH_START;
