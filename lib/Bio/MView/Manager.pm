@@ -90,6 +90,8 @@ sub parse {
 
             $self->{'acount'}++;  #global aln count
 
+            $aln->sort_alignment($PAR->get('sort'));
+
             if ($PAR->get('outfmt') ne 'mview') {
                 $self->print_format_conversion($PAR, $bld, $aln);
             } else {

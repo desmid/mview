@@ -337,8 +337,8 @@ sub build_base_alignment {
             my $arow = $aln->uid2row($row->uid);
             next  unless defined $arow;
 
-            $row->set_coverage($arow->get_coverage);
-            $row->set_identity($arow->get_identity);
+            $row->set_coverage($arow->get_coverage_string);
+            $row->set_identity($arow->get_identity_string);
         }
     }
 

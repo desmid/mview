@@ -61,6 +61,47 @@ sub uid2row {
     return $_[0]->{'index2row'}->[$_[0]->{'uid2index'}->{$_[1]}];
 }
 
+sub sort_alignment {
+    my ($self, $mode) = (@_, "none");
+
+    return  if $mode eq "none";
+
+    my @sorted;
+
+    if ($mode eq "cov") {
+        @sorted = sort {
+            #descending
+            return -1  if $a->get_coverage() > $b->get_coverage();
+            return  1  if $a->get_coverage() < $b->get_coverage();
+            return  $a->uid cmp $b->uid;
+        }
+        @{$self->{'index2row'}};
+    }
+    elsif ($mode eq "pid") {
+        @sorted = sort {
+            #descending
+            return -1  if $a->get_identity() > $b->get_identity();
+            return  1  if $a->get_identity() < $b->get_identity();
+            return  $a->uid cmp $b->uid;
+        }
+        @{$self->{'index2row'}};
+    }
+    else {
+        die "${self}::sort: unknown mode '$mode'\n";
+    }
+
+    #rebuild index
+    for (my $i = 0; $i < @sorted; $i++) {
+        my $obj = $sorted[$i];
+
+        #warn $obj->uid, ", ", $obj->get_coverage(), ", ",
+        #  $obj->get_identity(), "\n";
+
+        $self->{'uid2index'}->{$obj->uid} = $i;
+        $self->{'index2row'}->[$i] = $obj;
+    }
+}
+
 #return list of all rows as internal ids
 sub all_ids {
     my @tmp = ();

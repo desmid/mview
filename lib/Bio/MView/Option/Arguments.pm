@@ -25,6 +25,7 @@ push @EXPORT, qw(list_html_modes  check_html_mode);
 push @EXPORT, qw(list_css_modes   check_css_mode);
 
 push @EXPORT, qw(list_identity_modes  check_identity_mode);
+push @EXPORT, qw(list_sort_modes  check_sort_mode);
 
 push @EXPORT, qw(list_molecule_types  check_molecule_type);
 
@@ -282,6 +283,26 @@ sub check_identity_mode {
         return 'reference' if $_ =~ /^r/;
         return 'aligned'   if $_ =~ /^a/;
         return 'hit'       if $_ =~ /^h/;
+    }
+    return undef;
+}
+
+############################################################################
+my @Known_Sort_Modes = (
+    'cov',
+    'pid',
+    'none',
+);
+
+sub list_sort_modes { return join(",", @Known_Sort_Modes) }
+
+sub check_sort_mode {
+    my $val = shift;
+    local $_;
+    foreach ($val) {  #switch
+        return "cov"   if $_ =~ /^c/i;
+        return "pid"   if $_ =~ /^p/i;
+        return "none"  if $_ =~ /^n/i;
     }
     return undef;
 }

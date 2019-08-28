@@ -376,6 +376,22 @@ $Types = [
     },
 
     {
+        'type'    => "sort::mode",
+        'label'   => "mode",
+        'values'  => "cov,pid,none",
+        'default' => "none",
+        'test'    => sub {
+            my ($self, $on, $ov, $e) = @_;
+            my $pv = check_sort_mode($ov);
+            if (! defined $pv) {
+                push @$e, "sort mode '$ov' unrecognised";
+                push @$e, "valid values are: @{[list_sort_modes]}";
+            }
+            return $pv;
+        },
+    },
+
+    {
         'type'    => "filter::top",
         'label'   => "count",
         'values'  => "N,all",

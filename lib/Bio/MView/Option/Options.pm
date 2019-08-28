@@ -150,6 +150,13 @@ $Options = [
                 'type'    => "percentage",
                 'default' => 100,
             },
+
+            {
+                'option'  => "sort",
+                'usage'   => "Resort output by coverage or percent identity",
+                'type'    => "sort::mode",
+                'default' => "none",
+            },
         ],
     },
 

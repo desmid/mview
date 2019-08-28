@@ -27,6 +27,8 @@ sub new {
 
     $self->{'from'}   = $sob->lo;  #start number of sequence
     $self->{'string'} = $sob;      #sequence object
+    $self->{'cov'}    = 0;         #percent coverage of reference sequence
+    $self->{'pid'}    = 0;         #percent identity to reference sequence
 
     $self->reset_display;          #hash of display parameters
 
@@ -52,18 +54,22 @@ sub seqlen   { return $_[0]->{'string'}->seqlen }
 sub set_coverage {
     my ($self, $ref) = @_;
     my $val = $self->compute_coverage_wrt($ref);
+    $self->{'cov'} = $val;
     $self->set_display('label4' => sprintf("%.1f%%", $val));
 }
 
-sub get_coverage { return $_[0]->get_label(4) }
+sub get_coverage { return $_[0]->{'cov'} }
+sub get_coverage_string { return $_[0]->get_label(4) }
 
 sub set_identity {
     my ($self, $ref, $mode) = @_;
     my $val = $self->compute_identity_to($ref, $mode);
+    $self->{'pid'} = $val;
     $self->set_display('label5' => sprintf("%.1f%%", $val));
 }
 
-sub get_identity { return $_[0]->get_label(5) }
+sub get_identity { return $_[0]->{'pid'} }
+sub get_identity_string { return $_[0]->get_label(5) }
 
 # Compute the percent coverage of a row with respect to a reference row as:
 #   number~of~residues~in~row~aligned~with~reference~row /
