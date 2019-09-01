@@ -55,13 +55,14 @@
 <li><a class="reference internal" href="#basic-usage">Basic usage</a><ul>
 <li><a class="reference internal" href="#getting-started">Getting started</a></li>
 <li><a class="reference internal" href="#the-ruler-line">The ruler line</a></li>
-<li><a class="reference internal" href="#changing-the-reference-sequence">Changing the reference sequence</a></li>
 <li><a class="reference internal" href="#command-line-options">Command line options</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#layout-and-filtering">Layout and filtering</a><ul>
 <li><a class="reference internal" href="#pagination">Pagination</a></li>
 <li><a class="reference internal" href="#column-ranges">Column ranges</a></li>
+<li><a class="reference internal" href="#changing-the-reference-sequence">Changing the reference sequence</a></li>
+<li><a class="reference internal" href="#sorting-by-percent-coverage-or-percent-identity">Sorting by percent coverage or percent identity</a></li>
 <li><a class="reference internal" href="#filtering-rows">Filtering rows</a></li>
 <li><a class="reference internal" href="#labels-annotations-and-sequences">Labels, annotations and sequences</a></li>
 </ul>
@@ -93,6 +94,11 @@
 <li><a class="reference internal" href="#colours">Colours</a><ul>
 <li><a class="reference internal" href="#colourmaps">Colourmaps</a></li>
 <li><a class="reference internal" href="#creating-new-colourmaps">Creating new colourmaps</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coverage-and-identity">Coverage and identity</a><ul>
+<li><a class="reference internal" href="#percent-coverage">Percent coverage</a></li>
+<li><a class="reference internal" href="#percent-identity">Percent identity</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#data-formats">Data formats</a><ul>
@@ -154,8 +160,8 @@ the simplest usage might be:</p>
 </div>
 <p>In either case, the output would be a stacked alignment with extra columns
 added to show row numbers and percent coverage and percent identity (with
-respect to the first sequence), looking something like this, regardless of the
-input format:</p>
+respect to the first sequence, see <a class="reference internal" href="#ref-cov-pid"><span class="std std-ref">Coverage and identity</span></a>), looking something
+like this, regardless of the input format:</p>
 <PRE>
 Reference sequence (1): EGFR_HUMAN
 Identities normalised by aligned length.
@@ -212,23 +218,15 @@ TBLASTX, the rulers differ slightly in that the native query numbering is
 given in nucleotide units, but MView reports amino acid units instead (using
 modulo 3 arithmetic).</p>
 </div>
-<div class="section" id="changing-the-reference-sequence">
-<span id="ref-reference-row"></span><h3>Changing the reference sequence<a class="headerlink" href="#changing-the-reference-sequence" title="Permalink to this headline">¶</a></h3>
-<p>One can colour and compute identities with respect to a sequence other than
-the first/query sequence using the <code class="docutils literal"><span class="pre">-reference</span></code> option. This takes either
-the sequence identifier or an integer argument corresponding to the ranking or
-ordering of a sequence usually shown in the first labelling column of MView
-output. For multiple alignment input formats, sequences are numbered from 1,
-while for searches the hits are numbered from 1, but the query itself is 0, so
-beware.</p>
-</div>
 <div class="section" id="command-line-options">
 <h3>Command line options<a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
 <p>ALl available options can be listed using:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="n">help</span>
 </pre></div>
 </div>
-<p>There are a lot of options, but the main ones are described in this manual.</p>
+<p>There are a lot of options, but the main ones are described in this manual.
+Many of them can be abbreviated as long as they are unambiguous, for example,
+the option <code class="docutils literal"><span class="pre">-reference</span></code> can be shortened to <code class="docutils literal"><span class="pre">-ref</span></code>.</p>
 </div>
 </div>
 <div class="section" id="layout-and-filtering">
@@ -253,6 +251,57 @@ position along the ruler.</p>
 a region of the alignment that might actually be reversed in the output (e.g.,
 a BLASTN search hit matching the reverse complement of the query strand).</p>
 </div>
+<div class="section" id="changing-the-reference-sequence">
+<span id="ref-reference-row"></span><h3>Changing the reference sequence<a class="headerlink" href="#changing-the-reference-sequence" title="Permalink to this headline">¶</a></h3>
+<p>One can colour and compute identities with respect to a sequence other than
+the first/query sequence using the <code class="docutils literal"><span class="pre">-reference</span></code> option.</p>
+<p>This takes either the sequence identifier or an integer argument corresponding
+to the ranking or ordering of a sequence usually shown in the first labelling
+column of MView output. For multiple alignment input formats, sequences are
+numbered from 1, while for searches the hits are numbered from 1, but the
+query itself is 0, so beware.</p>
+</div>
+<div class="section" id="sorting-by-percent-coverage-or-percent-identity">
+<span id="ref-sorting"></span><h3>Sorting by percent coverage or percent identity<a class="headerlink" href="#sorting-by-percent-coverage-or-percent-identity" title="Permalink to this headline">¶</a></h3>
+<p>By default MView outputs sequences in the same order they were read in. You
+can change this with the <code class="docutils literal"><span class="pre">-sort</span></code> option:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">sort</span> <span class="n">cov</span>
+<span class="o">-</span><span class="n">sort</span> <span class="n">pid</span>
+<span class="o">-</span><span class="n">sort</span> <span class="n">cov</span><span class="p">:</span><span class="n">pid</span>
+<span class="o">-</span><span class="n">sort</span> <span class="n">pid</span><span class="p">:</span><span class="n">cov</span>
+</pre></div>
+</div>
+<p>to sort the output (descending) by coverage, percent identity, coverage then
+percent identity, or percent identity then coverage. Rows that coincide in the
+sort retain their original local ordering (ascending row number).</p>
+<p>You can change the reference sequence and apply one of these sorts like
+this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">ref</span> <span class="mi">2</span> <span class="n">sort</span> <span class="n">cov</span><span class="p">:</span><span class="n">pid</span>
+</pre></div>
+</div>
+<p>which would compute all the coverage and percent identities with respect to
+row 2, then sort by coverage and percent identity placing row 2 first.</p>
+<p>Default:</p>
+<PRE>
+Reference sequence (1): EGFR_HUMAN
+Identities normalised by aligned length.
+
+1 EGFR_HUMAN  100.0% 100.0%  FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLL
+2 PR2_DROME    97.1%  35.7%  ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLY
+3 ITK_HUMAN    90.0%  32.9%  LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLY
+4 PTK7_HUMAN   97.1%  21.2%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLL
+5 KIN31_CAEEL 100.0%  31.5%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFF
+</PRE><p>After sorting:</p>
+<PRE>
+Reference sequence (2): PR2_DROME
+Identities normalised by aligned length.
+
+2 PR2_DROME   100.0% 100.0%  ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV
+1 EGFR_HUMAN  100.0%  35.7%  FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC
+5 KIN31_CAEEL 100.0%  30.1%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
+4 PTK7_HUMAN   97.1%  25.0%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
+3 ITK_HUMAN    92.6%  33.8%  LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC
+</PRE></div>
 <div class="section" id="filtering-rows">
 <span id="ref-filtering-rows"></span><h3>Filtering rows<a class="headerlink" href="#filtering-rows" title="Permalink to this headline">¶</a></h3>
 <p><strong>Showing only the top N rows</strong></p>
@@ -1327,6 +1376,45 @@ will be displayed as coloured symbols unless <code class="docutils literal"><spa
 they will appear as coloured bocks.</p>
 </div>
 </div>
+<div class="section" id="coverage-and-identity">
+<span id="ref-cov-pid"></span><h2>Coverage and identity<a class="headerlink" href="#coverage-and-identity" title="Permalink to this headline">¶</a></h2>
+<p>MView calculates percent coverage and percent identity of every sequence with
+respect to a reference sequence, by default the query sequence of a search, or
+the first row of a sequence alignment.</p>
+<p>You can change the reference sequence against which identities are calculated
+using the <code class="docutils literal"><span class="pre">-reference</span></code> option, which requires either a row number or a
+sequence identifier (see <a class="reference internal" href="#ref-reference-row"><span class="std std-ref">Changing the reference sequence</span></a>).</p>
+<p>In addition, you can resort the alignment using the <code class="docutils literal"><span class="pre">-sort</span></code> option (see
+<a class="reference internal" href="#ref-sorting"><span class="std std-ref">Sorting by percent coverage or percent identity</span></a>).</p>
+<p>The coverage and identity calculations are defined below.</p>
+<div class="section" id="percent-coverage">
+<h3>Percent coverage<a class="headerlink" href="#percent-coverage" title="Permalink to this headline">¶</a></h3>
+<p>Percent coverages reported in each alignment row are calculated with respect to
+the reference sequence (by default, the query or first row):</p>
+<div class="math">
+\[\frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
+     {\mathrm{length~of~ungapped~reference~row}}
+\times 100\]</div>
+</div>
+<div class="section" id="percent-identity">
+<h3>Percent identity<a class="headerlink" href="#percent-identity" title="Permalink to this headline">¶</a></h3>
+<p>Percent identities reported in each alignment row are calculated with respect
+to the aligned portion of the reference sequence (usually the query or first
+row):</p>
+<div class="math">
+\[\frac{\mathrm{number~of~identical~residues}}
+     {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
+\times 100\]</div>
+<p>Two other calculation possibilities are available: <code class="docutils literal"><span class="pre">-pcid</span> <span class="pre">reference</span></code>
+normalises by the ungapped length of the query or reference sequence, and
+<code class="docutils literal"><span class="pre">-pcid</span> <span class="pre">hit</span></code> normalises by the ungapped length of the hit sequence.</p>
+<p>Note: in the case of BLAST MView output, minor deviations from the percentages
+reported by BLAST are due to (1) different rounding, and (2) the way MView
+assembles a single pseudo-sequence (see <a class="reference internal" href="faq.html#ref-funny-sequences"><span class="std std-ref">Why are some sequence symbols lowercased?</span></a>) for a hit
+composed of multiple HSPs, giving an averaged percent identity. This default
+behaviour above is also obtained using the option <code class="docutils literal"><span class="pre">-pcid</span> <span class="pre">aligned</span></code>.</p>
+</div>
+</div>
 <div class="section" id="data-formats">
 <h2>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="input-formats">
@@ -1415,7 +1503,7 @@ vertical register).</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 29 Jun 2018.
+      Last updated on 01 Sep 2019.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

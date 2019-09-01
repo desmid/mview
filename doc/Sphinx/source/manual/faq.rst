@@ -58,47 +58,6 @@ No - MView isn't an alignment editor. You could try to copy/paste the output
 into a spreadsheet and process it there, then reload it into MView.
 
 
-What do the coverage percentages mean?
-""""""""""""""""""""""""""""""""""""""
-
-Coverage percent identities reported in each alignment row are calculated with
-respect to the reference sequence (by default, the query or first row) thus:
-
-.. math::
-
-  \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
-       {\mathrm{length~of~ungapped~reference~row}}
-  \times 100
-
-
-What do the percent identities mean?
-""""""""""""""""""""""""""""""""""""
-
-By default, percent identities reported in each alignment row are calculated
-with respect to the aligned portion of the reference sequence (usually the
-query or first row) thus:
-
-.. math::
-
-  \frac{\mathrm{number~of~identical~residues}}
-       {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
-  \times 100
-
-Still, in the case of BLAST MView output, minor deviations from the
-percentages reported by BLAST are due to (1) different rounding, and (2) the
-way MView assembles a single pseudo-sequence (see :ref:`ref_funny_sequences`)
-for a hit composed of multiple HSPs, giving an averaged percent identity. This
-default behaviour above is also obtained using the option ``-pcid aligned``.
-
-Two other calculation possibilities are available: ``-pcid reference``
-normalises by the ungapped length of the query or reference sequence, and
-``-pcid hit`` normalises by the ungapped length of the hit sequence.
-
-You can change the reference sequence against which identities are calculated
-using the ``-reference`` option, which requires either a row number or a
-sequence identifier.
-
-
 Can MView extract or view the alternative BLAST alignments or HSPs?
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 

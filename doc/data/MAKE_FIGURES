@@ -28,6 +28,10 @@ run mview -in fasta data.dat
 txt "The ruler line"
 run mview -in fasta -ruler off data.dat
 
+txt "By default MView outputs sequences in the same order they were read in"
+run mview -in fasta -ruler off data.dat
+run mview -in fasta -ruler off data.dat -sort cov:pid -ref 2
+
 txt "Here is an example where one line of input data began with a dummy identifier``#comment``:"
 run mview -in fasta commented.dat
 

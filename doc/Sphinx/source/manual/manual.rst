@@ -23,8 +23,8 @@ Similarly, if the input file contained a CLUSTAL alignment::
 
 In either case, the output would be a stacked alignment with extra columns
 added to show row numbers and percent coverage and percent identity (with
-respect to the first sequence), looking something like this, regardless of the
-input format:
+respect to the first sequence, see :ref:`ref_cov_pid`), looking something
+like this, regardless of the input format:
 
 .. raw:: html
 
@@ -98,20 +98,6 @@ given in nucleotide units, but MView reports amino acid units instead (using
 modulo 3 arithmetic).
 
 
-.. _ref_reference_row:
-
-Changing the reference sequence
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-One can colour and compute identities with respect to a sequence other than
-the first/query sequence using the ``-reference`` option. This takes either
-the sequence identifier or an integer argument corresponding to the ranking or
-ordering of a sequence usually shown in the first labelling column of MView
-output. For multiple alignment input formats, sequences are numbered from 1,
-while for searches the hits are numbered from 1, but the query itself is 0, so
-beware.
-
-
 Command line options
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -120,6 +106,8 @@ ALl available options can be listed using::
   mview -help
 
 There are a lot of options, but the main ones are described in this manual.
+Many of them can be abbreviated as long as they are unambiguous, for example,
+the option ``-reference`` can be shortened to ``-ref``.
 
 
 Layout and filtering
@@ -149,6 +137,77 @@ position along the ruler.
 The order of the numbers is unimportant making it simpler to state interest in
 a region of the alignment that might actually be reversed in the output (e.g.,
 a BLASTN search hit matching the reverse complement of the query strand).
+
+
+.. _ref_reference_row:
+
+Changing the reference sequence
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One can colour and compute identities with respect to a sequence other than
+the first/query sequence using the ``-reference`` option.
+
+This takes either the sequence identifier or an integer argument corresponding
+to the ranking or ordering of a sequence usually shown in the first labelling
+column of MView output. For multiple alignment input formats, sequences are
+numbered from 1, while for searches the hits are numbered from 1, but the
+query itself is 0, so beware.
+
+
+.. _ref_sorting:
+
+Sorting by percent coverage or percent identity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default MView outputs sequences in the same order they were read in. You
+can change this with the ``-sort`` option::
+
+  -sort cov
+  -sort pid
+  -sort cov:pid
+  -sort pid:cov
+
+to sort the output (descending) by coverage, percent identity, coverage then
+percent identity, or percent identity then coverage. Rows that coincide in the
+sort retain their original local ordering (ascending row number).
+
+You can change the reference sequence and apply one of these sorts like
+this::
+
+  -ref 2 sort cov:pid
+
+which would compute all the coverage and percent identities with respect to
+row 2, then sort by coverage and percent identity placing row 2 first.
+
+Default:
+
+.. raw:: html
+
+  <PRE>
+  Reference sequence (1): EGFR_HUMAN
+  Identities normalised by aligned length.
+
+  1 EGFR_HUMAN  100.0% 100.0%  FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLL
+  2 PR2_DROME    97.1%  35.7%  ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLY
+  3 ITK_HUMAN    90.0%  32.9%  LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLY
+  4 PTK7_HUMAN   97.1%  21.2%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLL
+  5 KIN31_CAEEL 100.0%  31.5%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFF
+  </PRE>
+
+After sorting:
+
+.. raw:: html
+
+  <PRE>
+  Reference sequence (2): PR2_DROME
+  Identities normalised by aligned length.
+
+  2 PR2_DROME   100.0% 100.0%  ISVNKQLGTGEFGIVQQGVWSNGNE-----------RIQVAIKCLCRERMQS-NPMEFLKEAAIMHSIEHENIVRLYGVV 
+  1 EGFR_HUMAN  100.0%  35.7%  FKKIKVLGSGAFGTVYKGLWIPEGEK---------VKIPVAIKELREATSPK-ANKEILDEAYVMASVDNPHVCRLLGIC 
+  5 KIN31_CAEEL 100.0%  30.1%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA 
+  4 PTK7_HUMAN   97.1%  25.0%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC 
+  3 ITK_HUMAN    92.6%  33.8%  LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC 
+  </PRE>
 
 
 .. _ref_filtering_rows:
@@ -1542,6 +1601,62 @@ So, in the ``CYS`` example, the symbols ``*``, ``?``, ``X``, ``x`` will be
 coloured in the foreground (i.e., the symbols themselves), and ``C`` or ``c``
 will be displayed as coloured symbols unless ``-css on`` is set, in which case
 they will appear as coloured bocks.
+
+
+.. _ref_cov_pid:
+
+Coverage and identity
+---------------------
+
+MView calculates percent coverage and percent identity of every sequence with
+respect to a reference sequence, by default the query sequence of a search, or
+the first row of a sequence alignment.
+
+You can change the reference sequence against which identities are calculated
+using the ``-reference`` option, which requires either a row number or a
+sequence identifier (see :ref:`ref_reference_row`).
+
+In addition, you can resort the alignment using the ``-sort`` option (see
+:ref:`ref_sorting`).
+
+The coverage and identity calculations are defined below.
+
+
+Percent coverage
+^^^^^^^^^^^^^^^^
+
+Percent coverages reported in each alignment row are calculated with respect to
+the reference sequence (by default, the query or first row):
+
+.. math::
+
+  \frac{\mathrm{number~of~residues~in~row~aligned~with~reference~row}}
+       {\mathrm{length~of~ungapped~reference~row}}
+  \times 100
+
+
+Percent identity
+^^^^^^^^^^^^^^^^
+
+Percent identities reported in each alignment row are calculated with respect
+to the aligned portion of the reference sequence (usually the query or first
+row):
+
+.. math::
+
+  \frac{\mathrm{number~of~identical~residues}}
+       {\mathrm{length~of~ungapped~reference~row~over~aligned~region}}
+  \times 100
+
+Two other calculation possibilities are available: ``-pcid reference``
+normalises by the ungapped length of the query or reference sequence, and
+``-pcid hit`` normalises by the ungapped length of the hit sequence.
+
+Note: in the case of BLAST MView output, minor deviations from the percentages
+reported by BLAST are due to (1) different rounding, and (2) the way MView
+assembles a single pseudo-sequence (see :ref:`ref_funny_sequences`) for a hit
+composed of multiple HSPs, giving an averaged percent identity. This default
+behaviour above is also obtained using the option ``-pcid aligned``.
 
 
 Data formats
