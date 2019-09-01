@@ -102,6 +102,28 @@ sub sort_alignment {
         }
         @unsorted;
     }
+    elsif ($mode eq "cov:pid") {
+        @sorted = sort {
+            #descending
+            return -1  if $a->get_coverage() > $b->get_coverage();
+            return  1  if $a->get_coverage() < $b->get_coverage();
+            return -1  if $a->get_identity() > $b->get_identity();
+            return  1  if $a->get_identity() < $b->get_identity();
+            return  $a->uid cmp $b->uid;
+        }
+        @unsorted;
+    }
+    elsif ($mode eq "pid:cov") {
+        @sorted = sort {
+            #descending
+            return -1  if $a->get_identity() > $b->get_identity();
+            return  1  if $a->get_identity() < $b->get_identity();
+            return -1  if $a->get_coverage() > $b->get_coverage();
+            return  1  if $a->get_coverage() < $b->get_coverage();
+            return  $a->uid cmp $b->uid;
+        }
+        @unsorted;
+    }
     else {
         die "${self}::sort: unknown mode '$mode'\n";
     }

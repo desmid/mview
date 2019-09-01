@@ -291,6 +291,8 @@ sub check_identity_mode {
 my @Known_Sort_Modes = (
     'cov',
     'pid',
+    'cov:pid',
+    'pid:cov',
     'none',
 );
 
@@ -300,9 +302,11 @@ sub check_sort_mode {
     my $val = shift;
     local $_;
     foreach ($val) {  #switch
-        return "cov"   if $_ =~ /^c/i;
-        return "pid"   if $_ =~ /^p/i;
-        return "none"  if $_ =~ /^n/i;
+        return "cov"      if $_ =~ /^cov$/i;
+        return "pid"      if $_ =~ /^pid$/i;
+        return "cov:pid"  if $_ =~ /^cov:pid/i;
+        return "pid:cov"  if $_ =~ /^pid:cov/i;
+        return "none"     if $_ =~ /^n/i;
     }
     return undef;
 }

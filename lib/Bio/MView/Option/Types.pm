@@ -378,7 +378,7 @@ $Types = [
     {
         'type'    => "sort::mode",
         'label'   => "mode",
-        'values'  => "cov,pid,none",
+        'values'  => list_sort_modes,
         'default' => "none",
         'test'    => sub {
             my ($self, $on, $ov, $e) = @_;
