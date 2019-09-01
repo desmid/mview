@@ -62,12 +62,28 @@ sub uid2row {
 }
 
 sub sort_alignment {
-    my ($self, $mode) = (@_, "none");
+    my ($self, $mode) = @_;
 
     return  if $mode eq "none";
 
-    my @sorted;
+    my $ref_uid = $self->get_ref_row()->uid;
+    my $ref_row = $self->uid2row($ref_uid);
 
+    return  unless defined $ref_row;
+
+    #warn ">>> ref_uid: ", $ref_uid, "\n";
+    #warn ">>> ref_row: ", $ref_row, "\n\n";
+
+    my (@unsorted, @sorted);
+
+    # get all rows except the reference row
+    foreach my $row (@{$self->{'index2row'}}) {
+        if ($row->uid ne $ref_uid) {
+            push @unsorted, $row;
+        }
+    }
+
+    # sort all non-reference rows
     if ($mode eq "cov") {
         @sorted = sort {
             #descending
@@ -75,7 +91,7 @@ sub sort_alignment {
             return  1  if $a->get_coverage() < $b->get_coverage();
             return  $a->uid cmp $b->uid;
         }
-        @{$self->{'index2row'}};
+        @unsorted;
     }
     elsif ($mode eq "pid") {
         @sorted = sort {
@@ -84,11 +100,14 @@ sub sort_alignment {
             return  1  if $a->get_identity() < $b->get_identity();
             return  $a->uid cmp $b->uid;
         }
-        @{$self->{'index2row'}};
+        @unsorted;
     }
     else {
         die "${self}::sort: unknown mode '$mode'\n";
     }
+
+    # prepend the reference row
+    unshift @sorted, $ref_row;
 
     #rebuild index
     for (my $i = 0; $i < @sorted; $i++) {
@@ -461,6 +480,8 @@ sub conservation {
 ######################################################################
 # protected methods
 ######################################################################
+sub get_ref_row { return $_[0]->{'build'}->get_ref_row() }
+
 #subclass overrides: sequence factory
 sub make_sequence {
     my ($self, $row) = @_;
