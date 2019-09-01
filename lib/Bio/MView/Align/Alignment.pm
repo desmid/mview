@@ -66,10 +66,11 @@ sub sort_alignment {
 
     return  if $mode eq "none";
 
-    my $ref_uid = $self->get_ref_row()->uid;
-    my $ref_row = $self->uid2row($ref_uid);
+    my $ref_uid = $self->get_ref_uid;
 
-    return  unless defined $ref_row;
+    return  unless defined $ref_uid;
+
+    my $ref_row = $self->uid2row($ref_uid);
 
     #warn ">>> ref_uid: ", $ref_uid, "\n";
     #warn ">>> ref_row: ", $ref_row, "\n\n";
@@ -502,7 +503,11 @@ sub conservation {
 ######################################################################
 # protected methods
 ######################################################################
-sub get_ref_row { return $_[0]->{'build'}->get_ref_row() }
+sub get_ref_uid {
+    my $row = $_[0]->{'build'}->get_ref_row();
+    return undef  unless defined $row;
+    return $row->uid;
+}
 
 #subclass overrides: sequence factory
 sub make_sequence {
