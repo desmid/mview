@@ -1,5 +1,24 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
+Version 1.66 2019-09-01
+
+Changes:
+
+- Added '-sort cov | pid | cov:pid | pid:cov' option to resort sequences by
+  (1) coverage, (2) percent identity, (3) coverage then percent identity,
+  (4) percent identity then coverage, with respect to the reference
+  sequence.
+
+Input formats:
+
+- Tested with BLAST 2.9.0+
+- Tested with FASTA 36.3.8h [2019-08 build]
+
+Bug fix:
+
+- FASTA 36 parser omitted database hits with very short identifiers.
+
+
 Version 1.65  2019-04-22
 
 Changes:
