@@ -174,7 +174,7 @@ sort retain their original local ordering (ascending row number).
 You can change the reference sequence and apply one of these sorts like
 this::
 
-  -ref 2 sort cov:pid
+  -ref 2 -sort cov:pid
 
 which would compute all the coverage and percent identities with respect to
 row 2, then sort by coverage and percent identity placing row 2 first.
