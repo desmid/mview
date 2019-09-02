@@ -309,7 +309,7 @@ sub build_base_alignment {
     my ($self, $aln) = @_;
 
     #make and insert each sequence into the alignment
-    $aln->append_rows(@{$self->{'index2row'}});
+    $aln->append_sequences(@{$self->{'index2row'}});
 
     #filter alignment based on %identity to reference
     $aln->prune_identities($self->get_ref_uid,

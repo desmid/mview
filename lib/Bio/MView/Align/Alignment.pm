@@ -34,8 +34,8 @@ sub new {
     #warn "Align.aligned: @{[$build->is_aligned]}\n";
     #warn "Align.parent:  @{[defined $parent ? $parent : 'undef']}\n";
 
-    $self->reset_indices;
-    $self->append_seq(@_);
+    $self->index_reset;
+    $self->append_rows(@_);
 
     $self;
 }
@@ -48,11 +48,11 @@ sub size { return scalar @{$_[0]->{'index2row'}} }
 sub length { return $_[0]->{'length'} }
 
 #make a Sequence from the given Build::Row(s) and append to the alignment
-sub append_rows {
+sub append_sequences {
     my $self = shift;
     foreach my $brow (@_) {
         my $arow = $self->make_sequence($brow);
-        $self->append_seq($arow);
+        $self->append_rows($arow);
     }
 }
 
@@ -349,8 +349,8 @@ sub prune_identities {
         push @obj, $row;
     }
 
-    $self->reset_indices;
-    $self->append_seq(@obj);
+    $self->index_reset;
+    $self->append_rows(@obj);
 }
 
 #generate a new alignment with a ruler based on this alignment
@@ -540,28 +540,44 @@ sub is_aligned { return $_[0]->{'build'}->is_aligned }
 sub is_hidden  { return $_[0]->{'build'}->is_hidden($_[1]) }
 sub is_nop     { return $_[0]->{'build'}->is_nop($_[1]) }
 
-sub reset_indices {
+sub index_reset {
     $_[0]->{'uid2index'} = {};
     $_[0]->{'index2row'} = [];
 }
 
-sub append_seq {
+sub index_insert_row {
+    my ($self, $i, $row) = @_;
+    $self->{'uid2index'}->{$row->uid} = $i;
+    $self->{'index2row'}->[$i] = $row;
+}
+
+sub index_rebuild {
+    my ($self, $rows) = @_;
+
+    $self->index_reset;
+
+    for (my $i = 0; $i < @$rows; $i++) {
+        my $row = $rows->[$i];
+        $self->index_insert_row($i, $row);
+    }
+}
+
+sub append_rows {
     my $self = shift;
-    foreach my $obj (@_) {
+    foreach my $row (@_) {
         my $i = @{$self->{'index2row'}};  #number of rows so far
-        #warn "append_seq: [$i]\t@{[$obj->uid]}\t@{[$obj->string]}\n";
+        #warn "append_rows: [$i]\t@{[$row->uid]}\t@{[$row->string]}\n";
 
         if ($i < 1) {  #empty
-            $self->{'length'} = $obj->length;
-            $self->{'parent'} = $obj  unless defined $self->{'parent'};
+            $self->{'length'} = $row->length;
+            $self->{'parent'} = $row  unless defined $self->{'parent'};
         }
 
-        if ($self->is_aligned and $obj->length != $self->{'length'}) {
-            die "${self}::append_seq: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$obj->length]}\n";
+        if ($self->is_aligned and $row->length != $self->{'length'}) {
+            die "${self}::append_rows: incompatible alignment lengths, row $i, expected $self->{'length'}, got @{[$row->length]}\n";
         }
 
-        $self->{'uid2index'}->{$obj->uid} = $i;
-        $self->{'index2row'}->[$i] = $obj;
+        $self->index_insert_row($i, $row);
     }
 }
 
