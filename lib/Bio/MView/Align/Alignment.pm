@@ -85,6 +85,7 @@ sub sort_alignment {
             #descending
             return -1  if $a->get_coverage() > $b->get_coverage();
             return  1  if $a->get_coverage() < $b->get_coverage();
+            #ascending
             return  $a->uid cmp $b->uid;
         }
         @unsorted;
@@ -94,6 +95,7 @@ sub sort_alignment {
             #descending
             return -1  if $a->get_identity() > $b->get_identity();
             return  1  if $a->get_identity() < $b->get_identity();
+            #ascending
             return  $a->uid cmp $b->uid;
         }
         @unsorted;
@@ -105,6 +107,7 @@ sub sort_alignment {
             return  1  if $a->get_coverage() < $b->get_coverage();
             return -1  if $a->get_identity() > $b->get_identity();
             return  1  if $a->get_identity() < $b->get_identity();
+            #ascending
             return  $a->uid cmp $b->uid;
         }
         @unsorted;
@@ -116,6 +119,7 @@ sub sort_alignment {
             return  1  if $a->get_identity() < $b->get_identity();
             return -1  if $a->get_coverage() > $b->get_coverage();
             return  1  if $a->get_coverage() < $b->get_coverage();
+            #ascending
             return  $a->uid cmp $b->uid;
         }
         @unsorted;
