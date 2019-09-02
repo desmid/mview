@@ -66,7 +66,7 @@ sub sort_alignment {
 
     return  if $mode eq "none";
 
-    my $ref_uid = $self->get_ref_uid;
+    my $ref_uid = $self->get_reference_uid;
 
     return  unless defined $ref_uid;
 
@@ -75,14 +75,9 @@ sub sort_alignment {
     #warn ">>> ref_uid: ", $ref_uid, "\n";
     #warn ">>> ref_row: ", $ref_row, "\n\n";
 
-    my (@unsorted, @sorted);
-
     # get all rows except the reference row
-    foreach my $row (@{$self->{'index2row'}}) {
-        if ($row->uid ne $ref_uid) {
-            push @unsorted, $row;
-        }
-    }
+    my @unsorted = grep { $_->uid ne $ref_uid } @{$self->{'index2row'}};
+    my @sorted;
 
     # sort all non-reference rows
     if ($mode eq "cov") {
@@ -132,16 +127,7 @@ sub sort_alignment {
     # prepend the reference row
     unshift @sorted, $ref_row;
 
-    #rebuild index
-    for (my $i = 0; $i < @sorted; $i++) {
-        my $obj = $sorted[$i];
-
-        #warn $obj->uid, ", ", $obj->get_coverage(), ", ",
-        #  $obj->get_identity(), "\n";
-
-        $self->{'uid2index'}->{$obj->uid} = $i;
-        $self->{'index2row'}->[$i] = $obj;
-    }
+    $self->index_rebuild(\@sorted);
 }
 
 #return list of all rows as internal ids
@@ -503,12 +489,6 @@ sub conservation {
 ######################################################################
 # protected methods
 ######################################################################
-sub get_ref_uid {
-    my $row = $_[0]->{'build'}->get_ref_row();
-    return undef  unless defined $row;
-    return $row->uid;
-}
-
 #subclass overrides: sequence factory
 sub make_sequence {
     my ($self, $row) = @_;
@@ -579,6 +559,12 @@ sub append_rows {
 
         $self->index_insert_row($i, $row);
     }
+}
+
+sub get_reference_uid {
+    my $row = $_[0]->{'build'}->get_ref_row();
+    return undef  unless defined $row;
+    return $row->uid;
 }
 
 #return list of visible rows as row objects, for output
