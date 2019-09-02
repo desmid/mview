@@ -159,8 +159,11 @@ query itself is 0, so beware.
 Sorting by percent coverage or percent identity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default MView outputs sequences in the same order they were read in. You
-can change this with the ``-sort`` option::
+By default MView outputs sequences in the same order they were read in and
+computes percent coverage and percent identity values (see
+:ref:`ref_cov_pid`).
+
+You can change the ordering with the ``-sort`` option::
 
   -sort cov
   -sort pid
@@ -171,15 +174,15 @@ to sort the output (descending) by coverage, percent identity, coverage then
 percent identity, or percent identity then coverage. Rows that coincide in the
 sort retain their original local ordering (ascending row number).
 
-You can change the reference sequence and apply one of these sorts like
-this::
+You can also change the reference sequence (see :ref:`ref_reference_row`) and
+apply one of these sorts like this::
 
   -ref 2 -sort cov:pid
 
 which would compute all the coverage and percent identities with respect to
 row 2, then sort by coverage and percent identity placing row 2 first.
 
-Default:
+Default ordering taken from the input alignment:
 
 .. raw:: html
 
@@ -194,7 +197,7 @@ Default:
   5 KIN31_CAEEL 100.0%  31.5%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA 
   </PRE>
 
-After sorting:
+After sorting by coverage and percent identity to row 2:
 
 .. raw:: html
 

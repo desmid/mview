@@ -263,8 +263,10 @@ query itself is 0, so beware.</p>
 </div>
 <div class="section" id="sorting-by-percent-coverage-or-percent-identity">
 <span id="ref-sorting"></span><h3>Sorting by percent coverage or percent identity<a class="headerlink" href="#sorting-by-percent-coverage-or-percent-identity" title="Permalink to this headline">¶</a></h3>
-<p>By default MView outputs sequences in the same order they were read in. You
-can change this with the <code class="docutils literal"><span class="pre">-sort</span></code> option:</p>
+<p>By default MView outputs sequences in the same order they were read in and
+computes percent coverage and percent identity values (see
+<a class="reference internal" href="#ref-cov-pid"><span class="std std-ref">Coverage and identity</span></a>).</p>
+<p>You can change the ordering with the <code class="docutils literal"><span class="pre">-sort</span></code> option:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">sort</span> <span class="n">cov</span>
 <span class="o">-</span><span class="n">sort</span> <span class="n">pid</span>
 <span class="o">-</span><span class="n">sort</span> <span class="n">cov</span><span class="p">:</span><span class="n">pid</span>
@@ -274,14 +276,14 @@ can change this with the <code class="docutils literal"><span class="pre">-sort<
 <p>to sort the output (descending) by coverage, percent identity, coverage then
 percent identity, or percent identity then coverage. Rows that coincide in the
 sort retain their original local ordering (ascending row number).</p>
-<p>You can change the reference sequence and apply one of these sorts like
-this:</p>
+<p>You can also change the reference sequence (see <a class="reference internal" href="#ref-reference-row"><span class="std std-ref">Changing the reference sequence</span></a>) and
+apply one of these sorts like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">ref</span> <span class="mi">2</span> <span class="o">-</span><span class="n">sort</span> <span class="n">cov</span><span class="p">:</span><span class="n">pid</span>
 </pre></div>
 </div>
 <p>which would compute all the coverage and percent identities with respect to
 row 2, then sort by coverage and percent identity placing row 2 first.</p>
-<p>Default:</p>
+<p>Default ordering taken from the input alignment:</p>
 <PRE>
 Reference sequence (1): EGFR_HUMAN
 Identities normalised by aligned length.
@@ -291,7 +293,7 @@ Identities normalised by aligned length.
 3 ITK_HUMAN    90.0%  32.9%  LTFVQEIGSGQFGLVHLGYWLN--------------KDKVAIKTIREGAMS---EEDFIEEAEVMMKLSHPKLVQLYGVC
 4 PTK7_HUMAN   97.1%  21.2%  IREVKQIGVGQFGAVVLAEMTGLS-XLPKGSMNADGVALVAVKKLKPDVSD-EVLQSFDKEIKFMSQLQHDSIVQLLAIC
 5 KIN31_CAEEL 100.0%  31.5%  VELTKKLGEGAFGEVWKGKLLKILDA-------NHQPVLVAVKTAKLESMTKEQIKEIMREARLMRNLDHINVVKFFGVA
-</PRE><p>After sorting:</p>
+</PRE><p>After sorting by coverage and percent identity to row 2:</p>
 <PRE>
 Reference sequence (2): PR2_DROME
 Identities normalised by aligned length.
