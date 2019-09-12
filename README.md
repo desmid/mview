@@ -68,22 +68,10 @@ follow. The procedure is similar for Windows.
    This would create a directory called `mview-1.66` and place all the files
    under there.
 
-2. Change to this directory and load `bin/mview` into an editor.
+2. Install as you would a standard Perl module:
 
-3. Set a valid path for the Perl interpreter on your machine after the ``#!``
-   at the top of the file, for example:
-
-        #!/usr/bin/perl
-
-4. Find the `use lib '/path/to/mview/lib';` line and change it, in our
-   example, to:
-
-        use lib '/usr/local/mview-1.66/lib';
-
-   and save the file.
-
-5. Finally, make sure that the directory containing the mview script (that you
-   just edited) is on your `PATH` and rehash or login again.
+        perl Makefile.PL $PERL_MM_OPT
+        make install
 
 
 ### Testing
