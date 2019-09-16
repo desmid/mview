@@ -56,21 +56,24 @@ program that should run cross-platform.
 Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
 follow. The procedure is similar for Windows.
 
-1. Save the archive to your software area, e.g., `/usr/local`, then uncompress
-   and extract it:
+1. Save the archive somewhere, then uncompress and extract it:
 
         tar xvzf mview-1.66.tar.gz
-
-   or
-
-        gunzip < mview-1.66.tar.gz | tar xvf -
 
    This would create a directory called `mview-1.66` and place all the files
    under there.
 
 2. Install as you would a standard Perl module:
 
+        perl Makefile.PL INSTALL_BASE=/usr/local
+        make test
+        make install
+
+    If you have a [local::lib](https://metacpan.org/pod/local::lib) setup
+    you can install mview there:
+
         perl Makefile.PL $PERL_MM_OPT
+        make test
         make install
 
 
