@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2018 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -14,7 +14,7 @@ use vars qw(@ISA @EXPORT_OK);
 
 @ISA = qw(Exporter);
 
-@EXPORT_OK = qw(stacktrace vmstat);
+@EXPORT_OK = qw(stacktrace vmstat is_unix is_dos);
 
 sub stacktrace {
     warn "Stack Trace:\n"; my $i = 0;
@@ -37,6 +37,21 @@ sub vmstat {
     } else {
         print sprintf "VM: -  $s\n";
     }
+}
+
+sub is_unix {
+    return 1
+        if grep {/$^O/i} qw(aix android bsdos beos bitrig dgux dynixptx cygwin
+                            darwin dragonfly freebsd gnukfreebsd haiku hpux
+                            interix irix linux machten midnightbsd minix
+                            mirbsd netbsd next nto openbsd qnx sco solaris);
+    return 0;
+}
+
+sub is_dos {
+    return 1
+        if grep {/$^O/i} qw(dos MSWin32);
+    return 0;
 }
 
 ###########################################################################

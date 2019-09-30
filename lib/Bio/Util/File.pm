@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2018 Nigel P. Brown
+# Copyright (C) 1996-2019 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -9,6 +9,8 @@ use strict;
 package Bio::Util::File;
 
 use Exporter;
+
+use Bio::Util::System qw(is_unix is_dos);
 
 use vars qw(@ISA @EXPORT_OK);
 
@@ -40,8 +42,10 @@ sub fileparts {
 
 #temporary file name
 sub tmpfile {
-    my ($s) = (@_, $$);
-    return "/tmp/$s"  if $^O ne 'MSWin32';
+    my ($s) = (@_, "mview_$$");
+    return "/tmp/$s"           if is_unix();
+    return "$ENV{'TEMP'}\\$s"  if is_dos() and -d $ENV{'TEMP'};
+    return "$ENV{'TMP'}\\$s"   if is_dos() and -d $ENV{'TMP'};
     return $s;
 }
 

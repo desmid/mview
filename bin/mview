@@ -9,7 +9,7 @@
 # Release information
 ###########################################################################
 my $VERSION  = '1.66';
-my $PATCH    = '';
+my $PATCH    = '1';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
@@ -34,7 +34,7 @@ use strict;
 
 ###########################################################################
 my $PROG = basename($0);
-my $TMPFILE = tmpfile("mview_$$");
+my $TMPFILE = tmpfile();
 my $INVOCATION = "$PROG @ARGV";
 
 ###########################################################################
