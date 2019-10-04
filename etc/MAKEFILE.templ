@@ -31,8 +31,8 @@ PROJECT   = MView
 OLD_ROOT  = $(HOME)
 NEW_ROOT  = $(HOME)/dist
 
-OLD_LIBS  = /home/brown/HOME/work/MView/dev/lib
-NEW_LIBS  = /path/to/mview/lib
+OLD_HOME  = $(OLD_ROOT)
+NEW_HOME  = /path/to/mview/unpacked/folder
 
 OLD_PERL  = /usr/bin/perl
 NEW_PERL  = /usr/bin/perl
@@ -63,7 +63,7 @@ DEST_EXE_PERM = 0755
 #fix: perl path, perl library path
 FIX_STRINGS = $(SED) \
 	-e "s;^\#!$(OLD_PERL).*;\#!$(NEW_PERL);" \
-	-e "s;$(OLD_LIBS);$(NEW_LIBS);g"
+	-e "s;$(OLD_HOME);$(NEW_HOME);g"
 
 MAKEFLAGS = --no-print-directory
 

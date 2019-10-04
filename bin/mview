@@ -22,7 +22,13 @@ require 5.004;
 
 $^W = 1;
 
-use lib '/home/brown/HOME/work/MView/dev/lib';
+BEGIN {
+    $MVIEW_HOME = "/home/brown/HOME/work/MView/dev";
+    $MVIEW_HOME = $ENV{'MVIEW_HOME'}  if exists $ENV{'MVIEW_HOME'};
+    $MVIEW_LIB = "$MVIEW_HOME/lib";
+}
+
+use lib $MVIEW_LIB;
 
 use Bio::Util::File qw(basename tmpfile);
 use Bio::Util::System qw(vmstat);
