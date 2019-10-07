@@ -18,6 +18,7 @@ require 5.004;
 use Cwd qw(getcwd);
 use File::Copy qw(copy);
 use File::Path qw(mkpath);
+use File::Spec;
 use FileHandle;
 use POSIX qw(strftime);
 
@@ -202,46 +203,64 @@ sub list_dirs {
     }
 }
 
+# return 1 if the path is potentially writable, 0 otherwise
+sub path_writable {
+    my $path = shift;
+    while ($path) {
+        # warn "testing: $path";
+        if (-e $path and ! -d $path) {
+            return 0;  # exists but not a directory
+        }
+        if (-e $path and -w $path) {
+            return 1;  # exists and can write into it
+        }
+        if (-e $path and ! -w $path) {
+            return 0;  # can't write below path element
+        }
+        # path element doesn't exist yet - potentially writable
+        # go up one level
+        my ($v,$d,$f) = File::Spec->splitpath($path);
+        $path = File::Spec->join($v, $d);
+    }
+    return 1;
+}
+
 sub choose_bindir {
-    my $dir;
+    my $loc;
 
     while (1) {
         prompt "Choose a directory for the program [$BINDIR]";
         my $raw = <STDIN>;
         chomp $raw;
-        $dir = &$expand_path($raw);
+        $loc = &$expand_path($raw);
         info;
 
-        if ( $dir eq "" and $BINDIR ne "") {
+        if ( $loc eq "" and $BINDIR ne "") {
             # accept default BINDIR
-            $dir = $BINDIR;
+            $loc = $BINDIR;
             last;
         }
-        if ( $dir eq "" ) {
+        if ( $loc eq "" ) {
             warning "Directory must have a name";
             next;
         }
-        if ( $dir eq $DRIVER ) {
+        if ( $loc eq $DRIVER ) {
             warning "That name is reserved - please use another one";
             next;
         }
-        if ( -e $dir and  ! -d $dir ) {
+        if ( -e $loc and ! -d $loc ) {
             warning "Name '$raw' is not a directory";
             next;
         }
-        if ( -e $dir and ! -w $dir ) {
-            warning "Directory '$raw' exists but is not writable";
+        if ( ! path_writable($loc) ) {
+            warning "Directory path '$raw' is not writable";
             next;
         }
-        if ( ! -e $dir ) {
-            # accept input choice - dir will be created by user
-            last;
-        }
-        # input choice accepted - dir already exists
+        # choice accepted - dir already exists or will be created by user
         last;
     }
 
-    $BINDIR = $dir;
+    $BINDIR = $loc;
 
     if (! -e $BINDIR) {
         info "  ********************************************************";
