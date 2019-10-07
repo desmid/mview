@@ -138,40 +138,10 @@ git repository or download a ZIP archive.</p>
 </div>
 <div class="section" id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
-<p>Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
-follow. The procedure is similar for Windows.</p>
-<ol class="arabic">
-<li><p class="first">Save the archive to your software area, e.g., <code class="docutils literal"><span class="pre">/usr/local</span></code>, then uncompress
-and extract it:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xvzf</span> <span class="n">mview</span><span class="o">-</span><span class="mf">1.66</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
-</pre></div>
-</div>
-<p>or:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gunzip</span> <span class="o">&lt;</span> <span class="n">mview</span><span class="o">-</span><span class="mf">1.66</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> <span class="o">|</span> <span class="n">tar</span> <span class="n">xvf</span> <span class="o">-</span>
-</pre></div>
-</div>
-<p>This would create a directory called <code class="docutils literal"><span class="pre">mview-1.66</span></code> and place all the files
-under there.</p>
-</li>
-<li><p class="first">Change to this directory and load <code class="docutils literal"><span class="pre">bin/mview</span></code> into an editor.</p>
-</li>
-<li><p class="first">Set a valid path for the Perl interpreter on your machine after the <code class="docutils literal"><span class="pre">#!</span></code>
-at the top of the file, for example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/perl</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Find the <code class="docutils literal"><span class="pre">use</span> <span class="pre">lib</span> <span class="pre">'/path/to/mview/lib';</span></code> line and change it, in our
-example, to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">use</span> <span class="n">lib</span> <span class="s1">&#39;/usr/local/mview-1.66/lib&#39;</span><span class="p">;</span>
-</pre></div>
-</div>
-<p>and save the file.</p>
-</li>
-<li><p class="first">Finally, make sure that the directory containing mview script (that you
-just edited) is on your <code class="docutils literal"><span class="pre">PATH</span></code> and rehash or login again.</p>
-</li>
-</ol>
+<ul class="simple">
+<li><a class="reference external" href="install/unix.html">Linux, Apple, UNIX</a></li>
+<li><a class="reference external" href="install/windows.html">Windows</a></li>
+</ul>
 </div>
 <div class="section" id="found-a-bug">
 <h2>Found a bug?<a class="headerlink" href="#found-a-bug" title="Permalink to this headline">¶</a></h2>
@@ -228,7 +198,7 @@ in their publications.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, Nigel P. Brown.
-      Last updated on 02 Sep 2019.
+      Last updated on 07 Oct 2019.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

@@ -6,6 +6,8 @@
    :hidden:
 
    contents
+   install/unix
+   install/windows
 
 
 MView
@@ -84,37 +86,8 @@ git repository or download a ZIP archive.
 Install
 ^^^^^^^
 
-Instructions for a Linux or other UNIX-like system (Apple, BSD, etc.)
-follow. The procedure is similar for Windows.
-
-1. Save the archive to your software area, e.g., ``/usr/local``, then uncompress
-   and extract it::
-
-     tar xvzf mview-1.66.tar.gz
-
-   or::
-
-     gunzip < mview-1.66.tar.gz | tar xvf -
-
-   This would create a directory called ``mview-1.66`` and place all the files
-   under there.
-
-2. Change to this directory and load ``bin/mview`` into an editor.
-
-3. Set a valid path for the Perl interpreter on your machine after the ``#!``
-   at the top of the file, for example::
-
-     #!/usr/bin/perl
-
-4. Find the ``use lib '/path/to/mview/lib';`` line and change it, in our
-   example, to::
-
-     use lib '/usr/local/mview-1.66/lib';
-
-   and save the file.
-
-5. Finally, make sure that the directory containing mview script (that you
-   just edited) is on your ``PATH`` and rehash or login again.
+* `Linux, Apple, UNIX <install/unix.html>`_
+* `Windows <install/windows.html>`_
 
 
 Found a bug?
