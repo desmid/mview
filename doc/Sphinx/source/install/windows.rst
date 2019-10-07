@@ -43,8 +43,8 @@ Site administrator for multiple users
 
 You can use the ``install.pl`` script as above, or install manually:
 
-1. Save the archive to your software area, for example, ``C:\Programs``, then
-   uncompress and extract it (using an archiver like WinZip or 7-Zip, as
+1. Save the archive to your software area, for example, ``C:\Program Files``,
+   then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
    here)::
 
         7z x mview-1.66.1.tar.gz
@@ -62,7 +62,7 @@ You can use the ``install.pl`` script as above, or install manually:
 
     and change the path, in our example, to::
 
-        $MVIEW_HOME = "C:\Programs\mview-1.66.1";
+        $MVIEW_HOME = "C:\Program Files\mview-1.66.1";
 
   * Save the file.
 
@@ -70,5 +70,5 @@ You can use the ``install.pl`` script as above, or install manually:
    (that you just edited) is on the user ``PATH``, then start a new command
    prompt.
 
-   In our example, you would add ``C:\Programs\mview-1.66.1\bin`` to the
+   In our example, you would add ``C:\Program Files\mview-1.66.1\bin`` to the
    existing value of ``PATH``, or replace any older MView path.
