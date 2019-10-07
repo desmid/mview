@@ -46,9 +46,10 @@ $SIG{'INT'}  = \&abort;
 $SIG{'QUIT'} = \&abort;
 $SIG{'TERM'} = \&abort;
 
-my $make_driver;
 my $test_if_admin;
+my $expand_path;
 my $guess_bindir;
+my $make_driver;
 
 sub show_admin_warning {
     print STDERR <<EOT;
@@ -138,6 +139,7 @@ sub set_base_system {
         $PATHENVSEP    = ':';
         $PATHSEP       = '/';
         $test_if_admin = \&test_if_unix_admin;
+        $expand_path   = \&expand_unix_path;
         $guess_bindir  = \&guess_unix_bindir;
         $make_driver   = \&make_unix_driver;
         return $SYSTEM;
@@ -147,6 +149,7 @@ sub set_base_system {
         $PATHENVSEP    = ';';
         $PATHSEP       = '\\';
         $test_if_admin = \&test_if_dos_admin;
+        $expand_path   = \&expand_dos_path;
         $guess_bindir  = \&guess_dos_bindir;
         $make_driver   = \&make_dos_driver;
         #change from defaults
@@ -204,8 +207,9 @@ sub choose_bindir {
 
     while (1) {
         prompt "Choose a directory for the program [$BINDIR]";
-        $dir = <STDIN>;
-        chomp $dir;
+        my $raw = <STDIN>;
+        chomp $raw;
+        $dir = &$expand_path($raw);
         info;
 
         if ( $dir eq "" and $BINDIR ne "") {
@@ -222,11 +226,11 @@ sub choose_bindir {
             next;
         }
         if ( -e $dir and  ! -d $dir ) {
-            warning "Name '$dir' is not a directory";
+            warning "Name '$raw' is not a directory";
             next;
         }
         if ( -e $dir and ! -w $dir ) {
-            warning "Directory '$dir' exists but is not writeable";
+            warning "Directory '$raw' exists but is not writable";
             next;
         }
         if ( ! -e $dir ) {
@@ -269,7 +273,7 @@ sub get_timestamp {
 sub install_driver {
     my ($file, $destination, $mode) = @_;
 
-    return  if  $destination eq ".";
+    return  if $destination eq ".";
 
     my $source = "$file";
     my $target = join($PATHSEP, ($destination, $file));
@@ -310,15 +314,17 @@ sub test_if_unix_admin {
     return $user == 0;
 }
 
-sub get_writable_unix_paths {
-    my $paths = $ENV{'PATH'};
-    my (%seen, @list) = ();
-    foreach my $p (split($PATHENVSEP, $paths)) {
-        next  unless -w $p;  # writable
-        push @list, $p  unless exists $seen{$p};
-        $seen{$p} = 1;
-    }
-    return @list;
+sub expand_unix_path {
+    my $path = shift;
+    $path =~ s{
+                ^~([^/]*)
+              }
+              {
+                $1 ? (getpwnam($1))[7] : (
+                  $ENV{HOME} || $ENV{LOGDIR} || (getpwuid($<))[7]
+                )
+              }ex;
+    return $path;
 }
 
 sub guess_unix_bindir {
@@ -331,6 +337,18 @@ sub guess_unix_bindir {
     } else {
         guess_unix_user_bindir(@SAVEPATH);
     }
+}
+
+sub get_writable_unix_paths {
+    my $paths = $ENV{'PATH'};
+    my (%seen, @list) = ();
+    foreach my $p (split($PATHENVSEP, $paths)) {
+        $p = expand_unix_path($p);
+        next  unless -w $p;  # writable
+        push @list, $p  unless exists $seen{$p};
+        $seen{$p} = 1;
+    }
+    return @list;
 }
 
 sub guess_unix_admin_bindir {
@@ -395,15 +413,8 @@ sub test_if_dos_admin {
     return 0;
 }
 
-sub get_writable_dos_paths {
-    my $paths = $ENV{'PATH'};
-    my (%seen, @list) = ();
-    foreach my $p (split($PATHENVSEP, $paths)) {
-        next  unless -w $p;  # writable
-        push @list, $p  unless exists $seen{uc $p}; # case insensitive
-        $seen{uc $p} = 1;
-    }
-    return @list;
+sub expand_dos_path {
+    return $_[0];
 }
 
 sub guess_dos_bindir {
@@ -416,6 +427,17 @@ sub guess_dos_bindir {
     } else {
         guess_dos_user_bindir(@SAVEPATH);
     }
+}
+
+sub get_writable_dos_paths {
+    my $paths = $ENV{'PATH'};
+    my (%seen, @list) = ();
+    foreach my $p (split($PATHENVSEP, $paths)) {
+        next  unless -w $p;  # writable
+        push @list, $p  unless exists $seen{uc $p}; # case insensitive
+        $seen{uc $p} = 1;
+    }
+    return @list;
 }
 
 sub guess_dos_admin_bindir {
