@@ -28,6 +28,11 @@ Personal use
    to wherever you just unpacked MView. It offers you various places to
    install this driver so that it is on your ``PATH``.
    
+   If you know in advance the name of the folder you want to use for the
+   driver script, you can supply it on the command line::
+
+        perl install.pl \folder\on\my\path
+
 4. If the installer couldn't find a sensible place to install the driver, it
    chooses ``C:\bin`` and you will have to add that to your ``PATH``, then
    start a new command prompt.
