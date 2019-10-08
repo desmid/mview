@@ -1,23 +1,15 @@
-Install: Linux, Apple, UNIX
-===========================
+Installation: Linux, OS X, UNIX
+===============================
 
-There are different approaches depending on whether you are installing for
-your own use or as a site administrator for multiple users.
-
-Personal use
-^^^^^^^^^^^^
-
-Using this method, you unpack the archive into a destination directory, then
-run an installer that puts a small driver program into a folder on your
-``PATH`` so you can run it easily. The driver knows the location of the
-unpacked MView folder and starts the real MView program.
+Installer script
+^^^^^^^^^^^^^^^^
 
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it::
 
-        tar xvzf mview-1.66.1.tar.gz
+        tar xvzf mview-VERSION.tar.gz
 
-   This creates a sub-folder called ``mview-1.66.1`` containing all the files.
+   This creates a sub-folder ``mview-VERSION`` containing all the files.
    
 2. Change to this folder.
 
@@ -37,20 +29,15 @@ unpacked MView folder and starts the real MView program.
    chooses ``~/bin`` and you will have to add that to your ``PATH``, then
    rehash or login again.
 
-Site administrator for multiple users
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can use the installer method above, or install manually:
-
-If installing manually, you unpack the archive and edit the MView program by
-hand, then add its folder to ``PATH``.
+Manual install
+^^^^^^^^^^^^^^
 
 1. Save the archive to your software area, for example, ``/usr/local``, then
    uncompress and extract it::
 
-        tar xvzf mview-1.66.1.tar.gz
+        tar xvzf mview-VERSION.tar.gz
 
-   This creates a sub-folder called ``mview-1.66.1`` containing all the files.
+   This creates a sub-folder ``mview-VERSION`` containing all the files.
 
 2. Change to this folder.
 
@@ -67,54 +54,58 @@ hand, then add its folder to ``PATH``.
 
     and change the path, in our example, to::
 
-        $MVIEW_HOME = "/usr/local/mview-1.66.1";
+        $MVIEW_HOME = "/usr/local/mview-VERSION";
 
   * Save the file.
 
 4. Finally, make sure that the ``bin`` folder containing the ``mview`` script
    (that you just edited) is on the user ``PATH``, then rehash or login again.
 
-   In our example, you would add ``/usr/local/mview-1.66.1/bin`` to the
+   In our example, you would add ``/usr/local/mview-VERSION/bin`` to the
    existing value of ``PATH``, or replace any older MView path.
 
+How to change PATH on UNIX
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As a Perl package
-^^^^^^^^^^^^^^^^^
+The ``PATH`` environment variable is a list of ``:`` (colon) separated folders
+containing programs. When you type the name of a program at the command
+prompt, the system searches these folders, in order, until it finds the
+program and runs it (or complains if the program can't be found).
 
-MView can be installed as a Perl package.
+Assume you are adding ``/opt/bin`` as the directory containing the newly
+installed mview script. On all systems the ``PATH`` environment variable would
+be extended by adding ``/opt/bin`` to the existing ``PATH`` value using colon
+delimiters as needed. You can prepend the new path (it will be searched first
+for commands), insert it somewhere in the middle, or append it at the back (it
+will be searched last).
 
-1. Save the archive to somewhere under your home folder then uncompress
-   and extract it::
+Most people are using ``bash`` or a related shell. The ``PATH`` environment
+variable is set globally for all users by the system. You can modify it for
+your account by editing or creating if necessary your ``~/.profile`` file. You
+might see a line like::
 
-        tar xvzf mview-1.66.1.tar.gz
+      PATH="$HOME/bin:$PATH"
 
-   This creates a sub-folder called ``mview-1.66.1`` containing all the files.
-   
-2. Change to this folder.
+so change it, in this example, to::
 
-You can now use one of the following sets of instructions to do the install:
+      PATH="$HOME/bin:/opt/bin:$PATH"
+  
+Here we've inserted it somewhere in the middle, after a path in the user's
+account, but before the system paths, and that will be the program search
+order.
 
-3. Run::
+On all systems, once you've updated the ``PATH`` variable, login again and the
+``mview`` command should be recognised, so that running::
 
-        perl Makefile.PL
-        make install
-        
-   which attempts to install into the Perl distribution.
+  mview -help
 
-3. Or run::
+prints the help message for the new version.
 
-        perl Makefile.PL INSTALL_BASE=/usr/local
-        make install
+Note: if you already have an older mview installed on the ``PATH`` and append
+the new location at the back of ``PATH``, the older program will still be
+found first whenever you try to run mview, so be aware of that; you would need
+to delete the old version, or rearrange the ``PATH`` order.
 
-   which attempts to install under the given folder. In this example you need
-   write access to ``/usr/local`` and users will need ``/usr/local/bin`` on
-   their ``PATH``.
-   
-3. Or, if you have a `local::lib <https://metacpan.org/pod/local::lib>`_
-   setup, you can install MView there::
-
-        perl Makefile.PL $PERL_MM_OPT
-        make install
-
-4. Finally, the unpacked archive can be deleted since the crucial components
-   have been installed elsewhere.
+Finally, if you are root or can ``sudo su`` with root privileges you can set
+``PATH`` globally for all users, but details are system specific and you
+already know what to do anyway.

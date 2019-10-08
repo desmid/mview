@@ -33,6 +33,12 @@ bundled with the code.
 MView is implemented in Perl, version 5 as a self-contained command line
 program that should run cross-platform.
 
+[Perl](https://www.perl.org/) is generally installed on Linux, OS X, and other
+UNIX.
+
+MView is known to work on Windows with [Strawberry Perl]
+(http://strawberryperl.com/).
+
 
 ### Download
 
@@ -51,26 +57,59 @@ program that should run cross-platform.
   download a ZIP archive.
 
 
-### Install
+### Installation
 
-#### Linux, Apple, UNIX
+There are several ways to install MView, with further details given below.
 
-There are different approaches depending on whether you are installing for
-your own use or as a site administrator for multiple users.
+Each method can be used by an ordinary user installing into their own account,
+or by a system administrator installing onto a computer with multiple
+users. It is assumed that Perl is already installed and on your `PATH'.
+
+* Installer script
+
+  The installer program should work on all systems, but is new and relatively
+  experimental.
+
+  You unpack the archive into a destination folder and run the installer from
+  there, following the instructions. You may have to edit `PATH' afterwards.
+  
+  Explanation: the installer puts a small mview driver program into a folder
+  on `PATH' so that it can be run easily by the user. The driver knows the
+  location of the unpacked MView folder and starts the real MView program.
+
+* Manual install
+
+  This works on all systems and is the most basic, but requires that you do a
+  little editing.
+
+  You unpack the archive into a destination folder, edit the MView program by
+  hand, then add the folder containing that program to `PATH'.
+
+* Perl module
+
+  This method assumes that, as well as Perl, you have some version of `make'
+  installed, so may not work on all systems.
+  
+  You unpack the archive into a temporary folder and run the standard Perl
+  module installation incantation. Unlike the other installation methods you
+  can then delete the installation folder because all the code has been copied
+  into Perl somewhere.
+  
+  Installing a perl Module has the advantage that there is (usually) no need
+  to change `PATH', but the disadvantage that it installs directly into your
+  Perl installation (or personal perl folder known to Perl), which you may not
+  want to do.
+
+#### Linux, OS X, UNIX
 
 ##### Installer script
-
-Using this method, you unpack the archive into a destination directory, then
-run an installer that puts a small driver program into a folder on your `PATH'
-so you can run it easily. The driver knows the location of the unpacked MView
-folder and starts the real MView program.
 
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it:
 
         tar xvzf mview-1.66.1.tar.gz
 
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1' containing all the files.
    
 2. Change to this folder.
 
@@ -90,19 +129,14 @@ folder and starts the real MView program.
    chooses `~/bin' and you will have to add that to your `PATH', then rehash
    or login again.
 
-##### Site administrator for multiple users
-
-You can use the installer method above, or install manually:
-
-If installing manually, you unpack the archive and edit the MView program by
-hand, then add its folder to `PATH'.
+##### Manual install
 
 1. Save the archive to your software area, for example, `/usr/local', then
    uncompress and extract it:
 
         tar xvzf mview-1.66.1.tar.gz
 
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1' containing all the files.
 
 2. Change to this folder.
 
@@ -130,60 +164,9 @@ hand, then add its folder to `PATH'.
    existing value of `PATH', or replace any older MView path.
 
 
-##### As a Perl package
-
-MView can be installed as a Perl package:
-
-1. Save the archive to somewhere under your home folder then uncompress
-   and extract it:
-
-        tar xvzf mview-1.66.1.tar.gz
-
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
-   
-2. Change to this folder.
-
-You can now use one of the following sets of instructions to do the install:
-
-3. Run:
-
-        perl Makefile.PL
-        make install
-        
-   which attempts to install into the Perl distribution.
-
-3. Or run:
-
-        perl Makefile.PL INSTALL_BASE=/usr/local
-        make install
-
-    which attempts to install under the given folder. In this example you need
-    write access to `/usr/local' and users will need `/usr/local/bin' on their
-    `PATH'.
-   
-3. Or, if you have a [local::lib](https://metacpan.org/pod/local::lib) setup,
-   you can install mview there:
-
-        perl Makefile.PL $PERL_MM_OPT
-        make install
-
-4. Finally, the unpacked archive can be deleted since the crucial components
-   have been installed elsewhere.
-
 #### Windows
 
-MView requires a Perl installation and is known to work with [Strawberry Perl
-for Windows](http://strawberryperl.com/).
-
-There are different approaches depending on whether you are installing for
-your own use or as a site administrator for multiple users.
-
-##### Personal use
-
-Using this method, you unpack the archive into a destination directory, then
-run an installer that puts a small driver program into a folder on your `PATH'
-so you can run it easily. The driver knows the location of the unpacked MView
-folder and starts the real MView program.
+##### Installer script
 
 1. Save the archive to somewhere under your home folder then uncompress and
    extract it (using an archiver like WinZip or 7-Zip, as here):
@@ -191,7 +174,7 @@ folder and starts the real MView program.
         7z x mview-1.66.1.tar.bz2
         7z x mview-1.66.1.tar
 
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1' containing all the files.
    
 2. Change to this folder.
 
@@ -212,12 +195,7 @@ folder and starts the real MView program.
    a new command prompt.
 
 
-##### Site administrator for multiple users
-
-You can use the installer method above, or install manually:
-
-If installing manually, you unpack the archive and edit the MView program by
-hand, then add its folder to `PATH'.
+##### Manual install
 
 1. Save the archive to your software area, for example, `C:\Program Files',
    then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
@@ -226,7 +204,7 @@ hand, then add its folder to `PATH'.
         7z x mview-1.66.1.tar.bz2
         7z x mview-1.66.1.tar
 
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1' containing all the files.
 
 2. Change to this folder.
 
@@ -247,6 +225,49 @@ hand, then add its folder to `PATH'.
    
    In our example, you would append `C:\Program Files\mview-1.66.1\bin' to the
    existing value of `PATH', or replace any older MView path.
+
+
+#### Perl module
+
+1. Save the archive then uncompress and extract it (Linux, OS X, UNIX):
+
+        tar xvzf mview-1.66.1.tar.gz
+
+   or (Windows, using an archiver WinZip, 7-Zip, etc.)
+   
+        7z x mview-1.66.1.tar.bz2
+        7z x mview-1.66.1.tar
+        
+   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   
+2. Change to this folder.
+
+You can now use one of the following sets of instructions to do the install:
+
+3. Run:
+
+        perl Makefile.PL
+        make install
+        
+   which attempts to install into the Perl distribution.
+
+3. Or run:
+
+        perl Makefile.PL INSTALL_BASE=/usr/local
+        make install
+
+    which attempts to install under the given folder. In this UNIX example you
+    need write access to `/usr/local' and users will need `/usr/local/bin' on
+    their `PATH'.
+   
+3. Or, if you have a [local::lib](https://metacpan.org/pod/local::lib) setup,
+   you can install mview there:
+
+        perl Makefile.PL $PERL_MM_OPT
+        make install
+
+4. Finally, the unpacked archive can be deleted since the important components
+   have been copied elsewhere.
 
 
 ### Testing

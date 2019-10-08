@@ -1,27 +1,16 @@
-Install: Windows
-================
+Installation: Windows
+=====================
 
-MView requires a Perl installation and is known to work with `Strawberry Perl
-for Windows <http://strawberryperl.com/>`_.
-
-There are different approaches depending on whether you are installing for
-your own use or as a site administrator for multiple users.
-
-Personal use
-^^^^^^^^^^^^
-
-Using this method, you unpack the archive into a destination directory, then
-run an installer that puts a small driver program into a folder on your
-``PATH`` so you can run it easily. The driver knows the location of the
-unpacked MView folder and starts the real MView program.
+Installer script
+^^^^^^^^^^^^^^^^
 
 1. Save the archive to somewhere under your home folder then uncompress and
    extract it (using an archiver like WinZip or 7-Zip, as here)::
 
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-VERSION.tar.bz2
+        7z x mview-VERSION.tar
 
-   This creates a sub-folder called ``mview-1.66.1`` containing all the files.
+   This creates a sub-folder ``mview-VERSION`` containing all the files.
    
 2. Change to this folder.
 
@@ -42,22 +31,17 @@ unpacked MView folder and starts the real MView program.
    start a new command prompt.
 
 
-Site administrator for multiple users
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can use the installer method above, or install manually.
-
-If installing manually, you unpack the archive and edit the MView program by
-hand, then add its folder to ``PATH``.
+Manual install
+^^^^^^^^^^^^^^
 
 1. Save the archive to your software area, for example, ``C:\Program Files``,
    then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
    here)::
 
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-VERSION.tar.bz2
+        7z x mview-VERSION.tar
 
-   This creates a sub-folder called ``mview-1.66.1`` containing all the files.
+   This creates a sub-folder ``mview-VERSION`` containing all the files.
 
 2. Change to this folder.
 
@@ -69,7 +53,7 @@ hand, then add its folder to ``PATH``.
 
     and change the path, in our example, to::
 
-        $MVIEW_HOME = "C:\Program Files\mview-1.66.1";
+        $MVIEW_HOME = "C:\Program Files\mview-VERSION";
 
   * Save the file.
 
@@ -77,5 +61,55 @@ hand, then add its folder to ``PATH``.
    (that you just edited) is on the user ``PATH``, then start a new command
    prompt.
 
-   In our example, you would add ``C:\Program Files\mview-1.66.1\bin`` to the
+   In our example, you would add ``C:\Program Files\mview-VERSION\bin`` to the
    existing value of ``PATH``, or replace any older MView path.
+
+
+How to change PATH in Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``PATH`` environment variable is a list of ``;`` (semi-colon) separated
+folders containing programs. When you type the name of a program at the
+command prompt, the system searches these folders, in order, until it finds
+the program and runs it (or complains if the program can't be found).
+
+Assume you are adding ``C:\bin`` as the directory containing the newly
+installed mview script. On all systems the ``PATH`` environment variable would
+be extended by adding ``C\bin`` to the existing ``PATH`` value using
+semi-colon delimiters as needed. You can prepend the new path (it will be
+searched first for commands), insert it somewhere in the middle, or append it
+at the back (it will be searched last).
+
+How to change ``PATH`` on different editions of Windows (gleaned from the
+Internet):
+
+* Windows 10 and Windows 8
+
+  - Search » System (Control Panel) » Advanced system settings »
+    Environment Variables
+
+* Windows 7
+
+  - Computer » Properties » Advanced system settings » Environment
+    Variables
+
+* Windows Vista
+
+  - My Computer » Properties » Advanced system settings » Environment
+    Variables
+
+* Windows XP
+
+  - Start » Control Panel » System » Advanced » Environment Variables
+
+On all systems, once you've updated the ``PATH`` variable, open a new command
+prompt, then the ``mview`` command should be recognised, so that running::
+
+  mview -help
+
+prints the help message for the new version.
+
+Note: if you already have an older mview installed on the ``PATH`` and append
+the new location at the back of ``PATH``, the older program will still be
+found first whenever you try to run mview, so be aware of that; you would need
+to delete the old version, or rearrange the ``PATH`` order.
