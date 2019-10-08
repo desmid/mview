@@ -34,10 +34,7 @@ MView is implemented in Perl, version 5 as a self-contained command line
 program that should run cross-platform.
 
 [Perl](https://www.perl.org/) is generally installed on Linux, OS X, and other
-UNIX.
-
-MView is known to work on Windows with [Strawberry Perl]
-(http://strawberryperl.com/).
+UNIX. MView is known to work on Windows with [Strawberry Perl](http://strawberryperl.com/).
 
 
 ### Download
@@ -63,7 +60,7 @@ There are several ways to install MView, with further details given below.
 
 Each method can be used by an ordinary user installing into their own account,
 or by a system administrator installing onto a computer with multiple
-users. It is assumed that Perl is already installed and on your `PATH'.
+users. It is assumed that Perl is already installed and on your `PATH`.
 
 * Installer script
 
@@ -71,10 +68,10 @@ users. It is assumed that Perl is already installed and on your `PATH'.
   experimental.
 
   You unpack the archive into a destination folder and run the installer from
-  there, following the instructions. You may have to edit `PATH' afterwards.
+  there, following the instructions. You may have to edit `PATH` afterwards.
   
   Explanation: the installer puts a small mview driver program into a folder
-  on `PATH' so that it can be run easily by the user. The driver knows the
+  on `PATH` so that it can be run easily by the user. The driver knows the
   location of the unpacked MView folder and starts the real MView program.
 
 * Manual install
@@ -83,11 +80,11 @@ users. It is assumed that Perl is already installed and on your `PATH'.
   little editing.
 
   You unpack the archive into a destination folder, edit the MView program by
-  hand, then add the folder containing that program to `PATH'.
+  hand, then add the folder containing that program to `PATH`.
 
 * Perl module
 
-  This method assumes that, as well as Perl, you have some version of `make'
+  This method assumes that, as well as Perl, you have some version of `make`
   installed, so may not work on all systems.
   
   You unpack the archive into a temporary folder and run the standard Perl
@@ -96,7 +93,7 @@ users. It is assumed that Perl is already installed and on your `PATH'.
   into Perl somewhere.
   
   Installing a perl Module has the advantage that there is (usually) no need
-  to change `PATH', but the disadvantage that it installs directly into your
+  to change `PATH`, but the disadvantage that it installs directly into your
   Perl installation (or personal perl folder known to Perl), which you may not
   want to do.
 
@@ -109,7 +106,7 @@ users. It is assumed that Perl is already installed and on your `PATH'.
 
         tar xvzf mview-1.66.1.tar.gz
 
-   This creates a sub-folder `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1` containing all the files.
    
 2. Change to this folder.
 
@@ -126,23 +123,23 @@ users. It is assumed that Perl is already installed and on your `PATH'.
         perl install.pl /folder/on/my/path
 
 4. If the installer couldn't find a sensible place to install the script, it
-   chooses `~/bin' and you will have to add that to your `PATH', then rehash
+   chooses `~/bin` and you will have to add that to your `PATH`, then rehash
    or login again.
 
 ##### Manual install
 
-1. Save the archive to your software area, for example, `/usr/local', then
+1. Save the archive to your software area, for example, `/usr/local`, then
    uncompress and extract it:
 
         tar xvzf mview-1.66.1.tar.gz
 
-   This creates a sub-folder `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1` containing all the files.
 
 2. Change to this folder.
 
-3. Edit the file `bin/mview'.
+3. Edit the file `bin/mview`.
 
-   Set a valid path for the Perl interpreter on your machine after the `#!'
+   Set a valid path for the Perl interpreter on your machine after the `#!`
    at the top of the file, for example:
 
         #!/usr/bin/perl
@@ -157,11 +154,11 @@ users. It is assumed that Perl is already installed and on your `PATH'.
 
    Save the file.
 
-4. Finally, make sure that the `bin' folder containing the `mview' script
-   (that you just edited) is on the user `PATH', and rehash or login again.
+4. Finally, make sure that the `bin` folder containing the `mview` script
+   (that you just edited) is on the user `PATH`, and rehash or login again.
 
-   In our example, you would add `/usr/local/mview-1.66.1/bin' to the
-   existing value of `PATH', or replace any older MView path.
+   In our example, you would add `/usr/local/mview-1.66.1/bin` to the
+   existing value of `PATH`, or replace any older MView path.
 
 
 #### Windows
@@ -174,7 +171,7 @@ users. It is assumed that Perl is already installed and on your `PATH'.
         7z x mview-1.66.1.tar.bz2
         7z x mview-1.66.1.tar
 
-   This creates a sub-folder `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1` containing all the files.
    
 2. Change to this folder.
 
@@ -191,24 +188,24 @@ users. It is assumed that Perl is already installed and on your `PATH'.
         perl install.pl \folder\on\my\path
 
 3. If the installer couldn't find a sensible place to install the driver, it
-   chooses `C:\bin' and you will have to add that to your `PATH', then start
+   chooses `C:\bin` and you will have to add that to your `PATH`, then start
    a new command prompt.
 
 
 ##### Manual install
 
-1. Save the archive to your software area, for example, `C:\Program Files',
+1. Save the archive to your software area, for example, `C:\Program Files`,
    then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
    here):
 
         7z x mview-1.66.1.tar.bz2
         7z x mview-1.66.1.tar
 
-   This creates a sub-folder `mview-1.66.1' containing all the files.
+   This creates a sub-folder `mview-1.66.1` containing all the files.
 
 2. Change to this folder.
 
-3. Edit the file `bin\mview'.
+3. Edit the file `bin\mview`.
 
    Find the line:
    
@@ -220,11 +217,11 @@ users. It is assumed that Perl is already installed and on your `PATH'.
 
    Save the file.
 
-4. Finally, make sure that the `bin' folder containing the mview script (that
-   you just edited) is on the user `PATH', then start a new command prompt.
+4. Finally, make sure that the `bin` folder containing the mview script (that
+   you just edited) is on the user `PATH`, then start a new command prompt.
    
-   In our example, you would append `C:\Program Files\mview-1.66.1\bin' to the
-   existing value of `PATH', or replace any older MView path.
+   In our example, you would append `C:\Program Files\mview-1.66.1\bin` to the
+   existing value of `PATH`, or replace any older MView path.
 
 
 #### Perl module
@@ -238,7 +235,7 @@ users. It is assumed that Perl is already installed and on your `PATH'.
         7z x mview-1.66.1.tar.bz2
         7z x mview-1.66.1.tar
         
-   This creates a sub-folder called `mview-1.66.1' containing all the files.
+   This creates a sub-folder called `mview-1.66.1` containing all the files.
    
 2. Change to this folder.
 
@@ -257,8 +254,8 @@ You can now use one of the following sets of instructions to do the install:
         make install
 
     which attempts to install under the given folder. In this UNIX example you
-    need write access to `/usr/local' and users will need `/usr/local/bin' on
-    their `PATH'.
+    need write access to `/usr/local` and users will need `/usr/local/bin` on
+    their `PATH`.
    
 3. Or, if you have a [local::lib](https://metacpan.org/pod/local::lib) setup,
    you can install mview there:

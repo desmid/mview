@@ -72,9 +72,7 @@ MView is implemented in Perl, version 5 as a self-contained command line
 program that should run cross-platform.
 
 `Perl <https://www.perl.org/>`_ is generally installed on Linux, OS X, and
-other UNIX.
-
-MView is known to work on Windows with `Strawberry Perl
+other UNIX. MView is known to work on Windows with `Strawberry Perl
 <http://strawberryperl.com/>`_.
 
 
