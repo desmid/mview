@@ -7,6 +7,11 @@ your own use or as a site administrator for multiple users.
 Personal use
 ^^^^^^^^^^^^
 
+Using this method, you unpack the archive into a destination directory, then
+run an installer that puts a small driver program into a folder on your
+``PATH`` so you can run it easily. The driver knows the location of the
+unpacked MView folder and starts the real MView program.
+
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it::
 
@@ -20,9 +25,8 @@ Personal use
 
         perl install.pl
         
-   and follow the instructions. The installer creates a driver script pointing
-   to wherever you just unpacked MView. It offers you various places to
-   install this driver so that it is on your ``PATH``.
+   and follow the instructions. You will be offered various places to install
+   the driver script.
    
    If you know in advance the name of the folder you want to use for the
    driver script, you can supply it on the command line::
@@ -36,7 +40,10 @@ Personal use
 Site administrator for multiple users
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can use the ``install.pl`` script as above, or install manually:
+You can use the installer method above, or install manually:
+
+If installing manually, you unpack the archive and edit the MView program by
+hand, then add its folder to ``PATH``.
 
 1. Save the archive to your software area, for example, ``/usr/local``, then
    uncompress and extract it::
