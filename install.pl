@@ -429,7 +429,15 @@ sub test_if_dos_admin {
 }
 
 sub expand_dos_path {
-    return $_[0];
+    my $path = shift;
+    $path =~ s{ ^%UserProfile% } { get_dos_home_dir() }iex;
+    $path =~ s{ ^~ }             { get_dos_home_dir() }iex;  #unix tilde
+    return $path;
+}
+
+sub get_dos_home_dir {
+    return $ENV{'UserProfile'}  if exists $ENV{'UserProfile'};
+    return "";
 }
 
 sub guess_dos_bindir {
@@ -473,12 +481,14 @@ sub guess_dos_admin_bindir {
 }
 
 sub guess_dos_user_bindir {
+    my $HOME = get_dos_home_dir();
+
     # prefer these paths in this order
-    if (my @tmp = grep {/$ENV{'UserProfile'}\\bin$/i} @_) {
+    if (my @tmp = grep {/$HOME\\bin$/i} @_) {
         $BINDIR = $tmp[0];
         return;
     }
-    $BINDIR = "$ENV{'UserProfile'}\\bin"  # force default
+    $BINDIR = "$HOME\\bin"  # force default
 }
 
 sub make_dos_driver {
