@@ -329,15 +329,15 @@ sub test_if_unix_admin {
 
 sub expand_unix_path {
     my $path = shift;
-    $path =~ s{
-                ^~([^/]*)
-              }
-              {
-                $1 ? (getpwnam($1))[7] : (
-                  $ENV{HOME} || $ENV{LOGDIR} || (getpwuid($<))[7]
-                )
-              }ex;
+    $path =~ s{ ^~([^/]*) } { get_unix_home_dir($1) }ex;
     return $path;
+}
+
+sub get_unix_home_dir {
+    return (getpwnam($_[0]))[7]  if @_ and $_[0];
+    return $ENV{HOME}    if exists $ENV{HOME};
+    return $ENV{LOGDIR}  if exists $ENV{LOGDIR};
+    return (getpwuid($<))[7];
 }
 
 sub guess_unix_bindir {
@@ -378,12 +378,14 @@ sub guess_unix_admin_bindir {
 }
 
 sub guess_unix_user_bindir {
+    my $HOME = get_unix_home_dir();
+
     # prefer these paths in this order
-    if (my @tmp = grep {/$ENV{'HOME'}\/bin$/} @_) {
+    if (my @tmp = grep {/$HOME\/bin$/} @_) {
         $BINDIR = $tmp[0];
         return;
     }
-    $BINDIR = "$ENV{'HOME'}/bin";  # force default
+    $BINDIR = "$HOME/bin";  # force default
 }
 
 sub make_unix_driver {
