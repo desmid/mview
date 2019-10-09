@@ -29,8 +29,6 @@ my $INSTALLDIR = getcwd();
 my @SAVEPATH = ();
 my $BINDIR = "";
 my $SYSTEM = "";
-my $PATHENVSEP = ':';
-my $PATHSEP = '/';
 my $ADMIN = 0;
 my $VERSION = "1.0";
 
@@ -85,9 +83,9 @@ EOT
 }
 
 sub show_summary {
-    my $driver_path = join($PATHSEP, ($BINDIR, $DRIVER));
+    my $driver_path = File::Spec->catfile($BINDIR, $DRIVER);
     my $short_name = $DRIVER; $short_name =~ s/\.bat$//i  if is_dos();
-    my $long_name = join($PATHSEP, ($BINDIR, $short_name));
+    my $long_name = File::Spec->catfile($BINDIR, $short_name);
 
     print STDERR <<EOT;
 
@@ -137,8 +135,6 @@ sub set_base_system {
         irix linux machten midnightbsd minix mirbsd netbsd next nto openbsd qnx
         sco solaris)) {
         $SYSTEM        = "UNIX";
-        $PATHENVSEP    = ':';
-        $PATHSEP       = '/';
         $test_if_admin = \&test_if_unix_admin;
         $expand_path   = \&expand_unix_path;
         $guess_bindir  = \&guess_unix_bindir;
@@ -147,15 +143,13 @@ sub set_base_system {
     }
     if (grep {/$^O/i} qw(dos MSWin32)) {
         $SYSTEM        = "DOS";
-        $PATHENVSEP    = ';';
-        $PATHSEP       = '\\';
         $test_if_admin = \&test_if_dos_admin;
         $expand_path   = \&expand_dos_path;
         $guess_bindir  = \&guess_dos_bindir;
         $make_driver   = \&make_dos_driver;
         #change from defaults
-        $INSTALLDIR    = join($PATHSEP, split('/', $INSTALLDIR));
-        $TARGET_EXE    = join($PATHSEP, split('/', $TARGET_EXE));
+        $INSTALLDIR    = join('\\', split('/', $INSTALLDIR));
+        $TARGET_EXE    = join('\\', split('/', $TARGET_EXE));
         $DRIVER .= ".bat";
         return $SYSTEM;
     }
@@ -295,7 +289,7 @@ sub install_driver {
     return  if $destination eq ".";
 
     my $source = "$file";
-    my $target = join($PATHSEP, ($destination, $file));
+    my $target = File::Spec->catfile($destination, $file);
 
     if ( -e $target ) {
         warning "Replacing existing '$target'";
@@ -361,7 +355,7 @@ sub guess_unix_bindir {
 sub get_writable_unix_paths {
     my $paths = $ENV{'PATH'};
     my (%seen, @list) = ();
-    foreach my $p (split($PATHENVSEP, $paths)) {
+    foreach my $p (split(':', $paths)) {
         $p = expand_unix_path($p);
         next  unless -w $p;  # writable
         push @list, $p  unless exists $seen{$p};
@@ -451,7 +445,7 @@ sub guess_dos_bindir {
 sub get_writable_dos_paths {
     my $paths = $ENV{'PATH'};
     my (%seen, @list) = ();
-    foreach my $p (split($PATHENVSEP, $paths)) {
+    foreach my $p (split(';', $paths)) {
         next  unless -w $p;  # writable
         push @list, $p  unless exists $seen{uc $p}; # case insensitive
         $seen{uc $p} = 1;
