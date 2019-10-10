@@ -424,7 +424,7 @@ EOT
 # DOS system
 
 sub test_if_dos_admin {
-    return 1  if system("NET SESSION >NUL 2>&1");
+    return 1  if system("NET SESSION >NUL 2>&1") == 0;
     return 0;
 }
 
@@ -482,9 +482,10 @@ sub guess_dos_admin_bindir {
 
 sub guess_dos_user_bindir {
     my $HOME = get_dos_home_dir();
+    my $home = $HOME; $home =~ s/\\/\\\\/g;
 
     # prefer these paths in this order
-    if (my @tmp = grep {/$HOME\\bin$/i} @_) {
+    if (my @tmp = grep {/$home\\bin$/i} @_) {
         $BINDIR = $tmp[0];
         return;
     }
