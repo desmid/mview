@@ -34,8 +34,11 @@ my $VERSION = "1.0";
 
 umask 0022;
 
+my $TESTFILE = "";
+
 sub abort {
     unlink "$DRIVER";
+    unlink $TESTFILE  if -f $TESTFILE;
     die "\nAborted.\n";
 }
 
@@ -45,7 +48,8 @@ $SIG{'INT'}  = \&abort;
 $SIG{'QUIT'} = \&abort;
 $SIG{'TERM'} = \&abort;
 
-my $test_if_admin;
+my $is_admin;
+my $is_writable_dir;
 my $expand_path;
 my $guess_bindir;
 my $make_driver;
@@ -134,22 +138,24 @@ sub set_base_system {
         dynixptx cygwin darwin dragonfly freebsd gnukfreebsd haiku hpux interix
         irix linux machten midnightbsd minix mirbsd netbsd next nto openbsd qnx
         sco solaris)) {
-        $SYSTEM        = "UNIX";
-        $test_if_admin = \&test_if_unix_admin;
-        $expand_path   = \&expand_unix_path;
-        $guess_bindir  = \&guess_unix_bindir;
-        $make_driver   = \&make_unix_driver;
+        $SYSTEM          = "UNIX";
+        $is_admin        = \&is_unix_admin;
+        $is_writable_dir = \&is_writable_unix_dir;
+        $expand_path     = \&expand_unix_path;
+        $guess_bindir    = \&guess_unix_bindir;
+        $make_driver     = \&make_unix_driver;
         return $SYSTEM;
     }
     if (grep {/$^O/i} qw(dos MSWin32)) {
-        $SYSTEM        = "DOS";
-        $test_if_admin = \&test_if_dos_admin;
-        $expand_path   = \&expand_dos_path;
-        $guess_bindir  = \&guess_dos_bindir;
-        $make_driver   = \&make_dos_driver;
+        $SYSTEM          = "DOS";
+        $is_admin        = \&is_dos_admin;
+        $is_writable_dir = \&is_writable_dos_dir;
+        $expand_path     = \&expand_dos_path;
+        $guess_bindir    = \&guess_dos_bindir;
+        $make_driver     = \&make_dos_driver;
         #change from defaults
-        $INSTALLDIR    = join('\\', split('/', $INSTALLDIR));
-        $TARGET_EXE    = join('\\', split('/', $TARGET_EXE));
+        $INSTALLDIR      = join('\\', split('/', $INSTALLDIR));
+        $TARGET_EXE      = join('\\', split('/', $TARGET_EXE));
         $DRIVER .= ".bat";
         return $SYSTEM;
     }
@@ -205,13 +211,13 @@ sub path_writable {
         if (-e $path and ! -d $path) {
             return 0;  # exists but not a directory
         }
-        if (-e $path and -w $path) {
+        if (-e $path and &$is_writable_dir($path)) {
             return 1;  # exists and can write into it
         }
-        if (-e $path and ! -w $path) {
+        if (-e $path and ! &$is_writable_dir($path)) {
             return 0;  # can't write below path element
         }
-        # path element doesn't exist yet - potentially writable
+        # path element doesn't exist yet - potentially writable;
         # go up one level
         my ($v,$d,$f) = File::Spec->splitpath($path);
         $path = File::Spec->join($v, $d);
@@ -310,7 +316,7 @@ sub install_driver {
 ###########################################################################
 # UNIX-like system
 
-sub test_if_unix_admin {
+sub is_unix_admin {
     my $user;
     if ($ENV{'USER'} eq "root") {
         $user = 0;
@@ -325,6 +331,12 @@ sub test_if_unix_admin {
         $user = `id -u`;
     }
     return $user == 0;
+}
+
+sub is_writable_unix_dir {
+    my $dir = shift;
+    return 1  if -w $dir;
+    return 0;
 }
 
 sub expand_unix_path {
@@ -423,9 +435,21 @@ EOT
 ###########################################################################
 # DOS system
 
-sub test_if_dos_admin {
+sub is_dos_admin {
     return 1  if system("NET SESSION >NUL 2>&1") == 0;
     return 0;
+}
+
+# ugly hack: -w does't work always
+sub is_writable_dos_dir {
+    my $dir = shift;
+    return 0  unless -w $dir;
+    # global: can unlink after Ctrl-C trap
+    $TESTFILE = join('\\', $dir, "mview_$$");
+    open(my $fh, ">", $TESTFILE) or return 0;
+    close $TESTFILE;
+    unlink $TESTFILE;
+    return 1;
 }
 
 sub expand_dos_path {
@@ -456,7 +480,7 @@ sub get_writable_dos_paths {
     my $paths = $ENV{'PATH'};
     my (%seen, @list) = ();
     foreach my $p (split(';', $paths)) {
-        next  unless -w $p;  # writable
+        next  unless is_writable_dos_dir($p);
         push @list, $p  unless exists $seen{uc $p}; # case insensitive
         $seen{uc $p} = 1;
     }
@@ -465,15 +489,15 @@ sub get_writable_dos_paths {
 
 sub guess_dos_admin_bindir {
     # prefer these paths in this order
+    if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
+        $BINDIR = $tmp[0];
+        return;
+    }
     if (my @tmp = grep {/\\perl\\site\\bin$/i} @_) {
         $BINDIR = $tmp[0];
         return;
     }
     if (my @tmp = grep {/\\perl\\bin$/i} @_) {
-        $BINDIR = $tmp[0];
-        return;
-    }
-    if (my @tmp = grep {/C:\\bin$/i} @_) {
         $BINDIR = $tmp[0];
         return;
     }
@@ -485,6 +509,10 @@ sub guess_dos_user_bindir {
     my $home = $HOME; $home =~ s/\\/\\\\/g;
 
     # prefer these paths in this order
+    if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
+        $BINDIR = $tmp[0];
+        return;
+    }
     if (my @tmp = grep {/$home\\bin$/i} @_) {
         $BINDIR = $tmp[0];
         return;
@@ -529,7 +557,7 @@ if ( ! -f $TARGET_EXE ) {
 
 unlink $DRIVER;  # any previous attempt
 
-if ($ADMIN = &$test_if_admin()) {
+if ($ADMIN = &$is_admin()) {
     show_admin_warning();
     pause();
 }
