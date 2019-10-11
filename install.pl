@@ -220,6 +220,9 @@ sub path_writable {
         # path element doesn't exist yet - potentially writable;
         # go up one level
         my ($v,$d,$f) = File::Spec->splitpath($path);
+
+        return 1  if $d eq "";  # top-level of relative path
+
         $path = File::Spec->join($v, $d);
     }
     return 1;
