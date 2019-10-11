@@ -447,7 +447,7 @@ sub is_writable_dos_dir {
     # global: can unlink after Ctrl-C trap
     $TESTFILE = join('\\', $dir, "mview_$$");
     open(my $fh, ">", $TESTFILE) or return 0;
-    close $TESTFILE;
+    close $fh;
     unlink $TESTFILE;
     return 1;
 }
