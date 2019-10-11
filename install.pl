@@ -48,6 +48,20 @@ sub show_admin_warning {
 EOT
 }
 
+sub show_path_warning {
+    print STDERR <<EOT;
+  *********************************************************
+  ** Note: That folder does not exist yet.               **
+  **                                                     **
+  ** Don't forget to add it manually to PATH.            **
+  **                                                     **
+  **                                                     **
+  ** For another choice press Ctrl-C, then start again.  **
+  *********************************************************
+
+EOT
+}#'
+
 sub show_preamble {
     print STDERR <<EOT;
 ###########################################################################
@@ -273,16 +287,7 @@ sub choose_bindir {
 
     $bindir = $loc;
 
-    if (! -e $bindir) {
-        ::info "  ********************************************************";
-        ::info "  ** Note: That folder does not exist yet.              **";
-        ::info "  **                                                    **";
-        ::info "  ** Don't forget to add it manually to PATH.           **";
-        ::info "  **                                                    **";
-        ::info "  **                                                    **";
-        ::info "  ** For another choice press Ctrl-C, then start again. **";
-        ::info "  *********************************************************";
-    }
+    ::show_path_warning()  unless -e $bindir;
 
     return $self->{'BINDIR'} = $bindir;
 }
