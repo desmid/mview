@@ -350,6 +350,8 @@ sub new {
     $self->{'TARGET_EXE'} = $TARGET_EXE;
     $self->{'DRIVER'}     = $DRIVER;
 
+    umask 022;
+
     bless $self, $cls;
 }
 
