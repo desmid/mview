@@ -22,8 +22,8 @@ my $VERSION  = "1.0"; # installer version
 my $TESTFILE = "";    # tmpfile, unlink after Ctrl-C
 
 sub abort {
-    unlink $DRIVER    if -f $DRIVER;
-    unlink $TESTFILE  if -f $TESTFILE;
+    unlink($DRIVER)    if -f $DRIVER;
+    unlink($TESTFILE)  if -f $TESTFILE;
     die "\nAborted.\n";
 }
 
@@ -225,7 +225,7 @@ sub list_dirs {
 
 sub cleanup {
     my $self = shift;
-    unlink $self->{'DRIVER'}  if -f $self->{'DRIVER'};
+    unlink($self->{'DRIVER'})  if -f $self->{'DRIVER'};
 }
 
 sub in_package_dir {
@@ -248,7 +248,10 @@ sub driver_long_name {
     File::Spec->catfile($_[0]->{'BINDIR'}, $_[0]->driver_short_name());
 }
 
-sub set_bindir { $_[0]->{'BINDIR'} = $_[1] }
+sub set_bindir {
+    my ($self, $dir) = @_;
+    $self->{'BINDIR'} = $self->_expand_path($dir);
+}
 
 sub choose_bindir {
     my $self = shift;
@@ -407,13 +410,11 @@ sub _get_home_dir {
 sub guess_bindir {
     my $self = shift;
 
-    return  if defined $self->{'BINDIR'};  # already set/guessed
+    return $self->{'BINDIR'}  if defined $self->{'BINDIR'};  # already set
 
     $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
 
-    if ($self->is_admin()) {
-        return $self->_guess_admin_bindir();
-    }
+    return $self->_guess_admin_bindir()  if $self->is_admin();
     return $self->_guess_user_bindir();
 }
 
@@ -528,7 +529,6 @@ sub is_dos { 1 }
 
 sub driver_short_name {
     my $self = shift;
-
     my $tmp = $self->{'DRIVER'};
     $tmp =~ s/\.bat$//i;  # strip batch file extension
     return $tmp;
@@ -565,7 +565,6 @@ sub _is_writable_dir {
 
 sub _expand_path {
     my ($self, $path) = @_;
-
     $path =~ s{ ^%UserProfile% } { $self->_get_home_dir() }iex;
     $path =~ s{ ^~ }             { $self->_get_home_dir() }iex;  #unix tilde
     return $path;
@@ -573,7 +572,6 @@ sub _expand_path {
 
 sub _get_home_dir {
     my $self = shift;
-
     return $ENV{'UserProfile'}  if exists $ENV{'UserProfile'};
     return "";
 }
@@ -581,15 +579,12 @@ sub _get_home_dir {
 sub guess_bindir {
     my $self = shift;
 
-    return  if defined $self->{'BINDIR'};  # already set/guessed
+    return $self->{'BINDIR'}  if defined $self->{'BINDIR'};  # already set
 
     $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
 
-    if ($self->is_admin()) {
-        return $self->_guess_admin_bindir();
-    } else {
-        return $self->_guess_user_bindir();
-    }
+    return $self->_guess_admin_bindir()  if $self->is_admin();
+    return $self->_guess_user_bindir();
 }
 
 sub _get_writable_paths {
