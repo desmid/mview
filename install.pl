@@ -6,38 +6,23 @@
 # MView is released under license GPLv2, or any later version.
 
 ###########################################################################
-# the application to be installed
+# application to be installed (UNIX syntax; will be modified for DOS)
 my $TARGET_NAME = "MView";
 my $TARGET_ENV  = "MVIEW_HOME";
 my $TARGET_EXE  = "bin/mview";
 my $DRIVER      = "mview";
 ###########################################################################
 
-require 5.004;
-
-use Cwd qw(getcwd);
-use File::Copy qw(copy);
-use File::Path qw(mkpath);
-use File::Spec;
-use FileHandle;
-use POSIX qw(strftime);
+require 5.004;  # ancient: same as MView
 
 use strict;
 use warnings;
 
-my $INSTALLDIR = getcwd();
-my @SAVEPATH = ();
-my $BINDIR = "";
-my $SYSTEM = "";
-my $ADMIN = 0;
-my $VERSION = "1.0";
-
-umask 0022;
-
-my $TESTFILE = "";
+my $VERSION  = "1.0"; # installer version
+my $TESTFILE = "";    # tmpfile, unlink after Ctrl-C
 
 sub abort {
-    unlink "$DRIVER";
+    unlink $DRIVER    if -f $DRIVER;
     unlink $TESTFILE  if -f $TESTFILE;
     die "\nAborted.\n";
 }
@@ -47,12 +32,6 @@ $SIG{'HUP'}  = \&abort;
 $SIG{'INT'}  = \&abort;
 $SIG{'QUIT'} = \&abort;
 $SIG{'TERM'} = \&abort;
-
-my $is_admin;
-my $is_writable_dir;
-my $expand_path;
-my $guess_bindir;
-my $make_driver;
 
 sub show_admin_warning {
     print STDERR <<EOT;
@@ -87,9 +66,12 @@ EOT
 }
 
 sub show_summary {
-    my $driver_path = File::Spec->catfile($BINDIR, $DRIVER);
-    my $short_name = $DRIVER; $short_name =~ s/\.bat$//i  if is_dos();
-    my $long_name = File::Spec->catfile($BINDIR, $short_name);
+    my $installer = shift;
+    my $installdir  = $installer->installdir();
+    my $bindir      = $installer->bindir();
+    my $driver_path = $installer->driver_path();
+    my $short_name  = $installer->driver_short_name();
+    my $long_name   = $installer->driver_long_name();
 
     print STDERR <<EOT;
 
@@ -97,8 +79,8 @@ sub show_summary {
 
 Installation details:
 
-Installed under:  $INSTALLDIR
-PATH entry:       $BINDIR           (add to PATH if missing)
+Installed under:  $installdir
+PATH entry:       $bindir           (add to PATH if missing)
 Program:          $driver_path
 
 Installation complete.
@@ -127,94 +109,196 @@ sub pause {
 }
 
 sub pause_before_exit {
-    if (is_dos()) {
-        prompt "Press the 'return' or 'enter' key to finish.";
-        <STDIN>;
-    }
+    prompt "Press the 'return' or 'enter' key to finish.";
+    <STDIN>;
 }
 
-sub set_base_system {
+###########################################################################
+package Installer;
+
+use Cwd qw(getcwd);
+use File::Basename;
+use File::Copy qw(copy);
+use File::Path qw(mkpath);
+use File::Spec;
+use POSIX qw(strftime);
+
+sub new {
+    my ($cls) = @_;
+    my $self = {};
+
+    $self->{'ADMIN'}      = undef;
+    $self->{'INSTALLDIR'} = getcwd();
+    $self->{'BINDIR'}     = undef;
+    $self->{'SAVEPATH'}   = [];
+
+    bless $self, $cls;
+}
+
+sub get_system {
+    if (grep {/$^O/i} qw(dos MSWin32)) {
+        return "DOS";
+    }
     if (grep {/$^O/i} qw(aix android bsdos beos bitrig dgux
         dynixptx cygwin darwin dragonfly freebsd gnukfreebsd haiku hpux interix
         irix linux machten midnightbsd minix mirbsd netbsd next nto openbsd qnx
         sco solaris)) {
-        $SYSTEM          = "UNIX";
-        $is_admin        = \&is_unix_admin;
-        $is_writable_dir = \&is_writable_unix_dir;
-        $expand_path     = \&expand_unix_path;
-        $guess_bindir    = \&guess_unix_bindir;
-        $make_driver     = \&make_unix_driver;
-        return $SYSTEM;
+        return "UNIX";
     }
-    if (grep {/$^O/i} qw(dos MSWin32)) {
-        $SYSTEM          = "DOS";
-        $is_admin        = \&is_dos_admin;
-        $is_writable_dir = \&is_writable_dos_dir;
-        $expand_path     = \&expand_dos_path;
-        $guess_bindir    = \&guess_dos_bindir;
-        $make_driver     = \&make_dos_driver;
-        #change from defaults
-        $INSTALLDIR      = join('\\', split('/', $INSTALLDIR));
-        $TARGET_EXE      = join('\\', split('/', $TARGET_EXE));
-        $DRIVER .= ".bat";
-        return $SYSTEM;
-    }
-    error "I do not recognise the operating system '$^O' - stopping";
+    return $^O;
 }
 
-sub is_unix { return $SYSTEM eq "UNIX"; }
-sub is_dos  { return $SYSTEM eq "DOS"; }
+sub _get_timestamp {
+    my $self = shift;
+    # Mon Sep 30 17:31:18 CEST 2019
+    strftime "%a %b %d %H:%M:%S %Z %Y", localtime;
+}
 
-# make_dir dirpath
-sub make_dir {
-    my ($dir) = @_;
-    warning "Making directory '$dir'";
+# _make_dir dirpath
+sub _make_dir {
+    my ($self, $dir) = @_;
+    ::warning "Making directory '$dir'";
     return mkpath($dir);
 }
 
-# make_symlink target linknamea
-sub make_symlink () {
-    my ($target, $link) = @_;
-    warning "Making symlink from '$link' to '$target'";
+# _make_symlink target linkname
+sub _make_symlink () {
+    my ($self, $target, $link) = @_;
+    ::warning "Making symlink from '$link' to '$target'";
     return symlink($target, $link);
 }
 
-# make_copy source destination
-sub make_copy {
-    my ($source, $destination) = @_;
-    warning "Making copy from '$source' to '$destination'";
+# _make_copy source destination
+sub _make_copy {
+    my ($self, $source, $destination) = @_;
+    ::warning "Making copy from '$source' to '$destination'";
     return copy($source, $destination);
 }
 
-# remove_file filepath
-sub remove_file {
-    my ($file) = @_;
-    warning "Deleting '$file'";
+# _remove_file filepath
+sub _remove_file {
+    my ($self, $file) = @_;
+    ::warning "Deleting '$file'";
     if (!( -f $file or -l $file )) {
-        warning "Name '$file' is not a file or symlink";
+        ::warning "Name '$file' is not a file or symlink";
         return 1;
     }
     return unlink($file);
 }
 
-sub list_dirs {
-    foreach my $p (@_) {
-        info "  $p";
+sub make_bindir {
+    my $self = shift;
+    my $bindir = $self->{'BINDIR'};
+    if ( ! -e $bindir ) {
+        if ($self->_make_dir($bindir) < 1) {
+            ::warning "Can't make directory '$bindir'";
+        } else {
+            ::warning "Created directory '$bindir'";
+        }
     }
 }
 
+sub list_dirs {
+    my $self = shift;
+    if (@{$self->{'SAVEPATH'}}) {
+        foreach my $p (@{$self->{'SAVEPATH'}}) {
+            ::info "  $p";
+        }
+    } else {
+        ::info "No available paths";
+    }
+}
+
+sub cleanup {
+    my $self = shift;
+    unlink $self->{'DRIVER'}  if -f $self->{'DRIVER'};
+}
+
+sub in_package_dir {
+    return 0  unless -f basename($0);
+    return 0  unless -f $_[0]->{'TARGET_EXE'};
+    return 1;
+}
+
+sub installdir { return $_[0]->{'INSTALLDIR'} }
+
+sub bindir { return $_[0]->{'BINDIR'} }
+
+sub driver_path {
+    return File::Spec->catfile($_[0]->{'BINDIR'}, $_[0]->{'DRIVER'});
+}
+
+sub driver_short_name { return $_[0]->{'DRIVER'} }
+
+sub driver_long_name {
+    File::Spec->catfile($_[0]->{'BINDIR'}, $_[0]->driver_short_name());
+}
+
+sub set_bindir { $_[0]->{'BINDIR'} = $_[1] }
+
+sub choose_bindir {
+    my $self = shift;
+    my ($bindir, $loc) = ($self->{'BINDIR'}, "");
+
+    while (1) {
+        ::prompt "Choose a directory for the program [$bindir]";
+        my $raw = <STDIN>; chomp $raw;
+        $loc = $self->_expand_path($raw);
+        ::info;
+
+        if ( $loc eq "" and $bindir ne "") {
+            # accept default BINDIR
+            $loc = $bindir;
+            last;
+        }
+        if ( $loc eq "" ) {
+            ::warning "Directory must have a name";
+            next;
+        }
+        if ( $loc eq $self->{'DRIVER'} ) {
+            ::warning "That name is reserved - please use another one";
+            next;
+        }
+        if ( -e $loc and ! -d $loc ) {
+            ::warning "Name '$raw' is not a directory";
+            next;
+        }
+        if ( ! $self->_path_writable($loc) ) {
+            ::warning "Directory path '$raw' is not writable";
+            next;
+        }
+        # choice accepted - dir already exists or will be created by user
+        last;
+    }
+
+    $bindir = $loc;
+
+    if (! -e $bindir) {
+        ::info "  ********************************************************";
+        ::info "  ** Note: That folder does not exist yet.              **";
+        ::info "  **                                                    **";
+        ::info "  ** Don't forget to add it manually to PATH.           **";
+        ::info "  **                                                    **";
+        ::info "  **                                                    **";
+        ::info "  ** For another choice press Ctrl-C, then start again. **";
+        ::info "  *********************************************************";
+    }
+
+    return $self->{'BINDIR'} = $bindir;
+}
+
 # return 1 if the path is potentially writable, 0 otherwise
-sub path_writable {
-    my $path = shift;
+sub _path_writable {
+    my ($self, $path) = @_;
+
     while ($path) {
-        # warn "testing: $path";
         if (-e $path and ! -d $path) {
             return 0;  # exists but not a directory
         }
-        if (-e $path and &$is_writable_dir($path)) {
+        if (-e $path and $self->_is_writable_dir($path)) {
             return 1;  # exists and can write into it
         }
-        if (-e $path and ! &$is_writable_dir($path)) {
+        if (-e $path and ! $self->_is_writable_dir($path)) {
             return 0;  # can't write below path element
         }
         # path element doesn't exist yet - potentially writable;
@@ -228,98 +312,54 @@ sub path_writable {
     return 1;
 }
 
-sub choose_bindir {
-    my $loc;
-
-    while (1) {
-        prompt "Choose a directory for the program [$BINDIR]";
-        my $raw = <STDIN>;
-        chomp $raw;
-        $loc = &$expand_path($raw);
-        info;
-
-        if ( $loc eq "" and $BINDIR ne "") {
-            # accept default BINDIR
-            $loc = $BINDIR;
-            last;
-        }
-        if ( $loc eq "" ) {
-            warning "Directory must have a name";
-            next;
-        }
-        if ( $loc eq $DRIVER ) {
-            warning "That name is reserved - please use another one";
-            next;
-        }
-        if ( -e $loc and ! -d $loc ) {
-            warning "Name '$raw' is not a directory";
-            next;
-        }
-        if ( ! path_writable($loc) ) {
-            warning "Directory path '$raw' is not writable";
-            next;
-        }
-        # choice accepted - dir already exists or will be created by user
-        last;
-    }
-
-    $BINDIR = $loc;
-
-    if (! -e $BINDIR) {
-        info "  ********************************************************";
-        info "  ** Note: That folder does not exist yet.              **";
-        info "  ** Don't forget to add it manually to PATH.           **";
-        info "  **                                                    **";
-        info "  ** For another choice press Ctrl-C, then start again. **";
-        info "  *********************************************************";
-    }
-}
-
-sub make_bindir {
-    my $dir = shift;
-    if ( ! -e $dir ) {
-        if (make_dir($dir) < 1) {
-            warning "Can't make directory '$dir'";
-            return;
-        }
-        warning "Created directory '$dir'";
-    }
-}
-
-sub get_timestamp {
-    # Mon Sep 30 17:31:18 CEST 2019
-    strftime "%a %b %d %H:%M:%S %Z %Y", localtime;
-}
-
-# make_copy filename destdir mode
 sub install_driver {
-    my ($file, $destination, $mode) = @_;
+    my $self = shift;
 
-    return  if $destination eq ".";
+    return  if $self->{'BINDIR'} eq ".";
+
+    my ($destination, $file) = ($self->{'BINDIR'}, $self->{'DRIVER'});
 
     my $source = "$file";
     my $target = File::Spec->catfile($destination, $file);
 
     if ( -e $target ) {
-        warning "Replacing existing '$target'";
-        if (remove_file($target) < 1) {
-            error "Attempt to delete old '$target' failed";
+        ::warning "Replacing existing '$target'";
+        if ($self->_remove_file($target) < 1) {
+            ::error "Attempt to delete old '$target' failed";
         }
     }
-    if (make_copy($source, $target) < 1) {
-        error "Attempt to copy '$source' into '$target' failed";
+
+    if ($self->_make_copy($source, $target) < 1) {
+        ::error "Attempt to copy '$source' into '$target' failed";
     }
-    if (is_unix()) {
-        if (chmod($mode, $target) < 1) {
-            error "Attempt to set execute permissions on '$target' failed";
-        }
-    }
+
+    $self->subclass_install_driver($target);
 }
 
-###########################################################################
-# UNIX-like system
+sub subclass_install_driver {}
 
-sub is_unix_admin {
+###########################################################################
+package UnixInstaller;
+
+our @ISA = qw(Installer);
+
+sub new {
+    my $cls = shift;
+    my $self = new Installer(@_);
+
+    $self->{'TARGET_EXE'} = $TARGET_EXE;
+    $self->{'DRIVER'}     = $DRIVER;
+
+    bless $self, $cls;
+}
+
+sub is_dos  { 0 }
+
+sub is_admin {
+    my $self = shift;
+
+    return $self->{'ADMIN'}  if defined $self->{'ADMIN'};
+
     my $user;
     if ($ENV{'USER'} eq "root") {
         $user = 0;
@@ -333,89 +373,104 @@ sub is_unix_admin {
     else {
         $user = `id -u`;
     }
-    return $user == 0;
+
+    return $self->{'ADMIN'} = ($user == 0);
 }
 
-sub is_writable_unix_dir {
-    my $dir = shift;
+sub _is_writable_dir {
+    my ($self, $dir) = @_;
     return 1  if -w $dir;
     return 0;
 }
 
-sub expand_unix_path {
-    my $path = shift;
-    $path =~ s{ ^~([^/]*) } { get_unix_home_dir($1) }ex;
+sub _expand_path {
+    my ($self, $path) = @_;
+    $path =~ s{ ^~([^/]*) } { $self->_get_home_dir($1) }ex;
     return $path;
 }
 
-sub get_unix_home_dir {
-    return (getpwnam($_[0]))[7]  if @_ and $_[0];
-    return $ENV{HOME}    if exists $ENV{HOME};
-    return $ENV{LOGDIR}  if exists $ENV{LOGDIR};
+sub _get_home_dir {
+    my ($self, $s) = @_;
+    return (getpwnam($s))[7]  if @_ and $s;
+    return $ENV{HOME}         if exists $ENV{HOME};
+    return $ENV{LOGDIR}       if exists $ENV{LOGDIR};
     return (getpwuid($<))[7];
 }
 
-sub guess_unix_bindir {
-    return  if $BINDIR ne "";  # already set/guessed
+sub guess_bindir {
+    my $self = shift;
 
-    @SAVEPATH = get_writable_unix_paths();
+    return  if defined $self->{'BINDIR'};  # already set/guessed
 
-    if ($ADMIN) {
-        guess_unix_admin_bindir(@SAVEPATH);
-    } else {
-        guess_unix_user_bindir(@SAVEPATH);
+    $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
+
+    if ($self->is_admin()) {
+        return $self->_guess_admin_bindir();
     }
+    return $self->_guess_user_bindir();
 }
 
-sub get_writable_unix_paths {
+sub _get_writable_paths {
+    my $self = shift;
+
     my $paths = $ENV{'PATH'};
     my (%seen, @list) = ();
+
     foreach my $p (split(':', $paths)) {
-        $p = expand_unix_path($p);
+        $p = $self->_expand_path($p);
         next  unless -w $p;  # writable
         push @list, $p  unless exists $seen{$p};
         $seen{$p} = 1;
     }
+
     return @list;
 }
 
-sub guess_unix_admin_bindir {
+sub _guess_admin_bindir {
+    my $self = shift;
+
     # prefer these paths in this order
     if (my @tmp = grep {/\/usr\/local\/bin$/} @_) {
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
+
     if (my @tmp = grep {/\/opt\/bin$/} @_) {
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
-    $BINDIR = "/usr/local/bin";  # force default
+
+    return $self->{'BINDIR'} = "/usr/local/bin";  # force default
 }
 
-sub guess_unix_user_bindir {
-    my $HOME = get_unix_home_dir();
+sub _guess_user_bindir {
+    my $self = shift;
+
+    my $HOME = $self->_get_home_dir();
 
     # prefer these paths in this order
     if (my @tmp = grep {/$HOME\/bin$/} @_) {
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
-    $BINDIR = "$HOME/bin";  # force default
+
+    return $self->{'BINDIR'} = "$HOME/bin";  # force default
 }
 
-sub make_unix_driver {
-    my $file = shift;
-    my $date = get_timestamp();
-    my $fh = new FileHandle();
-    open($fh, ">", $file);
+sub make_driver {
+    my $self = shift;
+
+    my $file = $self->{'DRIVER'};
+    my $date = $self->_get_timestamp();
+    my $installdir = $self->{'INSTALLDIR'};
+    my $executable = $self->{'TARGET_EXE'};
+
+    open(my $fh, ">", $file);
     print $fh <<EOT;
 #!/bin/sh
 # $TARGET_NAME driver
 # Version: $VERSION
 # Generated: $date
 
-$TARGET_ENV=$INSTALLDIR; export $TARGET_ENV
-PROGRAM=\$$TARGET_ENV/$TARGET_EXE
+$TARGET_ENV=$installdir; export $TARGET_ENV
+PROGRAM=\$$TARGET_ENV/$executable
 PROG=\`basename \$0\`
 
 # echo $TARGET_ENV=\$$TARGET_ENV  1>&2
@@ -432,110 +487,172 @@ fi
 
 exec \$PROGRAM "\$@"
 EOT
-    $fh->close;
+    close $fh;
+}
+
+sub subclass_install_driver {
+    my ($self, $target) = @_;
+    my $mode = 0755;
+    if (chmod($mode, $target) < 1) {
+        ::error "Attempt to set execute permissions on '$target' failed";
+    }
 }
 
 ###########################################################################
-# DOS system
+package DosInstaller;
 
-sub is_dos_admin {
-    return 1  if system("NET SESSION >NUL 2>&1") == 0;
-    return 0;
+our @ISA = qw(Installer);
+
+sub new {
+    my $cls = shift;
+    my $self = new Installer(@_);
+
+    #change from defaults
+    $self->{'TARGET_EXE'} = join('\\', split('/', $TARGET_EXE));
+    $self->{'DRIVER'}     = "$DRIVER.bat";
+
+    # set global for trap
+    $DRIVER = $self->{'DRIVER'};
+
+    bless $self, $cls;
 }
 
-# ugly hack: -w does't work always
-sub is_writable_dos_dir {
-    my $dir = shift;
+sub is_dos { 1 }
+
+sub driver_short_name {
+    my $self = shift;
+
+    my $tmp = $self->{'DRIVER'};
+    $tmp =~ s/\.bat$//i;  # strip batch file extension
+    return $tmp;
+}
+
+sub is_admin {
+    my $self = shift;
+
+    return $self->{'ADMIN'}  if defined $self->{'ADMIN'};
+
+    $self->{'ADMIN'} = 1  if system("NET SESSION >NUL 2>&1") == 0;
+    $self->{'ADMIN'} = 0;
+
+    return $self->{'ADMIN'};
+}
+
+# ugly hack
+sub _is_writable_dir {
+    my ($self, $dir) = @_;
+
+    # may seem 'writable' yet not writable
     return 0  unless -w $dir;
-    # global: can unlink after Ctrl-C trap
+
+    # try to write a temporary file
+
+    # set global for trap
     $TESTFILE = join('\\', $dir, "mview_$$");
     open(my $fh, ">", $TESTFILE) or return 0;
     close $fh;
     unlink $TESTFILE;
+
     return 1;
 }
 
-sub expand_dos_path {
-    my $path = shift;
-    $path =~ s{ ^%UserProfile% } { get_dos_home_dir() }iex;
-    $path =~ s{ ^~ }             { get_dos_home_dir() }iex;  #unix tilde
+sub _expand_path {
+    my ($self, $path) = @_;
+
+    $path =~ s{ ^%UserProfile% } { $self->_get_home_dir() }iex;
+    $path =~ s{ ^~ }             { $self->_get_home_dir() }iex;  #unix tilde
     return $path;
 }
 
-sub get_dos_home_dir {
+sub _get_home_dir {
+    my $self = shift;
+
     return $ENV{'UserProfile'}  if exists $ENV{'UserProfile'};
     return "";
 }
 
-sub guess_dos_bindir {
-    return  if $BINDIR ne "";  # already set/guessed
+sub guess_bindir {
+    my $self = shift;
 
-    @SAVEPATH = get_writable_dos_paths();
+    return  if defined $self->{'BINDIR'};  # already set/guessed
 
-    if ($ADMIN) {
-        guess_dos_admin_bindir(@SAVEPATH);
+    $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
+
+    if ($self->is_admin()) {
+        return $self->_guess_admin_bindir();
     } else {
-        guess_dos_user_bindir(@SAVEPATH);
+        return $self->_guess_user_bindir();
     }
 }
 
-sub get_writable_dos_paths {
+sub _get_writable_paths {
+    my $self = shift;
+
     my $paths = $ENV{'PATH'};
     my (%seen, @list) = ();
+
     foreach my $p (split(';', $paths)) {
-        next  unless is_writable_dos_dir($p);
+        next  unless $self->_is_writable_dir($p);
         push @list, $p  unless exists $seen{uc $p}; # case insensitive
         $seen{uc $p} = 1;
     }
+
     return @list;
 }
 
-sub guess_dos_admin_bindir {
+sub _guess_admin_bindir {
+    my $self = shift;
+
     # prefer these paths in this order
     if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
+
     if (my @tmp = grep {/\\perl\\site\\bin$/i} @_) {
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
+
     if (my @tmp = grep {/\\perl\\bin$/i} @_) {
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
-    $BINDIR = "C:\\bin";  # force default
+
+    return $self->{'BINDIR'} = "C:\\bin";  # force default
 }
 
-sub guess_dos_user_bindir {
-    my $HOME = get_dos_home_dir();
-    my $home = $HOME; $home =~ s/\\/\\\\/g;
+sub _guess_user_bindir {
+    my $self = shift;
 
     # prefer these paths in this order
     if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
-        $BINDIR = $tmp[0];
-        return;
+        return $self->{'BINDIR'} = $tmp[0];
     }
-    if (my @tmp = grep {/$home\\bin$/i} @_) {
-        $BINDIR = $tmp[0];
-        return;
+
+    my $HOME = $self->_get_home_dir(); my $pfx = $HOME; $pfx =~ s/\\/\\\\/g;
+
+    if (my @tmp = grep {/$pfx\\bin$/i} @_) {
+        return $self->{'BINDIR'} = $tmp[0];
     }
-    $BINDIR = "$HOME\\bin"  # force default
+
+    return $self->{'BINDIR'} = "$HOME\\bin"  # force default
 }
 
-sub make_dos_driver {
-    my $file = shift;
-    my $date = get_timestamp();
-    my $fh = new FileHandle();
-    open($fh, ">", $file);
+sub make_driver {
+    my $self = shift;
+
+    my $file = $self->{'DRIVER'};
+    my $date = $self->_get_timestamp();
+    my $installdir = $self->{'INSTALLDIR'};
+    my $executable = $self->{'TARGET_EXE'};
+
+    open(my $fh, ">", $file);
     print $fh <<EOT;
 \@echo off
 rem $TARGET_NAME driver
 rem Version: $VERSION
 rem Generated: $date
 
-set $TARGET_ENV=$INSTALLDIR
-set PROGRAM=%$TARGET_ENV%\\$TARGET_EXE
+set $TARGET_ENV=$installdir
+set PROGRAM=%$TARGET_ENV%\\$executable
 set PROG=%~nx0
 
 rem echo "$TARGET_ENV=%$TARGET_ENV%"  1>&2
@@ -548,51 +665,65 @@ if not exist "%PROGRAM%" (
 
 perl "%PROGRAM%" %*
 EOT
-    $fh->close;
+    close $fh;
 }
 
 ###########################################################################
-set_base_system();
+package Installer;
 
-if ( ! -f $TARGET_EXE ) {
+sub installer {
+    my $cls = shift;
+    my $system = get_system();
+    return new UnixInstaller()  if $system eq "UNIX";
+    return new DosInstaller()   if $system eq "DOS";
+    ::error "I do not recognise the operating system '$^O' - stopping";
+}
+
+###########################################################################
+package main;
+
+my $installer = Installer::installer();
+
+if (! $installer->in_package_dir()) {
     error "You must change into the unpacked directory first!";
 }
 
-unlink $DRIVER;  # any previous attempt
+$installer->cleanup();  # any previous attempt
 
-if ($ADMIN = &$is_admin()) {
+if ($installer->is_admin()) {
     show_admin_warning();
     pause();
 }
 
 if (@ARGV) {
     # destination directory on command line
-    $BINDIR = shift;
+    my $bindir = shift;
+    $installer->set_bindir($bindir);
     info;
-    info "Installing driver script into '$BINDIR'";
+    info "Installing driver script into '$bindir'";
     info;
 }
 else {
     # interactive choice
+    my $bindir;
     show_preamble();
-    &$guess_bindir();
-    list_dirs(@SAVEPATH);
+    $bindir = $installer->guess_bindir();
+    $installer->list_dirs();
     info;
-    info "The suggested default is [$BINDIR]";
+    info "The suggested default is [$bindir]";
     info;
     info "At any time, you may type ^C (ctrl-C) to abort.";
-    choose_bindir();
-    info;
-    info "About to install driver script into '$BINDIR'";
+    $bindir = $installer->choose_bindir();
+    info "About to install driver script into '$bindir'";
     pause()  if @ARGV < 1;
 }
 
-make_bindir($BINDIR);
-&$make_driver($DRIVER);
-install_driver($DRIVER, $BINDIR, 0755);
-unlink $DRIVER;
+$installer->make_bindir();
+$installer->make_driver();
+$installer->install_driver();
+$installer->cleanup();
 
-show_summary();
-pause_before_exit();
+show_summary($installer);
+pause_before_exit()  if $installer->is_dos();
 
 exit 0;
