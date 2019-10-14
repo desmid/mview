@@ -33,8 +33,9 @@ bundled with the code.
 MView is implemented in Perl, version 5 as a self-contained command line
 program that should run cross-platform.
 
-[Perl](https://www.perl.org/) is generally installed on Linux, OS X, and other
-UNIX. MView is known to work on Windows with [Strawberry Perl](http://strawberryperl.com/).
+[Perl](https://www.perl.org/) is generally installed on Linux and UNIX
+systems. MView is known to work on Windows with
+[Strawberry Perl](http://strawberryperl.com/).
 
 
 ### Download
@@ -97,7 +98,7 @@ users. It is assumed that Perl is already installed and on your `PATH`.
   Perl installation (or personal perl folder known to Perl), which you may not
   want to do.
 
-#### Linux, OS X, UNIX
+#### Linux, macOS, UNIX
 
 ##### Installer script
 
@@ -226,7 +227,7 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 
 #### Perl module
 
-1. Save the archive then uncompress and extract it (Linux, OS X, UNIX):
+1. Save the archive then uncompress and extract it (Linux, macOS, UNIX):
 
         tar xvzf mview-1.66.1.tar.gz
 

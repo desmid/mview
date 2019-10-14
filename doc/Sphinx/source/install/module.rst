@@ -4,7 +4,7 @@ Installation: Perl module
 Perl module
 ^^^^^^^^^^^
 
-1. Save the archive then uncompress and extract it (Linux, OS X, UNIX)::
+1. Save the archive then uncompress and extract it (Linux, macOS, UNIX)::
 
         tar xvzf mview-VERSION.tar.gz
 

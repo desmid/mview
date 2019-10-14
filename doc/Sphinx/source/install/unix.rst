@@ -1,5 +1,5 @@
-Installation: Linux, OS X, UNIX
-===============================
+Installation: Linux, macOS, UNIX
+================================
 
 Installer script
 ^^^^^^^^^^^^^^^^
