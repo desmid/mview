@@ -333,22 +333,21 @@ sub install_driver {
     if ( -e $target ) {
         ::warning "Replacing existing '$target'";
         if ($self->_remove_file($target) < 1) {
-            ::error "Attempt to delete old '$target' failed - exiting!";
-            $self->exit(1);
+            $self->error("Attempt to delete old '$target' failed - exiting!");
         }
     }
 
     if ($self->_make_copy($source, $target) < 1) {
-        ::error "Attempt to copy '$source' into '$target' failed - exiting!";
-        $self->exit(1);
+        $self->error("Attempt to copy '$source' into '$target' failed - exiting!");
     }
 
     $self->subclass_install_driver($target);
 }
 
-sub exit {
-    my ($code) = (@_, 0);
-    exit $code;
+sub error {
+    shift;
+    ::error @_;
+    exit 1;
 }
 
 sub subclass_install_driver {}
@@ -510,8 +509,7 @@ sub subclass_install_driver {
     my ($self, $target) = @_;
     my $mode = 0755;
     if (chmod($mode, $target) < 1) {
-        ::error "Attempt to set execute permissions on '$target' failed - exiting!";
-        $self->exit(1);
+        $self->error("Attempt to set execute permissions on '$target' failed - exiting!");
     }
 }
 
@@ -680,10 +678,11 @@ EOT
 }
 
 # override
-sub exit {
-    my ($code) = (@_, 0);
+sub error {
+    shift;
+    ::error @_;
     ::pause_before_exit();  # hold any terminal window open
-    exit $code;
+    exit 1;
 }
 
 ###########################################################################
@@ -695,7 +694,7 @@ sub installer {
     return new DosInstaller()   if $system eq "DOS";
     ::error "I do not recognise the operating system '$^O' - exiting!";
     ::pause_before_exit();  # hold any terminal window open
-    CORE::exit(1);
+    exit 1;
 }
 
 ###########################################################################
@@ -704,8 +703,7 @@ package main;
 my $installer = Installer::installer();
 
 if (! $installer->in_package_dir()) {
-    error "You must change into the unpacked directory first - exiting!";
-    $installer->exit(1);
+    $installer->error("You must change into the unpacked directory first - exiting!");
 }
 
 $installer->cleanup();  # any previous attempt
@@ -732,7 +730,7 @@ else {
     info;
     info "The suggested default is [$bindir]";
     info;
-    info "At any time, you may type ^C (ctrl-C) to exit.";
+    info "At any time, you may press (Ctrl-C) to exit.";
     $bindir = $installer->choose_bindir();
     info "About to install driver script into '$bindir'";
     pause()  if @ARGV < 1;
@@ -744,4 +742,5 @@ $installer->install_driver();
 $installer->cleanup();
 
 show_summary($installer);
-$installer->exit(0);
+pause_before_exit()  if $installer->is_dos();
+exit 0;
