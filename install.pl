@@ -24,7 +24,7 @@ my $TESTFILE = "";    # tmpfile, unlink after Ctrl-C
 sub abort {
     unlink($DRIVER)    if -f $DRIVER;
     unlink($TESTFILE)  if -f $TESTFILE;
-    die "\nAborted.\n";
+    die "\nExited.\n";
 }
 
 # trap 1 2 3 15
@@ -113,11 +113,11 @@ EOT
 
 sub info    { print STDERR "@_\n"; }
 sub warning { print STDERR " + @_\n"; }
-sub error   { print STDERR "ERROR: @_\n"; exit 1; }
+sub error   { print STDERR "\nERROR: @_\n"; }
 sub prompt  { print STDERR "\n>> @_ "; }
 
 sub pause {
-    prompt "Press the 'return' or 'enter' key to continue (Ctrl-C to abort).";
+    prompt "Press the 'return' or 'enter' key to continue (Ctrl-C to exit).";
     <STDIN>;
     info;
 }
@@ -333,15 +333,22 @@ sub install_driver {
     if ( -e $target ) {
         ::warning "Replacing existing '$target'";
         if ($self->_remove_file($target) < 1) {
-            ::error "Attempt to delete old '$target' failed";
+            ::error "Attempt to delete old '$target' failed - exiting!";
+            $self->exit(1);
         }
     }
 
     if ($self->_make_copy($source, $target) < 1) {
-        ::error "Attempt to copy '$source' into '$target' failed";
+        ::error "Attempt to copy '$source' into '$target' failed - exiting!";
+        $self->exit(1);
     }
 
     $self->subclass_install_driver($target);
+}
+
+sub exit {
+    my ($code) = (@_, 0);
+    exit $code;
 }
 
 sub subclass_install_driver {}
@@ -498,11 +505,13 @@ EOT
     close $fh;
 }
 
+# override
 sub subclass_install_driver {
     my ($self, $target) = @_;
     my $mode = 0755;
     if (chmod($mode, $target) < 1) {
-        ::error "Attempt to set execute permissions on '$target' failed";
+        ::error "Attempt to set execute permissions on '$target' failed - exiting!";
+        $self->exit(1);
     }
 }
 
@@ -670,15 +679,23 @@ EOT
     close $fh;
 }
 
+# override
+sub exit {
+    my ($code) = (@_, 0);
+    ::pause_before_exit();  # hold any terminal window open
+    exit $code;
+}
+
 ###########################################################################
 package Installer;
 
 sub installer {
-    my $cls = shift;
     my $system = get_system();
     return new UnixInstaller()  if $system eq "UNIX";
     return new DosInstaller()   if $system eq "DOS";
-    ::error "I do not recognise the operating system '$^O' - stopping";
+    ::error "I do not recognise the operating system '$^O' - exiting!";
+    ::pause_before_exit();  # hold any terminal window open
+    CORE::exit(1);
 }
 
 ###########################################################################
@@ -687,7 +704,8 @@ package main;
 my $installer = Installer::installer();
 
 if (! $installer->in_package_dir()) {
-    error "You must change into the unpacked directory first!";
+    error "You must change into the unpacked directory first - exiting!";
+    $installer->exit(1);
 }
 
 $installer->cleanup();  # any previous attempt
@@ -714,7 +732,7 @@ else {
     info;
     info "The suggested default is [$bindir]";
     info;
-    info "At any time, you may type ^C (ctrl-C) to abort.";
+    info "At any time, you may type ^C (ctrl-C) to exit.";
     $bindir = $installer->choose_bindir();
     info "About to install driver script into '$bindir'";
     pause()  if @ARGV < 1;
@@ -726,6 +744,4 @@ $installer->install_driver();
 $installer->cleanup();
 
 show_summary($installer);
-pause_before_exit()  if $installer->is_dos();
-
-exit 0;
+$installer->exit(0);
