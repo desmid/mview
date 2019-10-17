@@ -41,7 +41,7 @@ systems. MView is known to work on Windows with
 ### Download
 
 - The [current release](
-  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.66.1/
+  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.66/
   "MView current release on SourceForge") can be downloaded from SourceForge
   as a gzip or bzip2 compressed tar archive.
 - Older [releases](
@@ -105,9 +105,9 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it:
 
-        tar xvzf mview-1.66.1.tar.gz
+        tar xvzf mview-1.66.2.tar.gz
 
-   This creates a sub-folder `mview-1.66.1` containing all the files.
+   This creates a sub-folder `mview-1.66.2` containing all the files.
    
 2. Change to this folder.
 
@@ -132,9 +132,9 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 1. Save the archive to your software area, for example, `/usr/local`, then
    uncompress and extract it:
 
-        tar xvzf mview-1.66.1.tar.gz
+        tar xvzf mview-1.66.2.tar.gz
 
-   This creates a sub-folder `mview-1.66.1` containing all the files.
+   This creates a sub-folder `mview-1.66.2` containing all the files.
 
 2. Change to this folder.
 
@@ -151,14 +151,14 @@ users. It is assumed that Perl is already installed and on your `PATH`.
        
    and change the path, in our example, to:
 
-        $MVIEW_HOME = "/usr/local/mview-1.66.1";
+        $MVIEW_HOME = "/usr/local/mview-1.66.2";
 
    Save the file.
 
 4. Finally, make sure that the `bin` folder containing the `mview` script
    (that you just edited) is on the user `PATH`, and rehash or login again.
 
-   In our example, you would add `/usr/local/mview-1.66.1/bin` to the
+   In our example, you would add `/usr/local/mview-1.66.2/bin` to the
    existing value of `PATH`, or replace any older MView path.
 
 
@@ -169,10 +169,10 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 1. Save the archive to somewhere under your home folder then uncompress and
    extract it (using an archiver like WinZip or 7-Zip, as here):
 
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-1.66.2.tar.bz2
+        7z x mview-1.66.2.tar
 
-   This creates a sub-folder `mview-1.66.1` containing all the files.
+   This creates a sub-folder `mview-1.66.2` containing all the files.
    
 2. Change to this folder.
 
@@ -199,10 +199,10 @@ users. It is assumed that Perl is already installed and on your `PATH`.
    then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
    here):
 
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-1.66.2.tar.bz2
+        7z x mview-1.66.2.tar
 
-   This creates a sub-folder `mview-1.66.1` containing all the files.
+   This creates a sub-folder `mview-1.66.2` containing all the files.
 
 2. Change to this folder.
 
@@ -214,14 +214,14 @@ users. It is assumed that Perl is already installed and on your `PATH`.
         
    and change the path, in our example, to:
 
-        $MVIEW_HOME = "C:\Program Files\mview-1.66.1";
+        $MVIEW_HOME = "C:\Program Files\mview-1.66.2";
 
    Save the file.
 
 4. Finally, make sure that the `bin` folder containing the mview script (that
    you just edited) is on the user `PATH`, then start a new command prompt.
    
-   In our example, you would append `C:\Program Files\mview-1.66.1\bin` to the
+   In our example, you would append `C:\Program Files\mview-1.66.2\bin` to the
    existing value of `PATH`, or replace any older MView path.
 
 
@@ -229,14 +229,14 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 
 1. Save the archive then uncompress and extract it (Linux, macOS, UNIX):
 
-        tar xvzf mview-1.66.1.tar.gz
+        tar xvzf mview-1.66.2.tar.gz
 
    or (Windows, using an archiver WinZip, 7-Zip, etc.)
    
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-1.66.2.tar.bz2
+        7z x mview-1.66.2.tar
         
-   This creates a sub-folder called `mview-1.66.1` containing all the files.
+   This creates a sub-folder called `mview-1.66.2` containing all the files.
    
 2. Change to this folder.
 

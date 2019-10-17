@@ -1,5 +1,12 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
+Version 1.66.2 2019-10-17
+
+Fix:
+
+- On Windows reading from stdin: gave parse error and lost initial lines.
+
+
 Version 1.66.1 2019-10-08
 
 Changes:

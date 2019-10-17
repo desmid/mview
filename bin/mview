@@ -9,7 +9,7 @@
 # Release information
 ###########################################################################
 my $VERSION  = '1.66';
-my $PATCH    = '1';
+my $PATCH    = '2';
 my $PROJECT  = 'MView';
 my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
