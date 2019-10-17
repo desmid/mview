@@ -139,8 +139,9 @@ sub getline {
 
     #seek?
     if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        #warn "File::getline:  seek($delta)\n"  if $DEBUG;
-        return 0  unless seek($fh, $delta, SEEK_CUR);  #relative
+        warn "File::getline:  seek($delta)\n"  if $DEBUG;
+        #seek relative character counts are wrong on DOS
+        return 0  unless seek($fh, $offset, SEEK_SET);  #absolute
     }
 
     #warn "File::getline:   reading from core::readline()\n";
@@ -192,7 +193,9 @@ sub substr {
     my $fh = $self->{'fh'};
 
     if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        return undef  unless seek($fh, $delta, SEEK_CUR);  #relative
+        warn "File::substr:  seek($delta)\n"  if $DEBUG;
+        #seek relative character counts are wrong on DOS
+        return undef  unless seek($fh, $offset, SEEK_SET);  #absolute
     }
 
     my $buff = ''; $bytes = read($fh, $buff, $bytes);
@@ -216,7 +219,7 @@ sub _file_has_crlf {
     my $self = shift;
     my $line = readline($self->{'fh'});
     my $test = index($line, "\r\n") > -1;
-    #warn "File::_file_has_crlf: [$line] --> @{[$test > 0 ? '1' : '0']}\n";
+    #warn "File::_file_has_crlf: [$line] --> @{[$test > 0 ? 'yes' : 'no']}\n";
     return $test;
 }
 
