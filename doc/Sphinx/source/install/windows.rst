@@ -5,10 +5,9 @@ Installer script
 ^^^^^^^^^^^^^^^^
 
 1. Save the archive to somewhere under your home folder then uncompress and
-   extract it (using an archiver like WinZip or 7-Zip, as here)::
+   extract it (using an archiver like 7-Zip, as here)::
 
-        7z x mview-VERSION.tar.bz2
-        7z x mview-VERSION.tar
+        7z x mview-VERSION.zip
 
    This creates a sub-folder ``mview-VERSION`` containing all the files.
    
@@ -35,11 +34,9 @@ Manual install
 ^^^^^^^^^^^^^^
 
 1. Save the archive to your software area, for example, ``C:\Program Files``,
-   then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
-   here)::
+   then uncompress and extract it (using an archiver like 7-Zip, as here)::
 
-        7z x mview-VERSION.tar.bz2
-        7z x mview-VERSION.tar
+        7z x mview-VERSION.zip
 
    This creates a sub-folder ``mview-VERSION`` containing all the files.
 

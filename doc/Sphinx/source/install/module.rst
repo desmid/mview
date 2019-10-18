@@ -8,10 +8,9 @@ Perl module
 
         tar xvzf mview-VERSION.tar.gz
 
-   or (Windows, using an archiver WinZip, 7-Zip, etc.)::
+   or (Windows, using an archiver like 7-Zip, as here)::
    
-        7z x mview-1.66.1.tar.bz2
-        7z x mview-1.66.1.tar
+        7z x mview-1.66.1.zip
         
    This creates a sub-folder ``mview-VERSION`` containing all the files.
    

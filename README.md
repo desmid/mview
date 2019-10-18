@@ -167,10 +167,9 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 ##### Installer script
 
 1. Save the archive to somewhere under your home folder then uncompress and
-   extract it (using an archiver like WinZip or 7-Zip, as here):
+   extract it (using an archiver like 7-Zip, as here):
 
-        7z x mview-1.66.2.tar.bz2
-        7z x mview-1.66.2.tar
+        7z x mview-1.66.2.zip
 
    This creates a sub-folder `mview-1.66.2` containing all the files.
    
@@ -196,11 +195,9 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 ##### Manual install
 
 1. Save the archive to your software area, for example, `C:\Program Files`,
-   then uncompress and extract it (using an archiver like WinZip or 7-Zip, as
-   here):
+   then uncompress and extract it (using an archiver like 7-Zip, as here):
 
-        7z x mview-1.66.2.tar.bz2
-        7z x mview-1.66.2.tar
+        7z x mview-1.66.2.zip
 
    This creates a sub-folder `mview-1.66.2` containing all the files.
 
@@ -231,10 +228,9 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 
         tar xvzf mview-1.66.2.tar.gz
 
-   or (Windows, using an archiver WinZip, 7-Zip, etc.)
+   or (Windows, using an archiver like 7-Zip, as here):
    
-        7z x mview-1.66.2.tar.bz2
-        7z x mview-1.66.2.tar
+        7z x mview-1.66.2.zip
         
    This creates a sub-folder called `mview-1.66.2` containing all the files.
    
