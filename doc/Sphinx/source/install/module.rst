@@ -25,7 +25,7 @@ You can now use one of the following sets of instructions to do the install:
         
    which attempts to install into the Perl distribution.
 
-3. Or run::
+3. Or run something like::
 
         perl Makefile.PL INSTALL_BASE=/usr/local
         make install
