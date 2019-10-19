@@ -139,7 +139,7 @@ sub getline {
 
     #seek?
     if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        warn "File::getline:  seek($delta)\n"  if $DEBUG;
+        #warn "File::getline:  seek($delta)\n"  if $DEBUG;
         #seek relative character counts are wrong on DOS
         return 0  unless seek($fh, $offset, SEEK_SET);  #absolute
     }
@@ -193,7 +193,7 @@ sub substr {
     my $fh = $self->{'fh'};
 
     if ((my $delta = $offset - $self->{'thisoffset'}) != 0) {
-        warn "File::substr:  seek($delta)\n"  if $DEBUG;
+        #warn "File::substr:  seek($delta)\n"  if $DEBUG;
         #seek relative character counts are wrong on DOS
         return undef  unless seek($fh, $offset, SEEK_SET);  #absolute
     }
