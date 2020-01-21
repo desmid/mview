@@ -276,7 +276,7 @@ sub echo_argv {
         $s .= "$PROG @$data\n";
         $s .= "produced:\n\n";
     }
-    return $s
+    return $s;
 }
 
 sub copyright {
