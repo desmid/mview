@@ -24,9 +24,9 @@ of the unpacked MView folder and starts the real MView program.
 1. Save the archive to somewhere under your home folder then uncompress and
    extract it (using an archiver like 7-Zip, as here):
 
-        7z x mview-1.66.2.zip
+        7z x mview-VERSION.zip
 
-   This creates a sub-folder `mview-1.66.2` containing all the files.
+   This creates a sub-folder `mview-VERSION` containing all the files.
    
 2. Change to this folder.
 
@@ -58,9 +58,9 @@ hand, then add the folder containing that program to `PATH`.
 1. Save the archive to your software area, for example, `C:\Program Files`,
    then uncompress and extract it (using an archiver like 7-Zip, as here):
 
-        7z x mview-1.66.2.zip
+        7z x mview-VERSION.zip
 
-   This creates a sub-folder `mview-1.66.2` containing all the files.
+   This creates a sub-folder `mview-VERSION` containing all the files.
 
 2. Change to this folder.
 
@@ -72,14 +72,14 @@ hand, then add the folder containing that program to `PATH`.
         
    and change the path, in our example, to:
 
-        $MVIEW_HOME = "C:\Program Files\mview-1.66.2";
+        $MVIEW_HOME = "C:\Program Files\mview-VERSION";
 
    Save the file.
 
 4. Finally, make sure that the `bin` folder containing the mview script (that
    you just edited) is on the user `PATH`, then start a new command prompt.
    
-   In our example, you would append `C:\Program Files\mview-1.66.2\bin` to the
+   In our example, you would append `C:\Program Files\mview-VERSION\bin` to the
    existing value of `PATH`, or replace any older MView path.
 
 ---

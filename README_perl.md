@@ -15,13 +15,13 @@ Perl somewhere.
 
 1. Save the archive then uncompress and extract it (Linux, macOS, UNIX):
 
-        tar xvzf mview-1.66.2.tar.gz
+        tar xvzf mview-VERSION.tar.gz
 
    or (Windows, using an archiver like 7-Zip, as here):
    
-        7z x mview-1.66.2.zip
+        7z x mview-VERSION.zip
         
-   This creates a sub-folder called `mview-1.66.2` containing all the files.
+   This creates a sub-folder called `mview-VERSION` containing all the files.
    
 2. Change to this folder.
 

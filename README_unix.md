@@ -24,9 +24,9 @@ of the unpacked MView folder and starts the real MView program.
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it:
 
-        tar xvzf mview-1.66.2.tar.gz
+        tar xvzf mview-VERSION.tar.gz
 
-   This creates a sub-folder `mview-1.66.2` containing all the files.
+   This creates a sub-folder `mview-VERSION` containing all the files.
    
 2. Change to this folder.
 
@@ -57,9 +57,9 @@ hand, then add the folder containing that program to `PATH`.
 1. Save the archive to your software area, for example, `/usr/local`, then
    uncompress and extract it:
 
-        tar xvzf mview-1.66.2.tar.gz
+        tar xvzf mview-VERSION.tar.gz
 
-   This creates a sub-folder `mview-1.66.2` containing all the files.
+   This creates a sub-folder `mview-VERSION` containing all the files.
 
 2. Change to this folder.
 
@@ -76,14 +76,14 @@ hand, then add the folder containing that program to `PATH`.
        
    and change the path, in our example, to:
 
-        $MVIEW_HOME = "/usr/local/mview-1.66.2";
+        $MVIEW_HOME = "/usr/local/mview-VERSION";
 
    Save the file.
 
 4. Finally, make sure that the `bin` folder containing the `mview` script
    (that you just edited) is on the user `PATH`, and rehash or login again.
 
-   In our example, you would add `/usr/local/mview-1.66.2/bin` to the
+   In our example, you would add `/usr/local/mview-VERSION/bin` to the
    existing value of `PATH`, or replace any older MView path.
 
 ---

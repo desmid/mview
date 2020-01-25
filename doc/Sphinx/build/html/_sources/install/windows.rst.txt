@@ -72,7 +72,7 @@ the program and runs it (or complains if the program can't be found).
 
 Assume you are adding ``C:\bin`` as the directory containing the newly
 installed mview script. On all systems the ``PATH`` environment variable would
-be extended by adding ``C\bin`` to the existing ``PATH`` value using
+be extended by adding ``C:\bin`` to the existing ``PATH`` value using
 semi-colon delimiters as needed. You can prepend the new path (it will be
 searched first for commands), insert it somewhere in the middle, or append it
 at the back (it will be searched last).
