@@ -62,8 +62,8 @@ Manual install
    existing value of ``PATH``, or replace any older MView path.
 
 
-How to change PATH in Windows
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How to set PATH in Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``PATH`` environment variable is a list of ``;`` (semi-colon) separated
 folders containing programs. When you type the name of a program at the

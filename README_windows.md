@@ -6,8 +6,10 @@ Either method can be used by an ordinary user installing into their own
 account, or by a system administrator installing onto a computer with multiple
 users. It is assumed that Perl is already installed and on your `PATH`.
 
-* Installer script
-* Manual install
+* [Installer script](#installer-script)
+* [Manual install](#manual-install)
+* [How to set PATH](#how-to-set-path)
+
 
 #### Installer script
 
@@ -83,7 +85,7 @@ hand, then add the folder containing that program to `PATH`.
    existing value of `PATH`, or replace any older MView path.
 
 
-#### How to change PATH
+#### How to set PATH
 
 The `PATH` environment variable is a list of `;` (semi-colon) separated
 folders containing programs. When you type the name of a program at the

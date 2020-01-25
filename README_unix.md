@@ -6,8 +6,9 @@ Either method can be used by an ordinary user installing into their own
 account, or by a system administrator installing onto a computer with multiple
 users. It is assumed that Perl is already installed and on your `PATH`.
 
-* Installer script
-* Manual install
+* [Installer script](#installer-script)
+* [Manual install](#manual-install)
+
 
 #### Installer script
 
@@ -45,6 +46,7 @@ of the unpacked MView folder and starts the real MView program.
 4. If the installer couldn't find a sensible place to install the script, it
    chooses `~/bin` and you will have to add that to your `PATH`, then rehash
    or login again.
+
 
 #### Manual install
 
