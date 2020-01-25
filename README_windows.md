@@ -82,6 +82,55 @@ hand, then add the folder containing that program to `PATH`.
    In our example, you would append `C:\Program Files\mview-VERSION\bin` to the
    existing value of `PATH`, or replace any older MView path.
 
+
+#### How to change PATH
+
+The `PATH` environment variable is a list of `;` (semi-colon) separated
+folders containing programs. When you type the name of a program at the
+command prompt, the system searches these folders, in order, until it finds
+the program and runs it (or complains if the program can't be found).
+
+Assume you are adding `C:\bin` as the directory containing the newly
+installed mview script. On all systems the `PATH` environment variable would
+be extended by adding `C:\bin` to the existing `PATH` value using
+semi-colon delimiters as needed. You can prepend the new path (it will be
+searched first for commands), insert it somewhere in the middle, or append it
+at the back (it will be searched last).
+
+How to change `PATH` on different editions of Windows (gleaned from the
+Internet):
+
+* Windows 10 and Windows 8
+
+  - Search » System (Control Panel) » Advanced system settings »
+    Environment Variables
+
+* Windows 7
+
+  - Computer » Properties » Advanced system settings » Environment
+    Variables
+
+* Windows Vista
+
+  - My Computer » Properties » Advanced system settings » Environment
+    Variables
+
+* Windows XP
+
+  - Start » Control Panel » System » Advanced » Environment Variables
+
+On all systems, once you've updated the `PATH` variable, open a new command
+prompt, then the `mview` command should be recognised, so that running:
+
+    mview -help
+
+prints the help message for the new version.
+
+Note: if you already have an older mview installed on the `PATH` and append
+the new location at the back of `PATH`, the older program will still be
+found first whenever you try to run mview, so be aware of that; you would need
+to delete the old version, or rearrange the `PATH` order.
+
 ---
 
 Return to main [README](README.md).
