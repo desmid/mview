@@ -1,11 +1,11 @@
-# Copyright (C) 1996-2019 Nigel P. Brown
+# Copyright (C) 1996-2020 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
 
 ###########################################################################
 #
-# Base classes for NCBI BLAST1, WashU BLAST2, NCBI BLAST2 families.
+# Base classes for NCBI BLAST1, WashU BLAST2, NCBI BLAST2, BLAST+ families.
 #
 ###########################################################################
 package Bio::Parse::Format::BLAST;
@@ -205,8 +205,10 @@ sub get_entry {
         die "get_entry() parser for program '$SAVEPROG' version '$SAVEVERSION' not implemented\n";
     }
 
-    #BLAST+ PSIBLAST handled by BLASTP parser
-    my $format = $SAVEPROG eq 'PSIBLAST' ? 'blastp' : lc $SAVEPROG;
+    #BLAST+ PSIBLAST, PHIBLAST handled by BLASTP, BLASTN parser
+    my $format = lc $SAVEPROG;
+    $format = 'blastp'  if $SAVEPROG eq 'PSIBLAST';
+    $format = 'blastp'  if $SAVEPROG eq 'PHIBLASTP';
 
     #package $type defines this constructor and coerces to $type
     $type = "Bio::Parse::Format::BLAST${SAVEVERSION}${SAVEFMT}::$format";
@@ -449,6 +451,9 @@ sub parse_alignment {
         #ignore this line (BLASTN)
         next    if $line =~ /^\s*(?:Plus|Minus) Strand/o;
 
+        #ignore this line (BLAST+ PHIBLAST)
+        next    if $line =~ /^pattern/o;
+
         #first compute sequence indent depth
         if ($line =~ /^(\s*Query\:?\s+(\d+)\s*)/o) {
             $depth = length($1);
@@ -460,11 +465,11 @@ sub parse_alignment {
         if ($line =~ /^\s*
             Query\:?
             \s+
-            (\d+)                #start
+            (\d+)               #start
             \s*
             ([^\d\s]+)?         #sequence
             \s+
-            (\d+)?                #stop
+            (\d+)?              #stop
             /xo) {
 
             #$self->test_args(\$line, $1, $2, $3);
@@ -500,9 +505,10 @@ sub parse_alignment {
             next;
         }
 
-        #force read of match line, but note:
-        #PHI-BLAST has an extra line - ignore for the time being
+        #force read of match line
         $line = $scan->read_line(1);
+
+        #blast2 PHI-BLAST has pattern line after the query - ignore
         $line = $scan->read_line(1)  if $line =~ /^pattern/o;
 
         #alignment line

@@ -1,4 +1,4 @@
-# Copyright (C) 1996-2019 Nigel P. Brown
+# Copyright (C) 1996-2020 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -7,7 +7,7 @@
 #
 # Base classes for NCBI BLAST2 family.
 #
-# Handles: BLAST 2.0.x
+# Handles: BLAST2 and BLAST+
 #
 # BLAST (NCBI version 2) iterated searching uses 3 main record types:
 #
@@ -71,6 +71,7 @@ use vars qw(@ISA
                      'TBLASTN',
                      'TBLASTX',
                      'PSIBLAST',
+                     'PHIBLASTP',
                     ],
             );
 
@@ -88,6 +89,8 @@ $ENTRY_START = '^(?:'
     . 'TBLASTX'
     . '|'
     . 'PSIBLAST'
+    . '|'
+    . 'PHIBLASTP'
     . ')';
 $ENTRY_END        = '^  WARNINGS\s+ISSUED:';  #blast1 behavior, but blast2?
 
