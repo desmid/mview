@@ -10,7 +10,7 @@ Perl module
 
    or (Windows, using an archiver like 7-Zip, as here)::
    
-        7z x mview-1.66.1.zip
+        7z x mview-VERSION.zip
         
    This creates a sub-folder ``mview-VERSION`` containing all the files.
    

@@ -28,14 +28,15 @@ produced with `-outfmt 7`. MView support and testing is as follows.
 MView option: ``-in blast`` (with the default BLAST format)
 
  ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
- Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+
+ Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0++
  ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
- `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok     ok    
+ `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `phiblast` .       .       .       .      .      .      .      .      .      ok
  ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
 
 MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
@@ -43,12 +44,12 @@ MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
  ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
  Program    2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+
  ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
- `blastp`   ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `blastn`   ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `blastx`   ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `tblastn`  ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `tblastx`  ok      ok      ok     ok     ok     ok     ok     ok     ok    
- `psiblast` ok      ok      ok     ok     ok     ok     ok     ok     ok    
+ `blastp`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastn`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastx`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastn`  ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastx`  ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `psiblast` ok      ok      ok     ok     ok     ok     ok     ok     ok
  ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
 
 The main `-outfmt 7` fields or columns recognised by MView are:
@@ -114,17 +115,17 @@ BLAST series 2.2
 
 MView option: ``-in blast``
 
- ========== ===== =====
- Program    2.2.5 2.2.6
- ========== ===== =====
- `blastp`   ok    ok
- `blastn`   .     ok
- `blastx`   .     ok
- `tblastn`  .     ok
- `tblastx`  .     ok
- `psiblast` .     ok
- `phiblast` .     ok
- ========== ===== =====
+ ========== ===== ===== =====
+ Program    2.2.5 2.2.6 2.2.9
+ ========== ===== ===== =====
+ `blastp`   ok    ok    ok
+ `blastn`   .     ok    ok
+ `blastx`   .     ok    ok
+ `tblastn`  .     ok    ok
+ `tblastx`  .     ok    ok
+ `psiblast` .     ok    ok
+ `phiblast` .     ok    ok
+ ========== ===== ===== =====
 
 
 BLAST series 2.0
@@ -201,25 +202,25 @@ MView option: ``-in uvfasta``
  ========== ===== ====== ======= ====== ======= ======= ======= ======= =======
  Program    36.07 36.3.3 35.3.5a 36.3.6 36.3.7b 36.3.8e 36.3.8f 36.3.8g 36.3.8h
  ========== ===== ====== ======= ====== ======= ======= ======= ======= =======
- `fasta`    ok    ok     .       ok     ok      ok      ok      ok      ok     
- `fastx`    .     ok     .       ok     ok      ok      ok      ok      ok     
- `fasty`    .     .      .       ok     ok      ok      ok      ok      ok     
- `tfastx`   .     ok     .       ok     ok      ok      ok      ok      ok     
- `tfasty`   .     ok     .       ok     ok      ok      ok      ok      ok     
- `ssearch`  .     ok     .       ok     ok      ok      ok      ok      ok     
- `ggsearch` .     ok     .       ok     ok      ok      ok      ok      ok     
- `glsearch` .     ok     .       ok     ok      ok      ok      ok      ok     
- `fastm`    .     .      expt    expt   expt    expt    expt    expt    expt   
- `fasts`    .     .      .       expt   expt    expt    expt    expt    expt   
- `fastf`    .     .      .       expt   expt    expt    expt    expt    expt   
- `tfastm`   .     .      .       .      expt    expt    expt    expt    expt   
- `tfasts`   .     .      .       .      expt    expt    expt    expt    expt   
- `tfastf`   .     .      .       .      expt    expt    expt    expt    expt   
+ `fasta`    ok    ok     .       ok     ok      ok      ok      ok      ok
+ `fastx`    .     ok     .       ok     ok      ok      ok      ok      ok
+ `fasty`    .     .      .       ok     ok      ok      ok      ok      ok
+ `tfastx`   .     ok     .       ok     ok      ok      ok      ok      ok
+ `tfasty`   .     ok     .       ok     ok      ok      ok      ok      ok
+ `ssearch`  .     ok     .       ok     ok      ok      ok      ok      ok
+ `ggsearch` .     ok     .       ok     ok      ok      ok      ok      ok
+ `glsearch` .     ok     .       ok     ok      ok      ok      ok      ok
+ `fastm`    .     .      expt    expt   expt    expt    expt    expt    expt
+ `fasts`    .     .      .       expt   expt    expt    expt    expt    expt
+ `fastf`    .     .      .       expt   expt    expt    expt    expt    expt
+ `tfastm`   .     .      .       .      expt    expt    expt    expt    expt
+ `tfasts`   .     .      .       .      expt    expt    expt    expt    expt
+ `tfastf`   .     .      .       .      expt    expt    expt    expt    expt
  ========== ===== ====== ======= ====== ======= ======= ======= ======= =======
 
 where 'expt' indicates that MView parses and processes the format, but the
 results may not be particularly useful, hence 'experimental'.
- 
+
 
 FASTA series 35
 ---------------
