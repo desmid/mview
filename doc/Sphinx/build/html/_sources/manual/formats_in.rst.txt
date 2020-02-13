@@ -27,17 +27,17 @@ produced with `-outfmt 7`. MView support and testing is as follows.
 
 MView option: ``-in blast`` (with the default BLAST format)
 
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
- Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0++
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
- `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok
- `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok
- `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok     ok
- `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok
- `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok
- `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok     ok
- `phiblast` .       .       .       .      .      .      .      .      .      ok
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ======
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== ======
+ Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+ 2.10.0+
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== ======
+ `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
+ `phiblast` .       .       .       .      .      .      .      .      .      ok     ok
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== ======
 
 MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
 
