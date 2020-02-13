@@ -1,30 +1,22 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
-Version 1.67 2020-02-16
+Version 1.67 2020-02-14
 
 Changes:
 
 - Added PHIBLAST parser for BLAST+
+- Added cross-platform installer script 'install.pl'.
+- Added 'Makefile.PL' as alternative installer.
 
 Input formats:
 
 - Tested with BLAST 2.10.0+
 - Tested with FASTA 36.3.8h [2020-02 build]
 
-
-Version 1.66.2 2019-10-17
-
 Bug fix:
 
-- On Windows reading from stdin: gave parse error and lost initial lines.
-
-
-Version 1.66.1 2019-10-08
-
-Changes:
-
-- Added cross-platform installer script 'install.pl'.
-- Added 'Makefile.PL' as alternative installer.
+- MS Windows gave parse error and lost initial alignment lines when reading
+  from stdin.
 
 
 Version 1.66 2019-09-01
