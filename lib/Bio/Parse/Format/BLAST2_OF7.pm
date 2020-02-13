@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019 Nigel P. Brown
+# Copyright (C) 2015-2020 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -47,6 +47,7 @@ use vars qw(@ISA
                      'TBLASTN',
                      'TBLASTX',
                      'PSIBLAST',
+                     'PHIBLASTP',
                    ],
             );
 
