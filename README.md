@@ -41,7 +41,7 @@ systems. MView is known to work on Windows with
 ### Download
 
 - The [current release](
-  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.66/
+  https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.67/
   "MView current release on SourceForge") can be downloaded from SourceForge
   as a gzip or bzip2 compressed tar archive.
 - Older [releases](
