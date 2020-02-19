@@ -29,16 +29,16 @@ of the unpacked MView folder and starts the real MView program.
         7z x mview-VERSION.zip
 
    This creates a sub-folder `mview-VERSION` containing all the files.
-   
+
 2. Change to this folder.
 
 3. Run the command:
 
         perl install.pl
-        
+
    and follow the instructions. You will be offered various places to install
    the driver script.
-   
+
    If you know in advance the name of the folder you want to use for the
    driver script, you can supply it on the command line:
 
@@ -69,9 +69,9 @@ hand, then add the folder containing that program to `PATH`.
 3. Edit the file `bin\mview`.
 
    Find the line:
-   
+
         $MVIEW_HOME = "/path/to/mview/unpacked/folder";
-        
+
    and change the path, in our example, to:
 
         $MVIEW_HOME = "C:\Program Files\mview-VERSION";
@@ -80,7 +80,7 @@ hand, then add the folder containing that program to `PATH`.
 
 4. Finally, make sure that the `bin` folder containing the mview script (that
    you just edited) is on the user `PATH`, then start a new command prompt.
-   
+
    In our example, you would append `C:\Program Files\mview-VERSION\bin` to the
    existing value of `PATH`, or replace any older MView path.
 

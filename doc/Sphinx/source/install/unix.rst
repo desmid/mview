@@ -1,8 +1,31 @@
-Installation: Linux, macOS, UNIX
+Installation: Linux, Apple, UNIX
 ================================
+
+There are two ways to install MView.
+
+Either method can be used by an ordinary user installing into their own
+account, or by a system administrator installing onto a computer with multiple
+users. It is assumed that Perl is already installed and on your ``PATH``.
+
+* :ref:`Installer script<ref_unix_installer>`
+* :ref:`Manual install<ref_unix_manual>`
+* :ref:`How to set PATH<ref_unix_path>`
+
+
+.. _ref_unix_installer:
 
 Installer script
 ^^^^^^^^^^^^^^^^
+
+The installer program should work on all systems, but is new and relatively
+experimental.
+
+You unpack the archive into a destination folder and run the installer from
+there, following the instructions. You may have to edit ``PATH`` afterwards.
+
+Explanation: the installer puts a small mview driver program into a folder on
+``PATH`` so that it can be run easily by the user. The driver knows the
+location of the unpacked MView folder and starts the real MView program.
 
 1. Save the archive to somewhere under your home folder then uncompress
    and extract it::
@@ -29,8 +52,17 @@ Installer script
    chooses ``~/bin`` and you will have to add that to your ``PATH``, then
    rehash or login again.
 
+
+.. _ref_unix_manual:
+
 Manual install
 ^^^^^^^^^^^^^^
+
+This works on all systems and is the most basic, but requires that you do a
+little editing.
+
+You unpack the archive into a destination folder, edit the MView program by
+hand, then add the folder containing that program to ``PATH``.
 
 1. Save the archive to your software area, for example, ``/usr/local``, then
    uncompress and extract it::
@@ -64,8 +96,11 @@ Manual install
    In our example, you would add ``/usr/local/mview-VERSION/bin`` to the
    existing value of ``PATH``, or replace any older MView path.
 
-How to change PATH on UNIX
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _ref_unix_path:
+
+How to set PATH
+^^^^^^^^^^^^^^^
 
 The ``PATH`` environment variable is a list of ``:`` (colon) separated folders
 containing programs. When you type the name of a program at the command
@@ -81,8 +116,8 @@ will be searched last).
 
 Most people are using ``bash`` or a related shell. The ``PATH`` environment
 variable is set globally for all users by the system. You can modify it for
-your account by editing or creating if necessary your ``~/.profile`` file. You
-might see a line like::
+your account by editing or creating if necessary your ``~/.bashrc`` or
+``~/.profile`` file. You might see a line like::
 
       PATH="$HOME/bin:$PATH"
 
@@ -106,6 +141,6 @@ the new location at the back of ``PATH``, the older program will still be
 found first whenever you try to run mview, so be aware of that; you would need
 to delete the old version, or rearrange the ``PATH`` order.
 
-Finally, if you are root or can ``sudo su`` with root privileges you can set
+Finally, if you are root or can ``sudo -i`` with root privileges you can set
 ``PATH`` globally for all users, but details are system specific and you
 already know what to do anyway.

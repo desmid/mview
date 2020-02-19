@@ -1,4 +1,4 @@
-### Installation - Linux, macOS, UNIX
+### Installation - Linux, Apple, UNIX
 
 There are two ways to install MView.
 
@@ -8,6 +8,7 @@ users. It is assumed that Perl is already installed and on your `PATH`.
 
 * [Installer script](#installer-script)
 * [Manual install](#manual-install)
+* [How to set PATH](#how-to-set-path)
 
 
 #### Installer script
@@ -28,16 +29,16 @@ of the unpacked MView folder and starts the real MView program.
         tar xvzf mview-VERSION.tar.gz
 
    This creates a sub-folder `mview-VERSION` containing all the files.
-   
+
 2. Change to this folder.
 
 3. Run the command:
 
         perl install.pl
-        
+
    and follow the instructions. You will be offered various places to install
    the driver script.
-   
+
    If you know in advance the name of the folder you want to use for the
    driver script, you can supply it on the command line:
 
@@ -73,9 +74,9 @@ hand, then add the folder containing that program to `PATH`.
         #!/usr/bin/perl
 
    Find the line:
- 
+
         $MVIEW_HOME = "/path/to/mview/unpacked/folder";
-       
+
    and change the path, in our example, to:
 
         $MVIEW_HOME = "/usr/local/mview-VERSION";
@@ -87,6 +88,52 @@ hand, then add the folder containing that program to `PATH`.
 
    In our example, you would add `/usr/local/mview-VERSION/bin` to the
    existing value of `PATH`, or replace any older MView path.
+
+
+#### How to set PATH
+
+The `PATH` environment variable is a list of `:` (colon) separated folders
+containing programs. When you type the name of a program at the command
+prompt, the system searches these folders, in order, until it finds the
+program and runs it (or complains if the program can't be found).
+
+Assume you are adding `/opt/bin` as the directory containing the newly
+installed mview script. On all systems the `PATH` environment variable would
+be extended by adding `/opt/bin` to the existing `PATH` value using colon
+delimiters as needed. You can prepend the new path (it will be searched first
+for commands), insert it somewhere in the middle, or append it at the back (it
+will be searched last).
+
+Most people are using `bash` or a related shell. The `PATH` environment
+variable is set globally for all users by the system. You can modify it for
+your account by editing or creating if necessary your `~/.bashrc` or
+`~/.profile` file. You might see a line like:
+
+      PATH="$HOME/bin:$PATH"
+
+so change it, in this example, to:
+
+      PATH="$HOME/bin:/opt/bin:$PATH"
+
+Here we've inserted it somewhere in the middle, after a path in the user's
+account, but before the system paths, and that will be the program search
+order.
+
+On all systems, once you've updated the `PATH` variable, login again and the
+`mview` command should be recognised, so that running:
+
+      mview -help
+
+prints the help message for the new version.
+
+Note: if you already have an older mview installed on the `PATH` and append
+the new location at the back of `PATH`, the older program will still be
+found first whenever you try to run mview, so be aware of that; you would need
+to delete the old version, or rearrange the `PATH` order.
+
+Finally, if you are root or can `sudo -i` with root privileges you can set
+`PATH` globally for all users, but details are system specific and you
+already know what to do anyway.
 
 ---
 

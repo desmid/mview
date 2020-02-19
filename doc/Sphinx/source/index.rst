@@ -8,7 +8,7 @@
    contents
    install/unix
    install/windows
-   install/module
+   install/perl
 
 
 MView
@@ -98,52 +98,11 @@ git repository or download a ZIP archive.
 Installation
 ^^^^^^^^^^^^
 
-There are several ways to install MView.
-
-Each method can be used by an ordinary user installing into their own account,
-or by a system administrator installing onto a computer with multiple
-users. It is assumed that Perl is already installed and on your ``PATH``.
-
-* Installer script
-
-  The installer program should work on all systems, but is new and relatively
-  experimental.
-
-  You unpack the archive into a destination folder and run the installer from
-  there, following the instructions. You may have to edit ``PATH`` afterwards.
-  
-  Explanation: the installer puts a small mview driver program into a folder
-  on ``PATH`` so that it can be run easily by the user. The driver knows the
-  location of the unpacked MView folder and starts the real MView program.
-
-* Manual install
-
-  This works on all systems and is the most basic, but requires that you do a
-  little editing.
-
-  You unpack the archive into a destination folder, edit the MView program by
-  hand, then add the folder containing that program to ``PATH``.
-
-* Perl module
-
-  This method assumes that, as well as Perl, you have some version of ``make``
-  installed, so may not work on all systems.
-  
-  You unpack the archive into a temporary folder and run the standard Perl
-  module installation incantation. Unlike the other installation methods you
-  can then delete the installation folder because all the code has been copied
-  into Perl somewhere.
-  
-  Installing a perl Module has the advantage that there is (usually) no need
-  to change ``PATH``, but the disadvantage that it installs directly into your
-  Perl installation (or personal perl folder known to Perl), which you may not
-  want to do.
-
-Details for each system:
+There are several ways to install MView:
 
 * `Linux, Apple, UNIX <install/unix.html>`_
 * `Windows <install/windows.html>`_
-* `Perl module <install/module.html>`_
+* `Perl module <install/perl.html>`_ (advanced)
 
 
 Found a bug?

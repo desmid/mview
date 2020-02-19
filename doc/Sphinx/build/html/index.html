@@ -146,44 +146,11 @@ git repository or download a ZIP archive.</p>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>There are several ways to install MView.</p>
-<p>Each method can be used by an ordinary user installing into their own account,
-or by a system administrator installing onto a computer with multiple
-users. It is assumed that Perl is already installed and on your <code class="docutils literal"><span class="pre">PATH</span></code>.</p>
-<ul>
-<li><p class="first">Installer script</p>
-<p>The installer program should work on all systems, but is new and relatively
-experimental.</p>
-<p>You unpack the archive into a destination folder and run the installer from
-there, following the instructions. You may have to edit <code class="docutils literal"><span class="pre">PATH</span></code> afterwards.</p>
-<p>Explanation: the installer puts a small mview driver program into a folder
-on <code class="docutils literal"><span class="pre">PATH</span></code> so that it can be run easily by the user. The driver knows the
-location of the unpacked MView folder and starts the real MView program.</p>
-</li>
-<li><p class="first">Manual install</p>
-<p>This works on all systems and is the most basic, but requires that you do a
-little editing.</p>
-<p>You unpack the archive into a destination folder, edit the MView program by
-hand, then add the folder containing that program to <code class="docutils literal"><span class="pre">PATH</span></code>.</p>
-</li>
-<li><p class="first">Perl module</p>
-<p>This method assumes that, as well as Perl, you have some version of <code class="docutils literal"><span class="pre">make</span></code>
-installed, so may not work on all systems.</p>
-<p>You unpack the archive into a temporary folder and run the standard Perl
-module installation incantation. Unlike the other installation methods you
-can then delete the installation folder because all the code has been copied
-into Perl somewhere.</p>
-<p>Installing a perl Module has the advantage that there is (usually) no need
-to change <code class="docutils literal"><span class="pre">PATH</span></code>, but the disadvantage that it installs directly into your
-Perl installation (or personal perl folder known to Perl), which you may not
-want to do.</p>
-</li>
-</ul>
-<p>Details for each system:</p>
+<p>There are several ways to install MView:</p>
 <ul class="simple">
 <li><a class="reference external" href="install/unix.html">Linux, Apple, UNIX</a></li>
 <li><a class="reference external" href="install/windows.html">Windows</a></li>
-<li><a class="reference external" href="install/module.html">Perl module</a></li>
+<li><a class="reference external" href="install/perl.html">Perl module</a> (advanced)</li>
 </ul>
 </div>
 <div class="section" id="found-a-bug">
@@ -241,7 +208,7 @@ in their publications.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015-2020, Nigel P. Brown.
-      Last updated on 13 Feb 2020.
+      Last updated on 19 Feb 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>

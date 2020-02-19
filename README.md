@@ -57,11 +57,9 @@ systems. MView is known to work on Windows with
 
 ### Installation
 
-There are several ways to install MView, with details given in the appropriate
-links below.
+There are several ways to install MView:
 
-- [Linux, UNIX](README_unix.md)
-- [macOS](README_unix.md)
+- [Linux, Apple, UNIX](README_unix.md)
 - [Windows](README_windows.md)
 - [Perl module](README_perl.md) (advanced)
 
