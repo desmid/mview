@@ -546,8 +546,8 @@ sub is_admin {
 
     return $self->{'ADMIN'}  if defined $self->{'ADMIN'};
 
-    $self->{'ADMIN'} = 1  if system("NET SESSION >NUL 2>&1") == 0;
     $self->{'ADMIN'} = 0;
+    $self->{'ADMIN'} = 1  if system("NET SESSION >NUL 2>&1") == 0;
 
     return $self->{'ADMIN'};
 }
