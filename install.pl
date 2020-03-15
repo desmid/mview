@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# Copyright (C) 2019 Nigel P. Brown
+# Copyright (C) 2019-2020 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -18,7 +18,7 @@ require 5.004;  # ancient: same as MView
 use strict;
 use warnings;
 
-my $VERSION  = "1.0"; # installer version
+my $VERSION  = "1.1"; # installer version
 my $TESTFILE = "";    # tmpfile, unlink after Ctrl-C
 
 sub abort {
@@ -253,6 +253,17 @@ sub set_bindir {
     $self->{'BINDIR'} = $self->_expand_path($dir);
 }
 
+sub guess_bindir {
+    my $self = shift;
+
+    return $self->{'BINDIR'}  if defined $self->{'BINDIR'};  # already set
+
+    $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
+
+    return $self->_guess_admin_bindir(@{$self->{'SAVEPATH'}})  if $self->is_admin();
+    return $self->_guess_user_bindir(@{$self->{'SAVEPATH'}});
+}
+
 sub choose_bindir {
     my $self = shift;
     my ($bindir, $loc) = ($self->{'BINDIR'}, "");
@@ -413,17 +424,6 @@ sub _get_home_dir {
     return (getpwuid($<))[7];
 }
 
-sub guess_bindir {
-    my $self = shift;
-
-    return $self->{'BINDIR'}  if defined $self->{'BINDIR'};  # already set
-
-    $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
-
-    return $self->_guess_admin_bindir()  if $self->is_admin();
-    return $self->_guess_user_bindir();
-}
-
 sub _get_writable_paths {
     my $self = shift;
 
@@ -443,13 +443,14 @@ sub _get_writable_paths {
 sub _guess_admin_bindir {
     my $self = shift;
 
-    # prefer these paths in this order
-    if (my @tmp = grep {/\/usr\/local\/bin$/} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
-    }
-
-    if (my @tmp = grep {/\/opt\/bin$/} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
+    # prefer common paths in this order
+    foreach my $dir (
+        '/usr/local/bin',
+        '/opt/bin',
+    ) {
+        if (my @tmp = grep { /^$dir$/ } @_) {
+            return $self->{'BINDIR'} = $tmp[0];
+      }
     }
 
     return $self->{'BINDIR'} = "/usr/local/bin";  # force default
@@ -460,9 +461,13 @@ sub _guess_user_bindir {
 
     my $HOME = $self->_get_home_dir();
 
-    # prefer these paths in this order
-    if (my @tmp = grep {/$HOME\/bin$/} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
+    # prefer paths in this order
+    foreach my $dir (
+        "$HOME/bin",
+    ) {
+        if (my @tmp = grep { /^$dir$/ } @_) {
+            return $self->{'BINDIR'} = $tmp[0];
+        }
     }
 
     return $self->{'BINDIR'} = "$HOME/bin";  # force default
@@ -523,6 +528,7 @@ sub new {
     my $self = new Installer(@_);
 
     #change from defaults
+    $self->{'INSTALLDIR'} = join('\\', split('/', $self->{'INSTALLDIR'}));
     $self->{'TARGET_EXE'} = join('\\', split('/', $TARGET_EXE));
     $self->{'DRIVER'}     = "$DRIVER.bat";
 
@@ -583,17 +589,6 @@ sub _get_home_dir {
     return "";
 }
 
-sub guess_bindir {
-    my $self = shift;
-
-    return $self->{'BINDIR'}  if defined $self->{'BINDIR'};  # already set
-
-    $self->{'SAVEPATH'} = [ $self->_get_writable_paths() ];
-
-    return $self->_guess_admin_bindir()  if $self->is_admin();
-    return $self->_guess_user_bindir();
-}
-
 sub _get_writable_paths {
     my $self = shift;
 
@@ -612,34 +607,37 @@ sub _get_writable_paths {
 sub _guess_admin_bindir {
     my $self = shift;
 
-    # prefer these paths in this order
-    if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
-        return $self->{'BINDIR'} = $tmp[0];
+    # prefer common paths in this order
+    foreach my $path (
+        'C:\strawberry\perl\site\bin',
+        'C:\perl\site\bin',
+        'C:\perl\bin',
+        'C:\bin',
+    ) {
+        my $dir = quotemeta($path);
+
+        if (my @tmp = grep { /^$dir$/i } @_) {
+            return $self->{'BINDIR'} = $tmp[0];
+        }
     }
 
-    if (my @tmp = grep {/\\perl\\site\\bin$/i} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
-    }
-
-    if (my @tmp = grep {/\\perl\\bin$/i} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
-    }
-
-    return $self->{'BINDIR'} = "C:\\bin";  # force default
+    return $self->{'BINDIR'} = 'C:\bin';  # force default
 }
 
 sub _guess_user_bindir {
     my $self = shift;
 
-    # prefer these paths in this order
-    if (my @tmp = grep {/C:\\bin$/i} @_) { # feeling lucky
-        return $self->{'BINDIR'} = $tmp[0];
-    }
+    my $HOME = $self->_get_home_dir();
 
-    my $HOME = $self->_get_home_dir(); my $pfx = $HOME; $pfx =~ s/\\/\\\\/g;
+    # prefer paths in this order
+    foreach my $path (
+        "$HOME\\bin",
+    ) {
+        my $dir = quotemeta($path);
 
-    if (my @tmp = grep {/$pfx\\bin$/i} @_) {
-        return $self->{'BINDIR'} = $tmp[0];
+        if (my @tmp = grep { /^$dir$/i } @_) {
+            return $self->{'BINDIR'} = $tmp[0];
+        }
     }
 
     return $self->{'BINDIR'} = "$HOME\\bin"  # force default
