@@ -257,7 +257,8 @@ sub msf {
 sub get_timestamp {
     my $time = shift;
     my $now;
-    my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
+    my @months = qw(January February March April May June July August
+                    September October November December);
     my ($sec, $min, $hour, $day, $month, $year, @rest) = localtime();
     $year += 1900;
     $month = $months[$month];

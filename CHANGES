@@ -1,5 +1,11 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
+Version 1.68-beta 2020-07-08
+
+Bug fix:
+- MSF output on Windows would hang waiting for input - fixed.
+
+
 Version 1.67 2020-02-14
 
 Changes:
