@@ -190,8 +190,7 @@ sub msf {
         return $sum % 10000;
     };
 
-    my $now = `date '+%B %d, %Y %H:%M'`;
-    $now =~ s/\s0(\d{1})/ $1/; chomp $now; #padding %-d may not work
+    my $now = get_timestamp();
 
     $s .= "\n"  if $OUTPUT_COUNT++ > 0;
     if ($self->{'moltype'} eq 'aa') {
@@ -253,6 +252,18 @@ sub msf {
         $s .= "\n";
     }
     return \$s;
+}
+
+sub get_timestamp {
+    my $time = shift;
+    my $now;
+    my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
+    my ($sec, $min, $hour, $day, $month, $year, @rest) = localtime();
+    $year += 1900;
+    $month = $months[$month];
+    # $now = `date '+%B %d, %Y %H:%M'`;
+    $now = sprintf("%s %02d, %4d %02d:%02d", $month, $day, $year, $min, $sec);
+    return $now;
 }
 
 ###########################################################################
