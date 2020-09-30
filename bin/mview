@@ -8,14 +8,11 @@
 ###########################################################################
 # Release information
 ###########################################################################
-my $VERSION  = '1.67';
+my $VERSION  = '1.68-beta';
 my $PATCH    = '';
 my $PROJECT  = 'MView';
-my $AUTHOR   = "Nigel P. Brown";
 my $VERSION  = $VERSION . ($PATCH ? ".$PATCH" : "");
-my $COPYYRS  = "1997-2020";
 my $PROJPTH  = 'https://desmid.github.io/mview/';
-my $AUTHMAIL = 'biomview@gmail.com';
 
 ###########################################################################
 require 5.004;
@@ -62,8 +59,8 @@ sub only_want_html_data     { return $_[0]->{'html'} == $HTML_DATA }
 sub want_convert_rdb        { return $_[0]->{'outfmt'} eq 'rdb' }
 sub want_mview_layout       { return $_[0]->{'outfmt'} eq 'mview' }
 
-sub want_leading_copyright  { return want_convert_rdb(@_) }
-sub want_trailing_copyright { return (want_mview_layout(@_) and
+sub want_leading_version    { return want_convert_rdb(@_) }
+sub want_trailing_version   { return (want_mview_layout(@_) and
                                       ! only_want_html_data(@_)) }
 
 sub want_help               { return $_[0]->{'help'} }
@@ -109,14 +106,14 @@ print(html_head($par))               if want_html($par);
 
 print(echo_argv($par))               if verbose_echo_argv($par);
 
-print(copyright($par))               if want_leading_copyright($par);
+print(version_string($par))          if want_leading_version($par);
 
 capture_stdin($TMPFILE)              unless @ARGV;
 
 my $count = mview($par, @ARGV);
 
 if ($count) {  #got something
-    print copyright($par)            if want_trailing_copyright($par);
+    print version_string($par)       if want_trailing_version($par);
 } else {
     my $s = "$PROG: no alignments found\n";
     print $s                         unless only_want_html_data($par);
@@ -196,11 +193,11 @@ sub usage {
     if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
-        $s .= copyright($par);
+        $s .= version_string($par);
         $s .= html_foot($par);
     } else {
         $s .= $data;
-        $s .= copyright($par);
+        $s .= version_string($par);
     }
     return $s;
 }
@@ -237,11 +234,11 @@ sub dump_colormaps {
     if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
-        $s .= copyright($par);
+        $s .= version_string($par);
         $s .= html_foot($par);
     } else {
         $s .= $data;
-        $s .= copyright($par);
+        $s .= version_string($par);
     }
     return $s;
 }
@@ -253,11 +250,11 @@ sub dump_groupmaps {
     if (want_html($par)) {
         $s .= html_head($par);
         $s .= "<HR><PRE>\n$data</PRE><HR>\n";
-        $s .= copyright($par);
+        $s .= version_string($par);
         $s .= html_foot($par);
     } else {
         $s .= $data;
-        $s .= copyright($par);
+        $s .= version_string($par);
     }
     return $s;
 }
@@ -279,9 +276,9 @@ sub echo_argv {
     return $s;
 }
 
-sub copyright {
+sub version_string {
     my $par = shift;
-    my $message = "$PROJECT $VERSION, Copyright (C) $COPYYRS $AUTHOR";
+    my $message = "$PROJECT $VERSION";
 
     return "# $message\n"                 if want_dump_colors($par);
     return "# $message\n"                 if want_dump_groups($par);
@@ -289,8 +286,7 @@ sub copyright {
     return "$message\n\n"                 if want_text($par);
 
     my $s = "<P><SMALL><A HREF=\"$PROJPTH\">$PROJECT</A> ";
-    $s .= "$VERSION, Copyright \&copy; ";
-    $s .= "$COPYYRS <A HREF=\"mailto:$AUTHMAIL\">$AUTHOR</A>";
+    $s .= "$VERSION";
     $s .= "</SMALL></P>\n";
     return $s;
 }

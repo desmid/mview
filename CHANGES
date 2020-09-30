@@ -1,6 +1,9 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
-Version 1.68-beta 2020-07-08
+Version 1.68-beta 2020-09-30
+
+Changes:
+- Remove copyright from output.
 
 Bug fix:
 - MSF output on Windows would hang waiting for input - fixed.
