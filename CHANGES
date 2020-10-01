@@ -1,9 +1,14 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
-Version 1.68-beta 2020-09-30
+Version 1.68-beta 2020-10-01
 
 Changes:
 - Remove copyright from output.
+
+Input formats:
+
+- Tested with BLAST 2.10.1+
+- Tested with FASTA 36.3.8h [2020-05 build]
 
 Bug fix:
 - MSF output on Windows would hang waiting for input - fixed.

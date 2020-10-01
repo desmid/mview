@@ -27,31 +27,59 @@ produced with `-outfmt 7`. MView support and testing is as follows.
 
 MView option: ``-in blast`` (with the default BLAST format)
 
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
- Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+ 2.10.0+
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
- `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `phiblast` .       .       .       .      .      .      .      .      .      ok     ok
- ========== ======= ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ======
+ Program    2.2.25+ 2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ======
+ `blastp`   ok      ok      ok      ok     ok     ok     ok     ok     ok
+ `blastn`   ok      ok      ok      ok     ok     ok     ok     ok     ok
+ `blastx`   .       ok      ok      ok     ok     ok     ok     ok     ok
+ `tblastn`  .       ok      ok      ok     ok     ok     ok     ok     ok
+ `tblastx`  .       ok      ok      ok     ok     ok     ok     ok     ok
+ `psiblast` .       ok      ok      ok     ok     ok     ok     ok     ok
+ `phiblast` .       .       .       .      .      .      .      .      .
+ ========== ======= ======= ======= ====== ====== ====== ====== ====== ======
+
+..
+
+ ========== ====== ======= =======
+ Program    2.9.0+ 2.10.0+ 2.10.1+
+ ========== ====== ======= =======
+ `blastp`   ok     ok      ok
+ `blastn`   ok     ok      ok
+ `blastx`   ok     ok      ok
+ `tblastn`  ok     ok      ok
+ `tblastx`  ok     ok      ok
+ `psiblast` ok     ok      ok
+ `phiblast` ok     ok      ok
+ ========== ====== ======= =======
 
 MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
 
- ========== ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
- Program    2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+ 2.10.0+
- ========== ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
- `blastp`   ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `blastn`   ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `blastx`   ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `tblastn`  ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `tblastx`  ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `psiblast` ok      ok      ok     ok     ok     ok     ok     ok     ok     ok
- `phiblast` .       .       .      .      .      .      .      .      ok     ok
- ========== ======= ======= ====== ====== ====== ====== ====== ====== ====== =======
+ ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
+ Program    2.2.28+ 2.2.31+ 2.3.0+ 2.4.0+ 2.5.0+ 2.6.0+ 2.7.1+ 2.8.1+ 2.9.0+
+ ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
+ `blastp`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastn`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `blastx`   ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastn`  ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `tblastx`  ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `psiblast` ok      ok      ok     ok     ok     ok     ok     ok     ok
+ `phiblast` .       .       .      .      .      .      .      .      ok
+ ========== ======= ======= ====== ====== ====== ====== ====== ====== ======
+
+..
+
+ ========== ======= =======
+ Program    2.10.0+ 2.10.1+
+ ========== ======= =======
+ `blastp`   ok      ok
+ `blastn`   ok      ok
+ `blastx`   ok      ok
+ `tblastn`  ok      ok
+ `tblastx`  ok      ok
+ `psiblast` ok      ok
+ `phiblast` ok      ok
+ ========== ======= =======
 
 The main `-outfmt 7` fields or columns recognised by MView are:
 
@@ -256,17 +284,31 @@ FASTA series 3.0 - 3.4
 
 MView option: ``-in uvfasta``
 
- ========== ====== ====== ====== ====== ====== ====== ====== ====== ====== ====== ======
- Program    3.0t76 3.0t82 3.1t07 3.2t01 3.2t05 3.2t07 3.2t05 3.2t07 3.3t01 3.3t07 3.4t23
- ========== ====== ====== ====== ====== ====== ====== ====== ====== ====== ====== ======
- `fasta`    ok     .      ok     ok     ok     ok     ok     ok     ok     ok     ok
- `fastx`    .      .      .      .      .      .      .      .      .      .      ok
- `fasty`    .      .      .      .      .      .      .      .      .      .      ok
- `tfasta`   .      .      .      .      .      .      .      .      .      .      ok
- `tfastx`   .      ok     .      .      .      .      .      .      .      .      ok
- `tfasty`   .      .      .      .      .      .      .      .      .      .      ok
- `tfastxy`  .      .      ok     .      .      .      .      .      .      .      .
- ========== ====== ====== ====== ====== ====== ====== ====== ====== ====== ====== ======
+ ========== ====== ====== ====== ====== ====== ====== ====== ====== ======
+ Program    3.0t76 3.0t82 3.1t07 3.2t01 3.2t05 3.2t07 3.2t05 3.2t07 3.3t01
+ ========== ====== ====== ====== ====== ====== ====== ====== ====== ======
+ `fasta`    ok     .      ok     ok     ok     ok     ok     ok     ok
+ `fastx`    .      .      .      .      .      .      .      .      .
+ `fasty`    .      .      .      .      .      .      .      .      .
+ `tfasta`   .      .      .      .      .      .      .      .      .
+ `tfastx`   .      ok     .      .      .      .      .      .      .
+ `tfasty`   .      .      .      .      .      .      .      .      .
+ `tfastxy`  .      .      ok     .      .      .      .      .      .
+ ========== ====== ====== ====== ====== ====== ====== ====== ====== ======
+
+..
+
+ ========== ====== ======
+ Program    3.3t07 3.4t23
+ ========== ====== ======
+ `fasta`    ok     ok
+ `fastx`    .      ok
+ `fasty`    .      ok
+ `tfasta`   .      ok
+ `tfastx`   .      ok
+ `tfasty`   .      ok
+ `tfastxy`  .      .
+ ========== ====== ======
 
 
 FASTA series 2
