@@ -461,4 +461,27 @@ pyrimidine   =>  y       { C, T, U,  Y }
 .            =>  .
 C            =>  C       { C }
 
+[D_IUPAC]
+#DNA consensus w/ IUPAC ambiguity codes
+#Example: https://droog.gs.washington.edu/parc/images/iupac.html
+#Example2: https://docs.denovodna.com/docs/iupac-codes
+#description =>  symbol  members
+.            =>  .
+A            =>  A       { A }
+C            =>  C       { C }
+G            =>  G       { G }
+T            =>  T       { T }
+U            =>  U       { U }
+purine       =>  r       { A, G, R }   
+pyrimidine   =>  y       { C, T, U, Y }
+W            =>  w       { A, T }
+S            =>  s       { C, G }
+Y            =>  y       { C, T }
+K            =>  k       { G, T }   
+V            =>  v       { A, C, G }
+H            =>  h       { A, C, T }
+D            =>  d       { A, G, T }
+B            =>  b       { C, G, T }
+N            =>  n       { G, A, T, C, N }
+
 ###########################################################################
