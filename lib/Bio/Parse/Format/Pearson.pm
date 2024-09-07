@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2019 Nigel P. Brown
+# Copyright (C) 1998-2024 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -16,7 +16,6 @@ use strict;
 my $Pearson_Null     = '^\s*$';#'
 my $Pearson_SEQ      = '^\s*>';
 my $Pearson_SEQend   = "(?:$Pearson_SEQ|$Pearson_Null)";
-
 
 #Consume one entry-worth of input on text stream associated with $file and
 #return a new Pearson instance.
@@ -98,21 +97,15 @@ sub new {
             next;
         }
 
-        #read sequence lines up to asterisk, if present
-        if ($line =~ /([^\*]+)/) {
-            $self->{'seq'} .= $1;
-            next;
-        }
-
-        #ignore lone asterisk
-        last    if $line =~ /\*/;
-
-        #default
-        $self->warn("unknown field: $line");
+        #append sequence line
+        $self->{'seq'} .= $line;
     }
 
-    #strip internal whitespace from sequence
+    #strip whitespace from sequence
     $self->{'seq'} =~ s/\s//g;
+
+    #strip optional Pearson FASTA format sequence end marker
+    chop $self->{'seq'} if substr($self->{seq}, -1) eq '*';
 
     $self;
 }
