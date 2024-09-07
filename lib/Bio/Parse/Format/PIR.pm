@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2019 Nigel P. Brown
+# Copyright (C) 1998-2024 Nigel P. Brown
 
 # This file is part of MView.
 # MView is released under license GPLv2, or any later version.
@@ -107,21 +107,15 @@ sub new {
             next;
         }
 
-        #read sequence lines upto asterisk, if present
-        if ($line =~ /([^\*]+)/) {
-            $self->{'seq'} .= $1;
-            next;
-        }
-
-        #ignore lone asterisk
-        last    if $line =~ /\*/;
-
-        #default
-        $self->warn("unknown field: $line");
-
+        #append sequence line
+        $self->{'seq'} .= $line;
     }
-    #strip internal whitespace from sequence
+
+    #strip whitespace from sequence
     $self->{'seq'} =~ s/\s//g;
+
+    #strip PIR sequence end marker but be silent if missing
+    chop $self->{'seq'} if substr($self->{seq}, -1) eq '*';
 
     $self;
 }
