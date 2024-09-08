@@ -41,17 +41,17 @@ MView option: ``-in blast`` (with the default BLAST format)
 
 ..
 
- ========== ====== ======= =======
- Program    2.9.0+ 2.10.0+ 2.10.1+
- ========== ====== ======= =======
- `blastp`   ok     ok      ok
- `blastn`   ok     ok      ok
- `blastx`   ok     ok      ok
- `tblastn`  ok     ok      ok
- `tblastx`  ok     ok      ok
- `psiblast` ok     ok      ok
- `phiblast` ok     ok      ok
- ========== ====== ======= =======
+ ========== ====== ======= ======= =======
+ Program    2.9.0+ 2.10.0+ 2.10.1+ 2.16.0+
+ ========== ====== ======= ======= =======
+ `blastp`   ok     ok      ok      ok     
+ `blastn`   ok     ok      ok      ok     
+ `blastx`   ok     ok      ok      ok     
+ `tblastn`  ok     ok      ok      ok     
+ `tblastx`  ok     ok      ok      ok     
+ `psiblast` ok     ok      ok      ok     
+ `phiblast` ok     ok      ok      ok     
+ ========== ====== ======= ======= =======
 
 MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
 
@@ -69,17 +69,17 @@ MView option: ``-in blast`` (with `-outfmt 7` tabular BLAST format)
 
 ..
 
- ========== ======= =======
- Program    2.10.0+ 2.10.1+
- ========== ======= =======
- `blastp`   ok      ok
- `blastn`   ok      ok
- `blastx`   ok      ok
- `tblastn`  ok      ok
- `tblastx`  ok      ok
- `psiblast` ok      ok
- `phiblast` ok      ok
- ========== ======= =======
+ ========== ======= ======= =======
+ Program    2.10.0+ 2.10.1+ 2.16.0+
+ ========== ======= ======= =======
+ `blastp`   ok      ok      ok     
+ `blastn`   ok      ok      ok     
+ `blastx`   ok      ok      ok     
+ `tblastn`  ok      ok      ok     
+ `tblastx`  ok      ok      ok     
+ `psiblast` ok      ok      ok     
+ `phiblast` ok      ok      ok     
+ ========== ======= ======= =======
 
 The main `-outfmt 7` fields or columns recognised by MView are:
 

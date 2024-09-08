@@ -6,6 +6,10 @@ Changes:
 - Allow non-terminal asterisks in input Pearson/FASTA format
 - Allow non-terminal asterisks in input PIR format
 
+Input formats:
+
+- Tested with BLAST 2.16.0+
+
 
 Version 1.68-beta 2020-10-01
 
