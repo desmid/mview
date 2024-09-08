@@ -89,7 +89,7 @@ The `latest code`_ can be downloaded direct from GitHub by clicking the green
 "Clone or download" button and following the instructions to either clone the
 git repository or download a ZIP archive.
 
-.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.67/
+.. _current release:      https://sourceforge.net/projects/bio-mview/files/bio-mview/mview-1.68/
 .. _releases:             https://sourceforge.net/projects/bio-mview/files/bio-mview/
 .. _download statistics:  https://sourceforge.net/projects/bio-mview/files/stats/timeline?dates=2005-01-01+to+2025-01-01
 .. _latest code:          https://github.com/desmid/mview

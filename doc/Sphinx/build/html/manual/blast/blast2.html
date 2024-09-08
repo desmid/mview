@@ -1,36 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>NCBI BLAST series 2 and NCBI BLAST+ &#8212; MView</title>
-    
-    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinxdoc.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Frequently asked questions" href="../faq.html" />
     <link rel="prev" title="NCBI BLAST series 1 and WU-BLAST series 2" href="blast1.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -45,12 +33,731 @@
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">MView</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../contents.html" >Contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="rules.html" accesskey="U">BLAST HSP processing rules</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="rules.html" accesskey="U">BLAST HSP processing rules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">NCBI BLAST series 2 and NCBI BLAST+</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="ncbi-blast-series-2-and-ncbi-blast">
+<h1>NCBI BLAST series 2 and NCBI BLAST+<a class="headerlink" href="#ncbi-blast-series-2-and-ncbi-blast" title="Permalink to this headline">¶</a></h1>
+<p>The rules used in MView for selecting and tiling HSPs for:</p>
+<ul class="simple">
+<li><p>NCBI BLAST series 2 (including PSI-BLAST)</p></li>
+<li><p>NCBI BLAST+</p></li>
+</ul>
+<section id="blastp">
+<h2>BLASTP<a class="headerlink" href="#blastp" title="Permalink to this headline">¶</a></h2>
+<p>Searches a protein query sequence against a protein sequence database.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>none</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The query orientation is always ‘+’ giving one alignment.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, alignments corresponding to those in
+the ranking are selected for assembly having: (i) same
+expectation, <em>E</em>, (ii) same score, <em>bits</em>. Row data
+fields: (i) rank as integral <em>hitnum</em>, (ii)
+identifier, (iii) description, (iv) ranked <em>bits</em>, (v)
+ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, all alignments are selected for
+assembly. Row data fields: (i) rank as integral
+<em>hitnum</em>, (ii) identifier, (iii) description, (iv) highest
+<em>bits</em>, (v) lowest <em>E</em>, (vi) total number of alignments
+<em>N</em>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="blastn">
+<h2>BLASTN<a class="headerlink" href="#blastn" title="Permalink to this headline">¶</a></h2>
+<p>Searches a nucleotide query sequence against a nucleotide sequence database.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>+</p></td>
+<td><p>--</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>none</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The query orientation can be ‘+’ or ‘--’ giving two distinct alignments.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, alignments corresponding to those in
+the ranking are selected for assembly having: (i) same
+expectation, <em>E</em>, (ii) same score, <em>bits</em>. Row data
+fields: (i) rank as integral <em>hitnum</em>, (ii)
+identifier, (iii) description, (iv) ranked <em>bits</em>, (v)
+ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, alignments are selected for assembly
+having: (i) same hit orientation. Row data fields: (i) rank
+as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
+description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
+total number of alignments <em>N</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
+orientation.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="blastx">
+<h2>BLASTX<a class="headerlink" href="#blastx" title="Permalink to this headline">¶</a></h2>
+<p>Searches a nucleotide query sequence against a protein sequence database,
+translating the query in all 6 reading frames.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+<tr class="row-even"><td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>--</p></td>
+<td><p>+</p></td>
+<td><p>reverse</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The query orientation can be ‘+’ or ‘--’ giving two distinct alignments by
+orientation. Query reading frames of the same sign are merged unless <code class="docutils literal notranslate"><span class="pre">-hsp</span>
+<span class="pre">discrete</span></code> is used.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, alignments corresponding to those in
+the ranking are selected for assembly having: (i) same
+expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same query
+orientation. Row data fields: (i) rank as integral
+<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
+<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) query
+orientation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, alignments are selected for assembly
+having: (i) same query orientation. Row data fields: (i)
+rank as integral <em>hitnum</em>, (ii) identifier, (iii)
+description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
+total number of alignments, <em>N</em>, (vii) query orientation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii)
+query orientation.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="tblastn">
+<h2>TBLASTN<a class="headerlink" href="#tblastn" title="Permalink to this headline">¶</a></h2>
+<p>Searches a protein query sequence against a nucleotide sequence database,
+translating the hits in all 6 reading frames.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>pro</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>pro</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>--</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>none</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The query orientation is always ‘+’ giving one alignment. Hit reading frames
+of the same sign are merged unless <code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code> is used.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, alignments corresponding to those in
+the ranking are selected for assembly having: (i) same
+expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same hit
+orientation. Row data fields: (i) rank as integral
+<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
+<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, alignments are selected for assembly
+having: (i) same hit orientation. Row data fields: (i) rank
+as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
+description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
+total number of alignments, <em>N</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
+orientation.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="tblastx">
+<h2>TBLASTX<a class="headerlink" href="#tblastx" title="Permalink to this headline">¶</a></h2>
+<p>Searches a nucleotide query sequence against a nucleotide sequence database,
+translating both query and hit in all 6 reading frames.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+<tr class="row-even"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>--</p></td>
+<td><p>forward</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+<tr class="row-odd"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>--</p></td>
+<td><p>+</p></td>
+<td><p>reverse</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+<tr class="row-even"><td><p>dna</p></td>
+<td><p>dna</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>--</p></td>
+<td><p>--</p></td>
+<td><p>reverse</p></td>
+<td><p>yes</p></td>
+<td><p>query orient</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The query orientation can be ‘+’ or ‘--’ giving two distinct alignments by
+orientation. Query and hit reading frames of the same sign are merged,
+respectively, unless <code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code> is used.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, alignments corresponding to those in
+the ranking are selected for assembly having: (i) same
+expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same hit
+orientation. Row data fields: (i) rank as integral
+<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
+<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, alignments are selected for assembly
+having: (i) same hit orientation. Row data fields: (i) rank
+as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
+description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
+total number of alignments, <em>N</em>, (vii) hit orientation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
+orientation.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="psi-blast">
+<h2>PSI-BLAST<a class="headerlink" href="#psi-blast" title="Permalink to this headline">¶</a></h2>
+<p>Iteratively searches a protein query sequence against a protein sequence
+database. PSI-BLAST output is processed as a sequence of BLASTP cycles.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Input</p></th>
+<th class="head" colspan="2"><p>Output</p></th>
+<th class="head" colspan="2"><p>Orient</p></th>
+<th class="head"><p>Assemble</p></th>
+<th class="head"><p>Renumber</p></th>
+<th class="head"><p>Filter</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"><p>qry</p></th>
+<th class="head"><p>hit</p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>pro</p></td>
+<td><p>+</p></td>
+<td><p>+</p></td>
+<td><p>forward</p></td>
+<td><p>no</p></td>
+<td><p>cycle</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>BLASTP and PSI-BLAST share the same HSP processing rules. The query
+orientation is always ‘+’ giving one alignment per cycle.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>MView option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></p></td>
+<td><p>For each ranked hit, the first alignment is selected to
+form an alignment row using: (i) same expectation,
+<em>E</em>, (ii) same score, <em>bits</em>. Row data fields: (i) rank as
+integral <em>hitnum</em>, (ii) identifier, (iii) description, (iv)
+ranked <em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">all</span></code></p></td>
+<td><p>For each ranked hit, all alignments are selected for
+assembly. Row data fields: (i) rank as integral
+<em>hitnum</em>, (ii) identifier, (iii) description, (iv) highest
+<em>bits</em>, (v) lowest <em>E</em>, (vi) total number of alignments
+<em>N</em>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></p></td>
+<td><p>For each ranked hit, every alignment is assigned its own
+row. Row data fields: (i) alignment rank as compound rank
+<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
+alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="column-headings">
+<h2>Column headings<a class="headerlink" href="#column-headings" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Heading</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Input</p></td>
+<td><p>The input sequence types for the query, ‘qry’, and the ‘hit’,
+sequences which may be protein ‘pro’ or nucleotide ‘dna’.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Output</p></td>
+<td><p>The output sequence types produced by the search, may be
+protein ‘pro’ or nucleotide ‘dna’.</p></td>
+</tr>
+<tr class="row-even"><td><p>Orient</p></td>
+<td><p>The orientation of the query and hit sequences given as
+forward ‘+’ or reverse ‘--’ and sometimes with a reading
+frame number indicated by ‘+F’ or ‘--F’.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Assemble</p></td>
+<td><p>The sequence fragment assembly algorithm:</p>
+<p><em>forward</em>: Given a list of fragments each numbered from low
+to high along the query strand (i.e., conventional
+orientation): stack these at these positions along the query
+template.</p>
+<p><em>reverse</em>: Given a list of fragments each numbered from
+high to low along the query strand (i.e., individually
+reversed): reverse each fragment, stack onto the template,
+reverse the template, which recovers the original numbering
+high to low and preserves intra- and inter-fragment order.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Renumber</p></td>
+<td><p>Whether the sequence numbering is modified by MView or not.
+Given a <span class="math notranslate nohighlight">\((start, stop)\)</span> pair in nucleotide units, the
+corresponding nearest values in amino acid units are given by:
+<span class="math notranslate nohighlight">\((start\prime, stop\prime) = (int((start+2)/3),
+int(stop/3))\)</span> This renumbering is applied to each fragment’s
+positions along its parent query strand to determine the query
+template positions in amino acid units.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Filter</p></td>
+<td><p>Separate MView output must be produced for varous BLAST hit
+properties, such as PSI-BLAST search cycle, BLASTN query
+strand orientation, etc.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="key">
+<h2>Key<a class="headerlink" href="#key" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Term</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>hitnum</em></p></td>
+<td><p>The ordinal number (starting at 1) of a search hit as
+encountered in the ranking section of the raw BLAST output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>alignum</em></p></td>
+<td><p>The ordinal number (starting at 1) of a single HSP within a
+given hit (starting afresh with each hit) as encountered in
+the raw BLAST output.</p></td>
+</tr>
+<tr class="row-even"><td><p><em>N</em></p></td>
+<td><p>A count of HSPs which is context dependent in MView. In raw
+BLAST output it is the number of HSPs deemed by BLAST to
+belong in a coherent set of alignment fragments, but the MView
+HSP processing options (<code class="docutils literal notranslate"><span class="pre">ranked</span></code>, <code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">discrete</span></code>)
+change the precise meaning. BLAST series 2 onwards produces
+gapped alignments by default rather than separate HSPs so
+<em>N=1</em>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>E</em></p></td>
+<td><p>Expectation or e-value: the expected number of hits by chance.</p></td>
+</tr>
+<tr class="row-even"><td><p><em>bits</em></p></td>
+<td><p>NCBI BLAST 2.0 hit ranking rounds HSP scores which are
+floating point to the nearset integer, so MView takes this
+into account when selecting HSPs.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <h3><a href="../../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">NCBI BLAST series 2 and NCBI BLAST+</a><ul>
 <li><a class="reference internal" href="#blastp">BLASTP</a></li>
@@ -79,732 +786,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="ncbi-blast-series-2-and-ncbi-blast">
-<h1>NCBI BLAST series 2 and NCBI BLAST+<a class="headerlink" href="#ncbi-blast-series-2-and-ncbi-blast" title="Permalink to this headline">¶</a></h1>
-<p>The rules used in MView for selecting and tiling HSPs for:</p>
-<ul class="simple">
-<li>NCBI BLAST series 2 (including PSI-BLAST)</li>
-<li>NCBI BLAST+</li>
-</ul>
-<div class="section" id="blastp">
-<h2>BLASTP<a class="headerlink" href="#blastp" title="Permalink to this headline">¶</a></h2>
-<p>Searches a protein query sequence against a protein sequence database.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>no</td>
-<td>none</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>The query orientation is always &#8216;+&#8217; giving one alignment.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, alignments corresponding to those in
-the ranking are selected for assembly having: (i) same
-expectation, <em>E</em>, (ii) same score, <em>bits</em>. Row data
-fields: (i) rank as integral <em>hitnum</em>, (ii)
-identifier, (iii) description, (iv) ranked <em>bits</em>, (v)
-ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, all alignments are selected for
-assembly. Row data fields: (i) rank as integral
-<em>hitnum</em>, (ii) identifier, (iii) description, (iv) highest
-<em>bits</em>, (v) lowest <em>E</em>, (vi) total number of alignments
-<em>N</em>.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="blastn">
-<h2>BLASTN<a class="headerlink" href="#blastn" title="Permalink to this headline">¶</a></h2>
-<p>Searches a nucleotide query sequence against a nucleotide sequence database.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>dna</td>
-<td>dna</td>
-<td>dna</td>
-<td>dna</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>no</td>
-<td>none</td>
-</tr>
-<tr class="row-even"><td>dna</td>
-<td>dna</td>
-<td>dna</td>
-<td>dna</td>
-<td>+</td>
-<td>&#8211;</td>
-<td>forward</td>
-<td>no</td>
-<td>none</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>The query orientation can be &#8216;+&#8217; or &#8216;&#8211;&#8217; giving two distinct alignments.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, alignments corresponding to those in
-the ranking are selected for assembly having: (i) same
-expectation, <em>E</em>, (ii) same score, <em>bits</em>. Row data
-fields: (i) rank as integral <em>hitnum</em>, (ii)
-identifier, (iii) description, (iv) ranked <em>bits</em>, (v)
-ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, alignments are selected for assembly
-having: (i) same hit orientation. Row data fields: (i) rank
-as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
-description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
-total number of alignments <em>N</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
-orientation.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="blastx">
-<h2>BLASTX<a class="headerlink" href="#blastx" title="Permalink to this headline">¶</a></h2>
-<p>Searches a nucleotide query sequence against a protein sequence database,
-translating the query in all 6 reading frames.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-<tr class="row-even"><td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>&#8211;</td>
-<td>+</td>
-<td>reverse</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>The query orientation can be &#8216;+&#8217; or &#8216;&#8211;&#8217; giving two distinct alignments by
-orientation. Query reading frames of the same sign are merged unless <code class="docutils literal"><span class="pre">-hsp</span>
-<span class="pre">discrete</span></code> is used.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, alignments corresponding to those in
-the ranking are selected for assembly having: (i) same
-expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same query
-orientation. Row data fields: (i) rank as integral
-<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
-<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) query
-orientation.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, alignments are selected for assembly
-having: (i) same query orientation. Row data fields: (i)
-rank as integral <em>hitnum</em>, (ii) identifier, (iii)
-description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
-total number of alignments, <em>N</em>, (vii) query orientation.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii)
-query orientation.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="tblastn">
-<h2>TBLASTN<a class="headerlink" href="#tblastn" title="Permalink to this headline">¶</a></h2>
-<p>Searches a protein query sequence against a nucleotide sequence database,
-translating the hits in all 6 reading frames.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>pro</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>no</td>
-<td>none</td>
-</tr>
-<tr class="row-even"><td>pro</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>&#8211;</td>
-<td>forward</td>
-<td>no</td>
-<td>none</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>The query orientation is always &#8216;+&#8217; giving one alignment. Hit reading frames
-of the same sign are merged unless <code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code> is used.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, alignments corresponding to those in
-the ranking are selected for assembly having: (i) same
-expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same hit
-orientation. Row data fields: (i) rank as integral
-<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
-<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, alignments are selected for assembly
-having: (i) same hit orientation. Row data fields: (i) rank
-as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
-description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
-total number of alignments, <em>N</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
-orientation.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="tblastx">
-<h2>TBLASTX<a class="headerlink" href="#tblastx" title="Permalink to this headline">¶</a></h2>
-<p>Searches a nucleotide query sequence against a nucleotide sequence database,
-translating both query and hit in all 6 reading frames.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>dna</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-<tr class="row-even"><td>dna</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>&#8211;</td>
-<td>forward</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-<tr class="row-odd"><td>dna</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>&#8211;</td>
-<td>+</td>
-<td>reverse</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-<tr class="row-even"><td>dna</td>
-<td>dna</td>
-<td>pro</td>
-<td>pro</td>
-<td>&#8211;</td>
-<td>&#8211;</td>
-<td>reverse</td>
-<td>yes</td>
-<td>query orient</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>The query orientation can be &#8216;+&#8217; or &#8216;&#8211;&#8217; giving two distinct alignments by
-orientation. Query and hit reading frames of the same sign are merged,
-respectively, unless <code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code> is used.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, alignments corresponding to those in
-the ranking are selected for assembly having: (i) same
-expectation, <em>E</em>, (ii) same score, <em>bits</em>, (iii) same hit
-orientation. Row data fields: (i) rank as integral
-<em>hitnum</em>, (ii) identifier, (iii) description, (iv) ranked
-<em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, alignments are selected for assembly
-having: (i) same hit orientation. Row data fields: (i) rank
-as compound <em>hitnum.alignum</em>, (ii) identifier, (iii)
-description, (iv) highest <em>bits</em>, (v) lowest <em>E</em>, (vi)
-total number of alignments, <em>N</em>, (vii) hit orientation.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>, (vii) hit
-orientation.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="psi-blast">
-<h2>PSI-BLAST<a class="headerlink" href="#psi-blast" title="Permalink to this headline">¶</a></h2>
-<p>Iteratively searches a protein query sequence against a protein sequence
-database. PSI-BLAST output is processed as a sequence of BLASTP cycles.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="16%" />
-<col width="16%" />
-<col width="22%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head" colspan="2">Input</th>
-<th class="head" colspan="2">Output</th>
-<th class="head" colspan="2">Orient</th>
-<th class="head">Assemble</th>
-<th class="head">Renumber</th>
-<th class="head">Filter</th>
-</tr>
-<tr class="row-even"><th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">qry</th>
-<th class="head">hit</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-<th class="head">&nbsp;</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-odd"><td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>pro</td>
-<td>+</td>
-<td>+</td>
-<td>forward</td>
-<td>no</td>
-<td>cycle</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>BLASTP and PSI-BLAST share the same HSP processing rules. The query
-orientation is always &#8216;+&#8217; giving one alignment per cycle.</p>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="22%" />
-<col width="78%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">MView option</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">ranked</span></code></td>
-<td>For each ranked hit, the first alignment is selected to
-form an alignment row using: (i) same expectation,
-<em>E</em>, (ii) same score, <em>bits</em>. Row data fields: (i) rank as
-integral <em>hitnum</em>, (ii) identifier, (iii) description, (iv)
-ranked <em>bits</em>, (v) ranked <em>E</em>, (vi) <em>N=1</em>.</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">all</span></code></td>
-<td>For each ranked hit, all alignments are selected for
-assembly. Row data fields: (i) rank as integral
-<em>hitnum</em>, (ii) identifier, (iii) description, (iv) highest
-<em>bits</em>, (v) lowest <em>E</em>, (vi) total number of alignments
-<em>N</em>.</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">-hsp</span> <span class="pre">discrete</span></code></td>
-<td>For each ranked hit, every alignment is assigned its own
-row. Row data fields: (i) alignment rank as compound rank
-<em>hitnum.alignum</em>, (ii) identifier, (iii) description, (iv)
-alignment <em>bits</em>, (v) alignment <em>E</em>, (vi) <em>N=1</em>.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="column-headings">
-<h2>Column headings<a class="headerlink" href="#column-headings" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="18%" />
-<col width="82%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Heading</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>Input</td>
-<td>The input sequence types for the query, &#8216;qry&#8217;, and the &#8216;hit&#8217;,
-sequences which may be protein &#8216;pro&#8217; or nucleotide &#8216;dna&#8217;.</td>
-</tr>
-<tr class="row-odd"><td>Output</td>
-<td>The output sequence types produced by the search, may be
-protein &#8216;pro&#8217; or nucleotide &#8216;dna&#8217;.</td>
-</tr>
-<tr class="row-even"><td>Orient</td>
-<td>The orientation of the query and hit sequences given as
-forward &#8216;+&#8217; or reverse &#8216;&#8211;&#8217; and sometimes with a reading
-frame number indicated by &#8216;+F&#8217; or &#8216;&#8211;F&#8217;.</td>
-</tr>
-<tr class="row-odd"><td>Assemble</td>
-<td><p class="first">The sequence fragment assembly algorithm:</p>
-<p><em>forward</em>: Given a list of fragments each numbered from low
-to high along the query strand (i.e., conventional
-orientation): stack these at these positions along the query
-template.</p>
-<p class="last"><em>reverse</em>: Given a list of fragments each numbered from
-high to low along the query strand (i.e., individually
-reversed): reverse each fragment, stack onto the template,
-reverse the template, which recovers the original numbering
-high to low and preserves intra- and inter-fragment order.</p>
-</td>
-</tr>
-<tr class="row-even"><td>Renumber</td>
-<td>Whether the sequence numbering is modified by MView or not.
-Given a <span class="math">\((start, stop)\)</span> pair in nucleotide units, the
-corresponding nearest values in amino acid units are given by:
-<span class="math">\((start\prime, stop\prime) = (int((start+2)/3),
-int(stop/3))\)</span> This renumbering is applied to each fragment&#8217;s
-positions along its parent query strand to determine the query
-template positions in amino acid units.</td>
-</tr>
-<tr class="row-odd"><td>Filter</td>
-<td>Separate MView output must be produced for varous BLAST hit
-properties, such as PSI-BLAST search cycle, BLASTN query
-strand orientation, etc.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-<div class="section" id="key">
-<h2>Key<a class="headerlink" href="#key" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><table border="1" class="docutils">
-<colgroup>
-<col width="18%" />
-<col width="82%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Term</th>
-<th class="head">Description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><em>hitnum</em></td>
-<td>The ordinal number (starting at 1) of a search hit as
-encountered in the ranking section of the raw BLAST output.</td>
-</tr>
-<tr class="row-odd"><td><em>alignum</em></td>
-<td>The ordinal number (starting at 1) of a single HSP within a
-given hit (starting afresh with each hit) as encountered in
-the raw BLAST output.</td>
-</tr>
-<tr class="row-even"><td><em>N</em></td>
-<td>A count of HSPs which is context dependent in MView. In raw
-BLAST output it is the number of HSPs deemed by BLAST to
-belong in a coherent set of alignment fragments, but the MView
-HSP processing options (<code class="docutils literal"><span class="pre">ranked</span></code>, <code class="docutils literal"><span class="pre">all</span></code>, <code class="docutils literal"><span class="pre">discrete</span></code>)
-change the precise meaning. BLAST series 2 onwards produces
-gapped alignments by default rather than separate HSPs so
-<em>N=1</em>.</td>
-</tr>
-<tr class="row-odd"><td><em>E</em></td>
-<td>Expectation or e-value: the expected number of hits by chance.</td>
-</tr>
-<tr class="row-even"><td><em>bits</em></td>
-<td>NCBI BLAST 2.0 hit ranking rounds HSP scores which are
-floating point to the nearset integer, so MView takes this
-into account when selecting HSPs.</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</div>
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -823,13 +813,14 @@ into account when selecting HSPs.</td>
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">MView</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../contents.html" >Contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="rules.html" >BLAST HSP processing rules</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="rules.html" >BLAST HSP processing rules</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">NCBI BLAST series 2 and NCBI BLAST+</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015-2020, Nigel P. Brown.
-      Last updated on 19 Feb 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+      Last updated on 08 Sep 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>
