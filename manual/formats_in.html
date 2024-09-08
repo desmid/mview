@@ -1,0 +1,1373 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Input formats &#8212; MView</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Output formats" href="formats_out.html" />
+    <link rel="prev" title="Manual" href="manual.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="formats_out.html" title="Output formats"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="manual.html" title="Manual"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../contents.html" accesskey="U">Contents</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Input formats</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="input-formats">
+<span id="ref-input-formats"></span><h1>Input formats<a class="headerlink" href="#input-formats" title="Permalink to this headline">¶</a></h1>
+<p>The code has been tested for the following formats and versions for protein
+and nucleotide sequences:</p>
+<section id="ncbi-blast-family">
+<h2>NCBI BLAST family<a class="headerlink" href="#ncbi-blast-family" title="Permalink to this headline">¶</a></h2>
+<p>Sequence database search programs. See <a class="reference internal" href="blast/rules.html#ref-blast-rules"><span class="std std-ref">BLAST HSP processing rules</span></a> for details of
+<cite>BLAST</cite> processing by MView.</p>
+<section id="blast">
+<h3>BLAST+<a class="headerlink" href="#blast" title="Permalink to this headline">¶</a></h3>
+<p>Modern BLAST can generate output in a number of formats; run <cite>blastp -help</cite> to
+see what is available.</p>
+<p>MView can process two of these: the default BLAST output format (also obtained
+with the BLAST command line option <cite>-outfmt 0</cite>) and a commented tabular format
+produced with <cite>-outfmt 7</cite>. MView support and testing is as follows.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code> (with the default BLAST format)</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.2.25+</p></th>
+<th class="head"><p>2.2.28+</p></th>
+<th class="head"><p>2.2.31+</p></th>
+<th class="head"><p>2.3.0+</p></th>
+<th class="head"><p>2.4.0+</p></th>
+<th class="head"><p>2.5.0+</p></th>
+<th class="head"><p>2.6.0+</p></th>
+<th class="head"><p>2.7.1+</p></th>
+<th class="head"><p>2.8.1+</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 16%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.9.0+</p></th>
+<th class="head"><p>2.10.0+</p></th>
+<th class="head"><p>2.10.1+</p></th>
+<th class="head"><p>2.16.0+</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code> (with <cite>-outfmt 7</cite> tabular BLAST format)</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.2.28+</p></th>
+<th class="head"><p>2.2.31+</p></th>
+<th class="head"><p>2.3.0+</p></th>
+<th class="head"><p>2.4.0+</p></th>
+<th class="head"><p>2.5.0+</p></th>
+<th class="head"><p>2.6.0+</p></th>
+<th class="head"><p>2.7.1+</p></th>
+<th class="head"><p>2.8.1+</p></th>
+<th class="head"><p>2.9.0+</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.10.0+</p></th>
+<th class="head"><p>2.10.1+</p></th>
+<th class="head"><p>2.16.0+</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The main <cite>-outfmt 7</cite> fields or columns recognised by MView are:</p>
+<ul class="simple">
+<li><p><cite>std</cite> to report standard fields: <cite>qaccver</cite>, <cite>saccver</cite>, <cite>pident</cite>, <cite>length</cite>, <cite>mismatch</cite>, <cite>gapopen</cite>, <cite>qstart</cite>, <cite>qend</cite>, <cite>sstart</cite>, <cite>send</cite>, <cite>evalue</cite>, <cite>bitscore</cite>;</p></li>
+<li><p><cite>qseq</cite>, <cite>sseq</cite> to report the query and sbjct sequences;</p></li>
+<li><p><cite>stitle</cite> or <cite>salltitles</cite> to report the sbjct descriptions;</p></li>
+<li><p><cite>qframe</cite> to report the query frame;</p></li>
+<li><p><cite>sframe</cite> to report the sbjct frame.</p></li>
+</ul>
+<p>When running blast with tabular output, minimal field specifiers suitable for
+input to MView are:</p>
+<blockquote>
+<div><p><cite>blastp   -outfmt ‘7 std qseq sseq stitle’</cite></p>
+<p><cite>blastn   -outfmt ‘7 std qseq sseq stitle’</cite></p>
+<p><cite>blastx   -outfmt ‘7 std qseq sseq stitle qframe’</cite></p>
+<p><cite>tblastn  -outfmt ‘7 std qseq sseq stitle sframe’</cite></p>
+<p><cite>tblastx  -outfmt ‘7 std qseq sseq stitle qframe sframe’</cite></p>
+<p><cite>psiblast -outfmt ‘7 std qseq sseq stitle’</cite></p>
+</div></blockquote>
+<p>Additional fields that are currently recognised by MView are:</p>
+<ul class="simple">
+<li><p><cite>staxid</cite></p></li>
+<li><p><cite>ssciname</cite></p></li>
+<li><p><cite>scomname</cite></p></li>
+<li><p><cite>sblastname</cite></p></li>
+<li><p><cite>sskingdom</cite></p></li>
+<li><p><cite>staxids</cite></p></li>
+<li><p><cite>sscinames</cite></p></li>
+<li><p><cite>scomnames</cite></p></li>
+<li><p><cite>sblastnames</cite></p></li>
+<li><p><cite>sskingdoms</cite></p></li>
+</ul>
+<p>If present, these are passed through in the format conversions (<cite>-out fasta</cite>,
+<cite>-out pir</cite>, <cite>-out rdb</cite>) and to the normal MView display mode where they appear
+as extra columns at the right margin of the alignment. Having very variable
+field widths they may appear badly aligned vertically. To disable them, use
+the <cite>-label8</cite> option.</p>
+<p>MView will silently ignore any fields other than those listed above.</p>
+<p>Note: There are some differences in the output (seen in BLAST <cite>2.2.28+</cite>)
+produced by the default BLAST format versus <cite>-outfmt 7</cite>. The latter lacks the
+list of ranked database hits and best scores and their associated fragment
+counts, N. Unfortunately this can obscure interpretation of the results when
+there are many alternative alignments for a given database hit (see
+<a class="reference internal" href="blast/rules.html#ref-blast-rules"><span class="std std-ref">BLAST HSP processing rules</span></a>) so that in certain cases the MView output will be
+slightly different; this is most noticeable with <cite>tblastx</cite>.</p>
+<p>Note: A strange behaviour has been seen with <cite>psiblast 2.2.28+</cite>, where the
+first database search produces many more hits than subsequent iterations
+including the final iteration when run using the default output format. Using
+<cite>-outfmt 7</cite> on the exact same search produces more consistent sets of hits.</p>
+</section>
+<section id="blast-series-2-2">
+<h3>BLAST series 2.2<a class="headerlink" href="#blast-series-2-2" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.2.5</p></th>
+<th class="head"><p>2.2.6</p></th>
+<th class="head"><p>2.2.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="blast-series-2-0">
+<h3>BLAST series 2.0<a class="headerlink" href="#blast-series-2-0" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.0.2</p></th>
+<th class="head"><p>2.0.4</p></th>
+<th class="head"><p>2.0.5</p></th>
+<th class="head"><p>2.0.6</p></th>
+<th class="head"><p>2.0.9</p></th>
+<th class="head"><p>2.0.10</p></th>
+<th class="head"><p>2.0.14</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>psiblast</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>phiblast</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="blast-series-1-4">
+<h3>BLAST series 1.4<a class="headerlink" href="#blast-series-1-4" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>1.4.7</p></th>
+<th class="head"><p>1.4.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+<hr class="docutils" />
+<section id="washu-blast-family">
+<h2>WashU-BLAST family<a class="headerlink" href="#washu-blast-family" title="Permalink to this headline">¶</a></h2>
+<p>Sequence database search programs.</p>
+<section id="wu-blast-series-2-0">
+<h3>WU-BLAST series 2.0<a class="headerlink" href="#wu-blast-series-2-0" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">blast</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.0a13</p></th>
+<th class="head"><p>2.0a19</p></th>
+<th class="head"><p>2.0</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>blastp</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>blastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>blastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tblastn</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tblastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+<hr class="docutils" />
+<section id="uni-virginia-fasta-family">
+<h2>Uni. Virginia FASTA family<a class="headerlink" href="#uni-virginia-fasta-family" title="Permalink to this headline">¶</a></h2>
+<p>Sequence database search programs:</p>
+<section id="fasta-series-36">
+<h3>FASTA series 36<a class="headerlink" href="#fasta-series-36" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>36.07</p></th>
+<th class="head"><p>36.3.3</p></th>
+<th class="head"><p>35.3.5a</p></th>
+<th class="head"><p>36.3.6</p></th>
+<th class="head"><p>36.3.7b</p></th>
+<th class="head"><p>36.3.8e</p></th>
+<th class="head"><p>36.3.8f</p></th>
+<th class="head"><p>36.3.8g</p></th>
+<th class="head"><p>36.3.8h</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>fastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>fasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>ssearch</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>ggsearch</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>glsearch</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>fastm</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>fasts</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>fastf</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfastm</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfasts</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfastf</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+<td><p>expt</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>where ‘expt’ indicates that MView parses and processes the format, but the
+results may not be particularly useful, hence ‘experimental’.</p>
+</section>
+<section id="fasta-series-35">
+<h3>FASTA series 35<a class="headerlink" href="#fasta-series-35" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 67%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>35.04</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfastx</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>ssearch</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>ggsearch</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>glsearch</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="fasta-series-34">
+<h3>FASTA series 34<a class="headerlink" href="#fasta-series-34" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 59%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>34.26.5</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta34</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="fasta-series-3-0-3-4">
+<h3>FASTA series 3.0 - 3.4<a class="headerlink" href="#fasta-series-3-0-3-4" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>3.0t76</p></th>
+<th class="head"><p>3.0t82</p></th>
+<th class="head"><p>3.1t07</p></th>
+<th class="head"><p>3.2t01</p></th>
+<th class="head"><p>3.2t05</p></th>
+<th class="head"><p>3.2t07</p></th>
+<th class="head"><p>3.2t05</p></th>
+<th class="head"><p>3.2t07</p></th>
+<th class="head"><p>3.3t01</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>fastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>fasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfasta</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfastxy</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>3.3t07</p></th>
+<th class="head"><p>3.4t23</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>fastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>fasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfasta</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfasty</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>tfastxy</cite></p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="fasta-series-2">
+<h3>FASTA series 2<a class="headerlink" href="#fasta-series-2" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 20%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>2.0u</p></th>
+<th class="head"><p>2.0u63</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>tfastx</cite></p></td>
+<td><p>.</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="fasta-series-1">
+<h3>FASTA series 1<a class="headerlink" href="#fasta-series-1" title="Permalink to this headline">¶</a></h3>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">uvfasta</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 63%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Program</p></th>
+<th class="head"><p>1.6c24</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>fasta</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+<hr class="docutils" />
+<section id="clustal-aln">
+<h2>CLUSTAL/aln<a class="headerlink" href="#clustal-aln" title="Permalink to this headline">¶</a></h2>
+<p>The CLUSTAL family of multiple sequence alignment programs produce ‘aln’
+format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">clustal</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>1.60</p></th>
+<th class="head"><p>1.70</p></th>
+<th class="head"><p>1.83</p></th>
+<th class="head"><p>2.1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>CLUSTAL</cite></p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="hssp-maxhom">
+<h2>HSSP/Maxhom<a class="headerlink" href="#hssp-maxhom" title="Permalink to this headline">¶</a></h2>
+<p>The HSSP multiple sequence alignment format is produced by the MaxHom protein
+sequence and structure homology alignment program.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">hssp</span></code></p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>1.0 1991</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>HSSP</cite></p></td>
+<td><p>ok</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="maf">
+<h2>MAF<a class="headerlink" href="#maf" title="Permalink to this headline">¶</a></h2>
+<p>The UCSC Multple Alignment Format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">maf</span></code></p>
+<p>MAF files contain distinct alignment blocks. By default, all blocks will be
+output. You can extract a particular block, say the second one, with <code class="docutils literal notranslate"><span class="pre">-block</span>
+<span class="pre">2</span></code>, or several with <code class="docutils literal notranslate"><span class="pre">-block</span> <span class="pre">'1,2,7'</span></code>.</p>
+</section>
+<section id="fasta">
+<h2>FASTA<a class="headerlink" href="#fasta" title="Permalink to this headline">¶</a></h2>
+<p>The classic FASTA (or Pearson) sequence file format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">fasta</span></code></p>
+</section>
+<section id="msf">
+<h2>MSF<a class="headerlink" href="#msf" title="Permalink to this headline">¶</a></h2>
+<p>The Wisconsin Package GCG Multiple Sequence File format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">msf</span></code></p>
+</section>
+<section id="pir">
+<h2>PIR<a class="headerlink" href="#pir" title="Permalink to this headline">¶</a></h2>
+<p>The Protein Information Resource sequence file format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">pir</span></code></p>
+</section>
+<section id="plain">
+<h2>plain<a class="headerlink" href="#plain" title="Permalink to this headline">¶</a></h2>
+<p>A simple multiple sequence alignment format.</p>
+<p>MView option: <code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">plain</span></code></p>
+<p>This is composed of rows of identifier and sequence in two columns like:</p>
+<PRE>
+identifier1   sequence1
+identifier2   sequence2
+identifier3   sequence3
+</pre><p>and can contain comment lines starting with <code class="docutils literal notranslate"><span class="pre">#</span></code>. Identifiers and sequences
+must not contain any whitespace as this is used to separate the columns. The
+sequences need not be aligned vertically, but they must all be the same
+length. Use <code class="docutils literal notranslate"><span class="pre">-</span></code> and/or <code class="docutils literal notranslate"><span class="pre">.</span></code> characters for gaps.</p>
+</section>
+<section id="unsupported">
+<h2>Unsupported<a class="headerlink" href="#unsupported" title="Permalink to this headline">¶</a></h2>
+<p>A few other formats were implemented for specific use-cases and are not
+maintained:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 38%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>MView option</p></th>
+<th class="head"><p>Status</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MIPS-ALN</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">mips</span></code></p></td>
+<td><p>experimental</p></td>
+</tr>
+<tr class="row-odd"><td><p>MULTAS/MULTAL</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">multas</span></code></p></td>
+<td><p>experimental</p></td>
+</tr>
+<tr class="row-even"><td><p>jnet -z</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-in</span> <span class="pre">jnet</span></code></p></td>
+<td><p>experimental</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Input formats</a><ul>
+<li><a class="reference internal" href="#ncbi-blast-family">NCBI BLAST family</a><ul>
+<li><a class="reference internal" href="#blast">BLAST+</a></li>
+<li><a class="reference internal" href="#blast-series-2-2">BLAST series 2.2</a></li>
+<li><a class="reference internal" href="#blast-series-2-0">BLAST series 2.0</a></li>
+<li><a class="reference internal" href="#blast-series-1-4">BLAST series 1.4</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#washu-blast-family">WashU-BLAST family</a><ul>
+<li><a class="reference internal" href="#wu-blast-series-2-0">WU-BLAST series 2.0</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#uni-virginia-fasta-family">Uni. Virginia FASTA family</a><ul>
+<li><a class="reference internal" href="#fasta-series-36">FASTA series 36</a></li>
+<li><a class="reference internal" href="#fasta-series-35">FASTA series 35</a></li>
+<li><a class="reference internal" href="#fasta-series-34">FASTA series 34</a></li>
+<li><a class="reference internal" href="#fasta-series-3-0-3-4">FASTA series 3.0 - 3.4</a></li>
+<li><a class="reference internal" href="#fasta-series-2">FASTA series 2</a></li>
+<li><a class="reference internal" href="#fasta-series-1">FASTA series 1</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#clustal-aln">CLUSTAL/aln</a></li>
+<li><a class="reference internal" href="#hssp-maxhom">HSSP/Maxhom</a></li>
+<li><a class="reference internal" href="#maf">MAF</a></li>
+<li><a class="reference internal" href="#fasta">FASTA</a></li>
+<li><a class="reference internal" href="#msf">MSF</a></li>
+<li><a class="reference internal" href="#pir">PIR</a></li>
+<li><a class="reference internal" href="#plain">plain</a></li>
+<li><a class="reference internal" href="#unsupported">Unsupported</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="manual.html"
+                        title="previous chapter">Manual</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="formats_out.html"
+                        title="next chapter">Output formats</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/manual/formats_in.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="formats_out.html" title="Output formats"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="manual.html" title="Manual"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../contents.html" >Contents</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Input formats</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015-2020, Nigel P. Brown.
+      Last updated on 08 Sep 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

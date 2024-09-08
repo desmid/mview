@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Installation: Perl module &#8212; MView</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Installation: Windows" href="windows.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation: Perl module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="installation-perl-module">
+<h1>Installation: Perl module<a class="headerlink" href="#installation-perl-module" title="Permalink to this headline">¶</a></h1>
+<p>This method assumes that you have Perl and some version of <cite>make</cite> installed,
+so may not work on all systems.</p>
+<p>Installing a perl Module has the advantage that there is (usually) no need to
+change <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, but the disadvantage that it installs directly into your Perl
+installation (or personal perl folder known to Perl), which you may not want
+to do.</p>
+<p>You unpack the archive into a temporary folder and run the standard Perl
+module installation incantation. Unlike the other installation methods you can
+then delete the installation folder because all the code has been copied into
+Perl somewhere.</p>
+<ol class="arabic">
+<li><p>Save the archive then uncompress and extract it (Linux, Apple, UNIX):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xvzf</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>or (Windows, using an archiver like 7-Zip, as here):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">7</span><span class="n">z</span> <span class="n">x</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+<p>This creates a sub-folder <code class="docutils literal notranslate"><span class="pre">mview-VERSION</span></code> containing all the files.</p>
+</li>
+<li><p>Change to this folder.</p></li>
+</ol>
+<p>You can now use one of the following sets of instructions to do the install:</p>
+<ol class="arabic" start="3">
+<li><p>Run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">Makefile</span><span class="o">.</span><span class="n">PL</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which attempts to install into the Perl distribution.</p>
+</li>
+</ol>
+<ol class="arabic" start="3">
+<li><p>Or run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">Makefile</span><span class="o">.</span><span class="n">PL</span> <span class="n">INSTALL_BASE</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which attempts to install under the given folder. In this UNIX example you
+need write access to <code class="docutils literal notranslate"><span class="pre">/usr/local</span></code> and users will need <code class="docutils literal notranslate"><span class="pre">/usr/local/bin</span></code>
+on their <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p>
+</li>
+</ol>
+<ol class="arabic" start="3">
+<li><p>Or, if you have a <a class="reference external" href="https://metacpan.org/pod/local::lib">local::lib</a>
+setup, you can install MView there:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>perl Makefile.PL $PERL_MM_OPT
+make install
+</pre></div>
+</div>
+</li>
+<li><p>Finally, the unpacked archive can be deleted since the important components
+have been copied elsewhere.</p></li>
+</ol>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="windows.html"
+                        title="previous chapter">Installation: Windows</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/install/perl.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation: Perl module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015-2020, Nigel P. Brown.
+      Last updated on 08 Sep 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation: Perl module &#8212; MView</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Installation: Windows" href="windows.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation: Perl module</a><ul>
+<li><a class="reference internal" href="#perl-module">Perl module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="windows.html"
+                        title="previous chapter">Installation: Windows</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/install/module.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation-perl-module">
+<h1>Installation: Perl module<a class="headerlink" href="#installation-perl-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="perl-module">
+<h2>Perl module<a class="headerlink" href="#perl-module" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Save the archive then uncompress and extract it (Linux, macOS, UNIX):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xvzf</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>or (Windows, using an archiver like 7-Zip, as here):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">7</span><span class="n">z</span> <span class="n">x</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+<p>This creates a sub-folder <code class="docutils literal"><span class="pre">mview-VERSION</span></code> containing all the files.</p>
+</li>
+<li><p class="first">Change to this folder.</p>
+</li>
+</ol>
+<p>You can now use one of the following sets of instructions to do the install:</p>
+<ol class="arabic" start="3">
+<li><p class="first">Run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">Makefile</span><span class="o">.</span><span class="n">PL</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which attempts to install into the Perl distribution.</p>
+</li>
+</ol>
+<ol class="arabic" start="3">
+<li><p class="first">Or run something like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">Makefile</span><span class="o">.</span><span class="n">PL</span> <span class="n">INSTALL_BASE</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which attempts to install under the given folder. In this example you need
+write access to <code class="docutils literal"><span class="pre">/usr/local</span></code> and users will need <code class="docutils literal"><span class="pre">/usr/local/bin</span></code> on
+their <code class="docutils literal"><span class="pre">PATH</span></code>.</p>
+</li>
+</ol>
+<ol class="arabic" start="3">
+<li><p class="first">Or, if you have a <a class="reference external" href="https://metacpan.org/pod/local::lib">local::lib</a>
+setup, you can install MView there:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>perl Makefile.PL $PERL_MM_OPT
+make install
+</pre></div>
+</div>
+</li>
+<li><p class="first">Finally, the unpacked archive can be deleted since the important components
+have been copied elsewhere.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015-2020, Nigel P. Brown.
+      Last updated on 13 Feb 2020.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

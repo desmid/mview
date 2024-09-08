@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Installation: Linux, Apple, UNIX &#8212; MView</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation: Windows" href="windows.html" />
+    <link rel="prev" title="Licence" href="../etc/Licence.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../etc/Licence.html" title="Licence"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation: Linux, Apple, UNIX</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="installation-linux-apple-unix">
+<h1>Installation: Linux, Apple, UNIX<a class="headerlink" href="#installation-linux-apple-unix" title="Permalink to this headline">¶</a></h1>
+<p>There are two ways to install MView.</p>
+<p>Either method can be used by an ordinary user installing into their own
+account, or by a system administrator installing onto a computer with multiple
+users. It is assumed that Perl is already installed and on your <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#ref-unix-installer"><span class="std std-ref">Installer script</span></a></p></li>
+<li><p><a class="reference internal" href="#ref-unix-manual"><span class="std std-ref">Manual install</span></a></p></li>
+<li><p><a class="reference internal" href="#ref-unix-path"><span class="std std-ref">How to set PATH</span></a></p></li>
+</ul>
+<section id="installer-script">
+<span id="ref-unix-installer"></span><h2>Installer script<a class="headerlink" href="#installer-script" title="Permalink to this headline">¶</a></h2>
+<p>The installer program should work on all systems, but is new and relatively
+experimental.</p>
+<p>You unpack the archive into a destination folder and run the installer from
+there, following the instructions. You may have to edit <code class="docutils literal notranslate"><span class="pre">PATH</span></code> afterwards.</p>
+<p>Explanation: the installer puts a small mview driver program into a folder on
+<code class="docutils literal notranslate"><span class="pre">PATH</span></code> so that it can be run easily by the user. The driver knows the
+location of the unpacked MView folder and starts the real MView program.</p>
+<ol class="arabic">
+<li><p>Save the archive to somewhere under your home folder then uncompress
+and extract it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xvzf</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>This creates a sub-folder <code class="docutils literal notranslate"><span class="pre">mview-VERSION</span></code> containing all the files.</p>
+</li>
+<li><p>Change to this folder.</p></li>
+<li><p>Run the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">install</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>and follow the instructions. You will be offered various places to install
+the driver script.</p>
+<p>If you know in advance the name of the folder you want to use for the
+driver script, you can supply it on the command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">install</span><span class="o">.</span><span class="n">pl</span> <span class="o">/</span><span class="n">folder</span><span class="o">/</span><span class="n">on</span><span class="o">/</span><span class="n">my</span><span class="o">/</span><span class="n">path</span>
+</pre></div>
+</div>
+</li>
+<li><p>If the installer couldn’t find a sensible place to install the driver, it
+chooses <code class="docutils literal notranslate"><span class="pre">~/bin</span></code> and you will have to add that to your <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, then
+rehash or login again.</p></li>
+</ol>
+</section>
+<section id="manual-install">
+<span id="ref-unix-manual"></span><h2>Manual install<a class="headerlink" href="#manual-install" title="Permalink to this headline">¶</a></h2>
+<p>This works on all systems and is the most basic, but requires that you do a
+little editing.</p>
+<p>You unpack the archive into a destination folder, edit the MView program by
+hand, then add the folder containing that program to <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p>
+<ol class="arabic">
+<li><p>Save the archive to your software area, for example, <code class="docutils literal notranslate"><span class="pre">/usr/local</span></code>, then
+uncompress and extract it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xvzf</span> <span class="n">mview</span><span class="o">-</span><span class="n">VERSION</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>This creates a sub-folder <code class="docutils literal notranslate"><span class="pre">mview-VERSION</span></code> containing all the files.</p>
+</li>
+<li><p>Change to this folder.</p></li>
+<li><p>Edit the file <code class="docutils literal notranslate"><span class="pre">bin/mview</span></code>.</p></li>
+</ol>
+<blockquote>
+<div><ul>
+<li><p>Set a valid path for the Perl interpreter on your machine after the <code class="docutils literal notranslate"><span class="pre">#!</span></code>
+at the top of the file, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/perl</span>
+</pre></div>
+</div>
+</li>
+<li><p>Find the line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$MVIEW_HOME = &quot;/path/to/mview/unpacked/folder&quot;;
+</pre></div>
+</div>
+<p>and change the path, in our example, to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$MVIEW_HOME = &quot;/usr/local/mview-VERSION&quot;;
+</pre></div>
+</div>
+</li>
+<li><p>Save the file.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic" start="4">
+<li><p>Finally, make sure that the <code class="docutils literal notranslate"><span class="pre">bin</span></code> folder containing the <code class="docutils literal notranslate"><span class="pre">mview</span></code> script
+(that you just edited) is on the user <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, then rehash or login again.</p>
+<p>In our example, you would add <code class="docutils literal notranslate"><span class="pre">/usr/local/mview-VERSION/bin</span></code> to the
+existing value of <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, or replace any older MView path.</p>
+</li>
+</ol>
+</section>
+<section id="how-to-set-path">
+<span id="ref-unix-path"></span><h2>How to set PATH<a class="headerlink" href="#how-to-set-path" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable is a list of <code class="docutils literal notranslate"><span class="pre">:</span></code> (colon) separated folders
+containing programs. When you type the name of a program at the command
+prompt, the system searches these folders, in order, until it finds the
+program and runs it (or complains if the program can’t be found).</p>
+<p>Assume you are adding <code class="docutils literal notranslate"><span class="pre">/opt/bin</span></code> as the directory containing the newly
+installed mview script. On all systems the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable would
+be extended by adding <code class="docutils literal notranslate"><span class="pre">/opt/bin</span></code> to the existing <code class="docutils literal notranslate"><span class="pre">PATH</span></code> value using colon
+delimiters as needed. You can prepend the new path (it will be searched first
+for commands), insert it somewhere in the middle, or append it at the back (it
+will be searched last).</p>
+<p>Most people are using <code class="docutils literal notranslate"><span class="pre">bash</span></code> or a related shell. The <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment
+variable is set globally for all users by the system. You can modify it for
+your account by editing or creating if necessary your <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> or
+<code class="docutils literal notranslate"><span class="pre">~/.profile</span></code> file. You might see a line like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PATH</span><span class="o">=</span><span class="s2">&quot;$HOME/bin:$PATH&quot;</span>
+</pre></div>
+</div>
+<p>so change it, in this example, to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PATH</span><span class="o">=</span><span class="s2">&quot;$HOME/bin:/opt/bin:$PATH&quot;</span>
+</pre></div>
+</div>
+<p>Here we’ve inserted it somewhere in the middle, after a path in the user’s
+account, but before the system paths, and that will be the program search
+order.</p>
+<p>On all systems, once you’ve updated the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> variable, login again and the
+<code class="docutils literal notranslate"><span class="pre">mview</span></code> command should be recognised, so that running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mview</span> <span class="o">-</span><span class="n">help</span>
+</pre></div>
+</div>
+<p>prints the help message for the new version.</p>
+<p>Note: if you already have an older mview installed on the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> and append
+the new location at the back of <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, the older program will still be
+found first whenever you try to run mview, so be aware of that; you would need
+to delete the old version, or rearrange the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> order.</p>
+<p>Finally, if you are root or can <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">-i</span></code> with root privileges you can set
+<code class="docutils literal notranslate"><span class="pre">PATH</span></code> globally for all users, but details are system specific and you
+already know what to do anyway.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation: Linux, Apple, UNIX</a><ul>
+<li><a class="reference internal" href="#installer-script">Installer script</a></li>
+<li><a class="reference internal" href="#manual-install">Manual install</a></li>
+<li><a class="reference internal" href="#how-to-set-path">How to set PATH</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../etc/Licence.html"
+                        title="previous chapter">Licence</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="windows.html"
+                        title="next chapter">Installation: Windows</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/install/unix.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="windows.html" title="Installation: Windows"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../etc/Licence.html" title="Licence"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MView</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation: Linux, Apple, UNIX</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015-2020, Nigel P. Brown.
+      Last updated on 08 Sep 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>
