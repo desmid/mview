@@ -1,5 +1,12 @@
 ; -*- mode: Text; eval: (set-fill-column 75); -*-
 
+Version 1.68 2024-09-08
+
+Changes:
+- Allow non-terminal asterisks in input Pearson/FASTA format
+- Allow non-terminal asterisks in input PIR format
+
+
 Version 1.68-beta 2020-10-01
 
 Changes:
